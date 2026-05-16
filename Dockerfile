@@ -5,8 +5,11 @@ RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/li
 
 WORKDIR /build/server
 
-# Cache dependencies
+ENV SQLX_OFFLINE=true
+
+# Cache dependencies (needs .sqlx/ for compile-time query verification)
 COPY server/Cargo.toml server/Cargo.lock ./
+COPY server/.sqlx ./.sqlx
 RUN mkdir src && echo "fn main() {}" > src/main.rs && cargo build --release && rm -rf src
 
 COPY server/src ./src
