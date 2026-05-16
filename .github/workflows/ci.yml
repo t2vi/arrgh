@@ -31,6 +31,8 @@ jobs:
 
       - name: cargo test
         run: cargo test
+        env:
+          SQLX_OFFLINE: true
 
   web:
     name: Web tests (Node)
@@ -69,7 +71,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: stable
+          flutter-version: '3.x'
+          channel: stable
           cache: true
 
       - name: flutter pub get

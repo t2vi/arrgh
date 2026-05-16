@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE manga SET is_explicit = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "aebf6f4ca6b0a32a86939470d247faec55b0396c24d895b98a228f10307a983a"
+}

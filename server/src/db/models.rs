@@ -1,16 +1,5 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct User {
-    pub id: String,
-    pub username: String,
-    pub password_hash: String,
-    pub role: String,
-    pub allow_explicit: bool,
-    pub created_at: DateTime<Utc>,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Manga {
@@ -32,18 +21,7 @@ pub struct Manga {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct UserMangaSettings {
-    pub user_id: String,
-    pub manga_id: String,
-    pub reader_mode: Option<String>,
-}
 
-impl Manga {
-    pub fn new_id() -> String {
-        Uuid::new_v4().to_string()
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Chapter {

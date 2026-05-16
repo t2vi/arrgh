@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT\n                   m.id as \"id!\",\n                   m.title as \"title!\",\n                   m.description,\n                   m.cover_url,\n                   m.status as \"status!\",\n                   m.source as \"source!\",\n                   m.source_id,\n                   m.local_path,\n                   m.author,\n                   m.year,\n                   m.tags,\n                   m.sync_status as \"sync_status!\",\n                   m.content_type as \"content_type!\",\n                   m.auto_download,\n                   m.reader_mode,\n                   m.download_dir,\n                   m.created_at as \"created_at: _\",\n                   m.updated_at as \"updated_at: _\",\n                   (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id) as \"total_chapters!: i64\",\n                   (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id AND downloaded = 1) as \"downloaded_chapters!: i64\",\n                   (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id\n                    WHERE c.manga_id = m.id AND rp.completed = 1) as \"chapters_read!: i64\"\n               FROM manga m WHERE m.title LIKE ? ORDER BY m.title LIMIT ? OFFSET ?",
+  "query": "SELECT\n                   m.id as \"id!\",\n                   m.title as \"title!\",\n                   m.description,\n                   m.cover_url,\n                   m.status as \"status!\",\n                   m.source as \"source!\",\n                   m.source_id,\n                   m.local_path,\n                   m.author,\n                   m.year,\n                   m.tags,\n                   m.sync_status as \"sync_status!\",\n                   m.content_type as \"content_type!\",\n                   (m.is_explicit != 0) as \"is_explicit!: bool\",\n                   m.auto_download,\n                   (SELECT ums.reader_mode FROM user_manga_settings ums\n                    WHERE ums.manga_id = m.id AND ums.user_id = ?) as reader_mode,\n                   m.download_dir,\n                   m.created_at as \"created_at: _\",\n                   m.updated_at as \"updated_at: _\",\n                   (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id) as \"total_chapters!: i64\",\n                   (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id AND downloaded = 1) as \"downloaded_chapters!: i64\",\n                   (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id\n                    WHERE c.manga_id = m.id AND rp.completed = 1 AND rp.user_id = ?) as \"chapters_read!: i64\"\n               FROM manga m\n               WHERE (m.is_explicit = 0 OR ? = 1)\n               ORDER BY m.updated_at DESC LIMIT ? OFFSET ?",
   "describe": {
     "columns": [
       {
@@ -69,48 +69,53 @@
         "type_info": "Text"
       },
       {
-        "name": "auto_download",
+        "name": "is_explicit!: bool",
         "ordinal": 13,
         "type_info": "Integer"
       },
       {
-        "name": "reader_mode",
+        "name": "auto_download",
         "ordinal": 14,
-        "type_info": "Text"
+        "type_info": "Integer"
       },
       {
-        "name": "download_dir",
+        "name": "reader_mode",
         "ordinal": 15,
         "type_info": "Text"
       },
       {
-        "name": "created_at: _",
+        "name": "download_dir",
         "ordinal": 16,
         "type_info": "Text"
       },
       {
-        "name": "updated_at: _",
+        "name": "created_at: _",
         "ordinal": 17,
         "type_info": "Text"
       },
       {
-        "name": "total_chapters!: i64",
+        "name": "updated_at: _",
         "ordinal": 18,
-        "type_info": "Integer"
+        "type_info": "Text"
       },
       {
-        "name": "downloaded_chapters!: i64",
+        "name": "total_chapters!: i64",
         "ordinal": 19,
         "type_info": "Integer"
       },
       {
-        "name": "chapters_read!: i64",
+        "name": "downloaded_chapters!: i64",
         "ordinal": 20,
+        "type_info": "Integer"
+      },
+      {
+        "name": "chapters_read!: i64",
+        "ordinal": 21,
         "type_info": "Integer"
       }
     ],
     "parameters": {
-      "Right": 3
+      "Right": 5
     },
     "nullable": [
       true,
@@ -126,6 +131,7 @@
       true,
       false,
       false,
+      false,
       true,
       true,
       true,
@@ -136,5 +142,5 @@
       false
     ]
   },
-  "hash": "00413e87f0cfccc8c95ab156249048aa49869696824d47b805584c4cc8e7ef73"
+  "hash": "3c46d7feb06fc05d33695a9e04ca84df66af17dd49e4dee1bd65f04ab4489b4a"
 }

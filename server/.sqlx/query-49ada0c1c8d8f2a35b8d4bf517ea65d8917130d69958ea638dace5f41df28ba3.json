@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT COUNT(*) FROM manga",
+  "query": "SELECT COUNT(*) FROM users WHERE username = ?",
   "describe": {
     "columns": [
       {
@@ -10,11 +10,11 @@
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
       false
     ]
   },
-  "hash": "5a128eeaaf2c8329c59a1d23c44d067f402540784815d32ba82de52e44ad54db"
+  "hash": "49ada0c1c8d8f2a35b8d4bf517ea65d8917130d69958ea638dace5f41df28ba3"
 }

@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!\", local_path FROM chapters\n           WHERE manga_id = ? AND downloaded = 1 AND local_path IS NOT NULL",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "local_path",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "b1458ff7850a9ef8d64f59a054535f72458b95a833c09a23975e84a0e4825bf1"
+}

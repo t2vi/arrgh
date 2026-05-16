@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT\n               c.id          as \"chapter_id!\",\n               c.number      as \"chapter_number!: f64\",\n               c.title       as chapter_title,\n               c.created_at  as \"chapter_created_at!: DateTime<Utc>\",\n               c.downloaded  as \"downloaded!: bool\",\n               m.id          as \"manga_id!\",\n               m.title       as \"manga_title!\",\n               m.cover_url\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.is_new = 1\n           ORDER BY c.created_at DESC\n           LIMIT 30",
+  "query": "SELECT\n               c.id          as \"chapter_id!\",\n               c.number      as \"chapter_number!: f64\",\n               c.title       as chapter_title,\n               c.created_at  as \"chapter_created_at!: DateTime<Utc>\",\n               c.downloaded  as \"downloaded!: bool\",\n               m.id          as \"manga_id!\",\n               m.title       as \"manga_title!\",\n               m.cover_url\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.is_new = 1\n             AND (m.is_explicit = 0 OR ? = 1)\n           ORDER BY c.created_at DESC\n           LIMIT 30",
   "describe": {
     "columns": [
       {
@@ -45,7 +45,7 @@
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
       true,
@@ -58,5 +58,5 @@
       true
     ]
   },
-  "hash": "d106ff6fd0e259ad27486f6edb53757539d65c1d8721adb29a1e47dd3f544557"
+  "hash": "932832b19a53fe8c5f8583470c0fbbd317cb8e9fc5896207185cf0c5e1e5ba50"
 }

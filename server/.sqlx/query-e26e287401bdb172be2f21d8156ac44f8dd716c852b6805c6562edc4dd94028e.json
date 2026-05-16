@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT COUNT(*) FROM manga WHERE title LIKE ?",
+  "query": "SELECT COUNT(*) FROM manga WHERE title LIKE ? AND (is_explicit = 0 OR ? = 1)",
   "describe": {
     "columns": [
       {
@@ -10,11 +10,11 @@
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 2
     },
     "nullable": [
       false
     ]
   },
-  "hash": "5555cc2108fd73aa50a97f3ca2bea7745cf5ab616545bab3d745bd5ae1fd2026"
+  "hash": "e26e287401bdb172be2f21d8156ac44f8dd716c852b6805c6562edc4dd94028e"
 }

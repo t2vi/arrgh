@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT\n               id as \"id!\",\n               manga_id as \"manga_id!\",\n               title,\n               number,\n               volume,\n               source_id,\n               local_path,\n               page_count,\n               (downloaded != 0) as \"downloaded!: bool\",\n               created_at as \"created_at: _\"\n           FROM chapters WHERE id = ?",
+  "query": "SELECT\n               c.id as \"id!\",\n               c.manga_id as \"manga_id!\",\n               c.title,\n               c.number,\n               c.volume,\n               c.source_id,\n               c.local_path,\n               c.page_count,\n               (c.downloaded != 0) as \"downloaded!: bool\",\n               c.created_at as \"created_at: _\"\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)",
   "describe": {
     "columns": [
       {
@@ -55,7 +55,7 @@
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 2
     },
     "nullable": [
       true,
@@ -70,5 +70,5 @@
       false
     ]
   },
-  "hash": "6c7f42bacff566ba73ab6eb40d80067221f2e418bb7864c0f0a334d9ae54eb6e"
+  "hash": "6354f8121efbf7db0de72815abd3da651c741463a0c3ccdf26c78a46c7702f68"
 }
