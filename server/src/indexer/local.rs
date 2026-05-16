@@ -5,6 +5,83 @@ use std::path::Path;
 use tokio::fs;
 use uuid::Uuid;
 
+pub async fn verify_manga_downloads(db: &SqlitePool, manga_id: &str) -> Result<()> {
+    let rows = sqlx::query!(
+        r#"SELECT id as "id!", local_path FROM chapters
+           WHERE manga_id = ? AND downloaded = 1 AND local_path IS NOT NULL"#,
+        manga_id
+    )
+    .fetch_all(db)
+    .await?;
+
+    for row in rows {
+        if let Some(path) = row.local_path {
+            if !path_has_content(&path).await {
+                sqlx::query!(
+                    "UPDATE chapters SET downloaded = 0, local_path = NULL WHERE id = ?",
+                    row.id
+                )
+                .execute(db)
+                .await?;
+                tracing::warn!("reset stale download for chapter {}", row.id);
+            }
+        }
+    }
+    Ok(())
+}
+
+pub async fn verify_downloads(db: &SqlitePool) -> Result<()> {
+    let rows = sqlx::query!(
+        r#"SELECT id as "id!", local_path FROM chapters WHERE downloaded = 1 AND local_path IS NOT NULL"#
+    )
+    .fetch_all(db)
+    .await?;
+
+    let mut reset = 0u32;
+    for row in rows {
+        if let Some(path) = row.local_path {
+            if !path_has_content(&path).await {
+                sqlx::query!(
+                    "UPDATE chapters SET downloaded = 0, local_path = NULL WHERE id = ?",
+                    row.id
+                )
+                .execute(db)
+                .await?;
+                reset += 1;
+            }
+        }
+    }
+
+    if reset > 0 {
+        tracing::warn!("startup: reset {} chapters whose files were missing", reset);
+    }
+    Ok(())
+}
+
+async fn path_has_content(path: &str) -> bool {
+    let p = Path::new(path);
+    if !p.exists() {
+        return false;
+    }
+    let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+    if ext == "cbz" || ext == "zip" {
+        return true;
+    }
+    // directory: must contain at least one image file
+    if let Ok(mut dir) = fs::read_dir(path).await {
+        while let Ok(Some(entry)) = dir.next_entry().await {
+            let name = entry.file_name().to_string_lossy().to_lowercase();
+            if name.ends_with(".jpg") || name.ends_with(".jpeg")
+                || name.ends_with(".png") || name.ends_with(".webp")
+                || name.ends_with(".avif")
+            {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 use super::source::sanitize_title;
 
 pub async fn scan(db: &SqlitePool, manga_dir: &str) -> Result<()> {

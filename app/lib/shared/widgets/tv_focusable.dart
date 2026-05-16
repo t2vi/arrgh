@@ -8,6 +8,7 @@ class TvFocusable extends StatefulWidget {
   final VoidCallback? onSelect;
   final FocusNode? focusNode;
   final bool autofocus;
+  final bool showFocusDecoration;
 
   const TvFocusable({
     super.key,
@@ -15,6 +16,7 @@ class TvFocusable extends StatefulWidget {
     this.onSelect,
     this.focusNode,
     this.autofocus = false,
+    this.showFocusDecoration = true,
   });
 
   @override
@@ -59,22 +61,24 @@ class _TvFocusableState extends State<TvFocusable> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: _focused
-              ? [
-                  BoxShadow(
-                    color: kPrimary.withValues(alpha: 0.5),
-                    blurRadius: 16,
-                    spreadRadius: 2,
-                  )
-                ]
-              : null,
-          border: Border.all(
-            color: _focused ? kPrimary : Colors.transparent,
-            width: 2,
-          ),
-        ),
+        decoration: widget.showFocusDecoration
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: _focused
+                    ? [
+                        BoxShadow(
+                          color: kPrimary.withValues(alpha: 0.5),
+                          blurRadius: 16,
+                          spreadRadius: 2,
+                        )
+                      ]
+                    : null,
+                border: Border.all(
+                  color: _focused ? kPrimary : Colors.transparent,
+                  width: 2,
+                ),
+              )
+            : null,
         child: widget.child,
       ),
     );

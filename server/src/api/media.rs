@@ -63,14 +63,21 @@ async fn serve_page(
     };
 
     if chapter.downloaded != 0 {
-        let Some(path) = chapter.local_path else {
-            return Ok(StatusCode::NOT_FOUND.into_response());
+        let file_ok = match &chapter.local_path {
+            Some(path) => get_chapter_page(path, page as usize).await.ok(),
+            None => None,
         };
-        let data = match get_chapter_page(&path, page as usize).await {
-            Ok(d) => d,
-            Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
-        };
-        return Ok(([(header::CONTENT_TYPE, "image/jpeg")], data).into_response());
+        if let Some(data) = file_ok {
+            return Ok(([(header::CONTENT_TYPE, "image/jpeg")], data).into_response());
+        }
+        // Files missing — reset DB flag so UI reflects reality, then fall through to remote
+        tracing::warn!("chapter {} marked downloaded but files missing, resetting", chapter_id);
+        let _ = sqlx::query!(
+            "UPDATE chapters SET downloaded = 0, local_path = NULL WHERE id = ?",
+            chapter_id
+        )
+        .execute(&state.db)
+        .await;
     }
 
     let Some(source_id) = chapter.source_id else {

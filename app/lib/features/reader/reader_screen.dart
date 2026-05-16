@@ -438,7 +438,8 @@ class _PageViewState extends State<_PageView> {
             );
           },
           errorBuilder: (context, error, stackTrace) {
-            widget.onError?.call();
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => widget.onError?.call());
             return const SizedBox.shrink();
           },
         ),

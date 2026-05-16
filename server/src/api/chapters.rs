@@ -8,7 +8,7 @@ use axum::{
 use chrono::Utc;
 use uuid::Uuid;
 
-use crate::{db::Chapter, AppState};
+use crate::{db::Chapter, indexer::local::verify_manga_downloads, AppState};
 use super::ApiResult;
 
 pub fn router() -> Router<AppState> {
@@ -40,6 +40,15 @@ async fn list_chapters(
     )
     .fetch_all(&state.db)
     .await?;
+
+    // Background: reset any stale downloaded=1 entries whose files are gone
+    let db = state.db.clone();
+    let mid = manga_id.clone();
+    tokio::spawn(async move {
+        if let Err(e) = verify_manga_downloads(&db, &mid).await {
+            tracing::warn!("verify_manga_downloads error for {}: {}", mid, e);
+        }
+    });
 
     Ok(Json(chapters))
 }

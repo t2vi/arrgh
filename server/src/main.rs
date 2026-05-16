@@ -45,6 +45,8 @@ async fn main() -> Result<()> {
 
     sqlx::migrate!("./migrations").run(&pool).await?;
 
+    indexer::local::verify_downloads(&pool).await?;
+
     let jwt_secret = Arc::new(get_or_create_jwt_secret(&pool).await?);
 
     let sources = indexer::build_registry();

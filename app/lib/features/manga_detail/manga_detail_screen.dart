@@ -191,22 +191,30 @@ class _MangaDetailScreenState extends ConsumerState<MangaDetailScreen>
                 padding: const EdgeInsets.fromLTRB(32, 4, 32, 8),
                 child: Row(
                   children: [
-                    TvFocusable(
-                      autofocus: true,
-                      onSelect: () => _tabController.animateTo(0),
-                      child: ListenableBuilder(
-                        listenable: _tabController,
-                        builder: (context, child) =>
-                            _TVTabPill('Chapters', _tabController.index == 0),
+                    GestureDetector(
+                      onTap: () => _tabController.animateTo(0),
+                      child: TvFocusable(
+                        autofocus: true,
+                        showFocusDecoration: false,
+                        onSelect: () => _tabController.animateTo(0),
+                        child: ListenableBuilder(
+                          listenable: _tabController,
+                          builder: (context, child) =>
+                              _TVTabPill('Chapters', _tabController.index == 0),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    TvFocusable(
-                      onSelect: () => _tabController.animateTo(1),
-                      child: ListenableBuilder(
-                        listenable: _tabController,
-                        builder: (context, child) =>
-                            _TVTabPill('Info', _tabController.index == 1),
+                    GestureDetector(
+                      onTap: () => _tabController.animateTo(1),
+                      child: TvFocusable(
+                        showFocusDecoration: false,
+                        onSelect: () => _tabController.animateTo(1),
+                        child: ListenableBuilder(
+                          listenable: _tabController,
+                          builder: (context, child) =>
+                              _TVTabPill('Info', _tabController.index == 1),
+                        ),
                       ),
                     ),
                   ],
