@@ -114,7 +114,7 @@ export default function MangaDetail() {
                     <RefreshCw className={cn('w-4 h-4', (h.sync.isPending || isSyncing) && 'animate-spin')} />
                   </Button>
                 )}
-                <div className="relative" ref={h.removeMenuRef}>
+                <div className="relative" ref={h.removeMenuRef as React.RefObject<HTMLDivElement>}>
                   <Button
                     variant="outline"
                     size="icon"
