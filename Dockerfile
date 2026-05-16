@@ -1,5 +1,5 @@
 # ── Stage 1: Build the Rust API server ───────────────────────────────────────
-FROM rust:1.82-slim AS server-builder
+FROM rust:1-slim AS server-builder
 
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 
