@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id FROM chapters WHERE manga_id = ? AND number = ? AND downloaded = 0",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "2ef76c6df04ec078521e7146c81292c758d64c4ec68fc1fab4a392d57cadf34d"
+}

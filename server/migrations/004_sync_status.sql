@@ -1,0 +1,1 @@
+ALTER TABLE manga ADD COLUMN sync_status TEXT NOT NULL DEFAULT 'ready';

@@ -1,0 +1,146 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                   m.id as \"id!\",\n                   m.title as \"title!\",\n                   m.description,\n                   m.cover_url,\n                   m.status as \"status!\",\n                   m.source as \"source!\",\n                   m.source_id,\n                   m.local_path,\n                   m.author,\n                   m.year,\n                   m.tags,\n                   m.sync_status as \"sync_status!\",\n                   m.content_type as \"content_type!\",\n                   (m.is_explicit != 0) as \"is_explicit!: bool\",\n                   m.auto_download,\n                   (SELECT ums.reader_mode FROM user_manga_settings ums\n                    WHERE ums.manga_id = m.id AND ums.user_id = ?) as reader_mode,\n                   m.download_dir,\n                   m.created_at as \"created_at: _\",\n                   m.updated_at as \"updated_at: _\",\n                   (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id) as \"total_chapters!: i64\",\n                   (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id AND downloaded = 1) as \"downloaded_chapters!: i64\",\n                   (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id\n                    WHERE c.manga_id = m.id AND rp.completed = 1 AND rp.user_id = ?) as \"chapters_read!: i64\"\n               FROM manga m\n               WHERE EXISTS (SELECT 1 FROM user_manga um WHERE um.manga_id = m.id AND um.user_id = ?)\n                 AND (m.is_explicit = 0 OR ? = 1)\n               ORDER BY m.updated_at DESC LIMIT ? OFFSET ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "title!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "cover_url",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "status!",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "source!",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "source_id",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "local_path",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "author",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "year",
+        "ordinal": 9,
+        "type_info": "Integer"
+      },
+      {
+        "name": "tags",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "sync_status!",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "content_type!",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_explicit!: bool",
+        "ordinal": 13,
+        "type_info": "Integer"
+      },
+      {
+        "name": "auto_download",
+        "ordinal": 14,
+        "type_info": "Integer"
+      },
+      {
+        "name": "reader_mode",
+        "ordinal": 15,
+        "type_info": "Text"
+      },
+      {
+        "name": "download_dir",
+        "ordinal": 16,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: _",
+        "ordinal": 17,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at: _",
+        "ordinal": 18,
+        "type_info": "Text"
+      },
+      {
+        "name": "total_chapters!: i64",
+        "ordinal": 19,
+        "type_info": "Integer"
+      },
+      {
+        "name": "downloaded_chapters!: i64",
+        "ordinal": 20,
+        "type_info": "Integer"
+      },
+      {
+        "name": "chapters_read!: i64",
+        "ordinal": 21,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "72b301738d42b2b730036774b5d02850023cd2e5a1631cb8efbb2f8a2a3b9e64"
+}

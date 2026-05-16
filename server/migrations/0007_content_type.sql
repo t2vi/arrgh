@@ -1,0 +1,1 @@
+ALTER TABLE manga ADD COLUMN content_type TEXT NOT NULL DEFAULT 'manga';

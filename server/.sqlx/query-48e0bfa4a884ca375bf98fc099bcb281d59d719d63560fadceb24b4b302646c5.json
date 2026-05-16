@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT c.id, c.number, m.title as manga_title\n           FROM chapters c JOIN manga m ON c.manga_id = m.id\n           WHERE c.id = ? AND c.source_id IS NOT NULL AND c.downloaded = 0\n             AND (m.is_explicit = 0 OR ? = 1)",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "number",
+        "ordinal": 1,
+        "type_info": "Float"
+      },
+      {
+        "name": "manga_title",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "48e0bfa4a884ca375bf98fc099bcb281d59d719d63560fadceb24b4b302646c5"
+}

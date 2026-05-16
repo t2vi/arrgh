@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n               c.id as \"id!\",\n               c.manga_id as \"manga_id!\",\n               c.title,\n               c.number,\n               c.volume,\n               c.source_id,\n               c.local_path,\n               c.page_count,\n               (c.downloaded != 0) as \"downloaded!: bool\",\n               c.created_at as \"created_at: _\"\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "number",
+        "ordinal": 3,
+        "type_info": "Float"
+      },
+      {
+        "name": "volume",
+        "ordinal": 4,
+        "type_info": "Float"
+      },
+      {
+        "name": "source_id",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "local_path",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "page_count",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "downloaded!: bool",
+        "ordinal": 8,
+        "type_info": "Null"
+      },
+      {
+        "name": "created_at: _",
+        "ordinal": 9,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false,
+      null,
+      false
+    ]
+  },
+  "hash": "6354f8121efbf7db0de72815abd3da651c741463a0c3ccdf26c78a46c7702f68"
+}

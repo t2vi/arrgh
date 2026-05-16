@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT m.source as \"source!\", m.source_id FROM manga m\n           WHERE m.id = ?\n             AND EXISTS (SELECT 1 FROM user_manga um WHERE um.manga_id = m.id AND um.user_id = ?)",
+  "describe": {
+    "columns": [
+      {
+        "name": "source!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "source_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "784b9660787a6525076884528fff2e8160e551b91d3fb6dfc0d3ad233a15b930"
+}

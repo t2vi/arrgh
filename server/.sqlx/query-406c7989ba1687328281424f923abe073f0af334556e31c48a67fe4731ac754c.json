@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!\", source as \"source!\", source_id, auto_download\n           FROM manga\n           WHERE source != 'local' AND source_id IS NOT NULL AND sync_status = 'ready'",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "source!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "source_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "auto_download",
+        "ordinal": 3,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "406c7989ba1687328281424f923abe073f0af334556e31c48a67fe4731ac754c"
+}

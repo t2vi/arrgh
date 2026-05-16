@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE users SET allow_explicit = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "56209ff9a1a2dda1d5f9280e86d4398744766d1ba1c5c22bcc4b73c8de7466fe"
+}

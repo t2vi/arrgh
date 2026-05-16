@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM user_manga WHERE user_id = ? AND manga_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "90cc767a2449020d80b8a0080c4e064620cd324cb099e7b904624592b060ab76"
+}

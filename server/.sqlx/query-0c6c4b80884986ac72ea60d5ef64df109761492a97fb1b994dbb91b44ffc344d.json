@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n               id as \"id!\",\n               user_id as \"user_id!\",\n               chapter_id as \"chapter_id!\",\n               current_page,\n               (completed != 0) as \"completed!: bool\",\n               updated_at as \"updated_at: _\"\n           FROM read_progress WHERE chapter_id = ? AND user_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "user_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_id!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "current_page",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "completed!: bool",
+        "ordinal": 4,
+        "type_info": "Null"
+      },
+      {
+        "name": "updated_at: _",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      null,
+      false
+    ]
+  },
+  "hash": "0c6c4b80884986ac72ea60d5ef64df109761492a97fb1b994dbb91b44ffc344d"
+}

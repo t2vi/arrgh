@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE manga SET description = COALESCE(description, ?), cover_url = COALESCE(cover_url, ?) WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "1091bebfffe35abcd2b1be0329b600fc0e34be483e57f54fe3121b4f10fd7327"
+}
