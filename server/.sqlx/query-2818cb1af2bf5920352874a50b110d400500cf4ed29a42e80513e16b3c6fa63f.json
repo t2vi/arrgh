@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT rp.id as \"id!\",\n                  rp.chapter_id as \"chapter_id!\",\n                  rp.current_page,\n                  (rp.completed != 0) as \"completed!: bool\",\n                  rp.updated_at as \"updated_at: _\"\n           FROM read_progress rp\n           JOIN chapters c ON c.id = rp.chapter_id\n           WHERE c.manga_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "current_page",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "completed!: bool",
+        "ordinal": 3,
+        "type_info": "Null"
+      },
+      {
+        "name": "updated_at: _",
+        "ordinal": 4,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      null,
+      false
+    ]
+  },
+  "hash": "2818cb1af2bf5920352874a50b110d400500cf4ed29a42e80513e16b3c6fa63f"
+}

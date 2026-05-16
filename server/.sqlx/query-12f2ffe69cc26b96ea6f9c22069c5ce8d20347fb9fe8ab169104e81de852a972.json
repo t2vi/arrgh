@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO read_progress (id, chapter_id, current_page, completed, updated_at)\n           VALUES (?, ?, ?, ?, ?)\n           ON CONFLICT(chapter_id) DO UPDATE SET\n             current_page = excluded.current_page,\n             completed = excluded.completed,\n             updated_at = excluded.updated_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "12f2ffe69cc26b96ea6f9c22069c5ce8d20347fb9fe8ab169104e81de852a972"
+}

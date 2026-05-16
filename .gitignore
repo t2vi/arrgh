@@ -1,0 +1,35 @@
+# ── Rust / Server ────────────────────────────────────────────
+server/target/
+server/.env
+server/arrgh.db
+server/manga/_downloads/  # downloaded manga images
+server/static/         # any generated static assets
+
+# ── Web (React + Vite) ───────────────────────────────────────
+web/node_modules/
+web/dist/
+web/.env
+web/.env.local
+web/tsconfig.*.tsbuildinfo
+
+# ── Viewer (Flutter) ─────────────────────────────────────────
+viewer/.dart_tool/
+viewer/.flutter-plugins
+viewer/.flutter-plugins-dependencies
+viewer/build/
+viewer/.packages
+viewer/pubspec.lock
+
+# ── Claude Code ──────────────────────────────────────────────
+.agents/
+.claude/
+docs/
+CLAUDE.md
+skills-lock.json
+
+# ── General ──────────────────────────────────────────────────
+.DS_Store
+*.log
+*.db-shm
+*.db-wal
+*.cbz

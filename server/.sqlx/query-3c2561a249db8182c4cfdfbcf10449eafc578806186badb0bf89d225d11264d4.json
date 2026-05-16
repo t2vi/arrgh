@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT dq.id as \"id!\", dq.chapter_id as \"chapter_id!\",\n                  dq.manga_title as \"manga_title!\", dq.chapter_num as \"chapter_num!\",\n                  dq.status as \"status!\", dq.error,\n                  dq.created_at as \"created_at!\", dq.updated_at as \"updated_at!\"\n           FROM download_queue dq\n           JOIN chapters c ON c.id = dq.chapter_id\n           WHERE c.manga_id = ?\n           ORDER BY dq.chapter_num ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_title!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_num!",
+        "ordinal": 3,
+        "type_info": "Float"
+      },
+      {
+        "name": "status!",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "error",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!",
+        "ordinal": 7,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "3c2561a249db8182c4cfdfbcf10449eafc578806186badb0bf89d225d11264d4"
+}

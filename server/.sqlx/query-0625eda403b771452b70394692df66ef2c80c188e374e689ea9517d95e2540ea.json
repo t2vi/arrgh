@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT c.source_id, m.source as \"source!\", m.download_dir\n           FROM chapters c JOIN manga m ON c.manga_id = m.id\n           WHERE c.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "source_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "source!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "download_dir",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "0625eda403b771452b70394692df66ef2c80c188e374e689ea9517d95e2540ea"
+}

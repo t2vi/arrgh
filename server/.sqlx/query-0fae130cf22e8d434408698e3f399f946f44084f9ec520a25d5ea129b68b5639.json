@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM download_queue WHERE id = ? AND status IN ('pending', 'error', 'done', 'cancelled')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "0fae130cf22e8d434408698e3f399f946f44084f9ec520a25d5ea129b68b5639"
+}

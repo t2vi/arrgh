@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO download_queue (id, chapter_id, manga_title, chapter_num, status, created_at, updated_at)\n               VALUES (?, ?, ?, ?, 'pending', ?, ?)\n               ON CONFLICT(chapter_id) DO UPDATE SET\n                 status = 'pending', error = NULL, updated_at = excluded.updated_at\n               WHERE download_queue.status IN ('error', 'cancelled')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "c3d4f61735e810eb964cc84c81e11278478605511f3a3d46e1b070627bb6ea6e"
+}

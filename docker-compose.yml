@@ -1,0 +1,24 @@
+services:
+  server:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: sqlite:///data/arrgh.db
+      MANGA_DIR: /data/manga
+      BIND_ADDR: 0.0.0.0:3000
+      # INDEX_INTERVAL_HOURS: 6
+      # DOWNLOAD_WORKERS: 2
+      # RUST_LOG: arrgh_server=info
+    volumes:
+      - arrgh_data:/data
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+
+volumes:
+  arrgh_data:
