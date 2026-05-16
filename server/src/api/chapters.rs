@@ -8,7 +8,7 @@ use axum::{
 use chrono::Utc;
 use uuid::Uuid;
 
-use crate::{db::Chapter, indexer::local::verify_manga_downloads, AppState};
+use crate::{auth, db::Chapter, indexer::local::verify_manga_downloads, AppState};
 use super::ApiResult;
 
 pub fn router() -> Router<AppState> {
@@ -20,23 +20,29 @@ pub fn router() -> Router<AppState> {
 
 async fn list_chapters(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(manga_id): Path<String>,
 ) -> ApiResult<Json<Vec<Chapter>>> {
+    let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
+
     let chapters = sqlx::query_as!(
         Chapter,
         r#"SELECT
-               id as "id!",
-               manga_id as "manga_id!",
-               title,
-               number,
-               volume,
-               source_id,
-               local_path,
-               page_count,
-               (downloaded != 0) as "downloaded!: bool",
-               created_at as "created_at: _"
-           FROM chapters WHERE manga_id = ? ORDER BY number ASC"#,
-        manga_id
+               c.id as "id!",
+               c.manga_id as "manga_id!",
+               c.title,
+               c.number,
+               c.volume,
+               c.source_id,
+               c.local_path,
+               c.page_count,
+               (c.downloaded != 0) as "downloaded!: bool",
+               c.created_at as "created_at: _"
+           FROM chapters c
+           JOIN manga m ON c.manga_id = m.id
+           WHERE c.manga_id = ? AND (m.is_explicit = 0 OR ? = 1)
+           ORDER BY c.number ASC"#,
+        manga_id, allow_explicit
     )
     .fetch_all(&state.db)
     .await?;
@@ -55,13 +61,16 @@ async fn list_chapters(
 
 async fn queue_download(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(id): Path<String>,
 ) -> ApiResult<StatusCode> {
+    let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
     let row = sqlx::query!(
         r#"SELECT c.id, c.number, m.title as manga_title
            FROM chapters c JOIN manga m ON c.manga_id = m.id
-           WHERE c.id = ? AND c.source_id IS NOT NULL AND c.downloaded = 0"#,
-        id
+           WHERE c.id = ? AND c.source_id IS NOT NULL AND c.downloaded = 0
+             AND (m.is_explicit = 0 OR ? = 1)"#,
+        id, allow_explicit
     )
     .fetch_optional(&state.db)
     .await?;
@@ -91,23 +100,27 @@ async fn queue_download(
 
 async fn get_chapter(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(id): Path<String>,
 ) -> ApiResult<Response> {
+    let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
     let chapter = sqlx::query_as!(
         Chapter,
         r#"SELECT
-               id as "id!",
-               manga_id as "manga_id!",
-               title,
-               number,
-               volume,
-               source_id,
-               local_path,
-               page_count,
-               (downloaded != 0) as "downloaded!: bool",
-               created_at as "created_at: _"
-           FROM chapters WHERE id = ?"#,
-        id
+               c.id as "id!",
+               c.manga_id as "manga_id!",
+               c.title,
+               c.number,
+               c.volume,
+               c.source_id,
+               c.local_path,
+               c.page_count,
+               (c.downloaded != 0) as "downloaded!: bool",
+               c.created_at as "created_at: _"
+           FROM chapters c
+           JOIN manga m ON c.manga_id = m.id
+           WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)"#,
+        id, allow_explicit
     )
     .fetch_optional(&state.db)
     .await?;

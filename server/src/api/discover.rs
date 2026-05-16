@@ -215,14 +215,15 @@ async fn add_manga(
         eid
     } else {
         let id = Uuid::new_v4().to_string();
+        let is_explicit: i64 = if src.default_explicit() { 1 } else { 0 };
         sqlx::query!(
             r#"INSERT INTO manga
                (id, title, description, cover_url, status, source, source_id,
-                author, year, tags, sync_status, content_type, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?)"#,
+                author, year, tags, sync_status, content_type, is_explicit, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
             id, body.title, body.description, body.cover_url, body.status,
             source, body.source_id, body.author, body.year, body.tags,
-            body.content_type, now, now
+            body.content_type, is_explicit, now, now
         )
         .execute(&state.db)
         .await?;
@@ -295,6 +296,7 @@ pub async fn fetch_manga(db: &sqlx::SqlitePool, id: &str) -> Result<Manga, sqlx:
                tags,
                sync_status as "sync_status!",
                content_type as "content_type!",
+               (is_explicit != 0) as "is_explicit!: bool",
                created_at as "created_at: _",
                updated_at as "updated_at: _"
            FROM manga WHERE id = ?"#,

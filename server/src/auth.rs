@@ -9,12 +9,20 @@ const TOKEN_DAYS: i64 = 30;
 pub struct Claims {
     pub sub: String,
     pub username: String,
+    pub role: String,
+    pub allow_explicit: bool,
     pub exp: usize,
 }
 
-pub fn create_token(user_id: &str, username: &str, secret: &str) -> Result<String> {
+pub fn create_token(user_id: &str, username: &str, role: &str, allow_explicit: bool, secret: &str) -> Result<String> {
     let exp = (Utc::now() + Duration::days(TOKEN_DAYS)).timestamp() as usize;
-    let claims = Claims { sub: user_id.to_string(), username: username.to_string(), exp };
+    let claims = Claims {
+        sub: user_id.to_string(),
+        username: username.to_string(),
+        role: role.to_string(),
+        allow_explicit,
+        exp,
+    };
     Ok(encode(
         &Header::default(),
         &claims,

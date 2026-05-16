@@ -3,6 +3,16 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct User {
+    pub id: String,
+    pub username: String,
+    pub password_hash: String,
+    pub role: String,
+    pub allow_explicit: bool,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Manga {
     pub id: String,
     pub title: String,
@@ -17,8 +27,16 @@ pub struct Manga {
     pub tags: Option<String>,
     pub sync_status: String,
     pub content_type: String,
+    pub is_explicit: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct UserMangaSettings {
+    pub user_id: String,
+    pub manga_id: String,
+    pub reader_mode: Option<String>,
 }
 
 impl Manga {
@@ -44,6 +62,7 @@ pub struct Chapter {
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct ReadProgress {
     pub id: String,
+    pub user_id: String,
     pub chapter_id: String,
     pub current_page: i64,
     pub completed: bool,

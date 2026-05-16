@@ -8,7 +8,7 @@ use axum::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::AppState;
+use crate::{auth, AppState};
 use super::ApiResult;
 
 fn ser_opt_bool<S>(v: &Option<i64>, s: S) -> Result<S::Ok, S::Error>
@@ -43,6 +43,7 @@ pub struct MangaListItem {
     pub tags: Option<String>,
     pub sync_status: String,
     pub content_type: String,
+    pub is_explicit: bool,
     #[serde(serialize_with = "ser_opt_bool")]
     pub auto_download: Option<i64>,
     pub reader_mode: Option<String>,
@@ -84,12 +85,15 @@ pub fn router() -> Router<AppState> {
 
 async fn list_manga(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Query(query): Query<ListQuery>,
 ) -> ApiResult<Json<PaginatedManga>> {
     let page = query.page.unwrap_or(1).max(1);
     let limit = query.limit.unwrap_or(20).min(100);
     let offset = ((page - 1) * limit) as i64;
     let limit_i64 = limit as i64;
+    let user_id = &claims.sub;
+    let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
 
     let (items, total) = if let Some(search) = &query.search {
         let pattern = format!("%{}%", search);
@@ -109,24 +113,29 @@ async fn list_manga(
                    m.tags,
                    m.sync_status as "sync_status!",
                    m.content_type as "content_type!",
+                   (m.is_explicit != 0) as "is_explicit!: bool",
                    m.auto_download,
-                   m.reader_mode,
+                   (SELECT ums.reader_mode FROM user_manga_settings ums
+                    WHERE ums.manga_id = m.id AND ums.user_id = ?) as reader_mode,
                    m.download_dir,
                    m.created_at as "created_at: _",
                    m.updated_at as "updated_at: _",
                    (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id) as "total_chapters!: i64",
                    (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id AND downloaded = 1) as "downloaded_chapters!: i64",
                    (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id
-                    WHERE c.manga_id = m.id AND rp.completed = 1) as "chapters_read!: i64"
-               FROM manga m WHERE m.title LIKE ? ORDER BY m.title LIMIT ? OFFSET ?"#,
-            pattern, limit_i64, offset
+                    WHERE c.manga_id = m.id AND rp.completed = 1 AND rp.user_id = ?) as "chapters_read!: i64"
+               FROM manga m
+               WHERE m.title LIKE ?
+                 AND (m.is_explicit = 0 OR ? = 1)
+               ORDER BY m.title LIMIT ? OFFSET ?"#,
+            user_id, user_id, pattern, allow_explicit, limit_i64, offset
         )
         .fetch_all(&state.db)
         .await?;
 
         let total: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM manga WHERE title LIKE ?",
-            pattern
+            "SELECT COUNT(*) FROM manga WHERE title LIKE ? AND (is_explicit = 0 OR ? = 1)",
+            pattern, allow_explicit
         )
         .fetch_one(&state.db)
         .await?;
@@ -149,24 +158,31 @@ async fn list_manga(
                    m.tags,
                    m.sync_status as "sync_status!",
                    m.content_type as "content_type!",
+                   (m.is_explicit != 0) as "is_explicit!: bool",
                    m.auto_download,
-                   m.reader_mode,
+                   (SELECT ums.reader_mode FROM user_manga_settings ums
+                    WHERE ums.manga_id = m.id AND ums.user_id = ?) as reader_mode,
                    m.download_dir,
                    m.created_at as "created_at: _",
                    m.updated_at as "updated_at: _",
                    (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id) as "total_chapters!: i64",
                    (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id AND downloaded = 1) as "downloaded_chapters!: i64",
                    (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id
-                    WHERE c.manga_id = m.id AND rp.completed = 1) as "chapters_read!: i64"
-               FROM manga m ORDER BY m.updated_at DESC LIMIT ? OFFSET ?"#,
-            limit_i64, offset
+                    WHERE c.manga_id = m.id AND rp.completed = 1 AND rp.user_id = ?) as "chapters_read!: i64"
+               FROM manga m
+               WHERE (m.is_explicit = 0 OR ? = 1)
+               ORDER BY m.updated_at DESC LIMIT ? OFFSET ?"#,
+            user_id, user_id, allow_explicit, limit_i64, offset
         )
         .fetch_all(&state.db)
         .await?;
 
-        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM manga")
-            .fetch_one(&state.db)
-            .await?;
+        let total: i64 = sqlx::query_scalar!(
+            "SELECT COUNT(*) FROM manga WHERE (is_explicit = 0 OR ? = 1)",
+            allow_explicit
+        )
+        .fetch_one(&state.db)
+        .await?;
 
         (items, total)
     };
@@ -176,8 +192,12 @@ async fn list_manga(
 
 async fn get_manga(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(id): Path<String>,
 ) -> ApiResult<Response> {
+    let user_id = &claims.sub;
+    let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
+
     let manga = sqlx::query_as!(
         MangaListItem,
         r#"SELECT
@@ -194,17 +214,20 @@ async fn get_manga(
                m.tags,
                m.sync_status as "sync_status!",
                m.content_type as "content_type!",
+               (m.is_explicit != 0) as "is_explicit!: bool",
                m.auto_download,
-               m.reader_mode,
+               (SELECT ums.reader_mode FROM user_manga_settings ums
+                WHERE ums.manga_id = m.id AND ums.user_id = ?) as reader_mode,
                m.download_dir,
                m.created_at as "created_at: _",
                m.updated_at as "updated_at: _",
                (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id) as "total_chapters!: i64",
                (SELECT COUNT(*) FROM chapters WHERE manga_id = m.id AND downloaded = 1) as "downloaded_chapters!: i64",
                (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id
-                WHERE c.manga_id = m.id AND rp.completed = 1) as "chapters_read!: i64"
-           FROM manga m WHERE m.id = ?"#,
-        id
+                WHERE c.manga_id = m.id AND rp.completed = 1 AND rp.user_id = ?) as "chapters_read!: i64"
+           FROM manga m
+           WHERE m.id = ? AND (m.is_explicit = 0 OR ? = 1)"#,
+        user_id, user_id, id, allow_explicit
     )
     .fetch_optional(&state.db)
     .await?;
@@ -226,7 +249,6 @@ async fn remove_manga(
     Query(q): Query<RemoveQuery>,
 ) -> ApiResult<StatusCode> {
     if q.delete_files.unwrap_or(false) {
-        // Collect local files before deleting DB rows
         let paths = sqlx::query_scalar!(
             "SELECT local_path FROM chapters WHERE manga_id = ? AND local_path IS NOT NULL",
             id
@@ -267,8 +289,10 @@ async fn remove_manga(
 
 async fn new_releases(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
 ) -> ApiResult<Json<Vec<NewReleaseItem>>> {
-    // Chapters inserted more than 1 hour after their manga was added = not from initial sync
+    let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
+
     let items = sqlx::query_as!(
         NewReleaseItem,
         r#"SELECT
@@ -283,8 +307,10 @@ async fn new_releases(
            FROM chapters c
            JOIN manga m ON c.manga_id = m.id
            WHERE c.is_new = 1
+             AND (m.is_explicit = 0 OR ? = 1)
            ORDER BY c.created_at DESC
-           LIMIT 30"#
+           LIMIT 30"#,
+        allow_explicit
     )
     .fetch_all(&state.db)
     .await?;
@@ -300,10 +326,13 @@ struct PatchMangaBody {
     reader_mode: Option<Option<String>>,
     #[serde(default)]
     download_dir: Option<Option<String>>,
+    #[serde(default)]
+    is_explicit: Option<bool>,
 }
 
 async fn patch_manga(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(id): Path<String>,
     Json(body): Json<PatchMangaBody>,
 ) -> ApiResult<StatusCode> {
@@ -319,12 +348,27 @@ async fn patch_manga(
                 return Ok(StatusCode::UNPROCESSABLE_ENTITY);
             }
         }
-        sqlx::query!("UPDATE manga SET reader_mode = ? WHERE id = ?", rm, id)
-            .execute(&state.db)
-            .await?;
+        let user_id = &claims.sub;
+        sqlx::query!(
+            r#"INSERT INTO user_manga_settings (user_id, manga_id, reader_mode)
+               VALUES (?, ?, ?)
+               ON CONFLICT(user_id, manga_id) DO UPDATE SET reader_mode = excluded.reader_mode"#,
+            user_id, id, rm
+        )
+        .execute(&state.db)
+        .await?;
     }
     if let Some(dd) = body.download_dir {
         sqlx::query!("UPDATE manga SET download_dir = ? WHERE id = ?", dd, id)
+            .execute(&state.db)
+            .await?;
+    }
+    if let Some(explicit) = body.is_explicit {
+        if claims.role != "admin" {
+            return Ok(StatusCode::FORBIDDEN);
+        }
+        let val: i64 = if explicit { 1 } else { 0 };
+        sqlx::query!("UPDATE manga SET is_explicit = ? WHERE id = ?", val, id)
             .execute(&state.db)
             .await?;
     }

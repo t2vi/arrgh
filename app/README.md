@@ -1,17 +1,49 @@
-# arrgh
+# arrgh — app
 
-A new Flutter project.
+Flutter app for Android phones, tablets, and Firestick (TV D-pad navigation).
 
-## Getting Started
+## Dev setup
 
-This project is a starting point for a Flutter application.
+```bash
+cd app
+flutter pub get
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+Requires the server running. By default the app points to `http://10.0.2.2:3000` (Android emulator localhost). Change the server URL from the settings screen on first launch.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Build (Android APK)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter build apk --release
+# APK at build/app/outputs/flutter-apk/app-release.apk
+```
+
+Sideload to Firestick via `adb install app-release.apk`.
+
+## Tests
+
+```bash
+flutter test
+```
+
+## Platform notes
+
+- **Phone / tablet**: touch navigation, standard layouts
+- **TV / Firestick**: D-pad navigation via `TvFocusable`, layouts switch at width ≥ 1100px
+- Width ≥ 600px = tablet layout, ≥ 1100px = TV layout
+
+## Project structure
+
+```
+lib/
+├── core/
+│   ├── api/       # API client + service
+│   ├── models/    # Shared data models
+│   ├── storage/   # Local chapter cache
+│   └── theme/     # Design tokens
+├── features/      # Screens (library, discover, reader, manga detail…)
+└── shared/
+    ├── utils/     # Platform detection, helpers
+    └── widgets/   # Shared widgets (TvFocusable, MangaCard…)
+```

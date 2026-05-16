@@ -47,6 +47,10 @@ pub trait Source: Send + Sync {
         let _ = source_id;
         Err(anyhow::anyhow!("fetch_meta not supported for source: {}", self.id()))
     }
+
+    fn default_explicit(&self) -> bool {
+        false
+    }
 }
 
 pub fn sanitize_title(s: &str) -> String {
