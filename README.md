@@ -135,7 +135,7 @@ No CLA, no process overhead. Just open a PR.
 - [ ] Scanlation group preference per manga
 
 **Reader**
-- [ ] Light novel reader (text-based, EPUB/TXT support)
+- [x] Light novel reader (text-based, MD support)
 - [ ] Keyboard and remote shortcuts in web reader
 - [ ] Reading statistics (time spent, chapters per week)
 
