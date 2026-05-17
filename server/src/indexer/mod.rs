@@ -71,7 +71,8 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
     let mangas = sqlx::query!(
         r#"SELECT id as "id!", source as "source!", source_id, auto_download
            FROM manga
-           WHERE source != 'local' AND source_id IS NOT NULL AND sync_status = 'ready'"#
+           WHERE source != 'local' AND source_id IS NOT NULL AND sync_status = 'ready'
+             AND EXISTS (SELECT 1 FROM user_manga WHERE manga_id = manga.id)"#
     )
     .fetch_all(&state.db)
     .await?;

@@ -286,7 +286,9 @@ pub async fn sync_chapters(db: &SqlitePool, manga_id: &str, source_id: &str) -> 
         }
     }
 
-    tracing::info!("mangapill: synced {} chapters for manga {} ({} new)", count, manga_id, new_count);
+    if new_count > 0 {
+        tracing::info!("mangapill: {} new chapters for manga {} ({} total)", new_count, manga_id, count);
+    }
     Ok(count)
 }
 

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id as \"id!\", source as \"source!\", source_id, auto_download\n           FROM manga\n           WHERE source != 'local' AND source_id IS NOT NULL AND sync_status = 'ready'",
+  "query": "SELECT id as \"id!\", source as \"source!\", source_id, auto_download\n           FROM manga\n           WHERE source != 'local' AND source_id IS NOT NULL AND sync_status = 'ready'\n             AND EXISTS (SELECT 1 FROM user_manga WHERE manga_id = manga.id)",
   "describe": {
     "columns": [
       {
@@ -34,5 +34,5 @@
       true
     ]
   },
-  "hash": "406c7989ba1687328281424f923abe073f0af334556e31c48a67fe4731ac754c"
+  "hash": "1dc0e4515929c270d761604dcc8fd2c9bcfd7864e4ad9cb47f54af7e36850247"
 }
