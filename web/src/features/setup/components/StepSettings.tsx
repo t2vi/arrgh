@@ -14,7 +14,7 @@ const DEFAULTS: AppSettings = {
   index_interval_hours: 6,
   auto_download: false,
   reader_mode: 'paged',
-  manga_dir: './manga',
+  download_dir: './downloads',
 }
 
 export function StepSettings({ onDone }: { onDone: () => void }) {
@@ -22,7 +22,7 @@ export function StepSettings({ onDone }: { onDone: () => void }) {
   const [hours, setHours] = useState(DEFAULTS.index_interval_hours)
   const [autoDownload, setAutoDownload] = useState(DEFAULTS.auto_download)
   const [readerMode, setReaderMode] = useState<AppSettings['reader_mode']>(DEFAULTS.reader_mode)
-  const [mangaDir, setMangaDir] = useState(DEFAULTS.manga_dir)
+  const [downloadDir, setMangaDir] = useState(DEFAULTS.download_dir)
   const [loading, setLoading] = useState(false)
 
   async function save() {
@@ -33,7 +33,7 @@ export function StepSettings({ onDone }: { onDone: () => void }) {
         index_interval_hours: hours,
         auto_download: autoDownload,
         reader_mode: readerMode,
-        manga_dir: mangaDir,
+        download_dir: downloadDir,
       })
     } finally {
       setLoading(false)
@@ -47,9 +47,9 @@ export function StepSettings({ onDone }: { onDone: () => void }) {
         <p className="text-sm font-medium">Library path</p>
         <p className="text-xs text-muted-foreground">Where manga files are stored on the server.</p>
         <Input
-          value={mangaDir}
+          value={downloadDir}
           onChange={(e) => setMangaDir(e.target.value)}
-          placeholder="./manga"
+          placeholder="./downloads"
           className="font-mono text-xs"
         />
       </div>

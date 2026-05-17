@@ -8,19 +8,21 @@ services:
       - "8080:8080"
     environment:
       DATABASE_URL: sqlite:///data/arrgh.db
-      MANGA_DIR: /data/manga
+      DOWNLOAD_DIR: /data/downloads
       # JWT_SECRET: change-me-in-production
       # INDEX_INTERVAL_HOURS: 6
       # RUST_LOG: arrgh_server=info
       # Comma-separated list of plugin URLs to auto-register on first startup.
       # Add new plugins here; they persist in the DB after first run.
-      PLUGIN_URLS: "http://mangadex:4000,http://toonily:4001,http://comick:4002"
+      PLUGIN_URLS: "http://mangadex:4000,http://toonily:4001,http://comick:4002,http://royalroad:4003,http://novelfull:4004"
     volumes:
       - arrgh_data:/data
     depends_on:
       - mangadex
       - toonily
       - comick
+      - royalroad
+      - novelfull
 
   mangadex:
     build: ./plugins/mangadex
@@ -54,6 +56,25 @@ services:
     depends_on:
       - flaresolverr
     # To expose locally for debugging: ports: ["4002:4002"]
+
+  royalroad:
+    build: ./plugins/royalroad
+    restart: unless-stopped
+    environment:
+      PORT: "4003"
+      # API_KEY: set-to-require-auth-from-arrgh
+    # To expose locally for debugging: ports: ["4003:4003"]
+
+  novelfull:
+    build: ./plugins/novelfull
+    restart: unless-stopped
+    environment:
+      PORT: "4004"
+      FLARESOLVERR_URL: "http://flaresolverr:8191"
+      # API_KEY: set-to-require-auth-from-arrgh
+    depends_on:
+      - flaresolverr
+    # To expose locally for debugging: ports: ["4004:4004"]
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest

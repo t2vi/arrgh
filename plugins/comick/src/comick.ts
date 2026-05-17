@@ -1,4 +1,4 @@
-const BASE = 'https://api.comick.dev'
+const BASE = 'https://api.comick.fun'
 const FLARESOLVERR = () => process.env.FLARESOLVERR_URL ?? 'http://flaresolverr:8191'
 
 // ── FlareSolverr client ───────────────────────────────────────────────────────

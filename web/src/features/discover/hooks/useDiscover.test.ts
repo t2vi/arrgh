@@ -3,6 +3,13 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import React from 'react'
 
+const mockNavigate = vi.fn()
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('react-router-dom')>()
+  return { ...mod, useNavigate: () => mockNavigate }
+})
+
 vi.mock('@/api', () => ({
   api: {
     listSources: vi.fn(),
@@ -25,6 +32,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockNavigate.mockReset()
   vi.mocked(api.listSources).mockResolvedValue(mockSources as never)
   vi.mocked(api.searchManga).mockResolvedValue([])
 })
@@ -66,6 +74,21 @@ describe('useDiscover', () => {
     const { result: result2 } = renderHook(() => useDiscover(), { wrapper })
     await waitFor(() => expect(result2.current.availableContentTypes.has('manhwa')).toBe(false))
     expect(result2.current.contentType).toBeUndefined()
+  })
+
+  it('navigates to library after handleAdd succeeds', async () => {
+    const mockManga = { id: 'manga-1', title: 'Test', source: 'src', source_id: 'sid' }
+    vi.mocked(api.addManga).mockResolvedValue(mockManga as never)
+    const { result } = renderHook(() => useDiscover(), { wrapper })
+    await waitFor(() => expect(result.current.availableContentTypes.size).toBeGreaterThan(0))
+    await act(async () => {
+      await result.current.handleAdd({
+        id: 'sid', title: 'Test', source: 'src', source_id: 'sid',
+        description: null, cover_url: null, status: 'ongoing',
+        author: null, year: null, tags: null, content_type: 'manga', alternatives: [],
+      })
+    })
+    expect(mockNavigate).toHaveBeenCalledWith('/library')
   })
 
   it('sets searchError on 502', async () => {

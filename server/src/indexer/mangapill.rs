@@ -170,6 +170,7 @@ fn parse_homepage_trending(html: &str) -> Result<Vec<MangaResult>> {
             author: None,
             year,
             tags: None,
+            content_type: Some("manga".to_string()),
         });
 
         if results.len() >= 20 {
@@ -383,6 +384,7 @@ fn parse_search(html: &str) -> Result<Vec<MangaResult>> {
             author: None,
             year,
             tags: if tags.is_empty() { None } else { Some(tags.join(", ")) },
+            content_type: Some("manga".to_string()),
         });
     }
 

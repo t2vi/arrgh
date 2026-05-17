@@ -6,6 +6,7 @@ use axum::{
     Router,
 };
 use serde::Deserialize;
+use std::sync::Arc;
 use tokio::fs;
 
 use crate::{media::{get_chapter_page, strip_jpeg_icc}, AppState};
@@ -65,6 +66,16 @@ async fn proxy_image(
     Ok(([(header::CONTENT_TYPE, ct)], bytes).into_response())
 }
 
+fn image_content_type(data: &[u8]) -> Option<&'static str> {
+    if data.len() < 4 { return None; }
+    if data[0] == 0xFF && data[1] == 0xD8 { return Some("image/jpeg"); }
+    if data.starts_with(b"\x89PNG") { return Some("image/png"); }
+    if data.len() >= 12 && data.starts_with(b"RIFF") && &data[8..12] == b"WEBP" { return Some("image/webp"); }
+    if data.starts_with(b"GIF8") { return Some("image/gif"); }
+    if data.len() >= 8 && &data[4..8] == b"ftyp" { return Some("image/avif"); }
+    None
+}
+
 async fn serve_page(
     State(state): State<AppState>,
     Path((chapter_id, page)): Path<(String, u32)>,
@@ -88,10 +99,15 @@ async fn serve_page(
             None => None,
         };
         if let Some(data) = file_ok {
-            return Ok(([(header::CONTENT_TYPE, "image/jpeg")], data).into_response());
+            if let Some(ct) = image_content_type(&data) {
+                let data = strip_jpeg_icc(data);
+                return Ok(([(header::CONTENT_TYPE, ct)], data).into_response());
+            }
+            // Non-image bytes (e.g. CF challenge HTML stored in old download) — reset and stream
+            tracing::warn!("chapter {} page {} has corrupt data, resetting downloaded flag", chapter_id, page);
+        } else {
+            tracing::warn!("chapter {} marked downloaded but files missing, resetting", chapter_id);
         }
-        // Files missing — reset DB flag so UI reflects reality, then fall through to remote
-        tracing::warn!("chapter {} marked downloaded but files missing, resetting", chapter_id);
         let _ = sqlx::query!(
             "UPDATE chapters SET downloaded = 0, local_path = NULL WHERE id = ?",
             chapter_id
@@ -107,11 +123,40 @@ async fn serve_page(
     let Some(src) = src else {
         return Ok(StatusCode::BAD_GATEWAY.into_response());
     };
-    let pages = match src.get_page_urls(&source_id).await {
-        Ok(p) => p,
-        Err(_) => return Ok(StatusCode::BAD_GATEWAY.into_response()),
+
+    // Cache page URLs so 20 concurrent scroll requests don't each trigger a FlareSolverr call
+    let cache_key = format!("{}/{}", chapter.source, source_id);
+    let cached = {
+        let cache = state.page_cache.lock().await;
+        cache.get(&cache_key).and_then(|(ts, urls)| {
+            if ts.elapsed() < std::time::Duration::from_secs(300) {
+                Some(Arc::clone(urls))
+            } else {
+                None
+            }
+        })
     };
-    let Some(page_url) = pages.into_iter().nth(page as usize) else {
+
+    let pages = if let Some(cached) = cached {
+        cached
+    } else {
+        let urls = match src.get_page_urls(&source_id).await {
+            Ok(p) => p,
+            Err(e) => {
+                tracing::debug!("get_page_urls failed for {}: {}", source_id, e);
+                return Ok(StatusCode::BAD_GATEWAY.into_response());
+            }
+        };
+        let arc = Arc::new(urls);
+        let mut cache = state.page_cache.lock().await;
+        if cache.len() > 200 {
+            cache.retain(|_, (ts, _)| ts.elapsed() < std::time::Duration::from_secs(300));
+        }
+        cache.insert(cache_key, (std::time::Instant::now(), Arc::clone(&arc)));
+        arc
+    };
+
+    let Some(page_url) = pages.get(page as usize) else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
 

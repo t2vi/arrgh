@@ -6,6 +6,7 @@ use axum::{
     Router,
 };
 use chrono::Utc;
+use serde_json::json;
 use uuid::Uuid;
 
 use crate::{auth, db::Chapter, indexer::local::verify_manga_downloads, AppState};
@@ -15,6 +16,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/chapters/manga/{manga_id}", get(list_chapters))
         .route("/chapters/{id}", get(get_chapter))
+        .route("/chapters/{id}/text", get(get_chapter_text))
         .route("/chapters/{id}/download", post(queue_download))
 }
 
@@ -37,6 +39,7 @@ async fn list_chapters(
                c.local_path,
                c.page_count,
                (c.downloaded != 0) as "downloaded!: bool",
+               c.chapter_format as "chapter_format!",
                c.created_at as "created_at: _"
            FROM chapters c
            JOIN manga m ON c.manga_id = m.id
@@ -116,6 +119,7 @@ async fn get_chapter(
                c.local_path,
                c.page_count,
                (c.downloaded != 0) as "downloaded!: bool",
+               c.chapter_format as "chapter_format!",
                c.created_at as "created_at: _"
            FROM chapters c
            JOIN manga m ON c.manga_id = m.id
@@ -129,4 +133,39 @@ async fn get_chapter(
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
     Ok(Json(chapter).into_response())
+}
+
+async fn get_chapter_text(
+    State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
+    Path(id): Path<String>,
+) -> ApiResult<Response> {
+    let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
+    let row = sqlx::query!(
+        r#"SELECT c.local_path, c.downloaded, c.chapter_format as "chapter_format!"
+           FROM chapters c JOIN manga m ON c.manga_id = m.id
+           WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)"#,
+        id, allow_explicit
+    )
+    .fetch_optional(&state.db)
+    .await?;
+
+    let Some(row) = row else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    if row.chapter_format != "text" {
+        return Ok(StatusCode::BAD_REQUEST.into_response());
+    }
+    if row.downloaded == 0 {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let path = match row.local_path {
+        Some(p) => p,
+        None => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let content = match tokio::fs::read_to_string(&path).await {
+        Ok(c) => c,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    Ok(Json(json!({ "content": content })).into_response())
 }

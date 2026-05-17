@@ -77,7 +77,7 @@ export function useDiscover(): DiscoverHandle {
         if (alt) next.set(key, manga.id)
         return next
       })
-      navigate(ROUTES.manga(manga.id))
+      navigate(ROUTES.library)
     } catch (err) {
       setAddError(err instanceof Error ? err.message : 'Failed to add manga')
     } finally {

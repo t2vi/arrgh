@@ -63,8 +63,8 @@ pub fn start_scheduler(state: AppState) {
 
 /// Full library sync: local file scan + remote chapter sync for all manga.
 pub async fn sync_library(state: &AppState) -> Result<()> {
-    local::scan(&state.db, &state.config.manga_dir).await?;
-    local::scan_downloads(&state.db, &state.config.manga_dir).await?;
+    local::scan(&state.db, &state.config.download_dir).await?;
+    local::scan_downloads(&state.db, &state.config.download_dir).await?;
 
     let global_auto_dl = read_setting_bool(&state.db, "auto_download").await;
 

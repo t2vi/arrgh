@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT\n               c.id as \"id!\",\n               c.manga_id as \"manga_id!\",\n               c.title,\n               c.number,\n               c.volume,\n               c.source_id,\n               c.local_path,\n               c.page_count,\n               (c.downloaded != 0) as \"downloaded!: bool\",\n               c.created_at as \"created_at: _\"\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.manga_id = ? AND (m.is_explicit = 0 OR ? = 1)\n           ORDER BY c.number ASC",
+  "query": "SELECT\n               c.id as \"id!\",\n               c.manga_id as \"manga_id!\",\n               c.title,\n               c.number,\n               c.volume,\n               c.source_id,\n               c.local_path,\n               c.page_count,\n               (c.downloaded != 0) as \"downloaded!: bool\",\n               c.chapter_format as \"chapter_format!\",\n               c.created_at as \"created_at: _\"\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)",
   "describe": {
     "columns": [
       {
@@ -46,11 +46,16 @@
       {
         "name": "downloaded!: bool",
         "ordinal": 8,
-        "type_info": "Integer"
+        "type_info": "Null"
+      },
+      {
+        "name": "chapter_format!",
+        "ordinal": 9,
+        "type_info": "Text"
       },
       {
         "name": "created_at: _",
-        "ordinal": 9,
+        "ordinal": 10,
         "type_info": "Text"
       }
     ],
@@ -66,9 +71,10 @@
       true,
       true,
       false,
+      null,
       false,
       false
     ]
   },
-  "hash": "f442ea31c6dad9bb6be98ee1d301d089e7da0036650dc4835036d9a86dbb11ff"
+  "hash": "f5c175a9588c4b4b58d7aaeb0f38fee31ee588386ef015961e50918ca33cf0d2"
 }

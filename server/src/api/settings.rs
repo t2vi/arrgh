@@ -10,7 +10,7 @@ pub struct AppSettings {
     pub index_interval_hours: i64,
     pub auto_download: bool,
     pub reader_mode: String,
-    pub manga_dir: String,
+    pub download_dir: String,
 }
 
 #[derive(Deserialize)]
@@ -19,14 +19,14 @@ pub struct SaveBody {
     pub index_interval_hours: Option<i64>,
     pub auto_download: Option<bool>,
     pub reader_mode: Option<String>,
-    pub manga_dir: Option<String>,
+    pub download_dir: Option<String>,
 }
 
 pub fn router() -> Router<AppState> {
     Router::new().route("/settings", get(get_settings).post(save_settings))
 }
 
-pub async fn read_settings(pool: &sqlx::SqlitePool, default_manga_dir: &str) -> AppSettings {
+pub async fn read_settings(pool: &sqlx::SqlitePool, default_download_dir: &str) -> AppSettings {
     async fn val(pool: &sqlx::SqlitePool, key: &str) -> Option<String> {
         sqlx::query_scalar!("SELECT value FROM server_settings WHERE key = ?", key)
             .fetch_optional(pool)
@@ -47,13 +47,13 @@ pub async fn read_settings(pool: &sqlx::SqlitePool, default_manga_dir: &str) -> 
             .unwrap_or(false),
         reader_mode: val(pool, "reader_mode").await
             .unwrap_or_else(|| "paged".to_string()),
-        manga_dir: val(pool, "manga_dir").await
-            .unwrap_or_else(|| default_manga_dir.to_string()),
+        download_dir: val(pool, "download_dir").await
+            .unwrap_or_else(|| default_download_dir.to_string()),
     }
 }
 
 async fn get_settings(State(state): State<AppState>) -> Json<AppSettings> {
-    Json(read_settings(&state.db, &state.config.manga_dir).await)
+    Json(read_settings(&state.db, &state.config.download_dir).await)
 }
 
 async fn save_settings(
@@ -87,12 +87,12 @@ async fn save_settings(
         }
         upsert(&state.db, "reader_mode", m).await?;
     }
-    if let Some(ref d) = body.manga_dir {
+    if let Some(ref d) = body.download_dir {
         let d = d.trim();
         if !d.is_empty() {
-            upsert(&state.db, "manga_dir", d).await?;
+            upsert(&state.db, "download_dir", d).await?;
         }
     }
 
-    Ok(Json(read_settings(&state.db, &state.config.manga_dir).await).into_response())
+    Ok(Json(read_settings(&state.db, &state.config.download_dir).await).into_response())
 }

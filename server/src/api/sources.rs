@@ -57,9 +57,8 @@ async fn reload_registry(state: &AppState) -> ApiResult<()> {
 
 async fn list_sources(
     State(state): State<AppState>,
-    Extension(claims): Extension<Claims>,
+    Extension(_claims): Extension<Claims>,
 ) -> ApiResult<Response> {
-    if let Some(r) = admin_only(&claims) { return Ok(r); }
 
     let rows = sqlx::query!(
         r#"SELECT id as "id!", name as "name!", base_url as "base_url!",

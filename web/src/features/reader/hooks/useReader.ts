@@ -14,7 +14,11 @@ export interface ReaderHandle {
   total: number | null
   totalLabel: string
   atEnd: boolean
+  isNovel: boolean
+  novelContent: string | null
+  novelError: boolean
   goTo: (p: number) => void
+  markNovelRead: () => void
   toggleMode: () => void
   ModeIcon: typeof AlignJustify
 }
@@ -30,6 +34,8 @@ export function useReader(): ReaderHandle {
   const [progress, setProgress] = useState<Awaited<ReturnType<typeof api.getProgress>> | null>(null)
   const [settings, setSettings] = useState<Awaited<ReturnType<typeof api.getSettings>> | undefined>()
   const [manga, setManga] = useState<Awaited<ReturnType<typeof api.getManga>> | undefined>()
+  const [novelContent, setNovelContent] = useState<string | null>(null)
+  const [novelError, setNovelError] = useState(false)
 
   useEffect(() => {
     if (!chapterId) return
@@ -37,6 +43,15 @@ export function useReader(): ReaderHandle {
     api.getProgress(chapterId).then(setProgress).catch(() => {})
     api.getSettings().then(setSettings).catch(() => {})
   }, [chapterId])
+
+  useEffect(() => {
+    if (!chapterId || !chapter || chapter.chapter_format !== 'text') return
+    setNovelContent(null)
+    setNovelError(false)
+    api.getChapterText(chapterId)
+      .then((r) => setNovelContent(r.content))
+      .catch(() => setNovelError(true))
+  }, [chapterId, chapter?.chapter_format])
 
   useEffect(() => {
     if (!chapter?.manga_id) return
@@ -80,13 +95,19 @@ export function useReader(): ReaderHandle {
     setModeOverride((m) => (m ?? effectiveMode) === 'paged' ? 'scroll' : 'paged')
   }
 
+  const isNovel = chapter?.chapter_format === 'text'
   const ModeIcon = effectiveMode === 'scroll' ? BookOpen : AlignJustify
+
+  function markNovelRead() {
+    api.updateProgress(chapterId!, 0, true).catch(() => {})
+  }
 
   return {
     chapterId, navigate,
     page, lastPage, setLastPage,
     effectiveMode, chapter,
     total, totalLabel, atEnd,
-    goTo, toggleMode, ModeIcon,
+    isNovel, novelContent, novelError,
+    goTo, markNovelRead, toggleMode, ModeIcon,
   }
 }

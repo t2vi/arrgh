@@ -41,6 +41,7 @@ export interface Chapter {
   local_path: string | null
   page_count: number
   downloaded: boolean
+  chapter_format: string
   created_at: string
 }
 
@@ -49,7 +50,7 @@ export interface AppSettings {
   index_interval_hours: number
   auto_download: boolean
   reader_mode: 'paged' | 'scroll'
-  manga_dir: string
+  download_dir: string
 }
 
 export interface ReadProgress {

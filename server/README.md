@@ -6,7 +6,7 @@ Rust/Axum API server. Handles manga metadata, chapter downloads, source scraping
 
 ```bash
 cd server
-cp .env.example .env   # edit DATABASE_URL, MANGA_DIR as needed
+cp .env.example .env   # edit DATABASE_URL, DOWNLOAD_DIR as needed
 cargo run
 ```
 
@@ -17,7 +17,7 @@ API at `http://localhost:3000`. Docs at `http://localhost:3000/api/docs`.
 | Variable | Default | Description |
 |---|---|---|
 | `DATABASE_URL` | `sqlite://arrgh.db` | SQLite path |
-| `MANGA_DIR` | `./manga` | Chapter download directory |
+| `DOWNLOAD_DIR` | `./downloads` | Chapter download directory |
 | `BIND_ADDR` | `0.0.0.0:3000` | Listen address |
 | `INDEX_INTERVAL_HOURS` | `6` | Library sync interval |
 | `RUST_LOG` | — | Log level (`arrgh_server=debug`) |

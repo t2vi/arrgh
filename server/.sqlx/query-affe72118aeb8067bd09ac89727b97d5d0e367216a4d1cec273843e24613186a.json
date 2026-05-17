@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT c.local_path, c.downloaded, c.chapter_format as \"chapter_format!\"\n           FROM chapters c JOIN manga m ON c.manga_id = m.id\n           WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)",
+  "describe": {
+    "columns": [
+      {
+        "name": "local_path",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "downloaded",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "chapter_format!",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "affe72118aeb8067bd09ac89727b97d5d0e367216a4d1cec273843e24613186a"
+}

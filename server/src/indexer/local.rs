@@ -64,7 +64,7 @@ async fn path_has_content(path: &str) -> bool {
         return false;
     }
     let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
-    if ext == "cbz" || ext == "zip" {
+    if ext == "cbz" || ext == "zip" || ext == "md" {
         return true;
     }
     // directory: must contain at least one image file
@@ -84,10 +84,10 @@ async fn path_has_content(path: &str) -> bool {
 
 use super::source::sanitize_title;
 
-pub async fn scan(db: &SqlitePool, manga_dir: &str) -> Result<()> {
-    tracing::info!("scanning local manga dir: {}", manga_dir);
+pub async fn scan(db: &SqlitePool, download_dir: &str) -> Result<()> {
+    tracing::info!("scanning local manga dir: {}", download_dir);
 
-    let root = Path::new(manga_dir);
+    let root = Path::new(download_dir);
     if !root.exists() {
         fs::create_dir_all(root).await?;
         return Ok(());
@@ -102,7 +102,7 @@ pub async fn scan(db: &SqlitePool, manga_dir: &str) -> Result<()> {
             continue;
         }
         if path.is_dir() {
-            if let Err(e) = index_manga_dir(db, &path).await {
+            if let Err(e) = index_download_dir(db, &path).await {
                 tracing::warn!("failed to index {:?}: {}", path, e);
             }
         } else if let Some(ext) = path.extension() {
@@ -117,7 +117,7 @@ pub async fn scan(db: &SqlitePool, manga_dir: &str) -> Result<()> {
     Ok(())
 }
 
-async fn index_manga_dir(db: &SqlitePool, path: &Path) -> Result<()> {
+async fn index_download_dir(db: &SqlitePool, path: &Path) -> Result<()> {
     let title = path
         .file_name()
         .and_then(|n| n.to_str())
@@ -142,55 +142,76 @@ async fn index_archive(db: &SqlitePool, path: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Scan `{manga_dir}/_downloads/` for CBZ files that exist on disk but are not
-/// registered in the DB as downloaded. Updates matching chapters automatically.
-pub async fn scan_downloads(db: &SqlitePool, manga_dir: &str) -> Result<()> {
-    let downloads_dir = Path::new(manga_dir).join("_downloads");
-    if !downloads_dir.exists() {
-        return Ok(());
-    }
-
-    let mangas = sqlx::query!("SELECT id, title FROM manga WHERE source != 'local'")
+/// Scan `{download_dir}/_{content_type}/` for CBZ/MD files not registered in the DB as downloaded.
+pub async fn scan_downloads(db: &SqlitePool, download_dir: &str) -> Result<()> {
+    let mangas = sqlx::query!("SELECT id, title, content_type FROM manga WHERE source != 'local'")
         .fetch_all(db)
         .await?;
 
     for manga in mangas {
         let safe = sanitize_title(&manga.title);
-        let dir = downloads_dir.join(&safe);
-        if !dir.exists() {
-            continue;
-        }
+        let content_type = manga.content_type.as_str();
 
-        let mut entries = fs::read_dir(&dir).await?;
-        while let Some(entry) = entries.next_entry().await? {
-            let name = entry.file_name().to_string_lossy().to_string();
-            if !name.starts_with("Ch. ") || !name.ends_with(".cbz") {
+        let candidate_dirs = [
+            Path::new(download_dir).join(format!("_{content_type}")).join(&safe),
+        ];
+
+        for dir in &candidate_dirs {
+            if !dir.exists() {
                 continue;
             }
 
-            let num_str = &name["Ch. ".len()..name.len() - ".cbz".len()];
-            let chapter_num: f64 = match num_str.parse() {
-                Ok(n) => n,
+            let mut entries = match fs::read_dir(dir).await {
+                Ok(e) => e,
                 Err(_) => continue,
             };
+            while let Some(entry) = entries.next_entry().await? {
+                let name = entry.file_name().to_string_lossy().to_string();
+                if !name.starts_with("Ch. ") {
+                    continue;
+                }
 
-            let chapter = sqlx::query!(
-                "SELECT id FROM chapters WHERE manga_id = ? AND number = ? AND downloaded = 0",
-                manga.id, chapter_num
-            )
-            .fetch_optional(db)
-            .await?;
+                let (num_str, is_novel) = if name.ends_with(".cbz") {
+                    (&name["Ch. ".len()..name.len() - ".cbz".len()], false)
+                } else if name.ends_with(".md") {
+                    (&name["Ch. ".len()..name.len() - ".md".len()], true)
+                } else {
+                    continue;
+                };
 
-            if let Some(ch) = chapter {
-                let path = entry.path().to_string_lossy().to_string();
-                let page_count = count_cbz_pages(&path).unwrap_or(0) as i64;
-                sqlx::query!(
-                    "UPDATE chapters SET downloaded = 1, local_path = ?, page_count = ? WHERE id = ?",
-                    path, page_count, ch.id
+                let chapter_num: f64 = match num_str.parse() {
+                    Ok(n) => n,
+                    Err(_) => continue,
+                };
+
+                let chapter = sqlx::query!(
+                    "SELECT id FROM chapters WHERE manga_id = ? AND number = ? AND downloaded = 0",
+                    manga.id, chapter_num
                 )
-                .execute(db)
+                .fetch_optional(db)
                 .await?;
-                tracing::info!("imported local CBZ: {} {}", safe, name);
+
+                if let Some(ch) = chapter {
+                    let path = entry.path().to_string_lossy().to_string();
+                    if is_novel {
+                        sqlx::query!(
+                            "UPDATE chapters SET downloaded = 1, local_path = ? WHERE id = ?",
+                            path, ch.id
+                        )
+                        .execute(db)
+                        .await?;
+                        tracing::info!("imported local novel MD: {} {}", safe, name);
+                    } else {
+                        let page_count = count_cbz_pages(&path).unwrap_or(0) as i64;
+                        sqlx::query!(
+                            "UPDATE chapters SET downloaded = 1, local_path = ?, page_count = ? WHERE id = ?",
+                            path, page_count, ch.id
+                        )
+                        .execute(db)
+                        .await?;
+                        tracing::info!("imported local CBZ: {} {}", safe, name);
+                    }
+                }
             }
         }
     }
