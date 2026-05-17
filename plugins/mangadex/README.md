@@ -30,11 +30,21 @@ npm run build && npm start
 
 Plugin listens on `http://localhost:4000` by default.
 
-To auto-register with a local arrgh server, add to `server/.env`:
+**Important:** running the plugin is not enough — you must also register it with arrgh. Pick one:
+
+**Option A — auto-register at startup** (recommended for dev)
+
+Add to `server/.env`:
 
 ```
 PLUGIN_URLS=http://localhost:4000
 ```
+
+Then (re)start the arrgh server. The URL is inserted once; subsequent restarts skip it.
+
+**Option B — register at runtime**
+
+With both arrgh and the plugin running, open **Settings → Sources → Add** and enter `http://localhost:4000`. No restart needed.
 
 ---
 

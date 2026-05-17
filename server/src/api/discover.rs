@@ -233,6 +233,9 @@ async fn search(
 ) -> ApiResult<Response> {
     let ct = q.content_type.as_deref();
     let sources = snapshot_sources(&*state.sources.read().await, ct);
+    if sources.is_empty() {
+        return Ok(Json(Vec::<SearchResult>::new()).into_response());
+    }
     let hits = fan_out(sources, FanOutMode::Search(q.q)).await;
     if hits.is_empty() {
         return Ok(StatusCode::BAD_GATEWAY.into_response());
@@ -269,8 +272,10 @@ async fn trending(
     axum::Extension(claims): axum::Extension<auth::Claims>,
 ) -> ApiResult<Response> {
     let sources = snapshot_sources(&*state.sources.read().await, None);
+    if sources.is_empty() {
+        return Ok(Json(Vec::<SearchResult>::new()).into_response());
+    }
     let hits = fan_out(sources, FanOutMode::Trending).await;
-
     if hits.is_empty() {
         return Ok(StatusCode::BAD_GATEWAY.into_response());
     }

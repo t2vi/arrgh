@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Play, Plus, X, BookOpen, CheckCircle2, Loader2, Download } from 'lucide-react'
-import { api, getUsername, type SearchResult, type NewReleaseItem, type ContinueItem } from '@/api'
+import { api, type SearchResult, type NewReleaseItem, type ContinueItem } from '@/api'
 import type { Manga } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ROUTES } from '@/lib/routes'
-import { useHome } from '@/features/home/hooks/useHome'
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -24,196 +21,7 @@ function imgSrc(manga: Manga): string {
   return !manga.cover_url?.startsWith('http') ? api.coverUrl(manga.id) : manga.cover_url
 }
 
-export default function Home() {
-  const navigate = useNavigate()
-  const h = useHome()
-
-  return (
-    <>
-      <div className="flex-1 overflow-auto">
-        {h.isLoading ? (
-          <HomeSkeleton />
-        ) : h.items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-24 gap-4">
-            <p className="text-muted-foreground text-sm">Library empty — discover manga to add some.</p>
-            <Button onClick={() => navigate(ROUTES.discover)}>Discover Manga</Button>
-          </div>
-        ) : (
-          <div className="pb-12">
-            <GreetingJumbotron
-              totalManga={h.items.length}
-              totalRead={h.totalRead}
-              coverManga={h.coverManga}
-            />
-
-            {h.continueItems.length > 0 && (
-              <section className="mt-8 px-6 space-y-4">
-                <h2 className="text-xl font-bold">Continue Reading</h2>
-                <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {h.continueItems.map((item) => (
-                    <ContinueCard
-                      key={item.chapter_id}
-                      item={item}
-                      onPlay={() => navigate(ROUTES.reader(item.chapter_id))}
-                      onDetail={() => navigate(ROUTES.manga(item.manga_id))}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <section className="mt-8 px-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">My Library</h2>
-                <button
-                  onClick={() => navigate(ROUTES.library)}
-                  className="text-sm text-primary hover:opacity-80 transition-opacity font-medium"
-                >
-                  View All
-                </button>
-              </div>
-              <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {h.items.slice(0, 10).map((m) => (
-                  <LibraryCoverCard key={m.id} manga={m} onClick={() => navigate(ROUTES.manga(m.id))} />
-                ))}
-              </div>
-            </section>
-
-            {h.newReleases.length > 0 && (
-              <section className="mt-8 px-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold">New Releases</h2>
-                  <span className="text-xs text-muted-foreground">{h.newReleases.length} new</span>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {h.newReleases.map((r) => (
-                    <NewReleaseCard
-                      key={r.chapter_id}
-                      item={r}
-                      onClick={() => navigate(ROUTES.reader(r.chapter_id))}
-                      onMangaClick={() => navigate(ROUTES.manga(r.manga_id))}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {h.recentUp.length > 0 && (
-              <section className="mt-8 px-6 space-y-4">
-                <h2 className="text-xl font-bold">Recently Updated</h2>
-                <div className="grid grid-cols-3 gap-3">
-                  {h.recentUp.map((m) => (
-                    <RecentCard key={m.id} manga={m} onClick={() => navigate(ROUTES.manga(m.id))} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {h.trending.length >= 2 && (
-              <section className="mt-8 px-6 space-y-4">
-                <h2 className="text-xl font-bold">Trending Now</h2>
-                <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {h.trending.map((r, i) => (
-                    <TrendingCard
-                      key={r.id}
-                      result={r}
-                      badge={['HOT', 'TOP', 'NEW', '🔥', '📈', '⭐', '💥', '🎯'][i] ?? '•'}
-                      onClick={() => h.setSelectedTrending(r)}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-      </div>
-
-      <button
-        onClick={() => navigate(ROUTES.discover)}
-        title="Discover manga"
-        className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl hover:opacity-90 transition-opacity z-10"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
-
-      {h.selectedTrending && (
-        <TrendingModal
-          result={h.selectedTrending}
-          onClose={() => h.setSelectedTrending(null)}
-          onViewDetails={(id) => { h.setSelectedTrending(null); navigate(ROUTES.manga(id)) }}
-        />
-      )}
-    </>
-  )
-}
-
-// ——— Greeting jumbotron ———
-
-function greeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
-}
-
-function GreetingJumbotron({
-  totalManga,
-  totalRead,
-  coverManga,
-}: {
-  totalManga: number
-  totalRead: number
-  coverManga: { id: string; cover_url: string | null } | null
-}) {
-  const [failed, setFailed] = useState(false)
-  const username = getUsername()
-  const coverSrc = !failed && coverManga
-    ? (coverManga.cover_url?.startsWith('http') ? coverManga.cover_url : api.coverUrl(coverManga.id))
-    : null
-
-  return (
-    <div className="relative overflow-hidden" style={{ minHeight: 172 }}>
-      {coverSrc && (
-        <img
-          src={coverSrc}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover object-top scale-110"
-          style={{ filter: 'blur(32px)', opacity: 0.18 }}
-          onError={() => setFailed(true)}
-        />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent" />
-      <div className="relative z-10 px-8 pt-10 pb-8">
-        <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary mb-2">*ARRgh</p>
-        <h1 className="text-4xl font-extrabold tracking-tight leading-none mb-3">
-          {greeting()}{username ? `, ${username}` : ''}.
-        </h1>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-          {totalManga > 0 && (
-            <span className="flex items-center gap-1.5">
-              <span className="w-1 h-1 rounded-full bg-primary inline-block" />
-              <span><span className="font-semibold text-foreground">{totalManga}</span> manga in library</span>
-            </span>
-          )}
-          {totalRead > 0 && (
-            <span className="flex items-center gap-1.5">
-              <span className="w-1 h-1 rounded-full bg-muted-foreground inline-block" />
-              <span><span className="font-semibold text-foreground">{totalRead}</span> chapters read</span>
-            </span>
-          )}
-          {totalManga === 0 && (
-            <span className="text-muted-foreground">Your library is empty — discover some manga to get started.</span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ——— Library card ———
-
-function LibraryCoverCard({ manga, onClick }: { manga: Manga; onClick: () => void }) {
+export function LibraryCoverCard({ manga, onClick }: { manga: Manga; onClick: () => void }) {
   const [failed, setFailed] = useState(false)
   const src = !failed ? imgSrc(manga) : ''
   const tags = manga.tags?.split(', ').slice(0, 2).join(', ') ?? ''
@@ -247,9 +55,7 @@ function LibraryCoverCard({ manga, onClick }: { manga: Manga; onClick: () => voi
   )
 }
 
-// ——— Recent card ———
-
-function RecentCard({ manga, onClick }: { manga: Manga; onClick: () => void }) {
+export function RecentCard({ manga, onClick }: { manga: Manga; onClick: () => void }) {
   const [failed, setFailed] = useState(false)
   const src = !failed ? imgSrc(manga) : ''
 
@@ -279,9 +85,7 @@ function RecentCard({ manga, onClick }: { manga: Manga; onClick: () => void }) {
   )
 }
 
-// ——— New release card ———
-
-function NewReleaseCard({ item, onClick, onMangaClick }: {
+export function NewReleaseCard({ item, onClick, onMangaClick }: {
   item: NewReleaseItem
   onClick: () => void
   onMangaClick: () => void
@@ -326,9 +130,7 @@ function NewReleaseCard({ item, onClick, onMangaClick }: {
   )
 }
 
-// ——— Trending card ———
-
-function TrendingCard({ result, badge, onClick }: {
+export function TrendingCard({ result, badge, onClick }: {
   result: SearchResult
   badge: string
   onClick: () => void
@@ -367,9 +169,57 @@ function TrendingCard({ result, badge, onClick }: {
   )
 }
 
-// ——— Trending modal ———
+export function ContinueCard({ item, onPlay, onDetail }: {
+  item: ContinueItem
+  onPlay: () => void
+  onDetail: () => void
+}) {
+  const [failed, setFailed] = useState(false)
+  const src = !failed
+    ? (item.cover_url?.startsWith('http') ? item.cover_url : item.cover_url ? api.coverUrl(item.manga_id) : '')
+    : ''
+  const pct = item.total_chapters > 0
+    ? Math.round((item.chapters_read / item.total_chapters) * 100)
+    : 0
 
-function TrendingModal({
+  return (
+    <div
+      data-nav
+      tabIndex={0}
+      className="shrink-0 w-36 flex flex-col gap-2 cursor-pointer group"
+      onClick={onDetail}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onDetail() }}
+    >
+      <div className="relative rounded-xl overflow-hidden aspect-[2/3] transition-all duration-300 group-hover:scale-[1.04] group-hover:shadow-[0_0_20px_rgba(139,92,246,0.35)]">
+        {!src ? (
+          <div className="w-full h-full bg-muted flex items-center justify-center text-3xl">📖</div>
+        ) : (
+          <img src={src} alt="" className="w-full h-full object-cover bg-muted" onError={() => setFailed(true)} />
+        )}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+          <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); onPlay() }}
+          className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors"
+        >
+          <div className="w-10 h-10 rounded-full bg-primary/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+            <Play className="w-4 h-4 fill-white text-white ml-0.5" />
+          </div>
+        </button>
+      </div>
+      <div className="px-0.5">
+        <p className="text-xs font-semibold line-clamp-1">{item.manga_title}</p>
+        <p className="text-[10px] text-primary font-medium mt-0.5">
+          Ch. {Number.isInteger(item.chapter_number) ? item.chapter_number : item.chapter_number.toFixed(1)}
+        </p>
+        <p className="text-[10px] text-muted-foreground">{item.chapters_read}/{item.total_chapters} read</p>
+      </div>
+    </div>
+  )
+}
+
+export function TrendingModal({
   result,
   onClose,
   onViewDetails,
@@ -504,61 +354,7 @@ function TrendingModal({
   )
 }
 
-// ——— Continue Reading card ———
-
-function ContinueCard({ item, onPlay, onDetail }: {
-  item: ContinueItem
-  onPlay: () => void
-  onDetail: () => void
-}) {
-  const [failed, setFailed] = useState(false)
-  const src = !failed
-    ? (item.cover_url?.startsWith('http') ? item.cover_url : item.cover_url ? api.coverUrl(item.manga_id) : '')
-    : ''
-  const pct = item.total_chapters > 0
-    ? Math.round((item.chapters_read / item.total_chapters) * 100)
-    : 0
-
-  return (
-    <div
-      data-nav
-      tabIndex={0}
-      className="shrink-0 w-36 flex flex-col gap-2 cursor-pointer group"
-      onClick={onDetail}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onDetail() }}
-    >
-      <div className="relative rounded-xl overflow-hidden aspect-[2/3] transition-all duration-300 group-hover:scale-[1.04] group-hover:shadow-[0_0_20px_rgba(139,92,246,0.35)]">
-        {!src ? (
-          <div className="w-full h-full bg-muted flex items-center justify-center text-3xl">📖</div>
-        ) : (
-          <img src={src} alt="" className="w-full h-full object-cover bg-muted" onError={() => setFailed(true)} />
-        )}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
-          <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-        </div>
-        <button
-          onClick={(e) => { e.stopPropagation(); onPlay() }}
-          className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors"
-        >
-          <div className="w-10 h-10 rounded-full bg-primary/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-            <Play className="w-4 h-4 fill-white text-white ml-0.5" />
-          </div>
-        </button>
-      </div>
-      <div className="px-0.5">
-        <p className="text-xs font-semibold line-clamp-1">{item.manga_title}</p>
-        <p className="text-[10px] text-primary font-medium mt-0.5">
-          Ch. {Number.isInteger(item.chapter_number) ? item.chapter_number : item.chapter_number.toFixed(1)}
-        </p>
-        <p className="text-[10px] text-muted-foreground">{item.chapters_read}/{item.total_chapters} read</p>
-      </div>
-    </div>
-  )
-}
-
-// ——— Skeleton ———
-
-function HomeSkeleton() {
+export function HomeSkeleton() {
   return (
     <div className="space-y-8 pb-10">
       <Skeleton className="h-72 w-full" />

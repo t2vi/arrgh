@@ -72,16 +72,8 @@ export default function AppLayout() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border space-y-3">
-          <a
-            href="https://www.gnu.org/licenses/gpl-3.0.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors text-center"
-          >
-            GNU GPL v3
-          </a>
-          <div className="flex items-center gap-2.5">
+        <div>
+          <div className="flex items-center gap-2.5 border-border border-t border-b p-4">
             <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
               <User className="w-4 h-4 text-muted-foreground" />
             </div>
@@ -98,6 +90,16 @@ export default function AppLayout() {
             >
               <LogOut className="w-3.5 h-3.5" />
             </button>
+          </div>
+          <div className="p-4">
+          <a
+            href="https://www.gnu.org/licenses/gpl-3.0.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors text-center"
+          >
+            GNU GPL v3
+          </a>
           </div>
         </div>
       </aside>
