@@ -14,7 +14,7 @@ function SourceRowItem({ source, onToggle, onDelete }: {
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{source.name}</p>
           {source.has_api_key && (
-            <KeyRound className="w-3 h-3 text-muted-foreground shrink-0" title="Uses API key" />
+            <span title="Uses API key"><KeyRound className="w-3 h-3 text-muted-foreground shrink-0" /></span>
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
