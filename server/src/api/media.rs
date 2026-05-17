@@ -23,16 +23,38 @@ pub fn router() -> Router<AppState> {
         .route("/media/proxy", get(proxy_image))
 }
 
+fn root_domain_referer(url: &str) -> String {
+    if let Ok(parsed) = reqwest::Url::parse(url) {
+        let host = parsed.host_str().unwrap_or("");
+        let parts: Vec<&str> = host.split('.').collect();
+        let root = if parts.len() >= 2 {
+            format!("{}.{}", parts[parts.len() - 2], parts[parts.len() - 1])
+        } else {
+            host.to_string()
+        };
+        format!("{}://{}", parsed.scheme(), root)
+    } else {
+        String::new()
+    }
+}
+
 async fn proxy_image(
-    State(state): State<AppState>,
     Query(params): Query<ProxyQuery>,
 ) -> ApiResult<Response> {
-    let src = state.sources.read().await.get("mangapill").cloned();
-    let Some(src) = src else {
-        return Ok(StatusCode::BAD_GATEWAY.into_response());
-    };
-    let bytes = match src.fetch_cover(&params.url).await {
-        Ok(b) => b,
+    let referer = root_domain_referer(&params.url);
+    let client = reqwest::Client::new();
+    let bytes = match client
+        .get(&params.url)
+        .header("User-Agent", "Mozilla/5.0")
+        .header("Referer", &referer)
+        .send()
+        .await
+        .and_then(|r| r.error_for_status())
+    {
+        Ok(r) => match r.bytes().await {
+            Ok(b) => b.to_vec(),
+            Err(_) => return Ok(StatusCode::BAD_GATEWAY.into_response()),
+        },
         Err(_) => return Ok(StatusCode::BAD_GATEWAY.into_response()),
     };
 
@@ -40,10 +62,7 @@ async fn proxy_image(
              else if params.url.contains(".png") { "image/png" }
              else { "image/jpeg" };
 
-    Ok((
-        [(header::CONTENT_TYPE, ct)],
-        bytes,
-    ).into_response())
+    Ok(([(header::CONTENT_TYPE, ct)], bytes).into_response())
 }
 
 async fn serve_page(

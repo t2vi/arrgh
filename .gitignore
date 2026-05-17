@@ -29,7 +29,8 @@ app/pubspec.lock
 # ── Claude Code ──────────────────────────────────────────────
 .agents/
 .claude/
-docs/
+docs/adr
+docs/agents
 CLAUDE.md
 CONTEXT.md
 skills-lock.json
