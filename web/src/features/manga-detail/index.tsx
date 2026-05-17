@@ -12,7 +12,7 @@ import { useMangaDetail, CHAPTERS_PREVIEW, type FilterMode } from './hooks/useMa
 import { ChapterRow } from './components/ChapterRow'
 import {
   SectionHeading, CoverImg, ChapterListSkeleton,
-  ReaderModeCard, AutoDownloadCard, ExplicitCard, DownloadDirCard,
+  ReaderModeCard, AutoDownloadCard, ExplicitCard, DownloadDirCard, CoverUrlCard,
 } from './components/SidebarCards'
 
 export default function MangaDetail() {
@@ -320,6 +320,13 @@ export default function MangaDetail() {
             {manga && <DownloadDirCard mangaId={manga.id} value={manga.download_dir ?? null} />}
             {manga && isAdmin() && (
               <ExplicitCard mangaId={manga.id} value={manga.is_explicit ?? false} />
+            )}
+            {manga && isAdmin() && (
+              <CoverUrlCard
+                mangaId={manga.id}
+                value={manga.cover_url?.startsWith('http') ? manga.cover_url : null}
+                onSaved={h.refreshManga}
+              />
             )}
 
             {manga?.author && (

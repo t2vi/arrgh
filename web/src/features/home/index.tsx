@@ -20,13 +20,16 @@ export default function Home() {
           <HomeSkeleton />
         ) : h.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-24 gap-4">
-            <p className="text-muted-foreground text-sm">Library empty — discover manga to add some.</p>
-            <Button onClick={() => navigate(ROUTES.discover)}>Discover Manga</Button>
+            <p className="text-muted-foreground text-sm">Library empty — discover titles to add some.</p>
+            <Button onClick={() => navigate(ROUTES.discover)}>Discover</Button>
           </div>
         ) : (
           <div className="pb-12">
             <GreetingJumbotron
-              totalManga={h.items.length}
+              typeCounts={h.items.reduce<Record<string, number>>((acc, m) => {
+                acc[m.content_type] = (acc[m.content_type] ?? 0) + 1
+                return acc
+              }, {})}
               totalRead={h.totalRead}
               coverManga={h.coverManga}
             />

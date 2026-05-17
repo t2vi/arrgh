@@ -3,11 +3,12 @@ use axum::Router;
 use chrono::Utc;
 use dotenvy::dotenv;
 use indexer::source::Source;
-use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use std::time::Instant;
+use tokio::sync::{Mutex, RwLock};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::Uuid;
@@ -23,6 +24,7 @@ mod media;
 pub use config::Config;
 
 pub type SourceMap = Arc<RwLock<HashMap<String, Arc<dyn indexer::Source>>>>;
+pub type PageCache = Arc<Mutex<HashMap<String, (Instant, Arc<Vec<indexer::source::PageUrl>>)>>>;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -30,6 +32,7 @@ pub struct AppState {
     pub config: Arc<Config>,
     pub jwt_secret: Arc<String>,
     pub sources: SourceMap,
+    pub page_cache: PageCache,
 }
 
 #[tokio::main]
@@ -46,7 +49,9 @@ async fn main() -> Result<()> {
     let mut config = Config::from_env()?;
 
     let connect_opts = SqliteConnectOptions::from_str(&config.database_url)?
-        .create_if_missing(true);
+        .create_if_missing(true)
+        .journal_mode(SqliteJournalMode::Wal)
+        .busy_timeout(std::time::Duration::from_secs(30));
     let pool = SqlitePoolOptions::new()
         .max_connections(5)
         .connect_with(connect_opts)
@@ -54,12 +59,12 @@ async fn main() -> Result<()> {
 
     sqlx::migrate!("./migrations").run(&pool).await?;
 
-    // DB manga_dir overrides env var if set
-    if let Ok(Some(dir)) = sqlx::query_scalar::<_, String>("SELECT value FROM server_settings WHERE key = 'manga_dir'")
+    // DB download_dir overrides env var if set
+    if let Ok(Some(dir)) = sqlx::query_scalar::<_, String>("SELECT value FROM server_settings WHERE key = 'download_dir'")
         .fetch_optional(&pool)
         .await
     {
-        config.manga_dir = dir;
+        config.download_dir = dir;
     }
     let config = Arc::new(config);
 
@@ -80,7 +85,13 @@ async fn main() -> Result<()> {
         Arc::try_unwrap(registry).unwrap_or_else(|a| (*a).clone())
     ));
 
-    let state = AppState { db: pool, config: config.clone(), jwt_secret, sources };
+    let state = AppState {
+        db: pool,
+        config: config.clone(),
+        jwt_secret,
+        sources,
+        page_cache: Arc::new(Mutex::new(HashMap::new())),
+    };
 
     indexer::start_scheduler(state.clone());
     downloader::start_worker(state.clone()).await;

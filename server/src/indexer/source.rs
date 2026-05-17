@@ -18,9 +18,12 @@ pub struct MangaResult {
     pub author: Option<String>,
     pub year: Option<i64>,
     pub tags: Option<String>,
+    /// Content type reported by the plugin per-result, if known.
+    pub content_type: Option<String>,
 }
 
 /// A page image URL with any HTTP headers the downloader must send to fetch it.
+#[derive(Clone)]
 pub struct PageUrl {
     pub url: String,
     /// Referer header value, if the CDN requires it.
@@ -60,6 +63,12 @@ pub trait Source: Send + Sync {
 
     /// Returns ordered page image URLs for a chapter. Downloader fetches and builds the CBZ.
     async fn get_page_urls(&self, chapter_source_id: &str) -> Result<Vec<PageUrl>>;
+
+    /// Returns raw Markdown text for a novel chapter. Used when chapter_format = "text".
+    async fn get_chapter_text(&self, chapter_source_id: &str) -> Result<String> {
+        let _ = chapter_source_id;
+        Err(anyhow::anyhow!("get_chapter_text not supported for source: {}", self.id()))
+    }
 
     async fn fetch_cover(&self, url: &str) -> Result<Vec<u8>>;
 

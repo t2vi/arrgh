@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { api } from '@/api'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,7 @@ export function ScrollReader({
   const knownMax = total != null ? total : 200
   const [rendered, setRendered] = useState(() => Math.min(knownMax, (total ?? 0) > 0 ? total! : 20))
   const [failed, setFailed] = useState<Set<number>>(new Set())
+  const [loaded, setLoaded] = useState<Set<number>>(new Set())
   const containerRef = useRef<HTMLDivElement>(null)
   const seenRef = useRef(-1)
 
@@ -59,17 +61,25 @@ export function ScrollReader({
     >
       <div className="flex flex-col items-center gap-1 py-2 max-w-3xl mx-auto">
         {pages.map((p) => failed.has(p) ? null : (
-          <img
-            key={p}
-            data-page={p}
-            src={api.pageUrl(chapterId, p)}
-            alt={`Page ${p + 1}`}
-            className={cn('w-full block', 'select-none')}
-            onError={() => {
-              if (p > 0) onLastPageFailed(p)
-              setFailed((f) => new Set(f).add(p))
-            }}
-          />
+          <div key={p} className="relative w-full">
+            {!loaded.has(p) && (
+              <div className="w-full flex items-center justify-center bg-white/5" style={{ minHeight: 480 }}>
+                <Loader2 className="w-7 h-7 animate-spin text-muted-foreground/50" />
+              </div>
+            )}
+            <img
+              data-page={p}
+              src={api.pageUrl(chapterId, p)}
+              alt={`Page ${p + 1}`}
+              className={cn('w-full block select-none', !loaded.has(p) && 'h-0 overflow-hidden')}
+              onLoad={() => setLoaded((l) => new Set(l).add(p))}
+              onError={() => {
+                setLoaded((l) => new Set(l).add(p))
+                if (p > 0) onLastPageFailed(p)
+                setFailed((f) => new Set(f).add(p))
+              }}
+            />
+          </div>
         ))}
       </div>
     </div>

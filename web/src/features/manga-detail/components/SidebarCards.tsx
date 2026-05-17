@@ -215,6 +215,66 @@ export function DownloadDirCard({ mangaId, value }: { mangaId: string; value: st
   )
 }
 
+export function CoverUrlCard({
+  mangaId,
+  value,
+  onSaved,
+}: {
+  mangaId: string
+  value: string | null
+  onSaved: () => void
+}) {
+  const [draft, setDraft] = useState(value ?? '')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave(v: string) {
+    setSaving(true)
+    await api.setMangaCoverUrl(mangaId, v).catch(() => {})
+    setSaving(false)
+    onSaved()
+  }
+
+  const isDirty = draft !== (value ?? '')
+
+  return (
+    <div className="rounded-lg bg-card border border-border p-4 space-y-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Cover URL
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSave(draft.trim()) }}
+          placeholder="https://…"
+          className="flex-1 bg-muted border border-transparent focus:border-ring rounded-md px-3 py-1.5 text-xs outline-none transition-colors"
+        />
+        {isDirty && (
+          <button
+            onClick={() => handleSave(draft.trim())}
+            disabled={saving}
+            className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+          >
+            Save
+          </button>
+        )}
+        {!isDirty && value && (
+          <button
+            onClick={() => { setDraft(''); handleSave('') }}
+            className="px-3 py-1.5 rounded-md bg-muted border border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+      <p className="text-[10px] text-muted-foreground leading-relaxed">
+        Override cover with any direct image URL.
+      </p>
+    </div>
+  )
+}
+
 export function CoverImg({ coverUrl, mangaId }: { coverUrl: string | null; mangaId: string }) {
   const [failed, setFailed] = useState(false)
   const src = !failed && coverUrl?.startsWith('http') ? coverUrl : api.coverUrl(mangaId)

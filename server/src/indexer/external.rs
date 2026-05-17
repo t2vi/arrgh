@@ -30,6 +30,7 @@ struct SearchItem {
     author: Option<String>,
     year: Option<i64>,
     tags: Option<String>,
+    content_type: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -38,7 +39,11 @@ struct ChapterItem {
     number: f64,
     volume: Option<f64>,
     title: Option<String>,
+    #[serde(default = "default_chapter_format")]
+    chapter_format: String,
 }
+
+fn default_chapter_format() -> String { "pages".to_string() }
 
 #[derive(Deserialize)]
 struct MetaResponse {
@@ -128,6 +133,7 @@ impl Source for ExternalSource {
             .send().await?
             .error_for_status()?.json().await?;
 
+        let default_ct = self.content_types.first().cloned();
         Ok(items.into_iter().map(|i| MangaResult {
             id: i.id,
             title: i.title,
@@ -137,6 +143,7 @@ impl Source for ExternalSource {
             author: i.author,
             year: i.year,
             tags: i.tags,
+            content_type: i.content_type.or_else(|| default_ct.clone()),
         }).collect())
     }
 
@@ -151,28 +158,31 @@ impl Source for ExternalSource {
         let src_id = self.source_id.clone();
         let mut new_count = 0usize;
 
+        let mut tx = db.begin().await?;
         for ch in &chapters {
             let existing = sqlx::query_scalar!(
                 "SELECT id FROM chapters WHERE manga_id = ? AND source_id = ?",
                 manga_id, ch.source_id
             )
-            .fetch_optional(db)
+            .fetch_optional(&mut *tx)
             .await?;
 
             if existing.is_none() {
                 let id = Uuid::new_v4().to_string();
                 let num = ch.number;
                 let vol = ch.volume;
+                let fmt = &ch.chapter_format;
                 sqlx::query!(
-                    r#"INSERT INTO chapters (id, manga_id, title, number, volume, source_id, page_count, downloaded, created_at)
-                       VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)"#,
-                    id, manga_id, ch.title, num, vol, ch.source_id, now
+                    r#"INSERT INTO chapters (id, manga_id, title, number, volume, source_id, page_count, downloaded, chapter_format, created_at)
+                       VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)"#,
+                    id, manga_id, ch.title, num, vol, ch.source_id, fmt, now
                 )
-                .execute(db)
+                .execute(&mut *tx)
                 .await?;
                 new_count += 1;
             }
         }
+        tx.commit().await?;
 
         if new_count > 0 {
             tracing::info!("{}: {} new chapters for manga {} ({} total)", src_id, new_count, manga_id, count);
@@ -181,12 +191,23 @@ impl Source for ExternalSource {
     }
 
     async fn get_page_urls(&self, chapter_source_id: &str) -> Result<Vec<PageUrl>> {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum PageEntry {
+            Simple(String),
+            Full { url: String, referer: Option<String> },
+        }
+
         let path = format!("/chapter/{}/pages", urlencoding::encode(chapter_source_id));
-        let urls: Vec<String> = self.get(&path)
+        let entries: Vec<PageEntry> = self.get(&path)
             .send().await?
             .error_for_status()?.json().await?;
 
-        Ok(urls.into_iter().map(PageUrl::new).collect())
+        Ok(entries.into_iter().map(|e| match e {
+            PageEntry::Simple(url) => PageUrl::new(url),
+            PageEntry::Full { url, referer: Some(r) } => PageUrl::with_referer(url, r),
+            PageEntry::Full { url, referer: None } => PageUrl::new(url),
+        }).collect())
     }
 
     async fn fetch_cover(&self, url: &str) -> Result<Vec<u8>> {
@@ -200,11 +221,23 @@ impl Source for ExternalSource {
             return Err(anyhow!("trending not supported by source: {}", self.source_id));
         }
         let items: Vec<SearchItem> = resp.error_for_status()?.json().await?;
+        let default_ct = self.content_types.first().cloned();
         Ok(items.into_iter().map(|i| MangaResult {
             id: i.id, title: i.title, description: i.description,
             cover_url: i.cover_url, status: i.status,
             author: i.author, year: i.year, tags: i.tags,
+            content_type: i.content_type.or_else(|| default_ct.clone()),
         }).collect())
+    }
+
+    async fn get_chapter_text(&self, chapter_source_id: &str) -> Result<String> {
+        let path = format!("/chapter/{}/text", urlencoding::encode(chapter_source_id));
+        let resp = self.get(&path).send().await?;
+        if resp.status() == reqwest::StatusCode::NOT_FOUND
+            || resp.status() == reqwest::StatusCode::METHOD_NOT_ALLOWED {
+            return Err(anyhow!("get_chapter_text not supported by source: {}", self.source_id));
+        }
+        Ok(resp.error_for_status()?.text().await?)
     }
 
     async fn fetch_meta(&self, source_id: &str) -> Result<MangaMeta> {

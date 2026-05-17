@@ -83,6 +83,5 @@ app.get('/chapter/:hid/pages', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`[comick-plugin] listening on :${PORT}`)
   console.log(`  languages: ${LANGS.join(', ')}`)
-  console.log(`  FlareSolverr: ${process.env.FLARESOLVERR_URL ?? 'http://flaresolverr:8191'}`)
   console.log(`  auth: ${API_KEY ? 'enabled' : 'disabled (no API_KEY set)'}`)
 })

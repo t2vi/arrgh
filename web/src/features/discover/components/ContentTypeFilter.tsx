@@ -5,6 +5,7 @@ const CONTENT_TYPES = [
   { value: 'manhwa',   label: 'Manhwa'   },
   { value: 'manhua',   label: 'Manhua'   },
   { value: 'one-shot', label: 'One-shot' },
+  { value: 'novel',    label: 'Novel'    },
 ] as const
 
 export function ContentTypeFilter({

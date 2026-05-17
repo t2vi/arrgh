@@ -189,16 +189,17 @@ export async function chapters(slug: string): Promise<ChapterItem[]> {
   return items.reverse()
 }
 
-export async function pages(chapterSourceId: string): Promise<string[]> {
+export async function pages(chapterSourceId: string): Promise<{ url: string; referer: string }[]> {
   // chapterSourceId = "{manga_slug}/{chapter_slug}"
-  const html = await getPage(`${BASE}/serie/${chapterSourceId}/`)
+  const chapterUrl = `${BASE}/serie/${chapterSourceId}/`
+  const html = await getPage(chapterUrl)
   const $ = cheerio.load(html)
-  const urls: string[] = []
+  const results: { url: string; referer: string }[] = []
 
   $('.page-break img').each((_, el) => {
     const src = imgSrc($(el))
-    if (src) urls.push(src.trim())
+    if (src) results.push({ url: src.trim(), referer: chapterUrl })
   })
 
-  return urls
+  return results
 }

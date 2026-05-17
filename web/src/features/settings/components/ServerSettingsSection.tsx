@@ -19,11 +19,11 @@ export function ServerSettingsSection({
   const [hours, setHours] = useState(settings.index_interval_hours)
   const [autoDownload, setAutoDownload] = useState(settings.auto_download)
   const [readerMode, setReaderMode] = useState<AppSettings['reader_mode']>(settings.reader_mode)
-  const [mangaDir, setMangaDir] = useState(settings.manga_dir)
+  const [downloadDir, setMangaDir] = useState(settings.download_dir)
   const [saved, setSaved] = useState(false)
 
   function handleSave() {
-    onSave({ download_workers: workers, index_interval_hours: hours, auto_download: autoDownload, reader_mode: readerMode, manga_dir: mangaDir })
+    onSave({ download_workers: workers, index_interval_hours: hours, auto_download: autoDownload, reader_mode: readerMode, download_dir: downloadDir })
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -46,9 +46,9 @@ export function ServerSettingsSection({
         <p className="text-sm font-medium">Library path</p>
         <p className="text-xs text-muted-foreground">Absolute or relative path. Restart required to apply.</p>
         <Input
-          value={mangaDir}
+          value={downloadDir}
           onChange={(e) => setMangaDir(e.target.value)}
-          placeholder="./manga"
+          placeholder="./downloads"
           className="max-w-xs font-mono text-xs"
         />
       </div>

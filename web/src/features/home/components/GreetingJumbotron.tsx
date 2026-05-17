@@ -9,15 +9,28 @@ function greeting(): string {
   return 'Good evening'
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  manga: 'manga', manhwa: 'manhwa', manhua: 'manhua', novel: 'novel',
+}
+
+function libraryLabel(typeCounts: Record<string, number>): string {
+  const entries = Object.entries(typeCounts).filter(([, n]) => n > 0)
+  if (entries.length === 0) return ''
+  return entries
+    .map(([type, n]) => `${n} ${TYPE_LABELS[type] ?? type}`)
+    .join(' · ') + ' in library'
+}
+
 export function GreetingJumbotron({
-  totalManga,
+  typeCounts,
   totalRead,
   coverManga,
 }: {
-  totalManga: number
+  typeCounts: Record<string, number>
   totalRead: number
   coverManga: Pick<Manga, 'id' | 'cover_url'> | null
 }) {
+  const totalManga = Object.values(typeCounts).reduce((a, b) => a + b, 0)
   const [failed, setFailed] = useState(false)
   const username = getUsername()
   const coverSrc = !failed && coverManga
@@ -46,7 +59,7 @@ export function GreetingJumbotron({
           {totalManga > 0 && (
             <span className="flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-primary inline-block" />
-              <span><span className="font-semibold text-foreground">{totalManga}</span> manga in library</span>
+              <span className="font-semibold text-foreground">{libraryLabel(typeCounts)}</span>
             </span>
           )}
           {totalRead > 0 && (

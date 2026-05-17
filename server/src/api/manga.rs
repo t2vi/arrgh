@@ -353,6 +353,8 @@ struct PatchMangaBody {
     download_dir: Option<Option<String>>,
     #[serde(default)]
     is_explicit: Option<bool>,
+    #[serde(default)]
+    cover_url: Option<String>,
 }
 
 async fn patch_manga(
@@ -407,6 +409,20 @@ async fn patch_manga(
         sqlx::query!("UPDATE manga SET is_explicit = ? WHERE id = ?", val, id)
             .execute(&state.db)
             .await?;
+    }
+    if let Some(url) = body.cover_url {
+        if claims.role != "admin" {
+            return Ok(StatusCode::FORBIDDEN);
+        }
+        if url.is_empty() {
+            sqlx::query!("UPDATE manga SET cover_url = NULL WHERE id = ?", id)
+                .execute(&state.db)
+                .await?;
+        } else {
+            sqlx::query!("UPDATE manga SET cover_url = ? WHERE id = ?", url, id)
+                .execute(&state.db)
+                .await?;
+        }
     }
     Ok(StatusCode::NO_CONTENT)
 }

@@ -34,6 +34,7 @@ pub struct Chapter {
     pub local_path: Option<String>,
     pub page_count: i64,
     pub downloaded: bool,
+    pub chapter_format: String,
     pub created_at: DateTime<Utc>,
 }
 

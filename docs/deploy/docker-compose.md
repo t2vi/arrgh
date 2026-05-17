@@ -32,7 +32,7 @@ Plugin ports are internal only — not exposed to the host unless you add a `por
 | Variable | Default | Description |
 |---|---|---|
 | `DATABASE_URL` | `sqlite:///data/arrgh.db` | SQLite DB path inside the container |
-| `MANGA_DIR` | `/data/manga` | Where downloaded chapters are stored |
+| `DOWNLOAD_DIR` | `/data/manga` | Where downloaded chapters are stored |
 | `JWT_SECRET` | _(random on startup)_ | Set this in production or sessions break on restart |
 | `INDEX_INTERVAL_HOURS` | `6` | How often the background indexer runs |
 | `PLUGIN_URLS` | see compose file | Comma-separated plugin URLs to auto-register on first boot |

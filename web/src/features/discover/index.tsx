@@ -58,7 +58,7 @@ export default function Discover() {
             <div className="space-y-3">
               {h.data.length === 0 && (
                 <p className="text-muted-foreground text-sm">
-                  {h.contentType
+                  {h.contentType && !h.availableContentTypes.has(h.contentType)
                     ? `No sources registered for "${h.contentType}". Add a plugin in Settings → Sources.`
                     : 'No results.'}
                 </p>

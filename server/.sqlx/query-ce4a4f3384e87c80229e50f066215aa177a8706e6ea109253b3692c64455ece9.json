@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, title FROM manga WHERE source != 'local'",
+  "query": "SELECT id, title, content_type FROM manga WHERE source != 'local'",
   "describe": {
     "columns": [
       {
@@ -12,6 +12,11 @@
         "name": "title",
         "ordinal": 1,
         "type_info": "Text"
+      },
+      {
+        "name": "content_type",
+        "ordinal": 2,
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -19,8 +24,9 @@
     },
     "nullable": [
       true,
+      false,
       false
     ]
   },
-  "hash": "f78426330ac6585f379a8759acd487ce0bef4ab25555b985af06ad537f94f62a"
+  "hash": "ce4a4f3384e87c80229e50f066215aa177a8706e6ea109253b3692c64455ece9"
 }

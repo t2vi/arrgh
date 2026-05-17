@@ -19,6 +19,7 @@ export interface SearchResult {
   author: string | null
   year: number | null
   tags: string | null
+  content_type: string
   in_library: boolean
   library_id?: string
   alternatives: SourceAlternative[]
@@ -240,6 +241,7 @@ export const api = {
 
   listChapters: (mangaId: string) => get<Chapter[]>(`/api/chapters/manga/${mangaId}`),
   getChapter: (id: string) => get<Chapter>(`/api/chapters/${id}`),
+  getChapterText: (id: string) => get<{ content: string }>(`/api/chapters/${id}/text`),
   downloadChapter: (id: string) => post<void>(`/api/chapters/${id}/download`),
 
   getProgress: (chapterId: string) => get<ReadProgress>(`/api/progress/${chapterId}`),
@@ -266,6 +268,7 @@ export const api = {
       author: result.author,
       year: result.year,
       tags: result.tags,
+      content_type: result.content_type,
     }),
 
   getQueue: () => get<QueueItem[]>('/api/queue'),
@@ -288,6 +291,9 @@ export const api = {
 
   setMangaExplicit: (id: string, value: boolean) =>
     patch<void>(`/api/manga/${id}`, { is_explicit: value }),
+
+  setMangaCoverUrl: (id: string, url: string) =>
+    patch<void>(`/api/manga/${id}`, { cover_url: url }),
 
   getSettings: () => get<AppSettings>('/api/settings'),
   saveSettings: (s: Partial<AppSettings>) => post<AppSettings>('/api/settings', s),

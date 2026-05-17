@@ -55,6 +55,7 @@ export interface MangaDetailHandle {
   removeFromQueue: SimpleMutation<string>
   cancelAll: SimpleMutation<void>
   downloadAll: SimpleMutation<void>
+  refreshManga: () => void
 }
 
 const CHAPTERS_PREVIEW = 5
@@ -319,6 +320,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     removeFromQueue,
     cancelAll,
     downloadAll,
+    refreshManga: fetchManga,
   }
 }
 

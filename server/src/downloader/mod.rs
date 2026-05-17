@@ -8,7 +8,7 @@ use tokio::sync::Mutex;
 use crate::{api::settings::read_settings, indexer::source::sanitize_title, AppState};
 
 pub async fn start_worker(state: AppState) {
-    let workers = read_settings(&state.db, &state.config.manga_dir).await.download_workers.max(1) as usize;
+    let workers = read_settings(&state.db, &state.config.download_dir).await.download_workers.max(1) as usize;
     let claim_lock: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
 
     tracing::info!("starting {} download worker(s)", workers);
@@ -53,7 +53,8 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
     };
 
     let chapter = sqlx::query!(
-        r#"SELECT c.source_id, m.source as "source!", m.download_dir
+        r#"SELECT c.source_id, c.chapter_format as "chapter_format!", m.source as "source!",
+                  m.download_dir, m.content_type as "content_type!"
            FROM chapters c JOIN manga m ON c.manga_id = m.id
            WHERE c.id = ?"#,
         item.chapter_id
@@ -69,15 +70,20 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
         }
     };
 
-    let cbz_name = format!("Ch. {:04.1}.cbz", item.chapter_num);
+    let is_text = chapter.chapter_format == "text";
+    let file_name = if is_text {
+        format!("Ch. {:04.1}.md", item.chapter_num)
+    } else {
+        format!("Ch. {:04.1}.cbz", item.chapter_num)
+    };
     let dest = match chapter.download_dir {
-        Some(ref dir) => Path::new(dir).join(&cbz_name),
+        Some(ref dir) => Path::new(dir).join(&file_name),
         None => {
             let safe = sanitize_title(&item.manga_title);
-            Path::new(&state.config.manga_dir)
-                .join("_downloads")
+            Path::new(&state.config.download_dir)
+                .join(format!("_{}", &chapter.content_type))
                 .join(&safe)
-                .join(&cbz_name)
+                .join(&file_name)
         }
     };
 
@@ -91,7 +97,13 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
         }
     };
 
-    match download_cbz(src.as_ref(), &source_id, &dest).await {
+    let download_result = if is_text {
+        download_text(src.as_ref(), &source_id, &dest).await.map(|_| 1usize)
+    } else {
+        download_cbz(src.as_ref(), &source_id, &dest).await
+    };
+
+    match download_result {
         Ok(page_count) => {
             let path_str = dest.to_string_lossy().to_string();
             let pc = page_count as i64;
@@ -110,7 +122,11 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
             .execute(&state.db)
             .await?;
 
-            tracing::info!("downloaded {} pages → {:?}", page_count, dest);
+            if is_text {
+                tracing::info!("downloaded chapter text → {:?}", dest);
+            } else {
+                tracing::info!("downloaded {} pages → {:?}", page_count, dest);
+            }
         }
         Err(e) => {
             let err = e.to_string();
@@ -119,6 +135,19 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+async fn download_text(
+    src: &dyn crate::indexer::Source,
+    chapter_source_id: &str,
+    dest: &Path,
+) -> Result<()> {
+    let text = src.get_chapter_text(chapter_source_id).await?;
+    if let Some(parent) = dest.parent() {
+        tokio::fs::create_dir_all(parent).await?;
+    }
+    tokio::fs::write(dest, text.as_bytes()).await?;
     Ok(())
 }
 
@@ -150,7 +179,7 @@ async fn download_cbz(
         if let Some(ref referer) = page.referer {
             req = req.header("Referer", referer);
         }
-        let bytes = req.send().await?.bytes().await?;
+        let bytes = req.send().await?.error_for_status()?.bytes().await?;
 
         zip.start_file(&entry_name, opts)?;
         zip.write_all(&bytes)?;

@@ -2,7 +2,7 @@
 server/target/
 server/.env
 server/arrgh.db
-server/manga/
+server/downloads/
 server/static/
 server/arrgh.db
 

@@ -55,6 +55,7 @@ pub struct SearchResult {
     pub author: Option<String>,
     pub year: Option<i64>,
     pub tags: Option<String>,
+    pub content_type: String,
     pub in_library: bool,
     pub library_id: Option<String>,
     pub alternatives: Vec<SourceAlternative>,
@@ -123,7 +124,7 @@ async fn fan_out(
                         .map(|r| SourceHit { source_id: sid.clone(), source_name: sname.clone(), result: r })
                         .collect::<Vec<_>>(),
                     Err(e) => {
-                        tracing::warn!("{} {} failed: {}", sid, mode.label(), e);
+                        tracing::debug!("{} {} failed: {}", sid, mode.label(), e);
                         vec![]
                     }
                 }
@@ -238,10 +239,6 @@ async fn search(
         return Ok(Json(Vec::<SearchResult>::new()).into_response());
     }
     let hits = fan_out(sources, FanOutMode::Search(q.q)).await;
-    if hits.is_empty() {
-        return Ok(StatusCode::BAD_GATEWAY.into_response());
-    }
-
     let merged = merge_hits(hits);
     let user_id = &claims.sub;
     let mut out = Vec::with_capacity(merged.len());
@@ -261,6 +258,7 @@ async fn search(
             author: r.author,
             year: r.year,
             tags: r.tags,
+            content_type: r.content_type.unwrap_or_else(|| "manga".to_string()),
             alternatives: alts,
         });
     }
@@ -277,10 +275,6 @@ async fn trending(
         return Ok(Json(Vec::<SearchResult>::new()).into_response());
     }
     let hits = fan_out(sources, FanOutMode::Trending).await;
-    if hits.is_empty() {
-        return Ok(StatusCode::BAD_GATEWAY.into_response());
-    }
-
     let merged = merge_hits(hits);
     let user_id = &claims.sub;
     let mut out = Vec::with_capacity(merged.len());
@@ -300,6 +294,7 @@ async fn trending(
             author: r.author,
             year: r.year,
             tags: r.tags,
+            content_type: r.content_type.unwrap_or_else(|| "manga".to_string()),
             alternatives: alts,
         });
     }
@@ -398,7 +393,7 @@ async fn add_manga(
     let mid = manga_id.clone();
     let source_id = body.source_id.clone();
     let cover_url = body.cover_url.clone();
-    let manga_dir = state.config.manga_dir.clone();
+    let download_dir = state.config.download_dir.clone();
     tokio::spawn(async move {
         let result = src.sync_chapters(&db, &mid, &source_id).await;
         if let Err(e) = &result {
@@ -412,7 +407,7 @@ async fn add_manga(
         if let Some(cdn_url) = cover_url {
             let ext = cdn_url.split('?').next().unwrap_or("cover")
                 .rsplit('.').next().unwrap_or("jpg");
-            let cover_path = Path::new(&manga_dir)
+            let cover_path = Path::new(&download_dir)
                 .join("_covers")
                 .join(format!("{}.{}", mid, ext));
             match src.fetch_cover(&cdn_url).await {
