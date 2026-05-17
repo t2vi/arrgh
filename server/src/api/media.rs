@@ -27,7 +27,8 @@ async fn proxy_image(
     State(state): State<AppState>,
     Query(params): Query<ProxyQuery>,
 ) -> ApiResult<Response> {
-    let Some(src) = state.sources.get("mangapill") else {
+    let src = state.sources.read().await.get("mangapill").cloned();
+    let Some(src) = src else {
         return Ok(StatusCode::BAD_GATEWAY.into_response());
     };
     let bytes = match src.fetch_cover(&params.url).await {
@@ -83,22 +84,24 @@ async fn serve_page(
     let Some(source_id) = chapter.source_id else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
-    let Some(src) = state.sources.get(&chapter.source) else {
+    let src = state.sources.read().await.get(&chapter.source).cloned();
+    let Some(src) = src else {
         return Ok(StatusCode::BAD_GATEWAY.into_response());
     };
-    let url = match src.get_page_url(&source_id, page as usize).await {
-        Ok(u) => u,
+    let pages = match src.get_page_urls(&source_id).await {
+        Ok(p) => p,
         Err(_) => return Ok(StatusCode::BAD_GATEWAY.into_response()),
+    };
+    let Some(page_url) = pages.into_iter().nth(page as usize) else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
     };
 
     let client = reqwest::Client::new();
-    let resp = match client
-        .get(&url)
-        .header("User-Agent", "Mozilla/5.0")
-        .header("Referer", "https://mangadex.org/")
-        .send()
-        .await
-    {
+    let mut req = client.get(&page_url.url).header("User-Agent", "Mozilla/5.0");
+    if let Some(ref referer) = page_url.referer {
+        req = req.header("Referer", referer);
+    }
+    let resp = match req.send().await {
         Ok(r) => r,
         Err(_) => return Ok(StatusCode::BAD_GATEWAY.into_response()),
     };

@@ -1,8 +1,17 @@
 import type { AppSettings, Chapter, Manga, PaginatedManga, ReadProgress } from './types'
 
+export interface SourceAlternative {
+  source: string
+  source_name: string
+  id: string
+  cover_url: string | null
+  status: string
+}
+
 export interface SearchResult {
   id: string
   source: string
+  source_name: string
   title: string
   description: string | null
   cover_url: string | null
@@ -12,6 +21,7 @@ export interface SearchResult {
   tags: string | null
   in_library: boolean
   library_id?: string
+  alternatives: SourceAlternative[]
 }
 
 export interface MangaDetailResult {
@@ -77,6 +87,15 @@ export interface UserListItem {
   role: string
   allow_explicit: boolean
   created_at: string
+}
+
+export interface SourceRow {
+  id: string
+  name: string
+  base_url: string
+  has_api_key: boolean
+  content_types: string[]
+  enabled: boolean
 }
 
 // ——— Token storage ———
@@ -227,18 +246,18 @@ export const api = {
   updateProgress: (chapterId: string, currentPage: number, completed: boolean) =>
     put<ReadProgress>(`/api/progress/${chapterId}`, { current_page: currentPage, completed }),
 
-  searchManga: (q: string) =>
-    get<SearchResult[]>('/api/discover', { q }),
+  searchManga: (q: string, contentType?: string) =>
+    get<SearchResult[]>('/api/discover', { q, ...(contentType ? { content_type: contentType } : {}) }),
 
   getTrending: () => get<SearchResult[]>('/api/discover/trending'),
 
   getDiscoverDetail: (source: string, sourceId: string) =>
     get<MangaDetailResult>('/api/discover/detail', { source, source_id: sourceId }),
 
-  addManga: (result: SearchResult) =>
+  addManga: (result: SearchResult & { source_id?: string }) =>
     post<Manga>('/api/discover/add', {
       source: result.source,
-      source_id: result.id,
+      source_id: result.source_id ?? result.id,
       title: result.title,
       description: result.description,
       cover_url: result.cover_url,
@@ -275,4 +294,12 @@ export const api = {
   pageUrl: (chapterId: string, page: number) => `${base()}/api/media/page/${chapterId}/${page}`,
   coverUrl: (mangaId: string) => `${base()}/api/media/cover/${mangaId}`,
   proxyImageUrl: (url: string) => `/api/media/proxy?url=${encodeURIComponent(url)}`,
+
+  // Sources (admin only)
+  listSources: () => get<SourceRow[]>('/api/sources'),
+  addSource: (base_url: string, api_key?: string) =>
+    post<void>('/api/sources', { base_url, api_key: api_key || undefined }),
+  patchSource: (id: string, enabled: boolean) =>
+    patch<void>(`/api/sources/${id}`, { enabled }),
+  deleteSource: (id: string) => del(`/api/sources/${id}`),
 }

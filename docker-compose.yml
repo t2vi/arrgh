@@ -12,8 +12,23 @@ services:
       # JWT_SECRET: change-me-in-production
       # INDEX_INTERVAL_HOURS: 6
       # RUST_LOG: arrgh_server=info
+      # Comma-separated list of plugin URLs to auto-register on first startup.
+      # Add new plugins here; they persist in the DB after first run.
+      PLUGIN_URLS: "http://mangadex:4000"
     volumes:
       - arrgh_data:/data
+    depends_on:
+      - mangadex
+
+  mangadex:
+    build: ./plugins/mangadex
+    restart: unless-stopped
+    environment:
+      PORT: "4000"
+      LANGUAGES: "en"
+      # API_KEY: set-to-require-auth-from-arrgh
+    # No ports exposed — arrgh reaches it over the internal network.
+    # To expose locally for debugging: ports: ["4000:4000"]
 
 volumes:
   arrgh_data:

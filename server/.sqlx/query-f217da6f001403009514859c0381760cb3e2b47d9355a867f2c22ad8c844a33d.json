@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO external_sources (id, name, base_url, api_key, content_types, enabled, created_at)\n         VALUES (?, ?, ?, ?, ?, 1, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "f217da6f001403009514859c0381760cb3e2b47d9355a867f2c22ad8c844a33d"
+}
