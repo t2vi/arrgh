@@ -1,4 +1,4 @@
-# *ARRgh
+# *ARRgh!
 
 A self-hosted manga manager, downloader, and reader for your home server. Supports manga, manhwa, and manhua from online sources. Built to run on a NAS, Raspberry Pi, or any always-on box.
 
