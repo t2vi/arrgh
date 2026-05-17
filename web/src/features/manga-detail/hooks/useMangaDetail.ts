@@ -141,13 +141,21 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     return () => clearInterval(id)
   }, [manga?.sync_status, fetchChapters])
 
-  // Poll queue every 2s
+  // Fetch queue on mount
   useEffect(() => {
     if (!id) return
     fetchQueue()
+  }, [id, fetchQueue])
+
+  // Poll every 2s only while there are active items; stops automatically when idle
+  useEffect(() => {
+    const hasActive = queueItems.some(
+      (q) => q.status === 'pending' || q.status === 'downloading',
+    )
+    if (!hasActive) return
     const tid = setInterval(fetchQueue, 2000)
     return () => clearInterval(tid)
-  }, [id, fetchQueue])
+  }, [queueItems, fetchQueue])
 
   const progressMap = new Map<string, ReadProgress>(allProgress.map((p) => [p.chapter_id, p]))
   const queueMap = new Map<string, QueueItem>(queueItems.map((q) => [q.chapter_id, q]))

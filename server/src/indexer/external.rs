@@ -149,6 +149,7 @@ impl Source for ExternalSource {
         let count = chapters.len();
         let now = Utc::now();
         let src_id = self.source_id.clone();
+        let mut new_count = 0usize;
 
         for ch in &chapters {
             let existing = sqlx::query_scalar!(
@@ -169,10 +170,13 @@ impl Source for ExternalSource {
                 )
                 .execute(db)
                 .await?;
+                new_count += 1;
             }
         }
 
-        tracing::info!("{}: synced {} chapters for manga {}", src_id, count, manga_id);
+        if new_count > 0 {
+            tracing::info!("{}: {} new chapters for manga {} ({} total)", src_id, new_count, manga_id, count);
+        }
         Ok(count)
     }
 
