@@ -438,7 +438,7 @@ async fn sync_manga(
 
     let db = state.db.clone();
     let source = manga.source;
-    let src = state.sources.get(&source).cloned();
+    let src = state.sources.read().await.get(&source).cloned();
     tokio::spawn(async move {
         let result = match src {
             Some(s) => s.sync_chapters(&db, &id, &source_id).await,

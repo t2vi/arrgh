@@ -1,9 +1,13 @@
 use anyhow::Result;
 use axum::Router;
+use chrono::Utc;
 use dotenvy::dotenv;
+use indexer::source::Source;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::Uuid;
@@ -18,12 +22,14 @@ mod media;
 
 pub use config::Config;
 
+pub type SourceMap = Arc<RwLock<HashMap<String, Arc<dyn indexer::Source>>>>;
+
 #[derive(Clone)]
 pub struct AppState {
     pub db: sqlx::SqlitePool,
     pub config: Arc<Config>,
     pub jwt_secret: Arc<String>,
-    pub sources: indexer::SourceRegistry,
+    pub sources: SourceMap,
 }
 
 #[tokio::main]
@@ -61,7 +67,19 @@ async fn main() -> Result<()> {
 
     let jwt_secret = Arc::new(get_or_create_jwt_secret(&pool).await?);
 
-    let sources = indexer::build_registry();
+    // Bootstrap any URLs from PLUGIN_URLS env var into external_sources table.
+    // Idempotent — skips URLs already registered. Runs before load_registry.
+    if let Ok(urls) = std::env::var("PLUGIN_URLS") {
+        for raw in urls.split(',').map(str::trim).filter(|s| !s.is_empty()) {
+            bootstrap_plugin(&pool, raw).await;
+        }
+    }
+
+    let registry = indexer::load_registry(&pool).await;
+    let sources: SourceMap = Arc::new(RwLock::new(
+        Arc::try_unwrap(registry).unwrap_or_else(|a| (*a).clone())
+    ));
+
     let state = AppState { db: pool, config: config.clone(), jwt_secret, sources };
 
     indexer::start_scheduler(state.clone());
@@ -80,6 +98,51 @@ async fn main() -> Result<()> {
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+/// Insert a plugin URL into external_sources if not already present, then probe it.
+/// Skips silently if the URL is already registered (idempotent).
+async fn bootstrap_plugin(pool: &sqlx::SqlitePool, base_url: &str) {
+    let already = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM external_sources WHERE base_url = ?"
+    )
+    .bind(base_url)
+    .fetch_one(pool)
+    .await
+    .unwrap_or(0);
+
+    if already > 0 {
+        tracing::debug!("PLUGIN_URLS: {} already registered, skipping", base_url);
+        return;
+    }
+
+    match indexer::external::ExternalSource::probe(
+        Uuid::new_v4().to_string(),
+        base_url.to_string(),
+        None,
+    )
+    .await
+    {
+        Ok(src) => {
+            let id = Uuid::new_v4().to_string();
+            let now = Utc::now();
+            let content_types = src.content_types().join(",");
+            let name = src.name().to_string();
+            match sqlx::query(
+                "INSERT OR IGNORE INTO external_sources
+                 (id, name, base_url, api_key, content_types, enabled, created_at)
+                 VALUES (?, ?, ?, NULL, ?, 1, ?)"
+            )
+            .bind(&id).bind(&name).bind(base_url).bind(&content_types).bind(now)
+            .execute(pool)
+            .await
+            {
+                Ok(_) => tracing::info!("PLUGIN_URLS: registered '{}' ({})", name, base_url),
+                Err(e) => tracing::warn!("PLUGIN_URLS: DB insert failed for {}: {}", base_url, e),
+            }
+        }
+        Err(e) => tracing::warn!("PLUGIN_URLS: probe failed for {}: {}", base_url, e),
+    }
 }
 
 async fn get_or_create_jwt_secret(pool: &sqlx::SqlitePool) -> Result<String> {

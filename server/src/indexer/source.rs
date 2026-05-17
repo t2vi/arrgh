@@ -1,7 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use sqlx::SqlitePool;
-use std::path::Path;
 
 pub struct MangaMeta {
     pub description: Option<String>,
@@ -20,9 +19,34 @@ pub struct MangaResult {
     pub tags: Option<String>,
 }
 
+/// A page image URL with any HTTP headers the downloader must send to fetch it.
+pub struct PageUrl {
+    pub url: String,
+    /// Referer header value, if the CDN requires it.
+    pub referer: Option<String>,
+}
+
+impl PageUrl {
+    pub fn new(url: impl Into<String>) -> Self {
+        Self { url: url.into(), referer: None }
+    }
+
+    pub fn with_referer(url: impl Into<String>, referer: impl Into<String>) -> Self {
+        Self { url: url.into(), referer: Some(referer.into()) }
+    }
+}
+
 #[async_trait]
 pub trait Source: Send + Sync {
     fn id(&self) -> &str;
+
+    /// Display name shown in Settings source list.
+    fn name(&self) -> &str { self.id() }
+
+    /// Content types this source carries, e.g. ["manga"], ["manhwa"], ["manga","manhwa","manhua"].
+    fn content_types(&self) -> Vec<String> { vec!["manga".to_string()] }
+
+    fn default_explicit(&self) -> bool { false }
 
     async fn search(&self, query: &str) -> Result<Vec<MangaResult>>;
 
@@ -33,9 +57,8 @@ pub trait Source: Send + Sync {
         source_id: &str,
     ) -> Result<usize>;
 
-    async fn download_chapter(&self, source_id: &str, dest: &Path) -> Result<usize>;
-
-    async fn get_page_url(&self, source_id: &str, page: usize) -> Result<String>;
+    /// Returns ordered page image URLs for a chapter. Downloader fetches and builds the CBZ.
+    async fn get_page_urls(&self, chapter_source_id: &str) -> Result<Vec<PageUrl>>;
 
     async fn fetch_cover(&self, url: &str) -> Result<Vec<u8>>;
 
@@ -46,10 +69,6 @@ pub trait Source: Send + Sync {
     async fn fetch_meta(&self, source_id: &str) -> Result<MangaMeta> {
         let _ = source_id;
         Err(anyhow::anyhow!("fetch_meta not supported for source: {}", self.id()))
-    }
-
-    fn default_explicit(&self) -> bool {
-        false
     }
 }
 

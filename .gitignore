@@ -9,6 +9,11 @@ server/arrgh.db
 # ── Web (React + Vite) ───────────────────────────────────────
 web/node_modules/
 web/dist/
+
+# ── Plugins ──────────────────────────────────────────────────
+plugins/*/node_modules/
+plugins/*/dist/
+plugins/*/.env
 web/.env
 web/.env.local
 web/tsconfig.*.tsbuildinfo

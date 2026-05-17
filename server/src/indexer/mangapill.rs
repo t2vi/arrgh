@@ -3,12 +3,10 @@ use async_trait::async_trait;
 use chrono::Utc;
 use scraper::{Html, Selector};
 use sqlx::SqlitePool;
-use std::io::Write as _;
-use std::path::Path;
 use std::sync::OnceLock;
 use uuid::Uuid;
 
-use super::source::{MangaMeta, MangaResult, Source};
+use super::source::{MangaMeta, MangaResult, PageUrl, Source};
 
 // ——— Source impl ———
 
@@ -26,12 +24,11 @@ impl Source for Mangapill {
         sync_chapters(db, manga_id, source_id).await
     }
 
-    async fn download_chapter(&self, source_id: &str, dest: &Path) -> Result<usize> {
-        download_chapter(source_id, dest).await
-    }
-
-    async fn get_page_url(&self, source_id: &str, page: usize) -> Result<String> {
-        get_page_url(source_id, page).await
+    async fn get_page_urls(&self, source_id: &str) -> Result<Vec<PageUrl>> {
+        let urls = fetch_chapter_images(source_id).await?;
+        Ok(urls.into_iter()
+            .map(|u| PageUrl::with_referer(u, BASE))
+            .collect())
     }
 
     async fn fetch_cover(&self, url: &str) -> Result<Vec<u8>> {
@@ -302,50 +299,6 @@ pub async fn fetch_cover_bytes(url: &str) -> Result<Vec<u8>> {
         .bytes()
         .await?
         .to_vec())
-}
-
-/// chapter_source_id = "2-11182000/one-piece-chapter-1182"
-pub async fn get_page_url(chapter_source_id: &str, page: usize) -> Result<String> {
-    let images = fetch_chapter_images(chapter_source_id).await?;
-    images.into_iter().nth(page)
-        .ok_or_else(|| anyhow!("page {} out of range", page))
-}
-
-pub async fn download_chapter(chapter_source_id: &str, dest: &Path) -> Result<usize> {
-    let images = fetch_chapter_images(chapter_source_id).await?;
-    let page_count = images.len();
-
-    if let Some(parent) = dest.parent() {
-        tokio::fs::create_dir_all(parent).await?;
-    }
-
-    let buf = Vec::<u8>::new();
-    let cursor = std::io::Cursor::new(buf);
-    let mut zip = zip::ZipWriter::new(cursor);
-    let opts = zip::write::SimpleFileOptions::default()
-        .compression_method(zip::CompressionMethod::Stored);
-
-    for (i, url) in images.iter().enumerate() {
-        let ext = url.split('?').next().unwrap_or(url)
-            .rsplit('.').next().unwrap_or("jpg");
-        let entry_name = format!("{:04}.{}", i, ext);
-        let bytes = client()
-            .get(url)
-            .header("Referer", BASE)
-            .send()
-            .await?
-            .bytes()
-            .await?;
-
-        zip.start_file(&entry_name, opts)?;
-        zip.write_all(&bytes)?;
-
-        tokio::time::sleep(tokio::time::Duration::from_millis(150)).await;
-    }
-
-    let cursor = zip.finish()?;
-    tokio::fs::write(dest, cursor.into_inner()).await?;
-    Ok(page_count)
 }
 
 // ——— Helpers ———

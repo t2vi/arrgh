@@ -1,5 +1,6 @@
 use anyhow::Result;
 use chrono::Utc;
+use std::io::Write as _;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -28,7 +29,6 @@ pub async fn start_worker(state: AppState) {
 async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
     let now = Utc::now();
 
-    // Hold mutex only for SELECT+UPDATE claim to prevent two workers picking the same row.
     let item = {
         let _guard = claim_lock.lock().await;
 
@@ -50,7 +50,7 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
         .await?;
 
         item
-    }; // claim_lock released — other workers can now claim their own items
+    };
 
     let chapter = sqlx::query!(
         r#"SELECT c.source_id, m.source as "source!", m.download_dir
@@ -83,15 +83,15 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
 
     tracing::info!("downloading: {} Ch. {} ({})", item.manga_title, item.chapter_num, chapter.source);
 
-    let src = match state.sources.get(&chapter.source) {
-        Some(s) => s.clone(),
+    let src = match state.sources.read().await.get(&chapter.source).cloned() {
+        Some(s) => s,
         None => {
             fail(state, &item.id, &format!("unknown source: {}", chapter.source)).await?;
             return Ok(());
         }
     };
 
-    match src.download_chapter(&source_id, &dest).await {
+    match download_cbz(src.as_ref(), &source_id, &dest).await {
         Ok(page_count) => {
             let path_str = dest.to_string_lossy().to_string();
             let pc = page_count as i64;
@@ -120,6 +120,47 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
     }
 
     Ok(())
+}
+
+async fn download_cbz(
+    src: &dyn crate::indexer::Source,
+    chapter_source_id: &str,
+    dest: &Path,
+) -> Result<usize> {
+    let pages = src.get_page_urls(chapter_source_id).await?;
+    let page_count = pages.len();
+
+    if let Some(parent) = dest.parent() {
+        tokio::fs::create_dir_all(parent).await?;
+    }
+
+    let client = reqwest::Client::new();
+    let buf = Vec::<u8>::new();
+    let cursor = std::io::Cursor::new(buf);
+    let mut zip = zip::ZipWriter::new(cursor);
+    let opts = zip::write::SimpleFileOptions::default()
+        .compression_method(zip::CompressionMethod::Stored);
+
+    for (i, page) in pages.iter().enumerate() {
+        let ext = page.url.split('?').next().unwrap_or(&page.url)
+            .rsplit('.').next().unwrap_or("jpg");
+        let entry_name = format!("{:04}.{}", i, ext);
+
+        let mut req = client.get(&page.url);
+        if let Some(ref referer) = page.referer {
+            req = req.header("Referer", referer);
+        }
+        let bytes = req.send().await?.bytes().await?;
+
+        zip.start_file(&entry_name, opts)?;
+        zip.write_all(&bytes)?;
+
+        tokio::time::sleep(tokio::time::Duration::from_millis(150)).await;
+    }
+
+    let cursor = zip.finish()?;
+    tokio::fs::write(dest, cursor.into_inner()).await?;
+    Ok(page_count)
 }
 
 async fn fail(state: &AppState, queue_id: &str, error: &str) -> Result<()> {

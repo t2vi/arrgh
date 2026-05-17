@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE external_sources SET enabled = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "5f34918530531f540d2c4f53668d8dfe4b46b7f1e9c1a8ac2f336fd95cfb2dc5"
+}

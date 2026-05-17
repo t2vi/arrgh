@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use crate::AppState;
 
+pub mod external;
 pub mod local;
 pub mod mangapill;
 pub mod source;
@@ -16,10 +17,32 @@ pub use source::Source;
 
 pub type SourceRegistry = Arc<HashMap<String, Arc<dyn Source>>>;
 
-pub fn build_registry() -> SourceRegistry {
+/// Rebuild registry merging compiled-in sources with enabled external sources from DB.
+pub async fn load_registry(db: &sqlx::SqlitePool) -> SourceRegistry {
     let mut map: HashMap<String, Arc<dyn Source>> = HashMap::new();
+
     let mp = Arc::new(mangapill::Mangapill);
     map.insert(mp.id().to_string(), mp);
+
+    match sqlx::query!(
+        r#"SELECT id as "id!", base_url as "base_url!", api_key FROM external_sources WHERE enabled = 1"#
+    )
+    .fetch_all(db)
+    .await {
+        Ok(rows) => {
+            for row in rows {
+                match external::ExternalSource::probe(row.id, row.base_url, row.api_key).await {
+                    Ok(src) => {
+                        tracing::info!("loaded external source: {} ({})", src.name(), src.id());
+                        map.insert(src.id().to_string(), Arc::new(src));
+                    }
+                    Err(e) => tracing::warn!("external source probe failed: {}", e),
+                }
+            }
+        }
+        Err(e) => tracing::warn!("failed to load external sources from DB: {}", e),
+    }
+
     Arc::new(map)
 }
 
@@ -58,7 +81,7 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
             Some(s) => s,
             None => continue,
         };
-        let src = match state.sources.get(&manga.source).cloned() {
+        let src = match state.sources.read().await.get(&manga.source).cloned() {
             Some(s) => s,
             None => {
                 tracing::warn!("no source impl for '{}', skipping", manga.source);
