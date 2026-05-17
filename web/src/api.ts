@@ -28,6 +28,7 @@ export interface MangaDetailResult {
   description: string | null
   cover_url: string | null
   chapter_count: number
+  tags: string | null
 }
 
 export interface QueueItem {

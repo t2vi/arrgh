@@ -105,6 +105,23 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
             continue;
         }
 
+        // Update is_explicit from meta tags (sources like Toonily encode explicit genre here)
+        if let Ok(meta) = src.fetch_meta(&source_id).await {
+            if let Some(tags) = meta.tags {
+                let tag_explicit = tags.split(',')
+                    .any(|t| t.trim().eq_ignore_ascii_case("adult"));
+                if tag_explicit {
+                    let _ = sqlx::query!(
+                        "UPDATE manga SET is_explicit = 1, tags = COALESCE(tags, ?) WHERE id = ?",
+                        tags, mid
+                    )
+                    .execute(&state.db)
+                    .await
+                    .map_err(|e| tracing::warn!("is_explicit update error for {}: {}", mid, e));
+                }
+            }
+        }
+
         let effective = manga.auto_download
             .map(|v| v != 0)
             .unwrap_or(global_auto_dl);

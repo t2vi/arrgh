@@ -45,6 +45,8 @@ struct MetaResponse {
     description: Option<String>,
     cover_url: Option<String>,
     chapter_count: usize,
+    #[serde(default)]
+    tags: Option<String>,
 }
 
 // ── ExternalSource ────────────────────────────────────────────────────────────
@@ -213,6 +215,7 @@ impl Source for ExternalSource {
             description: meta.description,
             cover_url: meta.cover_url,
             chapter_count: meta.chapter_count,
+            tags: meta.tags,
         })
     }
 }

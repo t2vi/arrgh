@@ -37,6 +37,8 @@ export function SearchRow({
       .catch(() => {})
   }, [needsDetail, result.source, result.id])
 
+  const explicitTags = result.tags ?? detail?.tags ?? null
+  const isExplicit = explicitTags?.split(',').some((t) => t.trim().toLowerCase() === 'adult') ?? false
   const description = result.description ?? detail?.description
   const resolvedCover = coverSrc
     ?? (detail?.cover_url ? api.proxyImageUrl(detail.cover_url) : null)
@@ -120,6 +122,11 @@ export function SearchRow({
             )}
           </div>
 
+          {isExplicit && (
+            <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400">
+              18+
+            </span>
+          )}
           {result.status && result.status !== 'unknown' && (
             <Badge variant="secondary" className="capitalize text-xs">{result.status}</Badge>
           )}
