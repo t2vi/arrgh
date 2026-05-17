@@ -107,7 +107,7 @@ arrgh/
 ```
 
 - **Backend**: Rust, Axum, SQLx (SQLite), Tokio
-- **Frontend**: React 18, TypeScript, Vite, TanStack Query, Tailwind
+- **Frontend**: React 18, TypeScript, Vite, Tailwind
 - **Mobile**: Flutter, Riverpod
 - **Plugins**: any language, HTTP server, Source Plugin Protocol
 
