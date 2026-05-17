@@ -25,6 +25,7 @@ pub struct MangaDetailResult {
     pub description: Option<String>,
     pub cover_url: Option<String>,
     pub chapter_count: usize,
+    pub tags: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -327,6 +328,7 @@ async fn detail_meta(
         description: meta.description,
         cover_url: meta.cover_url,
         chapter_count: meta.chapter_count,
+        tags: meta.tags,
     }).into_response())
 }
 
@@ -366,7 +368,10 @@ async fn add_manga(
         eid
     } else {
         let id = Uuid::new_v4().to_string();
-        let is_explicit: i64 = if src.default_explicit() { 1 } else { 0 };
+        let tag_explicit = body.tags.as_deref()
+            .map(|t| t.split(',').any(|tag| tag.trim().eq_ignore_ascii_case("adult")))
+            .unwrap_or(false);
+        let is_explicit: i64 = if src.default_explicit() || tag_explicit { 1 } else { 0 };
         sqlx::query!(
             r#"INSERT INTO manga
                (id, title, description, cover_url, status, source, source_id,

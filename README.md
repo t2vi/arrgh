@@ -57,9 +57,10 @@ See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full conf
 
 ### Plugins (external HTTP servers)
 
-| Source | Content | Directory |
-|---|---|---|
-| **MangaDex** | Manga, Manhwa, Manhua | `plugins/mangadex/` |
+| Source | Content | Directory | Notes |
+|---|---|---|---|
+| **MangaDex** | Manga, Manhwa, Manhua | `plugins/mangadex/` | |
+| **Toonily** | Manhwa | `plugins/toonily/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
 
 ### Adding a source
 
@@ -82,10 +83,12 @@ Optional endpoints (gracefully skipped if absent):
 
 ```
 GET /trending
-GET /manga/:source_id/meta
+GET /manga/:source_id/meta    → { description, cover_url, chapter_count, tags? }
 ```
 
-Plugins can be written in any language. See `plugins/mangadex/` for a TypeScript/Express reference implementation.
+`tags` in meta is a comma-separated genre string. Include `"adult"` to signal explicit content — arrgh sets `is_explicit = true` on sync and hides the title from users without Explicit Permission.
+
+Plugins can be written in any language. See `plugins/mangadex/` (API-backed) and `plugins/toonily/` (scraper + FlareSolverr) for reference implementations.
 
 ---
 
@@ -97,7 +100,8 @@ arrgh/
 ├── web/             # React + TypeScript SPA
 ├── app/             # Flutter app (Android / Firestick / tablet)
 └── plugins/
-    └── mangadex/    # MangaDex source plugin (TypeScript / Express)
+    ├── mangadex/    # MangaDex source plugin (TypeScript / Express)
+    └── toonily/     # Toonily source plugin (TypeScript / Express + FlareSolverr)
 ```
 
 - **Backend**: Rust, Axum, SQLx (SQLite), Tokio

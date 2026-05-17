@@ -6,6 +6,7 @@ pub struct MangaMeta {
     pub description: Option<String>,
     pub cover_url: Option<String>,
     pub chapter_count: usize,
+    pub tags: Option<String>,
 }
 
 pub struct MangaResult {

@@ -100,7 +100,7 @@ pub async fn fetch_meta(source_id: &str) -> Result<MangaMeta> {
 
         let chapter_count = doc.select(sel_chapter_link()).count();
 
-        MangaMeta { description, cover_url, chapter_count }
+        MangaMeta { description, cover_url, chapter_count, tags: None }
     };
 
     Ok(meta)
