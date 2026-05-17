@@ -61,6 +61,7 @@ See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full conf
 |---|---|---|---|
 | **MangaDex** | Manga, Manhwa, Manhua | `plugins/mangadex/` | |
 | **Toonily** | Manhwa | `plugins/toonily/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
+| **Comick** | Manga, Manhwa, Manhua | `plugins/comick/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
 
 ### Adding a source
 
@@ -101,7 +102,8 @@ arrgh/
 ├── app/             # Flutter app (Android / Firestick / tablet)
 └── plugins/
     ├── mangadex/    # MangaDex source plugin (TypeScript / Express)
-    └── toonily/     # Toonily source plugin (TypeScript / Express + FlareSolverr)
+    ├── toonily/     # Toonily source plugin (TypeScript / Express + FlareSolverr)
+    └── comick/      # Comick source plugin (TypeScript / Express)
 ```
 
 - **Backend**: Rust, Axum, SQLx (SQLite), Tokio

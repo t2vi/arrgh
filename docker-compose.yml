@@ -14,12 +14,13 @@ services:
       # RUST_LOG: arrgh_server=info
       # Comma-separated list of plugin URLs to auto-register on first startup.
       # Add new plugins here; they persist in the DB after first run.
-      PLUGIN_URLS: "http://mangadex:4000,http://toonily:4001"
+      PLUGIN_URLS: "http://mangadex:4000,http://toonily:4001,http://comick:4002"
     volumes:
       - arrgh_data:/data
     depends_on:
       - mangadex
       - toonily
+      - comick
 
   mangadex:
     build: ./plugins/mangadex
@@ -41,6 +42,18 @@ services:
     depends_on:
       - flaresolverr
     # To expose locally for debugging: ports: ["4001:4001"]
+
+  comick:
+    build: ./plugins/comick
+    restart: unless-stopped
+    environment:
+      PORT: "4002"
+      LANGUAGES: "en"
+      FLARESOLVERR_URL: "http://flaresolverr:8191"
+      # API_KEY: set-to-require-auth-from-arrgh
+    depends_on:
+      - flaresolverr
+    # To expose locally for debugging: ports: ["4002:4002"]
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
