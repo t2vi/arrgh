@@ -51,8 +51,8 @@ describe('useSettings', () => {
     vi.mocked(api.saveSettings).mockResolvedValue(updated as never)
     const { result } = renderHook(() => useSettings(), { wrapper })
     await waitFor(() => expect(result.current.isLoading).toBe(false))
-    await act(async () => { await result.current.handleSave({ workers: 5 }) })
-    expect(api.saveSettings).toHaveBeenCalledWith({ workers: 5 })
+    await act(async () => { await result.current.handleSave({ download_workers: 5 }) })
+    expect(api.saveSettings).toHaveBeenCalledWith({ download_workers: 5 })
     expect(result.current.settings).toEqual(updated)
   })
 
