@@ -24,7 +24,7 @@ impl<E: Into<anyhow::Error>> From<E> for AppError {
 
 mod auth_api;
 mod chapters;
-mod discover;
+pub mod discover;
 mod docs;
 mod manga;
 mod media;

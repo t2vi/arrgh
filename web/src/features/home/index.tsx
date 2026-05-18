@@ -97,18 +97,26 @@ export default function Home() {
               </section>
             )}
 
-            {h.trending.length >= 2 && (
+            {(h.trendingLoading || h.trending.length >= 2) && (
               <section className="mt-8 px-6 space-y-4">
                 <h2 className="text-xl font-bold">Trending Now</h2>
                 <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {h.trending.map((r, i) => (
-                    <TrendingCard
-                      key={r.id}
-                      result={r}
-                      badge={['HOT', 'TOP', 'NEW', '🔥', '📈', '⭐', '💥', '🎯'][i] ?? '•'}
-                      onClick={() => h.setSelectedTrending(r)}
-                    />
-                  ))}
+                  {h.trendingLoading
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="shrink-0 w-36">
+                          <div className="rounded-xl aspect-[2/3] bg-muted animate-pulse" />
+                          <div className="mt-2 h-3 w-24 bg-muted animate-pulse rounded" />
+                        </div>
+                      ))
+                    : h.trending.map((r, i) => (
+                        <TrendingCard
+                          key={r.id}
+                          result={r}
+                          badge={['HOT', 'TOP', 'NEW', '🔥', '📈', '⭐', '💥', '🎯'][i] ?? '•'}
+                          onClick={() => h.setSelectedTrending(r)}
+                        />
+                      ))
+                  }
                 </div>
               </section>
             )}

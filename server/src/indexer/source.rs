@@ -9,6 +9,7 @@ pub struct MangaMeta {
     pub tags: Option<String>,
 }
 
+#[derive(Clone)]
 pub struct MangaResult {
     pub id: String,
     pub title: String,

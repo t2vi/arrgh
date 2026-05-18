@@ -137,6 +137,7 @@ export function TrendingCard({ result, badge, onClick }: {
 }) {
   const [failed, setFailed] = useState(false)
   const src = failed ? '' : (result.cover_url ? api.proxyImageUrl(result.cover_url) : '')
+  const coverLoading = !result.cover_url && !failed
 
   return (
     <div
@@ -147,7 +148,9 @@ export function TrendingCard({ result, badge, onClick }: {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick() }}
     >
       <div className="relative rounded-xl overflow-hidden aspect-[2/3] transition-all duration-300 group-hover:scale-[1.04] group-hover:shadow-[0_0_20px_rgba(139,92,246,0.35)]">
-        {!src ? (
+        {coverLoading ? (
+          <div className="w-full h-full bg-muted animate-pulse" />
+        ) : !src ? (
           <div className="w-full h-full bg-muted flex items-center justify-center text-3xl">📖</div>
         ) : (
           <img src={src} alt="" className="w-full h-full object-cover object-top" onError={() => setFailed(true)} />
@@ -161,6 +164,7 @@ export function TrendingCard({ result, badge, onClick }: {
       </div>
       <div className="mt-2 px-0.5">
         <p className="text-sm font-semibold line-clamp-1">{result.title}</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{result.source_name}</p>
         {result.in_library && (
           <p className="text-[11px] text-primary mt-0.5 font-medium">In library</p>
         )}
@@ -235,7 +239,7 @@ export function TrendingModal({
   const [detailLoading, setDetailLoading] = useState(true)
 
   useEffect(() => {
-    api.getDiscoverDetail(result.source, result.id)
+    api.getDiscoverDetail(result.source, result.id, result.title)
       .then(setDetail)
       .catch(() => {})
       .finally(() => setDetailLoading(false))

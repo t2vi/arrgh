@@ -20,10 +20,11 @@ export function ServerSettingsSection({
   const [autoDownload, setAutoDownload] = useState(settings.auto_download)
   const [readerMode, setReaderMode] = useState<AppSettings['reader_mode']>(settings.reader_mode)
   const [downloadDir, setMangaDir] = useState(settings.download_dir)
+  const [trendingPerSource, setTrendingPerSource] = useState(settings.trending_per_source)
   const [saved, setSaved] = useState(false)
 
   function handleSave() {
-    onSave({ download_workers: workers, index_interval_hours: hours, auto_download: autoDownload, reader_mode: readerMode, download_dir: downloadDir })
+    onSave({ download_workers: workers, index_interval_hours: hours, auto_download: autoDownload, reader_mode: readerMode, download_dir: downloadDir, trending_per_source: trendingPerSource })
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -52,6 +53,11 @@ export function ServerSettingsSection({
           className="max-w-xs font-mono text-xs"
         />
       </div>
+
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pt-2">Discover</h2>
+      <SettingRow label="Trending titles per source" hint="How many results to show per source in Trending (1–20)">
+        <NumberStepper value={trendingPerSource} min={1} max={20} onChange={setTrendingPerSource} />
+      </SettingRow>
 
       <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pt-2">Reader</h2>
       <SettingRow label="Default reader mode" hint="Can be overridden per manga">

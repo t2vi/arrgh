@@ -9,15 +9,30 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::Arc;
+use std::time::Instant;
+use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::{auth, db::Manga, indexer::source::Source, AppState};
+use crate::{auth, db::Manga, indexer::source::{MangaResult, Source}, AppState};
 use super::ApiResult;
+
+// ── Trending cache ────────────────────────────────────────────────────────────
+
+#[derive(Clone)]
+pub struct CachedTrendingEntry {
+    pub source_id: String,
+    pub source_name: String,
+    pub result: MangaResult,
+    pub alternatives: Vec<SourceAlternative>,
+}
+
+pub type TrendingCache = Arc<Mutex<Option<(Instant, Vec<CachedTrendingEntry>)>>>;
 
 #[derive(Deserialize)]
 pub struct DetailQuery {
     pub source: String,
     pub source_id: String,
+    pub title: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -26,6 +41,182 @@ pub struct MangaDetailResult {
     pub cover_url: Option<String>,
     pub chapter_count: usize,
     pub tags: Option<String>,
+}
+
+// ── Title metadata cache helpers ──────────────────────────────────────────────
+
+struct MetaCacheRow {
+    cover_local_path: Option<String>,
+    cover_cdn_url: Option<String>,
+    description: Option<String>,
+}
+
+async fn batch_lookup_meta(
+    db: &sqlx::SqlitePool,
+    keys: &[String],
+) -> std::collections::HashMap<String, MetaCacheRow> {
+    if keys.is_empty() {
+        return std::collections::HashMap::new();
+    }
+    let placeholders = keys.iter().map(|_| "?").collect::<Vec<_>>().join(",");
+    let sql = format!(
+        "SELECT title_key, cover_local_path, cover_cdn_url, description FROM title_meta WHERE title_key IN ({})",
+        placeholders
+    );
+    let mut q = sqlx::query(&sql);
+    for k in keys {
+        q = q.bind(k.as_str());
+    }
+    match q.fetch_all(db).await {
+        Ok(rows) => {
+            use sqlx::Row;
+            rows.into_iter().map(|row| {
+                let key: String = row.get("title_key");
+                (key, MetaCacheRow {
+                    cover_local_path: row.get("cover_local_path"),
+                    cover_cdn_url: row.get("cover_cdn_url"),
+                    description: row.get("description"),
+                })
+            }).collect()
+        }
+        Err(e) => { tracing::warn!("batch_lookup_meta: {}", e); Default::default() }
+    }
+}
+
+fn meta_cover_url(key: &str) -> String {
+    format!("/api/media/meta-cover?key={}", urlencoding::encode(key))
+}
+
+fn enrich_with_cache(
+    cache: &std::collections::HashMap<String, MetaCacheRow>,
+    results: &mut Vec<SearchResult>,
+) {
+    for result in results.iter_mut() {
+        let key = normalize_title(&result.title);
+        if let Some(m) = cache.get(&key) {
+            if m.cover_local_path.is_some() {
+                result.cover_url = Some(meta_cover_url(&key));
+            } else if result.cover_url.is_none() {
+                result.cover_url = m.cover_cdn_url.clone();
+            }
+            if result.description.is_none() {
+                result.description = m.description.clone();
+            }
+        }
+    }
+}
+
+fn spawn_cover_download(
+    db: sqlx::SqlitePool,
+    src: Arc<dyn Source>,
+    cdn_url: String,
+    title_key: String,
+    download_dir: String,
+) {
+    tokio::spawn(async move {
+        download_meta_cover(&db, src, cdn_url, title_key, download_dir).await;
+    });
+}
+
+async fn seed_results_meta(
+    db: &sqlx::SqlitePool,
+    sources: &[(String, Arc<dyn Source>)],
+    download_dir: &str,
+    results: &[SearchResult],
+    meta_cache: &std::collections::HashMap<String, MetaCacheRow>,
+) {
+    for result in results {
+        let cover_cdn_url = match &result.cover_url {
+            Some(u) if !u.starts_with("/api/") => u.clone(),
+            _ => continue,
+        };
+        let key = normalize_title(&result.title);
+
+        if let Some(row) = meta_cache.get(&key) {
+            if row.cover_local_path.is_none() {
+                let cdn = row.cover_cdn_url.clone().unwrap_or_else(|| cover_cdn_url.clone());
+                if let Some((_, src)) = sources.iter().find(|(sid, _)| sid == &result.source) {
+                    spawn_cover_download(db.clone(), src.clone(), cdn, key, download_dir.to_string());
+                }
+            }
+            continue;
+        }
+
+        store_meta(
+            db, &key, &result.source, &result.id,
+            result.description.as_deref(),
+            Some(&cover_cdn_url),
+            result.tags.as_deref(),
+            0,
+        ).await;
+
+        if let Some((_, src)) = sources.iter().find(|(sid, _)| sid == &result.source) {
+            spawn_cover_download(db.clone(), src.clone(), cover_cdn_url, key, download_dir.to_string());
+        }
+    }
+}
+
+async fn store_meta(
+    db: &sqlx::SqlitePool,
+    key: &str,
+    source: &str,
+    source_id: &str,
+    description: Option<&str>,
+    cover_cdn_url: Option<&str>,
+    tags: Option<&str>,
+    chapter_count: usize,
+) {
+    let now = Utc::now().to_rfc3339();
+    let count = chapter_count as i64;
+    if let Err(e) = sqlx::query!(
+        r#"INSERT INTO title_meta (title_key, cover_cdn_url, description, tags, chapter_count, source, source_id, fetched_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(title_key) DO UPDATE SET
+             description  = COALESCE(excluded.description, title_meta.description),
+             cover_cdn_url = COALESCE(excluded.cover_cdn_url, title_meta.cover_cdn_url),
+             tags         = COALESCE(excluded.tags, title_meta.tags),
+             chapter_count = excluded.chapter_count,
+             fetched_at   = excluded.fetched_at"#,
+        key, cover_cdn_url, description, tags, count, source, source_id, now
+    )
+    .execute(db)
+    .await
+    {
+        tracing::warn!("store_meta failed for '{}': {}", key, e);
+    }
+}
+
+async fn download_meta_cover(
+    db: &sqlx::SqlitePool,
+    src: Arc<dyn Source>,
+    cdn_url: String,
+    title_key: String,
+    download_dir: String,
+) {
+    let ext = cdn_url.split('?').next().unwrap_or("cover")
+        .rsplit('.').next().unwrap_or("jpg");
+    let safe = title_key.chars().map(|c| if c.is_alphanumeric() { c } else { '_' }).collect::<String>();
+    let cover_path = Path::new(&download_dir)
+        .join("_meta")
+        .join(format!("{}.{}", safe, ext));
+
+    match src.fetch_cover(&cdn_url).await {
+        Ok(bytes) => {
+            if let Some(parent) = cover_path.parent() {
+                let _ = tokio::fs::create_dir_all(parent).await;
+            }
+            if tokio::fs::write(&cover_path, &bytes).await.is_ok() {
+                let path_str = cover_path.to_string_lossy().to_string();
+                let _ = sqlx::query!(
+                    "UPDATE title_meta SET cover_local_path = ? WHERE title_key = ?",
+                    path_str, title_key
+                )
+                .execute(db)
+                .await;
+            }
+        }
+        Err(e) => tracing::warn!("meta cover download failed for '{}': {}", title_key, e),
+    }
 }
 
 #[derive(Deserialize)]
@@ -169,6 +360,33 @@ fn snapshot_sources(
 
 /// Merge hits from multiple sources by normalized title.
 /// Returns one `SearchResult` per unique title with `alternatives` for secondary sources.
+fn interleave_and_limit(hits: Vec<SourceHit>, per_source: usize) -> Vec<SourceHit> {
+    let mut source_order: Vec<String> = Vec::new();
+    let mut groups: std::collections::HashMap<String, Vec<SourceHit>> = std::collections::HashMap::new();
+    for hit in hits {
+        if !groups.contains_key(&hit.source_id) {
+            source_order.push(hit.source_id.clone());
+        }
+        groups.entry(hit.source_id.clone()).or_default().push(hit);
+    }
+    let mut lanes: Vec<std::collections::VecDeque<SourceHit>> = source_order
+        .into_iter()
+        .map(|sid| groups.remove(&sid).unwrap_or_default().into_iter().take(per_source).collect())
+        .collect();
+    let mut out = Vec::new();
+    loop {
+        let mut advanced = false;
+        for lane in &mut lanes {
+            if let Some(hit) = lane.pop_front() {
+                out.push(hit);
+                advanced = true;
+            }
+        }
+        if !advanced { break; }
+    }
+    out
+}
+
 fn merge_hits(hits: Vec<SourceHit>) -> Vec<(String, String, crate::indexer::source::MangaResult, Vec<SourceAlternative>)> {
     // preserve insertion order per title — first source wins as primary
     let mut order: Vec<String> = Vec::new();
@@ -263,6 +481,14 @@ async fn search(
         });
     }
 
+    let sources_for_seed: Vec<(String, Arc<dyn Source>)> = {
+        let reg = state.sources.read().await;
+        reg.iter().map(|(id, src)| (id.clone(), src.clone())).collect()
+    };
+    let keys: Vec<String> = out.iter().map(|r| normalize_title(&r.title)).collect();
+    let meta_cache = batch_lookup_meta(&state.db, &keys).await;
+    seed_results_meta(&state.db, &sources_for_seed, &state.config.download_dir, &out, &meta_cache).await;
+    enrich_with_cache(&meta_cache, &mut out);
     Ok(Json(out).into_response())
 }
 
@@ -270,35 +496,102 @@ async fn trending(
     State(state): State<AppState>,
     axum::Extension(claims): axum::Extension<auth::Claims>,
 ) -> ApiResult<Response> {
+    const CACHE_TTL: std::time::Duration = std::time::Duration::from_secs(3600);
+
+    let per_source: usize = sqlx::query_scalar!(
+        "SELECT value FROM server_settings WHERE key = 'trending_per_source'"
+    )
+    .fetch_optional(&state.db)
+    .await
+    .ok()
+    .flatten()
+    .and_then(|v: String| v.parse().ok())
+    .unwrap_or(5);
+
+    // Snapshot sources once for seeding (used in all response paths)
+    let sources_for_seed: Vec<(String, Arc<dyn Source>)> = {
+        let reg = state.sources.read().await;
+        reg.iter().map(|(id, src)| (id.clone(), src.clone())).collect()
+    };
+
+    // Serve from cache if still fresh
+    {
+        let guard = state.trending_cache.lock().await;
+        if let Some((ts, entries)) = guard.as_ref() {
+            if ts.elapsed() < CACHE_TTL {
+                return build_trending_response(&state.db, &claims.sub, entries, &sources_for_seed, &state.config.download_dir).await;
+            }
+        }
+    }
+
+    // Fetch fresh results from all sources
     let sources = snapshot_sources(&*state.sources.read().await, None);
-    if sources.is_empty() {
+    let fresh = if sources.is_empty() {
+        vec![]
+    } else {
+        fan_out(sources, FanOutMode::Trending).await
+    };
+
+    // On empty fetch, serve stale cache or empty
+    if fresh.is_empty() {
+        let guard = state.trending_cache.lock().await;
+        if let Some((_, entries)) = guard.as_ref() {
+            tracing::debug!("trending: serving stale cache (sources returned nothing)");
+            return build_trending_response(&state.db, &claims.sub, entries, &sources_for_seed, &state.config.download_dir).await;
+        }
         return Ok(Json(Vec::<SearchResult>::new()).into_response());
     }
-    let hits = fan_out(sources, FanOutMode::Trending).await;
-    let merged = merge_hits(hits);
-    let user_id = &claims.sub;
-    let mut out = Vec::with_capacity(merged.len());
 
-    for (src_id, src_name, r, alts) in merged {
-        let (in_library, library_id) = check_in_library(&state.db, user_id, &src_id, &r.id, &alts).await;
+    // Interleave, limit per source, merge duplicates, then cache
+    let limited = interleave_and_limit(fresh, per_source);
+    let merged = merge_hits(limited);
+    let entries: Vec<CachedTrendingEntry> = merged
+        .into_iter()
+        .map(|(source_id, source_name, result, alternatives)| CachedTrendingEntry {
+            source_id, source_name, result, alternatives,
+        })
+        .collect();
+
+    {
+        let mut guard = state.trending_cache.lock().await;
+        *guard = Some((Instant::now(), entries.clone()));
+    }
+
+    build_trending_response(&state.db, &claims.sub, &entries, &sources_for_seed, &state.config.download_dir).await
+}
+
+async fn build_trending_response(
+    db: &sqlx::SqlitePool,
+    user_id: &str,
+    entries: &[CachedTrendingEntry],
+    sources_for_seed: &[(String, Arc<dyn Source>)],
+    download_dir: &str,
+) -> ApiResult<Response> {
+    let mut out = Vec::with_capacity(entries.len());
+    for entry in entries {
+        let (in_library, library_id) =
+            check_in_library(db, user_id, &entry.source_id, &entry.result.id, &entry.alternatives).await;
         out.push(SearchResult {
             in_library,
             library_id,
-            source: src_id,
-            source_name: src_name,
-            id: r.id,
-            title: r.title,
-            description: r.description,
-            cover_url: r.cover_url,
-            status: r.status,
-            author: r.author,
-            year: r.year,
-            tags: r.tags,
-            content_type: r.content_type.unwrap_or_else(|| "manga".to_string()),
-            alternatives: alts,
+            source: entry.source_id.clone(),
+            source_name: entry.source_name.clone(),
+            id: entry.result.id.clone(),
+            title: entry.result.title.clone(),
+            description: entry.result.description.clone(),
+            cover_url: entry.result.cover_url.clone(),
+            status: entry.result.status.clone(),
+            author: entry.result.author.clone(),
+            year: entry.result.year,
+            tags: entry.result.tags.clone(),
+            content_type: entry.result.content_type.clone().unwrap_or_else(|| "manga".to_string()),
+            alternatives: entry.alternatives.clone(),
         });
     }
-
+    let keys: Vec<String> = out.iter().map(|r| normalize_title(&r.title)).collect();
+    let meta_cache = batch_lookup_meta(db, &keys).await;
+    seed_results_meta(db, sources_for_seed, download_dir, &out, &meta_cache).await;
+    enrich_with_cache(&meta_cache, &mut out);
     Ok(Json(out).into_response())
 }
 
@@ -306,6 +599,43 @@ async fn detail_meta(
     State(state): State<AppState>,
     Query(q): Query<DetailQuery>,
 ) -> ApiResult<Response> {
+    let title_key = q.title.as_deref().map(normalize_title);
+
+    // Cache hit → return immediately (re-trigger download if cover missing locally)
+    if let Some(ref key) = title_key {
+        if let Ok(Some(cached)) = sqlx::query!(
+            "SELECT description, cover_local_path, cover_cdn_url, tags, chapter_count FROM title_meta WHERE title_key = ?",
+            key
+        )
+        .fetch_optional(&state.db)
+        .await
+        {
+            if cached.cover_local_path.is_none() {
+                if let Some(ref cdn_url) = cached.cover_cdn_url {
+                    let src = state.sources.read().await.get(&q.source).cloned();
+                    if let Some(src) = src {
+                        spawn_cover_download(
+                            state.db.clone(), src, cdn_url.clone(),
+                            key.clone(), state.config.download_dir.clone(),
+                        );
+                    }
+                }
+            }
+            let cover_url = if cached.cover_local_path.is_some() {
+                Some(meta_cover_url(key))
+            } else {
+                cached.cover_cdn_url
+            };
+            return Ok(Json(MangaDetailResult {
+                description: cached.description,
+                cover_url,
+                chapter_count: cached.chapter_count as usize,
+                tags: cached.tags,
+            }).into_response());
+        }
+    }
+
+    // Cache miss → fetch from source
     let src = state.sources.read().await.get(&q.source).cloned();
     let Some(src) = src else {
         return Ok(StatusCode::BAD_GATEWAY.into_response());
@@ -318,6 +648,26 @@ async fn detail_meta(
             return Ok(StatusCode::BAD_GATEWAY.into_response());
         }
     };
+
+    // Store in cache and spawn cover download
+    if let Some(ref key) = title_key {
+        store_meta(
+            &state.db, key, &q.source, &q.source_id,
+            meta.description.as_deref(),
+            meta.cover_url.as_deref(),
+            meta.tags.as_deref(),
+            meta.chapter_count,
+        ).await;
+
+        if let Some(cdn_url) = meta.cover_url.clone() {
+            let db = state.db.clone();
+            let dir = state.config.download_dir.clone();
+            let key = key.clone();
+            tokio::spawn(async move {
+                download_meta_cover(&db, src, cdn_url, key, dir).await;
+            });
+        }
+    }
 
     Ok(Json(MangaDetailResult {
         description: meta.description,

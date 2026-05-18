@@ -11,6 +11,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
-ENV PORT=4001 LANGUAGES=en API_KEY=
-EXPOSE 4001
+ENV PORT=4000 API_KEY=
+EXPOSE 4000
 CMD ["node", "dist/index.js"]

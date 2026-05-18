@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE title_meta SET cover_local_path = ? WHERE title_key = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "a17077d260f1a95db357387fe5dd22af066557ee284640e2e8d11158e2f764e3"
+}
