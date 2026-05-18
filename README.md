@@ -125,21 +125,19 @@ No CLA, no process overhead. Just open a PR.
 ## Roadmap
 
 **Sources**
-- ✅ Source plugin system — add sources without recompiling
-- ✅ MangaDex (manga / manhwa / manhua / one-shot)
-- ✅ Mangapill (manga)
-- ✅ Toonily (manhwa)
-- ✅ Comick (manga / manhwa / manhua)
-- ✅ Royal Road (web fiction / novels)
-- ✅ NovelFull (xianxia / wuxia novels)
-- ✅ Multi-source fan-out — parallel search + trending, merged by title
-- ✅ Title metadata cache — covers eagerly downloaded locally, CDN-gating transparent to client
-- ✅ Library cover fix — internal meta-cover paths resolved to CDN URL at add-to-library time; `serve_cover` self-heals stale entries
-- [ ] Manhwa-specific vertical/webtoon reader layout
-- [ ] Scanlation group preference per manga
+✅ Source plugin system — add sources without recompiling
+✅ MangaDex (manga / manhwa / manhua / one-shot)
+✅ Mangapill (manga)
+✅ Toonily (manhwa)
+✅ Comick (manga / manhwa / manhua)
+✅ Royal Road (web fiction / novels)
+✅ NovelFull (xianxia / wuxia novels)
+✅ Multi-source fan-out — parallel search + trending, merged by title
+✅ Title metadata cache — covers eagerly downloaded locally, CDN-gating transparent to client
+✅ Library cover fix — internal meta-cover paths resolved to CDN URL at add-to-library time; `serve_cover` self-heals stale entries
 
 **Reader**
-- ✅ Light novel reader (text-based, Markdown)
+✅ Light novel reader (text-based, Markdown)
 - [ ] Novel reader typography controls (font size, line width, serif/sans)
 - [ ] Keyboard and remote shortcuts in web reader
 - [ ] Reading statistics (time spent, chapters per week)
