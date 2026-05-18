@@ -255,6 +255,11 @@ async fn serve_cover(
         return Ok(axum::response::Redirect::temporary(&cover_path).into_response());
     }
 
+    // Bad DB entry — internal meta-cover path stored instead of CDN URL; redirect to it directly.
+    if cover_path.starts_with("/api/") {
+        return Ok(axum::response::Redirect::temporary(&cover_path).into_response());
+    }
+
     let data = match fs::read(&cover_path).await {
         Ok(d) => d,
         Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),

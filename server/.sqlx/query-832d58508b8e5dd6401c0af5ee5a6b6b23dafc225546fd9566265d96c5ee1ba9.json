@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT cover_cdn_url FROM title_meta WHERE title_key = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "cover_cdn_url",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "832d58508b8e5dd6401c0af5ee5a6b6b23dafc225546fd9566265d96c5ee1ba9"
+}

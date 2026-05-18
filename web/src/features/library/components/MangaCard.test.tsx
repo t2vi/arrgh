@@ -76,4 +76,39 @@ describe('MangaCard', () => {
     render(<MangaCard manga={makeManga({ sync_status: 'syncing' })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
     expect(screen.getByText('Building…')).toBeInTheDocument()
   })
+
+  it('uses cover_url directly when it starts with http', () => {
+    const { container } = render(
+      <MangaCard manga={makeManga({ cover_url: 'https://cdn.example.com/cover.jpg' })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />
+    )
+    const img = container.querySelector('img')!
+    expect(img.src).toContain('cdn.example.com')
+  })
+
+  it('uses /api/ cover_url directly without falling back to coverUrl', () => {
+    const { container } = render(
+      <MangaCard manga={makeManga({ cover_url: '/api/media/meta-cover?key=one%20piece' })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />
+    )
+    const img = container.querySelector('img')!
+    expect(img.src).toContain('/api/media/meta-cover')
+    expect(img.src).not.toContain('/covers/')
+  })
+
+  it('falls back to api.coverUrl when cover_url is null', () => {
+    const { container } = render(
+      <MangaCard manga={makeManga({ cover_url: null })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />
+    )
+    const img = container.querySelector('img')!
+    expect(img.src).toContain('/covers/m1')
+  })
+
+  it('falls back to api.coverUrl on img error', async () => {
+    const { container } = render(
+      <MangaCard manga={makeManga({ cover_url: 'https://cdn.example.com/broken.jpg' })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />
+    )
+    container.querySelector('img')!.dispatchEvent(new Event('error', { bubbles: true }))
+    await vi.waitFor(() => {
+      expect(container.querySelector('.text-4xl')).toBeTruthy()
+    })
+  })
 })

@@ -690,6 +690,25 @@ async fn add_manga(
         return Ok(StatusCode::BAD_REQUEST.into_response());
     };
 
+    // If cover_url is an internal meta-cover path (injected by enrich_with_cache),
+    // resolve it back to the CDN URL so we don't store an internal API path in the DB.
+    let resolved_cover_url: Option<String> = if let Some(ref url) = body.cover_url {
+        if let Some(encoded_key) = url.strip_prefix("/api/media/meta-cover?key=") {
+            let key = urlencoding::decode(encoded_key).unwrap_or_else(|_| encoded_key.into()).into_owned();
+            sqlx::query_scalar!(
+                "SELECT cover_cdn_url FROM title_meta WHERE title_key = ?",
+                key
+            )
+            .fetch_optional(&state.db)
+            .await?
+            .flatten()
+        } else {
+            Some(url.clone())
+        }
+    } else {
+        None
+    };
+
     let existing_id = sqlx::query_scalar!(
         r#"SELECT id as "id!" FROM manga WHERE source = ? AND source_id = ?"#,
         source, body.source_id
@@ -722,7 +741,7 @@ async fn add_manga(
                (id, title, description, cover_url, status, source, source_id,
                 author, year, tags, sync_status, content_type, is_explicit, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
-            id, body.title, body.description, body.cover_url, body.status,
+            id, body.title, body.description, resolved_cover_url, body.status,
             source, body.source_id, body.author, body.year, body.tags,
             body.content_type, is_explicit, now, now
         )
@@ -742,7 +761,7 @@ async fn add_manga(
     let db = state.db.clone();
     let mid = manga_id.clone();
     let source_id = body.source_id.clone();
-    let cover_url = body.cover_url.clone();
+    let cover_url = resolved_cover_url;
     let download_dir = state.config.download_dir.clone();
     tokio::spawn(async move {
         let result = src.sync_chapters(&db, &mid, &source_id).await;
