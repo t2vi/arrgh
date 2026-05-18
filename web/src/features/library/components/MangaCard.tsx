@@ -15,7 +15,9 @@ export function MangaCard({
 }) {
   const [imgFailed, setImgFailed] = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const src = !imgFailed && manga.cover_url?.startsWith('http') ? manga.cover_url : api.coverUrl(manga.id)
+  const src = !imgFailed && (manga.cover_url?.startsWith('http') || manga.cover_url?.startsWith('/api/'))
+    ? manga.cover_url
+    : api.coverUrl(manga.id)
   const isSyncing    = manga.sync_status === 'syncing'
   const hasDownloads = (manga.downloaded_chapters ?? 0) > 0
 
