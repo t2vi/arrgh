@@ -29,17 +29,7 @@ docker compose up -d
 
 Open `http://<your-server-ip>:8080` — the setup wizard runs on first launch.
 
-The default Compose file includes the **MangaDex plugin** (manga + manhwa + manhua). It auto-registers on first boot via `PLUGIN_URLS` — no manual configuration needed.
-
-Or run just the server (Mangapill built-in only):
-
-```bash
-docker run -d \
-  --name arrgh \
-  -p 8080:8080 \
-  -v arrgh_data:/data \
-  ghcr.io/t2vi/arrgh:latest
-```
+The default Compose file includes the **Mangapill** and **MangaDex** plugins. They auto-register on first boot via `PLUGIN_URLS` — no manual configuration needed.
 
 See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full configuration.
 
@@ -49,19 +39,18 @@ See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full conf
 
 *ARRgh uses a plugin system for content sources. Each source is an HTTP server implementing the [Source Plugin Protocol](docs/adr/0004-external-source-plugin-protocol.md).
 
-### Built-in (compiled-in)
+### Bundled plugins
 
-| Source | Content | Notes |
-|---|---|---|
-| **Mangapill** | Manga | Default, no setup required |
+All default sources run as external HTTP plugins — no compiled-in sources:
 
-### Plugins (external HTTP servers)
-
-| Source | Content | Directory | Notes |
-|---|---|---|---|
-| **MangaDex** | Manga, Manhwa, Manhua | `plugins/mangadex/` | |
-| **Toonily** | Manhwa | `plugins/toonily/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
-| **Comick** | Manga, Manhwa, Manhua | `plugins/comick/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
+| Source | Content | Port | Directory | Notes |
+|---|---|---|---|---|
+| **Mangapill** | Manga | 4000 | `plugins/mangapill/` | |
+| **MangaDex** | Manga, Manhwa, Manhua, One-shot | 4001 | `plugins/mangadex/` | |
+| **Toonily** | Manhwa | 4002 | `plugins/toonily/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
+| **Comick** | Manga, Manhwa, Manhua | 4003 | `plugins/comick/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
+| **Royal Road** | Novel | 4004 | `plugins/royalroad/` | English web fiction |
+| **NovelFull** | Novel | 4005 | `plugins/novelfull/` | Requires [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) sidecar |
 
 ### Adding a source
 
@@ -84,8 +73,12 @@ Optional endpoints (gracefully skipped if absent):
 
 ```
 GET /trending
-GET /manga/:source_id/meta    → { description, cover_url, chapter_count, tags? }
+GET /manga/:source_id/meta        → { description, cover_url, chapter_count, tags? }
+GET /cover?url=<encoded_cdn_url>  → raw image bytes
+GET /chapter/:source_id/text      → Markdown string (novel chapters only)
 ```
+
+`/cover` lets a plugin fetch CDN images with source-specific headers (e.g. custom `Referer`). When absent, arrgh fetches directly with a browser User-Agent.
 
 `tags` in meta is a comma-separated genre string. Include `"adult"` to signal explicit content — arrgh sets `is_explicit = true` on sync and hides the title from users without Explicit Permission.
 
@@ -101,9 +94,12 @@ arrgh/
 ├── web/             # React + TypeScript SPA
 ├── app/             # Flutter app (Android / Firestick / tablet)
 └── plugins/
+    ├── mangapill/   # Mangapill source plugin (TypeScript / Express)
     ├── mangadex/    # MangaDex source plugin (TypeScript / Express)
     ├── toonily/     # Toonily source plugin (TypeScript / Express + FlareSolverr)
-    └── comick/      # Comick source plugin (TypeScript / Express)
+    ├── comick/      # Comick source plugin (TypeScript / Express + FlareSolverr)
+    ├── royalroad/   # Royal Road source plugin (TypeScript / Express)
+    └── novelfull/   # NovelFull source plugin (TypeScript / Express + FlareSolverr)
 ```
 
 - **Backend**: Rust, Axum, SQLx (SQLite), Tokio
@@ -129,13 +125,21 @@ No CLA, no process overhead. Just open a PR.
 ## Roadmap
 
 **Sources**
-- [x] Source plugin system — add sources without recompiling
-- [x] MangaDex (manga / manhwa / manhua)
+- ✅ Source plugin system — add sources without recompiling
+- ✅ MangaDex (manga / manhwa / manhua / one-shot)
+- ✅ Mangapill (manga)
+- ✅ Toonily (manhwa)
+- ✅ Comick (manga / manhwa / manhua)
+- ✅ Royal Road (web fiction / novels)
+- ✅ NovelFull (xianxia / wuxia novels)
+- ✅ Multi-source fan-out — parallel search + trending, merged by title
+- ✅ Title metadata cache — covers eagerly downloaded locally, CDN-gating transparent to client
 - [ ] Manhwa-specific vertical/webtoon reader layout
 - [ ] Scanlation group preference per manga
 
 **Reader**
-- [x] Light novel reader (text-based, MD support)
+- ✅ Light novel reader (text-based, Markdown)
+- [ ] Novel reader typography controls (font size, line width, serif/sans)
 - [ ] Keyboard and remote shortcuts in web reader
 - [ ] Reading statistics (time spent, chapters per week)
 

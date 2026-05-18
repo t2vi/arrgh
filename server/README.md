@@ -17,9 +17,10 @@ API at `http://localhost:3000`. Docs at `http://localhost:3000/api/docs`.
 | Variable | Default | Description |
 |---|---|---|
 | `DATABASE_URL` | `sqlite://arrgh.db` | SQLite path |
-| `DOWNLOAD_DIR` | `./downloads` | Chapter download directory |
+| `DOWNLOAD_DIR` | `./downloads` | Chapter + cover download directory |
 | `BIND_ADDR` | `0.0.0.0:3000` | Listen address |
 | `INDEX_INTERVAL_HOURS` | `6` | Library sync interval |
+| `PLUGIN_URLS` | — | Comma-separated plugin base URLs, auto-registered on startup (e.g. `http://localhost:4000,http://localhost:4001`) |
 | `RUST_LOG` | — | Log level (`arrgh_server=debug`) |
 
 ## Database migrations

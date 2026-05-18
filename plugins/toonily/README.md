@@ -51,7 +51,7 @@ npm run dev            # tsx watch mode
 npm run build && npm start
 ```
 
-Plugin listens on `http://localhost:4001` by default.
+Plugin listens on `http://localhost:4002` by default.
 
 **Step 3 — register with arrgh.** Pick one:
 
@@ -60,14 +60,14 @@ Plugin listens on `http://localhost:4001` by default.
 Add to `server/.env`:
 
 ```
-PLUGIN_URLS=http://localhost:4001
+PLUGIN_URLS=http://localhost:4002
 ```
 
 Then (re)start the arrgh server. The URL is inserted once; subsequent restarts skip it.
 
 **Option B — register at runtime**
 
-With both arrgh and the plugin running, open **Settings → Sources → Add** and enter `http://localhost:4001`. No restart needed.
+With both arrgh and the plugin running, open **Settings → Sources → Add** and enter `http://localhost:4002`. No restart needed.
 
 ---
 
@@ -75,7 +75,7 @@ With both arrgh and the plugin running, open **Settings → Sources → Add** an
 
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `4001` | Listen port |
+| `PORT` | `4002` | Listen port |
 | `FLARESOLVERR_URL` | `http://flaresolverr:8191` | FlareSolverr base URL (required) |
 | `API_KEY` | — | Require `Authorization: Bearer <key>` on all requests |
 
