@@ -124,35 +124,35 @@ No CLA, no process overhead. Just open a PR.
 
 ## Roadmap
 
-**Sources** \
-✅ Source plugin system — add sources without recompiling \
-✅ MangaDex (manga / manhwa / manhua / one-shot) \
-✅ Mangapill (manga) \
-✅ Toonily (manhwa) \
-✅ Comick (manga / manhwa / manhua) \
-✅ Royal Road (web fiction / novels) \
-✅ NovelFull (xianxia / wuxia novels) \
-✅ Multi-source fan-out — parallel search + trending, merged by title \
-✅ Title metadata cache — covers eagerly downloaded locally, CDN-gating transparent to client \
-✅ Library cover fix — internal meta-cover paths resolved to CDN URL at add-to-library time; `serve_cover` self-heals stale entries \
+**Sources** <br />
+✅ Source plugin system — add sources without recompiling <br />
+✅ MangaDex (manga / manhwa / manhua / one-shot) <br />
+✅ Mangapill (manga) <br />
+✅ Toonily (manhwa) <br />
+✅ Comick (manga / manhwa / manhua) <br />
+✅ Royal Road (web fiction / novels) <br />
+✅ NovelFull (xianxia / wuxia novels) <br />
+✅ Multi-source fan-out — parallel search + trending, merged by title <br />
+✅ Title metadata cache — covers eagerly downloaded locally, CDN-gating transparent to client <br />
+✅ Library cover fix — internal meta-cover paths resolved to CDN URL at add-to-library time; `serve_cover` self-heals stale entries <br />
 
-**Reader**\
-✅ Light novel reader (text-based, Markdown)\
-🔳 Novel reader typography controls (font size, line width, serif/sans) \
-🔳 Keyboard and remote shortcuts in web reader \
-🔳 Reading statistics (time spent, chapters per week)\
+**Reader**<br />
+✅ Light novel reader (text-based, Markdown) <br />
+🔳 Novel reader typography controls (font size, line width, serif/sans) <br />
+🔳 Keyboard and remote shortcuts in web reader <br />
+🔳 Reading statistics (time spent, chapters per week) <br />
 
-**Library** \
-🔳 Metadata editing (title, cover, tags) \
-🔳 CBZ / CBR local import \
-🔳 Backup and export (library + reading progress) \
+**Library** <br />
+🔳 Metadata editing (title, cover, tags) <br />
+🔳 CBZ / CBR local import <br />
+🔳 Backup and export (library + reading progress) <br />
 
-**Integrations** \
-🔳 Push notifications for new chapters \
-🔳 Webhook on new chapter download \
+**Integrations** <br />
+🔳 Push notifications for new chapters <br />
+🔳 Webhook on new chapter download <br />
 
-**Infrastructure** \
-🔳 PostgreSQL support alongside SQLite \
+**Infrastructure** <br />
+🔳 PostgreSQL support alongside SQLite <br />
 
 These are the items I think are most important — open one to propose or claim.
 
