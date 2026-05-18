@@ -134,7 +134,7 @@ No CLA, no process overhead. Just open a PR.
 ✅ NovelFull (xianxia / wuxia novels) \
 ✅ Multi-source fan-out — parallel search + trending, merged by title \
 ✅ Title metadata cache — covers eagerly downloaded locally, CDN-gating transparent to client \
-✅ Library cover fix — internal meta-cover paths resolved to CDN URL at add-to-library time; `serve_cover` self-heals stale entries\
+✅ Library cover fix — internal meta-cover paths resolved to CDN URL at add-to-library time; `serve_cover` self-heals stale entries \
 
 **Reader**\
 ✅ Light novel reader (text-based, Markdown)\
