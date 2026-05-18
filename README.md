@@ -138,21 +138,21 @@ No CLA, no process overhead. Just open a PR.
 
 **Reader**\
 ✅ Light novel reader (text-based, Markdown)\
-🔲 Novel reader typography controls (font size, line width, serif/sans) \
-🔲 Keyboard and remote shortcuts in web reader \
-🔲 Reading statistics (time spent, chapters per week)\
+🔳 Novel reader typography controls (font size, line width, serif/sans) \
+🔳 Keyboard and remote shortcuts in web reader \
+🔳 Reading statistics (time spent, chapters per week)\
 
 **Library** \
-🔲 Metadata editing (title, cover, tags) \
-🔲 CBZ / CBR local import \
-🔲 Backup and export (library + reading progress) \
+🔳 Metadata editing (title, cover, tags) \
+🔳 CBZ / CBR local import \
+🔳 Backup and export (library + reading progress) \
 
 **Integrations** \
-🔲 Push notifications for new chapters \
-🔲 Webhook on new chapter download \
+🔳 Push notifications for new chapters \
+🔳 Webhook on new chapter download \
 
 **Infrastructure** \
-🔲 PostgreSQL support alongside SQLite \
+🔳 PostgreSQL support alongside SQLite \
 
 These are the items I think are most important — open one to propose or claim.
 
