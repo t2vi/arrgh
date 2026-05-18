@@ -33,6 +33,7 @@ pub struct AppState {
     pub jwt_secret: Arc<String>,
     pub sources: SourceMap,
     pub page_cache: PageCache,
+    pub trending_cache: api::discover::TrendingCache,
 }
 
 #[tokio::main]
@@ -91,6 +92,7 @@ async fn main() -> Result<()> {
         jwt_secret,
         sources,
         page_cache: Arc::new(Mutex::new(HashMap::new())),
+        trending_cache: Arc::new(Mutex::new(None)),
     };
 
     indexer::start_scheduler(state.clone());

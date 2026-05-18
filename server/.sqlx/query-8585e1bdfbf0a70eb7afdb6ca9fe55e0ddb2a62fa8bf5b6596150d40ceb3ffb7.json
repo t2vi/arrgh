@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT cover_local_path, cover_cdn_url FROM title_meta WHERE title_key = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "cover_local_path",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "cover_cdn_url",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "8585e1bdfbf0a70eb7afdb6ca9fe55e0ddb2a62fa8bf5b6596150d40ceb3ffb7"
+}

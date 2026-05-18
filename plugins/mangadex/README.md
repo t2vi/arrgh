@@ -16,7 +16,7 @@ Implements the [Source Plugin Protocol](../../docs/adr/0004-external-source-plug
 
 ### With Docker Compose (recommended)
 
-Included in the root `docker-compose.yml` — starts automatically alongside arrgh. MangaDex auto-registers via `PLUGIN_URLS=http://mangadex:4000` on first boot.
+Included in the root `docker-compose.yml` — starts automatically alongside arrgh. MangaDex auto-registers via `PLUGIN_URLS=http://mangadex:4001` on first boot.
 
 ### Locally (dev)
 
@@ -28,7 +28,7 @@ npm run dev        # ts-node watch mode
 npm run build && npm start
 ```
 
-Plugin listens on `http://localhost:4000` by default.
+Plugin listens on `http://localhost:4001` by default.
 
 **Important:** running the plugin is not enough — you must also register it with arrgh. Pick one:
 
@@ -37,14 +37,14 @@ Plugin listens on `http://localhost:4000` by default.
 Add to `server/.env`:
 
 ```
-PLUGIN_URLS=http://localhost:4000
+PLUGIN_URLS=http://localhost:4001
 ```
 
 Then (re)start the arrgh server. The URL is inserted once; subsequent restarts skip it.
 
 **Option B — register at runtime**
 
-With both arrgh and the plugin running, open **Settings → Sources → Add** and enter `http://localhost:4000`. No restart needed.
+With both arrgh and the plugin running, open **Settings → Sources → Add** and enter `http://localhost:4001`. No restart needed.
 
 ---
 
@@ -52,7 +52,7 @@ With both arrgh and the plugin running, open **Settings → Sources → Add** an
 
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `4000` | Listen port |
+| `PORT` | `4001` | Listen port |
 | `LANGUAGES` | `en` | Comma-separated translated languages (e.g. `en,fr,pt-br`) |
 | `API_KEY` | — | Require `Authorization: Bearer <key>` on all requests |
 

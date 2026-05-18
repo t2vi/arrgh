@@ -254,8 +254,8 @@ export const api = {
 
   getTrending: () => get<SearchResult[]>('/api/discover/trending'),
 
-  getDiscoverDetail: (source: string, sourceId: string) =>
-    get<MangaDetailResult>('/api/discover/detail', { source, source_id: sourceId }),
+  getDiscoverDetail: (source: string, sourceId: string, title?: string) =>
+    get<MangaDetailResult>('/api/discover/detail', { source, source_id: sourceId, ...(title ? { title } : {}) }),
 
   addManga: (result: SearchResult & { source_id?: string }) =>
     post<Manga>('/api/discover/add', {
@@ -300,7 +300,8 @@ export const api = {
 
   pageUrl: (chapterId: string, page: number) => `${base()}/api/media/page/${chapterId}/${page}`,
   coverUrl: (mangaId: string) => `${base()}/api/media/cover/${mangaId}`,
-  proxyImageUrl: (url: string) => `/api/media/proxy?url=${encodeURIComponent(url)}`,
+  proxyImageUrl: (url: string) =>
+    url.startsWith('/api/') ? url : `/api/media/proxy?url=${encodeURIComponent(url)}`,
 
   // Sources (admin only)
   listSources: () => get<SourceRow[]>('/api/sources'),

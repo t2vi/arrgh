@@ -10,7 +10,6 @@ use crate::AppState;
 
 pub mod external;
 pub mod local;
-pub mod mangapill;
 pub mod source;
 
 pub use source::Source;
@@ -20,9 +19,6 @@ pub type SourceRegistry = Arc<HashMap<String, Arc<dyn Source>>>;
 /// Rebuild registry merging compiled-in sources with enabled external sources from DB.
 pub async fn load_registry(db: &sqlx::SqlitePool) -> SourceRegistry {
     let mut map: HashMap<String, Arc<dyn Source>> = HashMap::new();
-
-    let mp = Arc::new(mangapill::Mangapill);
-    map.insert(mp.id().to_string(), mp);
 
     match sqlx::query!(
         r#"SELECT id as "id!", base_url as "base_url!", api_key FROM external_sources WHERE enabled = 1"#

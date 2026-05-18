@@ -11,6 +11,7 @@ pub struct AppSettings {
     pub auto_download: bool,
     pub reader_mode: String,
     pub download_dir: String,
+    pub trending_per_source: i64,
 }
 
 #[derive(Deserialize)]
@@ -20,6 +21,7 @@ pub struct SaveBody {
     pub auto_download: Option<bool>,
     pub reader_mode: Option<String>,
     pub download_dir: Option<String>,
+    pub trending_per_source: Option<i64>,
 }
 
 pub fn router() -> Router<AppState> {
@@ -49,6 +51,9 @@ pub async fn read_settings(pool: &sqlx::SqlitePool, default_download_dir: &str) 
             .unwrap_or_else(|| "paged".to_string()),
         download_dir: val(pool, "download_dir").await
             .unwrap_or_else(|| default_download_dir.to_string()),
+        trending_per_source: val(pool, "trending_per_source").await
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(5),
     }
 }
 
@@ -92,6 +97,10 @@ async fn save_settings(
         if !d.is_empty() {
             upsert(&state.db, "download_dir", d).await?;
         }
+    }
+    if let Some(n) = body.trending_per_source {
+        let n = n.clamp(1, 50);
+        upsert(&state.db, "trending_per_source", &n.to_string()).await?;
     }
 
     Ok(Json(read_settings(&state.db, &state.config.download_dir).await).into_response())

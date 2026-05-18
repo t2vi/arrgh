@@ -17,10 +17,16 @@ struct ProxyQuery {
     url: String,
 }
 
+#[derive(Deserialize)]
+struct MetaCoverQuery {
+    key: String,
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/media/page/{chapter_id}/{page}", get(serve_page))
         .route("/media/cover/{manga_id}", get(serve_cover))
+        .route("/media/meta-cover", get(serve_meta_cover))
         .route("/media/proxy", get(proxy_image))
 }
 
@@ -185,6 +191,49 @@ async fn serve_page(
     let data = strip_jpeg_icc(bytes);
 
     Ok(([(header::CONTENT_TYPE, ct)], data).into_response())
+}
+
+async fn serve_meta_cover(
+    State(state): State<AppState>,
+    Query(params): Query<MetaCoverQuery>,
+) -> ApiResult<Response> {
+    let row = sqlx::query!(
+        "SELECT cover_local_path, cover_cdn_url FROM title_meta WHERE title_key = ?",
+        params.key
+    )
+    .fetch_optional(&state.db)
+    .await?;
+
+    let Some(row) = row else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+
+    if let Some(ref path) = row.cover_local_path {
+        if let Ok(data) = fs::read(path).await {
+            if image_content_type(&data).is_some() {
+                let ct = if path.ends_with(".webp") { "image/webp" }
+                         else if path.ends_with(".png") { "image/png" }
+                         else { "image/jpeg" };
+                return Ok(([(header::CONTENT_TYPE, ct)], data).into_response());
+            }
+            // Corrupt file — clear local path so next seed re-downloads
+            tracing::warn!("meta cover for '{}' is corrupt ({} bytes), clearing", params.key, data.len());
+            let _ = sqlx::query!(
+                "UPDATE title_meta SET cover_local_path = NULL WHERE title_key = ?",
+                params.key
+            )
+            .execute(&state.db)
+            .await;
+        }
+    }
+
+    // Fall back to CDN via proxy
+    if let Some(cdn_url) = row.cover_cdn_url {
+        let proxy_url = format!("/api/media/proxy?url={}", urlencoding::encode(&cdn_url));
+        return Ok(axum::response::Redirect::temporary(&proxy_url).into_response());
+    }
+
+    Ok(StatusCode::NOT_FOUND.into_response())
 }
 
 async fn serve_cover(

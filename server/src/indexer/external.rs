@@ -211,7 +211,13 @@ impl Source for ExternalSource {
     }
 
     async fn fetch_cover(&self, url: &str) -> Result<Vec<u8>> {
-        Ok(self.client.get(url).send().await?.bytes().await?.to_vec())
+        // Try plugin's /cover endpoint first — it handles source-specific Referer/auth.
+        // Fall back to direct fetch for plugins that don't implement /cover.
+        let resp = self.get(&format!("/cover?url={}", urlencoding::encode(url))).send().await?;
+        if resp.status().is_success() {
+            return Ok(resp.bytes().await?.to_vec());
+        }
+        Ok(self.client.get(url).header("User-Agent", "Mozilla/5.0").send().await?.bytes().await?.to_vec())
     }
 
     async fn trending(&self) -> Result<Vec<MangaResult>> {

@@ -2,7 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import * as nf from './novelfull'
 
-const PORT = parseInt(process.env.PORT ?? '4004', 10)
+const PORT = parseInt(process.env.PORT ?? '4005', 10)
 const API_KEY = process.env.API_KEY ?? ''
 
 const app = express()

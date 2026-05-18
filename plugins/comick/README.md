@@ -15,14 +15,14 @@ docker run -d -p 8191:8191 ghcr.io/flaresolverr/flaresolverr:latest
 ```bash
 cp .env.example .env   # set FLARESOLVERR_URL=http://localhost:8191
 npm install
-npm run dev            # starts on :4002
+npm run dev            # starts on :4003
 ```
 
 ## Environment variables
 
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `4002` | Port to listen on |
+| `PORT` | `4003` | Port to listen on |
 | `LANGUAGES` | `en` | Comma-separated language codes for chapter filtering |
 | `FLARESOLVERR_URL` | `http://flaresolverr:8191` | FlareSolverr base URL |
 | `API_KEY` | _(none)_ | If set, arrgh must send `Authorization: Bearer <key>` |

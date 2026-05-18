@@ -6,6 +6,7 @@ export interface HomeHandle {
   items: Manga[]
   isLoading: boolean
   trending: SearchResult[]
+  trendingLoading: boolean
   newReleases: NewReleaseItem[]
   continueItems: ContinueItem[]
   recentUp: Manga[]
@@ -21,6 +22,7 @@ export function useHome(): HomeHandle {
   const [mangaData, setMangaData] = useState<{ items: Manga[]; total: number; limit: number } | undefined>()
   const [isLoading, setIsLoading] = useState(true)
   const [trendingData, setTrendingData] = useState<SearchResult[]>([])
+  const [trendingLoading, setTrendingLoading] = useState(true)
   const [newReleasesData, setNewReleasesData] = useState<NewReleaseItem[]>([])
   const [continueData, setContinueData] = useState<ContinueItem[]>([])
 
@@ -35,12 +37,37 @@ export function useHome(): HomeHandle {
   // Trending — fetch on mount, refetch on window focus
   useEffect(() => {
     function fetchTrending() {
-      api.getTrending().then(setTrendingData).catch(() => {})
+      setTrendingLoading(true)
+      api.getTrending()
+        .then(setTrendingData)
+        .catch(() => {})
+        .finally(() => setTrendingLoading(false))
     }
     fetchTrending()
     window.addEventListener('focus', fetchTrending)
     return () => window.removeEventListener('focus', fetchTrending)
   }, [])
+
+  // Poll trending every 5s while any card is still missing a cover (downloads in-flight)
+  const trendingPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  useEffect(() => {
+    if (trendingPollRef.current) clearInterval(trendingPollRef.current)
+    const missingCovers = trendingData.some((r) => !r.cover_url)
+    if (!missingCovers || trendingLoading) return
+    trendingPollRef.current = setInterval(() => {
+      api.getTrending()
+        .then((data) => {
+          setTrendingData(data)
+          if (data.every((r) => r.cover_url)) {
+            if (trendingPollRef.current) clearInterval(trendingPollRef.current)
+          }
+        })
+        .catch(() => {})
+    }, 5000)
+    return () => {
+      if (trendingPollRef.current) clearInterval(trendingPollRef.current)
+    }
+  }, [trendingData, trendingLoading])
 
   // New releases — poll every 5 minutes
   useEffect(() => {
@@ -91,6 +118,7 @@ export function useHome(): HomeHandle {
     items,
     isLoading,
     trending,
+    trendingLoading,
     newReleases,
     continueItems,
     recentUp,

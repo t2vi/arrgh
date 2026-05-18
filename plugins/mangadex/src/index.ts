@@ -1,7 +1,7 @@
 import express from 'express'
 import * as md from './mangadex'
 
-const PORT = parseInt(process.env.PORT ?? '4000', 10)
+const PORT = parseInt(process.env.PORT ?? '4001', 10)
 const API_KEY = process.env.API_KEY ?? ''
 const LANGS = (process.env.LANGUAGES ?? 'en').split(',').map((s) => s.trim()).filter(Boolean)
 

@@ -32,7 +32,7 @@ export function SearchRow({
 
   useEffect(() => {
     if (!needsDetail) return
-    api.getDiscoverDetail(result.source, result.id)
+    api.getDiscoverDetail(result.source, result.id, result.title)
       .then(setDetail)
       .catch(() => {})
   }, [needsDetail, result.source, result.id])

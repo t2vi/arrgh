@@ -2,7 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import * as c from './comick'
 
-const PORT = parseInt(process.env.PORT ?? '4002', 10)
+const PORT = parseInt(process.env.PORT ?? '4003', 10)
 const API_KEY = process.env.API_KEY ?? ''
 const LANGS = (process.env.LANGUAGES ?? 'en').split(',').map((s) => s.trim()).filter(Boolean)
 
