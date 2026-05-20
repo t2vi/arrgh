@@ -21,6 +21,7 @@ pub struct SourceRow {
     pub has_api_key: bool,
     pub content_types: Vec<String>,
     pub enabled: bool,
+    pub is_community: bool,
 }
 
 #[derive(Deserialize)]
@@ -62,7 +63,8 @@ async fn list_sources(
 
     let rows = sqlx::query!(
         r#"SELECT id as "id!", name as "name!", base_url as "base_url!",
-                  api_key, content_types as "content_types!", enabled as "enabled!"
+                  api_key, content_types as "content_types!", enabled as "enabled!",
+                  is_community as "is_community!"
            FROM external_sources ORDER BY created_at"#
     )
     .fetch_all(&state.db)
@@ -80,6 +82,7 @@ async fn list_sources(
             has_api_key: r.api_key.is_some(),
             content_types,
             enabled: r.enabled != 0,
+            is_community: r.is_community != 0,
         }
     }).collect();
 

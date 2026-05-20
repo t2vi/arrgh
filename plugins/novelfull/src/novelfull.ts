@@ -2,28 +2,46 @@ import * as cheerio from 'cheerio'
 import TurndownService from 'turndown'
 
 const BASE = 'https://novelfull.com'
-const FLARESOLVERR = () => process.env.FLARESOLVERR_URL ?? 'http://flaresolverr:8191'
-
 const td = new TurndownService({ headingStyle: 'atx', hr: '---', bulletListMarker: '-' })
 
-// ── FlareSolverr ─────────────────────────────────────────────────────────────
+// ── Minimal browser interface (duck-typed, no playwright dep in bundle) ───────
 
-interface FlareSolverrResult {
-  status: string
-  solution: { response: string; status: number }
+interface BrowserPage {
+  goto(url: string, opts?: { waitUntil?: string; timeout?: number }): Promise<unknown>
+  content(): Promise<string>
+  close(): Promise<void>
+}
+interface BrowserContextLike {
+  newPage(): Promise<BrowserPage>
+  close(): Promise<void>
+}
+interface BrowserLike {
+  newContext(opts?: Record<string, unknown>): Promise<BrowserContextLike>
+  isConnected(): boolean
+}
+export interface PluginContext {
+  getBrowser: () => Promise<BrowserLike>
+  logger: typeof console
 }
 
+let _ctx: PluginContext | null = null
+
+export function setContext(ctx: PluginContext): void {
+  _ctx = ctx
+}
+
+// ── HTTP helper ───────────────────────────────────────────────────────────────
+
 async function flareHtml(url: string): Promise<string> {
-  const res = await fetch(`${FLARESOLVERR()}/v1`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cmd: 'request.get', url, maxTimeout: 60000 }),
-  })
-  if (!res.ok) throw new Error(`FlareSolverr HTTP ${res.status}`)
-  const data = (await res.json()) as FlareSolverrResult
-  if (data.status !== 'ok') throw new Error(`FlareSolverr error: ${data.status}`)
-  if (data.solution.status !== 200) throw new Error(`NovelFull ${data.solution.status} for ${url}`)
-  return data.solution.response
+  const browser = await _ctx!.getBrowser()
+  const bctx = await browser.newContext()
+  const page = await bctx.newPage()
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    return await page.content()
+  } finally {
+    await bctx.close()
+  }
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -55,9 +73,6 @@ export interface MetaResult {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-// source_id = slug without ".html", e.g. "i-shall-seal-the-heavens"
-// chapter source_id = relative path, e.g. "i-shall-seal-the-heavens/chapter-1.html"
-
 function absUrl(path: string): string {
   if (path.startsWith('http')) return path
   return `${BASE}/${path.replace(/^\//, '')}`
@@ -74,19 +89,13 @@ async function fetchChapterPage(slug: string, page: number): Promise<cheerio.Che
   return cheerio.load(html)
 }
 
-// Fetch all chapter pages concurrently (max 4 at a time)
 async function fetchAllChapters(slug: string): Promise<ChapterResult[]> {
   const $ = await fetchChapterPage(slug, 1)
-
-  // Parse chapter links from first page
   const firstBatch = parseChapterLinks($)
-
-  // Detect total pages from pagination
   const lastPage = parseInt($('.pagination li:last-child a').attr('data-page') ?? '1', 10) || 1
 
   if (lastPage <= 1) return firstBatch
 
-  // Fetch remaining pages concurrently (up to 4 at a time)
   const pageNums = Array.from({ length: lastPage - 1 }, (_, i) => i + 2)
   const batches: ChapterResult[][] = [firstBatch]
 
@@ -100,7 +109,6 @@ async function fetchAllChapters(slug: string): Promise<ChapterResult[]> {
   }
 
   const all = batches.flat()
-  // Re-number sequentially (page order = chapter order)
   return all.map((c, i) => ({ ...c, number: i + 1 }))
 }
 
@@ -108,7 +116,6 @@ function parseChapterLinks($: cheerio.CheerioAPI): ChapterResult[] {
   const results: ChapterResult[] = []
   $('#list-chapter .row li a, .list-chapter li a').each((i, el) => {
     const href = $(el).attr('href') ?? ''
-    // href = "/i-shall-seal-the-heavens/chapter-1-my-life-begins.html"
     const path = href.replace(/^\//, '')
     if (!path || !path.includes('/chapter')) return
     const title = $(el).text().trim() || null
@@ -129,7 +136,6 @@ export async function search(query: string): Promise<SearchResult[]> {
     const $el = $(el)
     const linkEl = $el.find('.truyen-title a, h3.truyen-title a').first()
     const href = linkEl.attr('href') ?? ''
-    // href = "/i-shall-seal-the-heavens.html"
     const slug = href.replace(/^\//, '').replace(/\.html$/, '')
     if (!slug) return
 
@@ -160,7 +166,6 @@ export async function chapters(slug: string): Promise<ChapterResult[]> {
 }
 
 export async function chapterText(chapterPath: string): Promise<string> {
-  // chapterPath = "i-shall-seal-the-heavens/chapter-1-my-life-begins.html"
   const url = `${BASE}/${chapterPath}`
   const html = await flareHtml(url)
   const $ = cheerio.load(html)
@@ -168,9 +173,7 @@ export async function chapterText(chapterPath: string): Promise<string> {
   const contentEl = $('#chapter-content').first()
   if (!contentEl.length) throw new Error(`novelfull: no chapter content at ${url}`)
 
-  // Remove ads, navigation ads, and scripts embedded in content
   contentEl.find('.ads, .ads-holder, script, ins, [class*="ads"]').remove()
-
   return td.turndown(contentEl.html() ?? '')
 }
 
@@ -183,7 +186,6 @@ export async function meta(slug: string): Promise<MetaResult> {
   const imgEl = $('.book img').first()
   const cover = coverUrl(imgEl.attr('data-src') ?? imgEl.attr('src'))
 
-  // Chapter count from total pages × 50 (approx) or direct count from first page list
   const totalPageStr = $('.pagination li:last-child a').attr('data-page') ?? '1'
   const totalPages = parseInt(totalPageStr, 10) || 1
   const firstPageCount = $('#list-chapter .row li a').length

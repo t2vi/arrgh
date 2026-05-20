@@ -98,6 +98,18 @@ export interface SourceRow {
   has_api_key: boolean
   content_types: string[]
   enabled: boolean
+  is_community: boolean
+}
+
+export interface PluginIndexEntry {
+  id: string
+  name: string
+  description: string | null
+  version: string
+  download_url: string | null
+  bundled: boolean | null
+  default_explicit: boolean
+  content_types: string[]
 }
 
 // ——— Token storage ———
@@ -310,4 +322,9 @@ export const api = {
   patchSource: (id: string, enabled: boolean) =>
     patch<void>(`/api/sources/${id}`, { enabled }),
   deleteSource: (id: string) => del(`/api/sources/${id}`),
+
+  // Plugin index (admin only)
+  listPluginIndex: () => get<PluginIndexEntry[]>('/api/plugins/index'),
+  installPlugin: (plugin_id: string) => post<void>('/api/plugins/install', { plugin_id }),
+  deletePlugin: (plugin_id: string) => del(`/api/plugins/${encodeURIComponent(plugin_id)}`),
 }

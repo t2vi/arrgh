@@ -12,7 +12,7 @@ A self-hosted manga manager, downloader, and reader for your home server. Suppor
 - Browse and search manga from multiple sources simultaneously
 - Source plugin system — add new sources without recompiling or redeploying
 - Download chapters to your server for offline reading
-- Web reader (paged or scroll mode) and Flutter app (Android / Firestick / tablet)
+- Web reader (paged or scroll mode)
 - Multi-user support — per-user libraries with shared file storage, per-user reading progress
 - Auto-download new chapters on a schedule
 - Explicit content controls — admin grants access per user
@@ -92,20 +92,19 @@ Plugins can be written in any language. See `plugins/mangadex/` (API-backed) and
 arrgh/
 ├── server/          # Rust / Axum API server
 ├── web/             # React + TypeScript SPA
-├── app/             # Flutter app (Android / Firestick / tablet)
-└── plugins/
-    ├── mangapill/   # Mangapill source plugin (TypeScript / Express)
-    ├── mangadex/    # MangaDex source plugin (TypeScript / Express)
-    ├── toonily/     # Toonily source plugin (TypeScript / Express + FlareSolverr)
-    ├── comick/      # Comick source plugin (TypeScript / Express + FlareSolverr)
-    ├── royalroad/   # Royal Road source plugin (TypeScript / Express)
-    └── novelfull/   # NovelFull source plugin (TypeScript / Express + FlareSolverr)
+├── plugin-host/     # Node.js plugin host (loads compiled plugin bundles)
+└── plugins/         # Plugin source bundles (esbuild → single .js)
+    ├── mangadex/
+    ├── mangapill/
+    ├── toonily/
+    ├── comick/
+    ├── royalroad/
+    └── novelfull/
 ```
 
 - **Backend**: Rust, Axum, SQLx (SQLite), Tokio
 - **Frontend**: React 18, TypeScript, Vite, Tailwind
-- **Mobile**: Flutter, Riverpod
-- **Plugins**: any language, HTTP server, Source Plugin Protocol
+- **Plugins**: Node.js bundles loaded by plugin-host; CF-protected sources use CloakBrowser via CDP
 
 ---
 
@@ -115,7 +114,7 @@ Issues and PRs are welcome. A few things to know:
 
 - This is a personal project — I may be slow to review, but I do look at everything
 - Check open issues before starting large features; comment to claim one
-- Run `cargo test` (server) and `flutter test` (app) before submitting
+- Run `cargo test` (server) before submitting
 - Follow the existing code style — see [server/README.md](server/README.md) and [web/README.md](web/README.md) for dev setup
 
 No CLA, no process overhead. Just open a PR.

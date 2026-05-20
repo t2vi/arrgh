@@ -1,15 +1,34 @@
 const BASE = 'https://api.comick.fun'
-const FLARESOLVERR = () => process.env.FLARESOLVERR_URL ?? 'http://flaresolverr:8191'
 
-// ── FlareSolverr client ───────────────────────────────────────────────────────
+// ── Minimal browser interface (duck-typed, no playwright dep in bundle) ───────
 
-interface FlareSolverrResult {
-  status: string
-  solution: { response: string; status: number }
+interface BrowserPage {
+  goto(url: string, opts?: { waitUntil?: string; timeout?: number }): Promise<unknown>
+  content(): Promise<string>
+  close(): Promise<void>
+}
+interface BrowserContextLike {
+  newPage(): Promise<BrowserPage>
+  close(): Promise<void>
+}
+interface BrowserLike {
+  newContext(opts?: Record<string, unknown>): Promise<BrowserContextLike>
+  isConnected(): boolean
+}
+export interface PluginContext {
+  getBrowser: () => Promise<BrowserLike>
+  logger: typeof console
 }
 
+let _ctx: PluginContext | null = null
+
+export function setContext(ctx: PluginContext): void {
+  _ctx = ctx
+}
+
+// ── JSON fetch via browser (CF bypass) ───────────────────────────────────────
+
 // Browsers render JSON APIs as <html><body><pre>JSON</pre></body></html>.
-// FlareSolverr uses a real browser, so we must unwrap the <pre> content.
 function extractJson(html: string): string {
   const match = html.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i)
   const raw = match?.[1] ?? html
@@ -22,22 +41,21 @@ function extractJson(html: string): string {
 }
 
 async function flareFetch<T>(url: string): Promise<T> {
-  const res = await fetch(`${FLARESOLVERR()}/v1`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cmd: 'request.get', url, maxTimeout: 60000 }),
-  })
-  if (!res.ok) throw new Error(`FlareSolverr HTTP ${res.status}`)
-  const data = (await res.json()) as FlareSolverrResult
-  if (data.status !== 'ok') throw new Error(`FlareSolverr error: ${data.status}`)
-  if (data.solution.status !== 200) throw new Error(`Comick ${data.solution.status} for ${url}`)
-  return JSON.parse(extractJson(data.solution.response)) as T
+  const browser = await _ctx!.getBrowser()
+  const bctx = await browser.newContext()
+  const page = await bctx.newPage()
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    const html = await page.content()
+    return JSON.parse(extractJson(html)) as T
+  } finally {
+    await bctx.close()
+  }
 }
 
 // ── Wire types ────────────────────────────────────────────────────────────────
 
 interface Cover { b2key: string }
-// Search results return genres as numeric IDs; detail endpoint returns objects.
 type Genre = number | { name: string }
 interface Author { name: string }
 
@@ -173,7 +191,6 @@ export async function search(query: string): Promise<SearchItem[]> {
 }
 
 export async function trending(): Promise<SearchItem[]> {
-  // sort=follow = most followed — stable popular titles per the Comick API
   const data = await fetchComick<ComicResult[]>('/v1.0/search', { sort: 'follow', limit: '20' })
   return data.map((c) => toSearchItem(c))
 }

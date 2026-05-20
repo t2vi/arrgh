@@ -1,21 +1,13 @@
 {
   "name": "arrgh-plugin-comick",
   "version": "1.0.0",
-  "description": "Comick source plugin for *ARRgh",
-  "main": "dist/index.js",
+  "description": "Comick source plugin for *ARRgh (plugin-host bundle format)",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=bundles/comick.js"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@types/node": "^20.14.0",
-    "tsx": "^4.15.0",
+    "esbuild": "^0.21.0",
     "typescript": "^5.5.0"
   }
 }

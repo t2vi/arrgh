@@ -113,9 +113,74 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-/// Insert a plugin URL into external_sources if not already present, then probe it.
-/// Skips silently if the URL is already registered (idempotent).
+/// Insert a plugin URL into external_sources if not already present.
+/// If the URL responds to GET /plugins with a JSON array, registers each entry
+/// individually at <base_url>/<plugin_id>. Otherwise falls back to the single-
+/// plugin /info protocol. Idempotent — skips already-registered URLs.
 async fn bootstrap_plugin(pool: &sqlx::SqlitePool, base_url: &str) {
+    let client = reqwest::Client::new();
+    let trimmed = base_url.trim_end_matches('/');
+
+    // Try the multi-plugin host protocol first.
+    if let Ok(resp) = client.get(format!("{}/plugins", trimmed)).send().await {
+        if resp.status().is_success() {
+            if let Ok(arr) = resp.json::<Vec<serde_json::Value>>().await {
+                for entry in &arr {
+                    if let Some(plugin_id) = entry.get("id").and_then(|v| v.as_str()) {
+                        let plugin_url = format!("{}/{}", trimmed, plugin_id);
+                        bootstrap_single(pool, &plugin_url, entry).await;
+                    }
+                }
+                return;
+            }
+        }
+    }
+
+    // Fall back: single-plugin /info protocol.
+    bootstrap_probe(pool, trimmed).await;
+}
+
+/// Register a single plugin entry sourced from a /plugins array response.
+/// Uses the metadata already in the array entry — no additional HTTP call needed.
+async fn bootstrap_single(pool: &sqlx::SqlitePool, effective_url: &str, info: &serde_json::Value) {
+    let already = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM external_sources WHERE base_url = ?"
+    )
+    .bind(effective_url)
+    .fetch_one(pool)
+    .await
+    .unwrap_or(0);
+
+    if already > 0 {
+        tracing::debug!("PLUGIN_URLS: {} already registered, skipping", effective_url);
+        return;
+    }
+
+    let name = info.get("name").and_then(|v| v.as_str()).unwrap_or(effective_url).to_string();
+    let content_types = info.get("content_types")
+        .and_then(|v| v.as_array())
+        .map(|arr| arr.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>().join(","))
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "manga".to_string());
+
+    let id = Uuid::new_v4().to_string();
+    let now = Utc::now();
+    match sqlx::query(
+        "INSERT OR IGNORE INTO external_sources
+         (id, name, base_url, api_key, content_types, enabled, created_at)
+         VALUES (?, ?, ?, NULL, ?, 1, ?)"
+    )
+    .bind(&id).bind(&name).bind(effective_url).bind(&content_types).bind(now)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => tracing::info!("PLUGIN_URLS: registered '{}' ({})", name, effective_url),
+        Err(e) => tracing::warn!("PLUGIN_URLS: DB insert failed for {}: {}", effective_url, e),
+    }
+}
+
+/// Register a single-plugin host using the legacy /info probe.
+async fn bootstrap_probe(pool: &sqlx::SqlitePool, base_url: &str) {
     let already = sqlx::query_scalar::<_, i64>(
         "SELECT COUNT(*) FROM external_sources WHERE base_url = ?"
     )

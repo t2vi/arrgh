@@ -1,35 +1,48 @@
-import 'dotenv/config'
 import * as cheerio from 'cheerio'
 import type { AnyNode } from 'domhandler'
 
 const BASE = 'https://toonily.com'
-const FLARESOLVERR = () => process.env.FLARESOLVERR_URL ?? 'http://flaresolverr:8191'
 
-// ── FlareSolverr client ───────────────────────────────────────────────────────
+// ── Minimal browser interface (duck-typed, no playwright dep in bundle) ───────
 
-interface FlareSolverrResult {
-  status: string
-  solution: { response: string; status: number; url: string }
+interface BrowserPage {
+  goto(url: string, opts?: { waitUntil?: string; timeout?: number }): Promise<unknown>
+  content(): Promise<string>
+  close(): Promise<void>
+}
+interface BrowserContextLike {
+  addCookies(cookies: Array<{ name: string; value: string; domain: string; path?: string }>): Promise<void>
+  newPage(): Promise<BrowserPage>
+  close(): Promise<void>
+}
+interface BrowserLike {
+  newContext(opts?: Record<string, unknown>): Promise<BrowserContextLike>
+  isConnected(): boolean
+}
+export interface PluginContext {
+  getBrowser: () => Promise<BrowserLike>
+  logger: typeof console
 }
 
-const MATURE_COOKIE = [{ name: 'toonily-mature', value: '1' }]
+let _ctx: PluginContext | null = null
 
-async function flareFetch(cmd: Record<string, unknown>): Promise<string> {
-  const res = await fetch(`${FLARESOLVERR()}/v1`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ maxTimeout: 60000, cookies: MATURE_COOKIE, ...cmd }),
-  })
-  if (!res.ok) throw new Error(`FlareSolverr HTTP ${res.status}`)
-  const data = (await res.json()) as FlareSolverrResult
-  if (data.status !== 'ok') throw new Error(`FlareSolverr error: ${data.status}`)
-  if (data.solution.status !== 200)
-    throw new Error(`Toonily ${data.solution.status}`)
-  return data.solution.response
+export function setContext(ctx: PluginContext): void {
+  _ctx = ctx
 }
+
+// ── HTTP helper ───────────────────────────────────────────────────────────────
 
 async function getPage(url: string): Promise<string> {
-  return flareFetch({ cmd: 'request.get', url })
+  const browser = await _ctx!.getBrowser()
+  const bctx = await browser.newContext()
+  await bctx.addCookies([{ name: 'toonily-mature', value: '1', domain: 'toonily.com', path: '/' }])
+  const page = await bctx.newPage()
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    return await page.content()
+  } finally {
+    await bctx.close()
+  }
 }
 
 // ── HTML helpers ──────────────────────────────────────────────────────────────
@@ -39,15 +52,7 @@ function imgSrc($el: cheerio.Cheerio<AnyNode>): string | null {
 }
 
 function slugFromUrl(url: string): string {
-  // https://toonily.com/serie/tower-of-god-acc4fd16/ → tower-of-god-acc4fd16
   return url.replace(/\/$/, '').split('/').pop() ?? ''
-}
-
-function normalizeStatus(raw: string): string {
-  const s = raw.trim().toLowerCase()
-  if (s.includes('complet')) return 'completed'
-  if (s.includes('hiatus') || s.includes('paused')) return 'hiatus'
-  return 'ongoing'
 }
 
 // ── Output types (Source Plugin Protocol) ────────────────────────────────────
@@ -91,14 +96,11 @@ export async function search(query: string): Promise<SearchItem[]> {
     const slug = slugFromUrl(href)
     if (!slug) return
 
-    const title = $link.text().trim()
-    const cover = imgSrc($el.find('.c-image-hover img').first())
-
     results.push({
       id: slug,
-      title,
+      title: $link.text().trim(),
       description: null,
-      cover_url: cover,
+      cover_url: imgSrc($el.find('.c-image-hover img').first()),
       status: 'ongoing',
       author: null,
       year: null,
@@ -121,14 +123,11 @@ export async function trending(): Promise<SearchItem[]> {
     const slug = slugFromUrl(href)
     if (!slug) return
 
-    const title = $link.text().trim()
-    const cover = imgSrc($el.find('.c-image-hover img').first())
-
     results.push({
       id: slug,
-      title,
+      title: $link.text().trim(),
       description: null,
-      cover_url: cover,
+      cover_url: imgSrc($el.find('.c-image-hover img').first()),
       status: 'ongoing',
       author: null,
       year: null,
@@ -155,9 +154,13 @@ export async function meta(slug: string): Promise<MetaResponse> {
     })
     .get()
     .filter(Boolean)
-  const tags = genres.length ? genres.join(', ') : null
 
-  return { description, cover_url: cover_url ?? null, chapter_count, tags }
+  return {
+    description,
+    cover_url: cover_url ?? null,
+    chapter_count,
+    tags: genres.length ? genres.join(', ') : null,
+  }
 }
 
 export async function chapters(slug: string): Promise<ChapterItem[]> {
@@ -167,30 +170,24 @@ export async function chapters(slug: string): Promise<ChapterItem[]> {
 
   $('.wp-manga-chapter').each((_, el) => {
     const href = $(el).find('a').attr('href') ?? ''
-    // href: https://toonily.com/serie/{manga_slug}/{chapter_slug}/
     const parts = href.replace(/\/$/, '').split('/')
     const chapterSlug = parts.pop() ?? ''
     const mangaSlug = parts.pop() ?? ''
     if (!chapterSlug || !mangaSlug) return
 
-    const source_id = `${mangaSlug}/${chapterSlug}`
-
-    // chapter-242 → 242 | chapter-242-5 → 242.5
     const match = chapterSlug.match(/chapter-(\d+)(?:-(\d+))?/)
     if (!match) return
     const major = parseInt(match[1]!, 10)
     const minor = match[2] ? parseInt(match[2], 10) : 0
     const number = minor > 0 ? parseFloat(`${major}.${minor}`) : major
 
-    items.push({ source_id, number, volume: null, title: null })
+    items.push({ source_id: `${mangaSlug}/${chapterSlug}`, number, volume: null, title: null })
   })
 
-  // Page renders newest-first; reverse for ascending
   return items.reverse()
 }
 
 export async function pages(chapterSourceId: string): Promise<{ url: string; referer: string }[]> {
-  // chapterSourceId = "{manga_slug}/{chapter_slug}"
   const chapterUrl = `${BASE}/serie/${chapterSourceId}/`
   const html = await getPage(chapterUrl)
   const $ = cheerio.load(html)
