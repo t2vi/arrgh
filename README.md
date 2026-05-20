@@ -39,7 +39,7 @@ See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full conf
 
 ## Sources
 
-*ARRgh uses a plugin system for content sources. Each source is an HTTP server implementing the [Source Plugin Protocol](docs/adr/0004-external-source-plugin-protocol.md).
+*ARRgh uses a plugin system for content sources. Each source is an HTTP server implementing the Source Plugin Protocol.
 
 ### Bundled plugins
 
@@ -58,7 +58,7 @@ CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromiu
 
 ### Adding a source
 
-1. Write an HTTP server implementing the [Source Plugin Protocol](#source-plugin-protocol)
+1. Write an HTTP server implementing the Source Plugin Protocol
 2. Run it (locally or as a Docker service)
 3. Register it: **Settings → Sources → Add** (or set `PLUGIN_URLS` for auto-registration on startup)
 
