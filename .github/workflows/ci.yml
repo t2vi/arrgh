@@ -8,7 +8,7 @@ on:
 
 jobs:
   server:
-    name: Server tests (Rust)
+    name: Server (Rust)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -35,7 +35,7 @@ jobs:
           SQLX_OFFLINE: true
 
   web:
-    name: Web tests (Node)
+    name: Web (Node)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -59,24 +59,25 @@ jobs:
       - name: npm run build
         run: npm run build
 
-  app:
-    name: App tests (Flutter)
+  plugins:
+    name: Plugins + Plugin Host (Node)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          flutter-version: '3.x'
-          channel: stable
-          cache: true
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: flutter pub get
-        run: flutter pub get
+      - name: npm ci (workspace)
+        run: npm ci
 
-      - name: flutter test
-        run: flutter test
+      - name: Build plugin bundles
+        run: npm run build:plugins
+
+      - name: Build plugin-host
+        run: npm run build
+        working-directory: plugin-host
