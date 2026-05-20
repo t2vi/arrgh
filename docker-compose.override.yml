@@ -1,0 +1,13 @@
+services:
+  arrgh:
+    build: .
+
+  plugin-host:
+    build:
+      context: .
+      dockerfile: plugin-host/Dockerfile
+
+  cloakbrowser:
+    build:
+      context: docker/cloakbrowser-server
+      dockerfile: Dockerfile

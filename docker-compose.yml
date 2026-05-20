@@ -1,8 +1,6 @@
 services:
   arrgh:
     image: ghcr.io/t2vi/arrgh:latest
-    # To build locally instead: comment out 'image' and uncomment 'build'
-    # build: .
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -12,39 +10,40 @@ services:
       # JWT_SECRET: change-me-in-production
       # INDEX_INTERVAL_HOURS: 6
       # RUST_LOG: arrgh_server=info
-      # Comma-separated list of plugin URLs to auto-register on first startup.
-      # Add new plugins here; they persist in the DB after first run.
       PLUGIN_URLS: "http://plugin-host:4000"
     volumes:
       - arrgh_data:/data
     depends_on:
-      - plugin-host
+      plugin-host:
+        condition: service_healthy
 
   plugin-host:
-    build:
-      context: .
-      dockerfile: plugin-host/Dockerfile
+    image: ghcr.io/t2vi/plugin-host:latest
     restart: unless-stopped
     environment:
       PORT: "4000"
       LANGUAGES: "en"
-      CLOAKBROWSER_WS_URL: "ws://cloakbrowser:3000"
+      CLOAKBROWSER_WS_URL: "http://cloakbrowser:3000"
       COMMUNITY_BUNDLES_DIR: /community-bundles
     volumes:
       - plugin_community_bundles:/community-bundles
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/plugins"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     depends_on:
       - cloakbrowser
-    # No ports exposed — arrgh reaches it over the internal network.
-    # To expose locally for debugging: ports: ["4000:4000"]
 
   cloakbrowser:
-    image: cloakhq/cloakbrowser
+    image: ghcr.io/t2vi/cloakbrowser-server:latest
     restart: unless-stopped
     environment:
-      MODE: cloakserve
-    # No ports exposed — plugin-host reaches it over the internal network.
-    # To expose locally for debugging: ports: ["3000:3000"]
-
+      CDP_PORT: "3000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
 volumes:
   arrgh_data:
