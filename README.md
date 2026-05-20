@@ -51,7 +51,7 @@ All default sources compile into a single **plugin-host** container — no per-p
 | **MangaDex** | Manga, Manhwa, Manhua, One-shot | `plugins/mangadex/` | |
 | **Toonily** | Manhwa | `plugins/toonily/` | CF-protected — uses CloakBrowser |
 | **Comick** | Manga, Manhwa, Manhua | `plugins/comick/` | CF-protected — uses CloakBrowser |
-| **Royal Road** | Novel | `plugins/royalroad/` | English web fiction |
+| **Royal Road** | Novel | `plugins/royalroad/` |  |
 | **NovelFull** | Novel | `plugins/novelfull/` | CF-protected — uses CloakBrowser |
 
 CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromium, source-level fingerprint patches). Plugin Host holds the CDP connection; plugins call `ctx.getBrowser()` via `PluginContext`.
