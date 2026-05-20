@@ -1,0 +1,21 @@
+name: Suggestion
+description: A new feature, or an improvement to something that already exists.
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like?
+      description: Describe your idea — it can be something brand new or an improvement to something that's already there.
+      placeholder: "e.g. A new reader setting, or an improvement to how the download queue works."
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why do you want this?
+      description: Help us understand how this would make things better for you.
+      placeholder: "e.g. I read on a tablet and the current layout makes it hard to..."
+    validations:
+      required: true

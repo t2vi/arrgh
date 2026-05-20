@@ -33,6 +33,7 @@ docs/adr
 docs/agents
 CLAUDE.md
 CONTEXT.md
+graphify-out/
 skills-lock.json
 
 # ── General ──────────────────────────────────────────────────
@@ -41,3 +42,4 @@ skills-lock.json
 *.db-shm
 *.db-wal
 *.cbz
+habi.config.json

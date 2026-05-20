@@ -1,0 +1,32 @@
+name: Bug Report
+description: Something isn't working as expected.
+labels: ["bug", "needs-triage"]
+body:
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: Describe the problem. What did you see?
+      placeholder: "e.g. When I tap a chapter it shows a blank screen instead of opening the reader."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Walk us through how to trigger the problem.
+      placeholder: |
+        1. Go to ...
+        2. Tap on ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have happened?
+      placeholder: "e.g. The chapter should have opened in the reader."
+    validations:
+      required: true
