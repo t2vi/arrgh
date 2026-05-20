@@ -209,21 +209,31 @@ async fn serve_meta_cover(
     };
 
     if let Some(ref path) = row.cover_local_path {
-        if let Ok(data) = fs::read(path).await {
-            if image_content_type(&data).is_some() {
+        match fs::read(path).await {
+            Ok(data) if image_content_type(&data).is_some() => {
                 let ct = if path.ends_with(".webp") { "image/webp" }
                          else if path.ends_with(".png") { "image/png" }
                          else { "image/jpeg" };
                 return Ok(([(header::CONTENT_TYPE, ct)], data).into_response());
             }
-            // Corrupt file — clear local path so next seed re-downloads
-            tracing::warn!("meta cover for '{}' is corrupt ({} bytes), clearing", params.key, data.len());
-            let _ = sqlx::query!(
-                "UPDATE title_meta SET cover_local_path = NULL WHERE title_key = ?",
-                params.key
-            )
-            .execute(&state.db)
-            .await;
+            Ok(data) => {
+                tracing::warn!("meta cover for '{}' is corrupt ({} bytes), clearing", params.key, data.len());
+                let _ = sqlx::query!(
+                    "UPDATE title_meta SET cover_local_path = NULL WHERE title_key = ?",
+                    params.key
+                )
+                .execute(&state.db)
+                .await;
+            }
+            Err(_) => {
+                // File missing — clear so next discover request re-downloads it
+                let _ = sqlx::query!(
+                    "UPDATE title_meta SET cover_local_path = NULL WHERE title_key = ?",
+                    params.key
+                )
+                .execute(&state.db)
+                .await;
+            }
         }
     }
 
@@ -262,7 +272,15 @@ async fn serve_cover(
 
     let data = match fs::read(&cover_path).await {
         Ok(d) => d,
-        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+        Err(_) => {
+            let _ = sqlx::query!(
+                "UPDATE manga SET cover_url = NULL WHERE id = ?",
+                manga_id
+            )
+            .execute(&state.db)
+            .await;
+            return Ok(StatusCode::NOT_FOUND.into_response());
+        }
     };
 
     let ct = if cover_path.ends_with(".webp") { "image/webp" }

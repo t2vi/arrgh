@@ -7,6 +7,8 @@ pub struct Config {
     pub download_dir: String,
     pub index_interval_hours: u64,
     pub bind_addr: Option<String>,
+    pub plugin_host_url: String,
+    pub plugin_index_url: String,
 }
 
 impl Config {
@@ -21,6 +23,10 @@ impl Config {
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(6),
             bind_addr: env::var("BIND_ADDR").ok(),
+            plugin_host_url: env::var("PLUGIN_HOST_URL")
+                .unwrap_or_else(|_| "http://plugin-host:4000".to_string()),
+            plugin_index_url: env::var("PLUGIN_INDEX_URL")
+                .unwrap_or_else(|_| "file:///app/plugin-index.json".to_string()),
         })
     }
 }

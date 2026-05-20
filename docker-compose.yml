@@ -1,8 +1,6 @@
 services:
   arrgh:
     image: ghcr.io/t2vi/arrgh:latest
-    # To build locally instead: comment out 'image' and uncomment 'build'
-    # build: .
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -12,86 +10,41 @@ services:
       # JWT_SECRET: change-me-in-production
       # INDEX_INTERVAL_HOURS: 6
       # RUST_LOG: arrgh_server=info
-      # Comma-separated list of plugin URLs to auto-register on first startup.
-      # Add new plugins here; they persist in the DB after first run.
-      PLUGIN_URLS: "http://mangapill:4000,http://mangadex:4001,http://toonily:4002,http://comick:4003,http://royalroad:4004,http://novelfull:4005"
+      PLUGIN_URLS: "http://plugin-host:4000"
     volumes:
       - arrgh_data:/data
     depends_on:
-      - mangadex
-      - toonily
-      - comick
-      - royalroad
-      - novelfull
-      - mangapill
+      plugin-host:
+        condition: service_healthy
 
-  mangadex:
-    build: ./plugins/mangadex
-    restart: unless-stopped
-    environment:
-      PORT: "4001"
-      LANGUAGES: "en"
-      # API_KEY: set-to-require-auth-from-arrgh
-    # No ports exposed — arrgh reaches it over the internal network.
-    # To expose locally for debugging: ports: ["4000:4000"]
-
-  toonily:
-    build: ./plugins/toonily
-    restart: unless-stopped
-    environment:
-      PORT: "4002"
-      FLARESOLVERR_URL: "http://flaresolverr:8191"
-      # API_KEY: set-to-require-auth-from-arrgh
-    depends_on:
-      - flaresolverr
-    # To expose locally for debugging: ports: ["4002:4002"]
-
-  comick:
-    build: ./plugins/comick
-    restart: unless-stopped
-    environment:
-      PORT: "4003"
-      LANGUAGES: "en"
-      FLARESOLVERR_URL: "http://flaresolverr:8191"
-      # API_KEY: set-to-require-auth-from-arrgh
-    depends_on:
-      - flaresolverr
-    # To expose locally for debugging: ports: ["4003:4003"]
-
-  royalroad:
-    build: ./plugins/royalroad
-    restart: unless-stopped
-    environment:
-      PORT: "4004"
-      # API_KEY: set-to-require-auth-from-arrgh
-    # To expose locally for debugging: ports: ["4004:4004"]
-
-  novelfull:
-    build: ./plugins/novelfull
-    restart: unless-stopped
-    environment:
-      PORT: "4005"
-      FLARESOLVERR_URL: "http://flaresolverr:8191"
-      # API_KEY: set-to-require-auth-from-arrgh
-    depends_on:
-      - flaresolverr
-    # To expose locally for debugging: ports: ["4005:4005"]
-
-  mangapill:
-    build: ./plugins/mangapill
+  plugin-host:
+    image: ghcr.io/t2vi/plugin-host:latest
     restart: unless-stopped
     environment:
       PORT: "4000"
-      # API_KEY: set-to-require-auth-from-arrgh
-    # To expose locally for debugging: ports: ["4005:4005"]
+      LANGUAGES: "en"
+      CLOAKBROWSER_WS_URL: "http://cloakbrowser:3000"
+      COMMUNITY_BUNDLES_DIR: /community-bundles
+    volumes:
+      - plugin_community_bundles:/community-bundles
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/plugins"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      - cloakbrowser
 
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
+  cloakbrowser:
+    image: ghcr.io/t2vi/cloakbrowser-server:latest
     restart: unless-stopped
     environment:
-      LOG_LEVEL: info
-    # No ports exposed — toonily reaches it over the internal network.
-    # To expose locally for debugging: ports: ["8191:8191"]
+      CDP_PORT: "3000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
 volumes:
   arrgh_data:
+  plugin_community_bundles:

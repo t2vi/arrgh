@@ -1,22 +1,16 @@
 {
   "name": "arrgh-plugin-toonily",
   "version": "1.0.0",
-  "description": "Toonily manhwa source plugin for *ARRgh",
-  "main": "dist/index.js",
+  "description": "Toonily manhwa source plugin for *ARRgh (plugin-host bundle format)",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts"
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=bundles/toonily.js"
   },
   "dependencies": {
-    "cheerio": "^1.0.0",
-    "dotenv": "^16.4.0",
-    "express": "^4.19.2"
+    "cheerio": "^1.0.0"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@types/node": "^20.14.0",
-    "tsx": "^4.15.0",
+    "esbuild": "^0.21.0",
     "typescript": "^5.5.0"
   }
 }

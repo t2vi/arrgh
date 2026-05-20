@@ -10,10 +10,15 @@ server/arrgh.db
 web/node_modules/
 web/dist/
 
+# ── Workspace ────────────────────────────────────────────────
+node_modules/
+
 # ── Plugins ──────────────────────────────────────────────────
 plugins/*/node_modules/
+plugins/*/bundles/
 plugins/*/dist/
 plugins/*/.env
+plugin-host/bundles/
 web/.env
 web/.env.local
 web/tsconfig.*.tsbuildinfo

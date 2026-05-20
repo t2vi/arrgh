@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!\", chapter_id as \"chapter_id!\", manga_title as \"manga_title!\",\n                  chapter_num as \"chapter_num!\", status as \"status!\", error,\n                  pages_downloaded as \"pages_downloaded!\", pages_total as \"pages_total!\",\n                  created_at as \"created_at!\", updated_at as \"updated_at!\"\n           FROM download_queue ORDER BY created_at DESC LIMIT 100",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "manga_title!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "chapter_num!",
+        "ordinal": 3,
+        "type_info": "Float"
+      },
+      {
+        "name": "status!",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "error",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "pages_downloaded!",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "pages_total!",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at!",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!",
+        "ordinal": 9,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "24d0e7a170dfe071625e5f16ecdba5ad3d93fae05c528cdc75b927591ce5d15a"
+}

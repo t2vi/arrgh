@@ -28,6 +28,19 @@ export function QueueRow({ item, onRemove }: { item: QueueItem; onRemove: () => 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{item.manga_title}</p>
         <p className="text-xs text-muted-foreground">Ch. {item.chapter_num}</p>
+        {item.status === 'downloading' && item.pages_total > 0 && (
+          <div className="mt-1.5 flex items-center gap-2">
+            <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${Math.round((item.pages_downloaded / item.pages_total) * 100)}%` }}
+              />
+            </div>
+            <span className="text-xs text-muted-foreground tabular-nums shrink-0">
+              {Math.round((item.pages_downloaded / item.pages_total) * 100)}%
+            </span>
+          </div>
+        )}
         {item.error && (
           <p className="text-xs text-destructive mt-0.5 line-clamp-1">{item.error}</p>
         )}

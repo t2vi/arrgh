@@ -100,7 +100,7 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
     let download_result = if is_text {
         download_text(src.as_ref(), &source_id, &dest).await.map(|_| 1usize)
     } else {
-        download_cbz(src.as_ref(), &source_id, &dest).await
+        download_cbz(src.as_ref(), &source_id, &dest, &state.db, &item.id).await
     };
 
     match download_result {
@@ -108,19 +108,21 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
             let path_str = dest.to_string_lossy().to_string();
             let pc = page_count as i64;
             let now2 = Utc::now();
+            let mut tx = state.db.begin().await?;
             sqlx::query!(
                 "UPDATE chapters SET downloaded = 1, local_path = ?, page_count = ? WHERE id = ?",
                 path_str, pc, item.chapter_id
             )
-            .execute(&state.db)
+            .execute(&mut *tx)
             .await?;
 
             sqlx::query!(
                 "UPDATE download_queue SET status = 'done', updated_at = ? WHERE id = ?",
                 now2, item.id
             )
-            .execute(&state.db)
+            .execute(&mut *tx)
             .await?;
+            tx.commit().await?;
 
             if is_text {
                 tracing::info!("downloaded chapter text → {:?}", dest);
@@ -155,13 +157,23 @@ async fn download_cbz(
     src: &dyn crate::indexer::Source,
     chapter_source_id: &str,
     dest: &Path,
+    db: &sqlx::SqlitePool,
+    queue_id: &str,
 ) -> Result<usize> {
     let pages = src.get_page_urls(chapter_source_id).await?;
     let page_count = pages.len();
+    let total = page_count as i64;
 
     if let Some(parent) = dest.parent() {
         tokio::fs::create_dir_all(parent).await?;
     }
+
+    sqlx::query!(
+        "UPDATE download_queue SET pages_total = ?, pages_downloaded = 0 WHERE id = ?",
+        total, queue_id
+    )
+    .execute(db)
+    .await?;
 
     let client = reqwest::Client::new();
     let buf = Vec::<u8>::new();
@@ -183,6 +195,14 @@ async fn download_cbz(
 
         zip.start_file(&entry_name, opts)?;
         zip.write_all(&bytes)?;
+
+        let done = (i + 1) as i64;
+        let _ = sqlx::query!(
+            "UPDATE download_queue SET pages_downloaded = ? WHERE id = ?",
+            done, queue_id
+        )
+        .execute(db)
+        .await;
 
         tokio::time::sleep(tokio::time::Duration::from_millis(150)).await;
     }

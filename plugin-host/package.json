@@ -1,0 +1,21 @@
+{
+  "name": "arrgh-plugin-host",
+  "version": "1.0.0",
+  "description": "Plugin host — loads plugin bundles and routes requests",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "playwright-core": "^1.44.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.5.0"
+  }
+}

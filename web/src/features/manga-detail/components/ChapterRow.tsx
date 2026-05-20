@@ -75,6 +75,19 @@ export function ChapterRow({
             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
           </div>
         )}
+        {isActive && queueItem && queueItem.pages_total > 0 && (
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex-1 h-0.5 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${Math.round((queueItem.pages_downloaded / queueItem.pages_total) * 100)}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+              {Math.round((queueItem.pages_downloaded / queueItem.pages_total) * 100)}%
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>

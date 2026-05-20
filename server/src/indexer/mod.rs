@@ -21,19 +21,31 @@ pub async fn load_registry(db: &sqlx::SqlitePool) -> SourceRegistry {
     let mut map: HashMap<String, Arc<dyn Source>> = HashMap::new();
 
     match sqlx::query!(
-        r#"SELECT id as "id!", base_url as "base_url!", api_key FROM external_sources WHERE enabled = 1"#
+        r#"SELECT id as "id!", name as "name!", base_url as "base_url!",
+                  api_key, content_types as "content_types!"
+           FROM external_sources WHERE enabled = 1"#
     )
     .fetch_all(db)
     .await {
         Ok(rows) => {
             for row in rows {
-                match external::ExternalSource::probe(row.id, row.base_url, row.api_key).await {
-                    Ok(src) => {
-                        tracing::info!("loaded external source: {} ({})", src.name(), src.id());
-                        map.insert(src.id().to_string(), Arc::new(src));
-                    }
-                    Err(e) => tracing::warn!("external source probe failed: {}", e),
-                }
+                let source_id = row.base_url
+                    .trim_end_matches('/')
+                    .rsplit('/')
+                    .next()
+                    .unwrap_or(&row.base_url)
+                    .to_string();
+                let ct: Vec<String> = row.content_types
+                    .split(',')
+                    .map(|s| s.trim().to_string())
+                    .filter(|s| !s.is_empty())
+                    .collect();
+                let ct = if ct.is_empty() { vec!["manga".to_string()] } else { ct };
+                let src = external::ExternalSource::new(
+                    row.id, source_id.clone(), row.name, row.base_url, row.api_key, ct, false,
+                );
+                tracing::info!("loaded external source: {} ({})", src.name(), src.id());
+                map.insert(source_id, Arc::new(src));
             }
         }
         Err(e) => tracing::warn!("failed to load external sources from DB: {}", e),

@@ -1,0 +1,16 @@
+{
+  "name": "arrgh",
+  "private": true,
+  "workspaces": [
+    "plugin-host",
+    "plugins/mangadex",
+    "plugins/toonily",
+    "plugins/comick",
+    "plugins/novelfull",
+    "plugins/mangapill",
+    "plugins/royalroad"
+  ],
+  "scripts": {
+    "build:plugins": "npm run build -w plugins/mangadex -w plugins/toonily -w plugins/comick -w plugins/novelfull -w plugins/mangapill -w plugins/royalroad"
+  }
+}

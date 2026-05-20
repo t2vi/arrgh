@@ -36,6 +36,9 @@ COPY docker/nginx.conf /etc/nginx/sites-available/default
 # Rust binary
 COPY --from=server-builder /build/server/target/release/arrgh-server /usr/local/bin/arrgh-server
 
+# Bundled plugin index (used when PLUGIN_INDEX_URL is not set)
+COPY plugin-index/index.json /app/plugin-index.json
+
 # Web assets
 COPY --from=web-builder /build/web/dist /var/www/arrgh
 

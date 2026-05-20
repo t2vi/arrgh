@@ -13,15 +13,13 @@ Open `http://<your-server-ip>:8080`. The setup wizard runs on first launch.
 
 ## Services
 
-| Service | Port (internal) | Description |
+| Service | Port (host) | Description |
 |---|---|---|
-| `arrgh` | 8080 | Main server + web UI |
-| `mangadex` | 4000 | MangaDex source plugin |
-| `toonily` | 4001 | Toonily source plugin |
-| `comick` | 4002 | Comick source plugin |
-| `flaresolverr` | 8191 | Cloudflare bypass (used by Toonily + Comick) |
+| `arrgh` | 8080 | Main server + web UI (Rust API + nginx) |
+| `plugin-host` | _(internal)_ | Node.js plugin host — serves all bundled sources on port 4000 |
+| `cloakbrowser` | _(internal)_ | Stealth Chromium CDP server for CF-protected sources |
 
-Plugin ports are internal only — not exposed to the host unless you add a `ports:` entry for debugging.
+`plugin-host` and `cloakbrowser` are internal only — not exposed to the host.
 
 ---
 
@@ -32,43 +30,31 @@ Plugin ports are internal only — not exposed to the host unless you add a `por
 | Variable | Default | Description |
 |---|---|---|
 | `DATABASE_URL` | `sqlite:///data/arrgh.db` | SQLite DB path inside the container |
-| `DOWNLOAD_DIR` | `/data/manga` | Where downloaded chapters are stored |
-| `JWT_SECRET` | _(random on startup)_ | Set this in production or sessions break on restart |
+| `DOWNLOAD_DIR` | `/data/downloads` | Where downloaded chapters are stored (must be inside the volume) |
+| `JWT_SECRET` | _(random on startup)_ | Set this in production — sessions break on restart without it |
 | `INDEX_INTERVAL_HOURS` | `6` | How often the background indexer runs |
-| `PLUGIN_URLS` | see compose file | Comma-separated plugin URLs to auto-register on first boot |
+| `PLUGIN_URLS` | `http://plugin-host:4000` | Comma-separated plugin URLs to auto-register on first boot |
+| `PLUGIN_HOST_URL` | `http://plugin-host:4000` | Plugin host base URL (used by install/delete endpoints) |
+| `PLUGIN_INDEX_URL` | `file:///app/plugin-index.json` | Plugin index for the Browse UI — bundled in image, override to use a remote index |
 | `RUST_LOG` | `arrgh_server=info` | Log level |
-| `BIND_ADDR` | `0.0.0.0:8080` | Listen address inside the container |
+| `BIND_ADDR` | `0.0.0.0:3000` | Internal listen address (nginx proxies to this) |
 
-### `mangadex`
+### `plugin-host`
 
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `4000` | Plugin listen port |
+| `PORT` | `4000` | Plugin host listen port |
 | `LANGUAGES` | `en` | Comma-separated language codes for chapter filtering |
-| `API_KEY` | _(none)_ | If set, arrgh must send `Authorization: Bearer <key>` |
+| `CLOAKBROWSER_WS_URL` | `http://cloakbrowser:3000` | CloakBrowser CDP endpoint for CF-protected plugins |
+| `COMMUNITY_BUNDLES_DIR` | `/community-bundles` | Where user-installed plugin bundles are persisted |
 
-### `toonily`
-
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `4001` | Plugin listen port |
-| `FLARESOLVERR_URL` | `http://flaresolverr:8191` | FlareSolverr base URL |
-| `API_KEY` | _(none)_ | Optional plugin auth key |
-
-### `comick`
+### `cloakbrowser`
 
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `4002` | Plugin listen port |
-| `LANGUAGES` | `en` | Comma-separated language codes for chapter filtering |
-| `FLARESOLVERR_URL` | `http://flaresolverr:8191` | FlareSolverr base URL |
-| `API_KEY` | _(none)_ | Optional plugin auth key |
+| `CDP_PORT` | `3000` | CDP WebSocket port exposed to other containers |
 
-### `flaresolverr`
-
-| Variable | Default | Description |
-|---|---|---|
-| `LOG_LEVEL` | `info` | FlareSolverr log verbosity (`debug`, `info`, `warning`, `error`) |
+CloakBrowser uses Google's public DNS (`8.8.8.8 / 8.8.4.4`) so CF-protected source domains resolve correctly inside Docker's internal network.
 
 ---
 
@@ -89,33 +75,36 @@ volumes:
   - /your/path/arrgh:/data
 ```
 
-**Reverse proxy** — put nginx or Caddy in front to get HTTPS. See [nginx.md](nginx.md).
+The volume must contain both the SQLite DB and the downloads directory:
+- DB: `/data/arrgh.db` (+ `-shm` and `-wal` WAL files)
+- Downloads: `/data/downloads/`
 
-**Plugin auth** — if your plugins are reachable from outside the Docker network, set `API_KEY` on each plugin and add the matching key when registering the source in Settings → Sources.
+**Reverse proxy** — put nginx or Caddy in front to get HTTPS. See [nginx.md](nginx.md).
 
 ---
 
-## Running only some plugins
+## Running without CloakBrowser
 
-To run arrgh without Toonily and Comick (no FlareSolverr needed):
+If you don't need CF-protected sources (Toonily, Comick, NovelFull), you can omit `cloakbrowser` and remove the dependency:
 
 ```yaml
 services:
   arrgh:
-    environment:
-      PLUGIN_URLS: "http://mangadex:4000"
+    image: ghcr.io/t2vi/arrgh:latest
     depends_on:
-      - mangadex
+      plugin-host:
+        condition: service_healthy
+    # ...
 
-  mangadex:
-    build: ./plugins/mangadex
+  plugin-host:
+    image: ghcr.io/t2vi/plugin-host:latest
     environment:
       PORT: "4000"
       LANGUAGES: "en"
-
-volumes:
-  arrgh_data:
+      # CLOAKBROWSER_WS_URL not set — CF-dependent plugins will error gracefully
 ```
+
+CF-protected plugins will return errors for those sources; all others work normally.
 
 ---
 
@@ -132,12 +121,17 @@ Migrations run automatically on startup — no manual DB steps needed.
 
 ## Debugging plugins locally
 
-Expose a plugin port temporarily for direct API testing:
+Expose the plugin-host port temporarily for direct API testing:
 
 ```yaml
-toonily:
+plugin-host:
   ports:
-    - "4001:4001"
+    - "4000:4000"
 ```
 
-Then `curl http://localhost:4001/info` to verify it's responding.
+Then:
+```bash
+curl http://localhost:4000/plugins        # list loaded plugins
+curl http://localhost:4000/mangadex/info  # plugin info
+curl "http://localhost:4000/mangadex/search?q=berserk"
+```
