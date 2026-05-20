@@ -39,6 +39,8 @@ export interface QueueItem {
   chapter_num: number
   status: 'pending' | 'downloading' | 'done' | 'error' | 'cancelled'
   error: string | null
+  pages_downloaded: number
+  pages_total: number
   created_at: string
   updated_at: string
 }

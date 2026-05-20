@@ -26,7 +26,7 @@ impl Config {
             plugin_host_url: env::var("PLUGIN_HOST_URL")
                 .unwrap_or_else(|_| "http://plugin-host:4000".to_string()),
             plugin_index_url: env::var("PLUGIN_INDEX_URL")
-                .unwrap_or_else(|_| "https://raw.githubusercontent.com/t2vi/arrgh/main/plugin-index/index.json".to_string()),
+                .unwrap_or_else(|_| "file:///app/plugin-index.json".to_string()),
         })
     }
 }

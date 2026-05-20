@@ -48,6 +48,10 @@ fn admin_only(claims: &Claims) -> Option<Response> {
 }
 
 async fn fetch_index(url: &str) -> anyhow::Result<Vec<PluginIndexEntry>> {
+    if let Some(path) = url.strip_prefix("file://") {
+        let text = tokio::fs::read_to_string(path).await?;
+        return Ok(serde_json::from_str(&text)?);
+    }
     let entries: Vec<PluginIndexEntry> = Client::new()
         .get(url)
         .send()

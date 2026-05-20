@@ -1,0 +1,2 @@
+ALTER TABLE download_queue ADD COLUMN pages_downloaded INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE download_queue ADD COLUMN pages_total INTEGER NOT NULL DEFAULT 0;

@@ -1,4 +1,4 @@
-const BASE = 'https://api.comick.fun'
+const BASE = 'https://api.comick.dev'
 
 // ── Minimal browser interface (duck-typed, no playwright dep in bundle) ───────
 
@@ -26,7 +26,7 @@ export function setContext(ctx: PluginContext): void {
   _ctx = ctx
 }
 
-// ── JSON fetch via browser (CF bypass) ───────────────────────────────────────
+// ── JSON fetch via stealth browser (bypasses CF TLS fingerprinting) ──────────
 
 // Browsers render JSON APIs as <html><body><pre>JSON</pre></body></html>.
 function extractJson(html: string): string {
@@ -45,9 +45,13 @@ async function flareFetch<T>(url: string): Promise<T> {
   const bctx = await browser.newContext()
   const page = await bctx.newPage()
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 60_000 })
     const html = await page.content()
-    return JSON.parse(extractJson(html)) as T
+    const extracted = extractJson(html)
+    if (!extracted.trimStart().match(/^[\[{]/)) {
+      throw new Error(`unexpected response from ${url}: ${extracted.slice(0, 100)}`)
+    }
+    return JSON.parse(extracted) as T
   } finally {
     await bctx.close()
   }
