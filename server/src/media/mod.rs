@@ -126,3 +126,67 @@ fn is_image(name: &str) -> bool {
         || lower.ends_with(".webp")
         || lower.ends_with(".avif")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── is_image ──────────────────────────────────────────────────────────────
+
+    #[test]
+    fn is_image_accepts_known_extensions() {
+        for name in ["page.jpg", "page.jpeg", "page.PNG", "page.WEBP", "page.avif"] {
+            assert!(is_image(name), "{name} should be recognised as an image");
+        }
+    }
+
+    #[test]
+    fn is_image_rejects_non_image() {
+        for name in ["page.txt", "page.cbz", "page", "page.html"] {
+            assert!(!is_image(name), "{name} should not be recognised as an image");
+        }
+    }
+
+    // ── strip_jpeg_icc ────────────────────────────────────────────────────────
+
+    #[test]
+    fn non_jpeg_returned_unchanged() {
+        let png = b"\x89PNG\r\n\x1a\nsome data".to_vec();
+        assert_eq!(strip_jpeg_icc(png.clone()), png);
+    }
+
+    #[test]
+    fn too_short_returned_unchanged() {
+        assert_eq!(strip_jpeg_icc(vec![0xFF]), vec![0xFF]);
+        assert_eq!(strip_jpeg_icc(vec![]), Vec::<u8>::new());
+    }
+
+    #[test]
+    fn jpeg_without_icc_passes_through() {
+        // Minimal valid JPEG: SOI + EOI
+        let jpeg = vec![0xFF, 0xD8, 0xFF, 0xD9];
+        let result = strip_jpeg_icc(jpeg);
+        assert_eq!(&result[..2], &[0xFF, 0xD8]);
+    }
+
+    #[test]
+    fn jpeg_with_icc_segment_stripped() {
+        // Build a minimal JPEG with one APP2 ICC_PROFILE segment
+        let mut jpeg = vec![0xFF, 0xD8]; // SOI
+        // APP2 marker (0xFF 0xE2) + length (2 + payload) + ICC_PROFILE\0 header
+        let icc_payload = b"ICC_PROFILE\x00fake icc data";
+        let seg_len = (2 + icc_payload.len()) as u16;
+        jpeg.extend_from_slice(&[0xFF, 0xE2]);
+        jpeg.extend_from_slice(&seg_len.to_be_bytes());
+        jpeg.extend_from_slice(icc_payload);
+        jpeg.extend_from_slice(&[0xFF, 0xD9]); // EOI
+
+        let result = strip_jpeg_icc(jpeg);
+
+        // ICC segment must be gone
+        assert!(!result.windows(12).any(|w| w == b"ICC_PROFILE\x00"),
+            "ICC_PROFILE segment should be stripped");
+        // SOI must be preserved
+        assert_eq!(&result[..2], &[0xFF, 0xD8]);
+    }
+}

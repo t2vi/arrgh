@@ -1,6 +1,13 @@
 # Test Coverage Plan
 
-Framework: **Vitest + @testing-library/react** (web), **cargo test** (server, not yet wired).
+Strategy: ADR 0012 — three-layer pyramid (Unit → Integration → E2e), sequential in CI, all reporting to Allure at `/test-reports/`. See `docs/adr/0012-testing-strategy.md`.
+
+**Frameworks**
+- Web unit: Vitest + @testing-library/react + allure-vitest
+- Server unit + integration: cargo nextest + cargo-llvm-cov
+- E2e: Playwright + allure-playwright (Docker Compose test stack + Fixture Plugin)
+
+**TDD**: write failing test first, then implement. Red → Green → Refactor.
 
 Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 
@@ -32,96 +39,132 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Settings | `useSettings` | load, tab defaults, save, logout | ✅ |
 | Queue | `useQueue` | fetch, sort, canClear, remove+refetch | ✅ |
 | Queue | `QueueRow` | render, remove btn hidden while downloading, onRemove, error | ✅ |
-| Queue | `QueueRow` | **progress bar shown when downloading + pages_total > 0** | ✅ |
-| Queue | `QueueRow` | **progress bar hidden when pages_total = 0** | ✅ |
-| Queue | `QueueRow` | **percentage text matches pages_downloaded/pages_total** | ✅ |
-| Settings | `LogsSection` | renders level selector and log table | 🔳 |
-| Settings | `LogsSection` | filter selector hides entries below selected level | 🔳 |
-| Settings | `LogsSection` | setLogLevel called when capture level changes | 🔳 |
-| Manga Detail | `ChapterRow` | downloaded state — shows BookOpen, no download icon | 🔳 |
-| Manga Detail | `ChapterRow` | pending state — shows Queued button, cancel calls onCancelDownload | 🔳 |
-| Manga Detail | `ChapterRow` | active state (downloading) — shows spinner, no remove btn | 🔳 |
-| Manga Detail | `ChapterRow` | active + pages_total > 0 — shows progress bar + percentage | 🔳 |
-| Manga Detail | `ChapterRow` | active + pages_total = 0 — no progress bar | 🔳 |
-| Manga Detail | `ChapterRow` | error state — shows AlertCircle | 🔳 |
-| Manga Detail | `ChapterRow` | completed progress — read bar at 100%, opacity-50 | 🔳 |
-| Manga Detail | `ChapterRow` | no source_id + not downloaded — shows HardDrive (unlinked) | 🔳 |
-| Settings | `useSettings` | browse modal open/close | 🔳 |
-| Settings | `useSettings` | install plugin success → sources refetch | 🔳 |
-| Settings | `useSettings` | install plugin error → error message shown | 🔳 |
+| Queue | `QueueRow` | progress bar shown when downloading + pages_total > 0 | ✅ |
+| Queue | `QueueRow` | progress bar hidden when pages_total = 0 | ✅ |
+| Queue | `QueueRow` | percentage text matches pages_downloaded/pages_total | ✅ |
+| Settings | `LogsSection` | renders level selector and log table | ✅ |
+| Settings | `LogsSection` | filter selector hides entries below selected level | ✅ |
+| Settings | `LogsSection` | setLogLevel called when capture level changes | ✅ |
+| Manga Detail | `ChapterRow` | downloaded state — BookOpen icon, no download btn | ✅ |
+| Manga Detail | `ChapterRow` | pending — Queued btn, cancel calls onCancelDownload | ✅ |
+| Manga Detail | `ChapterRow` | downloading — spinner, no remove btn | ✅ |
+| Manga Detail | `ChapterRow` | downloading + pages_total > 0 — progress bar + % | ✅ |
+| Manga Detail | `ChapterRow` | downloading + pages_total = 0 — no progress bar | ✅ |
+| Manga Detail | `ChapterRow` | error state — AlertCircle shown | ✅ |
+| Manga Detail | `ChapterRow` | completed — read bar at 100%, opacity-50 | ✅ |
+| Manga Detail | `ChapterRow` | no source_id + not downloaded — HardDrive (unlinked) | ✅ |
+| Settings | `SourcesSection` | browse modal open/close | ✅ |
+| Settings | `SourcesSection` | install plugin success → sources refetch | ✅ |
+| Settings | `SourcesSection` | add source 502 error → error message shown | ✅ |
+| Settings | `SourcesSection` | toggle source calls patchSource with flipped state | ✅ |
 
 ---
 
-## Server — Unit (cargo test)
+## Server — Unit (cargo nextest)
 
-Not yet written. No test infra scaffolded. Planned cases below.
+### Auth (`src/auth.rs`) ✅
 
-### Auth (`src/auth.rs`)
-
-| Case | What to assert |
+| Case | Status |
 |---|---|
-| `create_token` → `validate_token` round-trip | claims.sub == user_id, claims.role preserved |
-| `validate_token` with wrong secret | returns Err |
-| `validate_token` with expired token | returns Err |
+| `create_token` → `validate_token` roundtrip — claims preserved | ✅ |
+| Wrong secret rejected | ✅ |
+| Member role + allow_explicit=false preserved | ✅ |
 
-### Config (`src/config.rs`)
+### Config (`src/config.rs`) ✅
 
-| Case | What to assert |
+| Case | Status |
 |---|---|
-| All env vars set | all fields populated correctly |
-| No env vars | defaults applied (`sqlite://arrgh.db`, `./downloads`, interval=6, etc.) |
-| `INDEX_INTERVAL_HOURS` non-numeric | falls back to default (6) |
+| Defaults when no env vars set | ✅ |
+| Unparseable `INDEX_INTERVAL_HOURS` falls back to 6 | ✅ |
+| `BIND_ADDR` present when set | ✅ |
 
-### API error handling (`src/api/mod.rs`)
+### Logging (`src/logging.rs`) ✅
 
-| Case | What to assert |
+| Case | Status |
 |---|---|
-| `AppError::from(anyhow::anyhow!(...))` | `into_response()` returns 500 |
+| Level roundtrip (all 4 levels) | ✅ |
+| `level_from_str` case-insensitive | ✅ |
+| Unknown level string → None | ✅ |
+| Unknown u8 → "INFO" default | ✅ |
+| Ring buffer evicts oldest at capacity | ✅ |
 
-### Sources registry (`src/api/sources.rs`)
+### Source (`src/indexer/source.rs`) ✅
 
-| Case | What to assert |
+| Case | Status |
 |---|---|
-| Concurrent `reload_registry` calls | second waits for first; final state is consistent (requires in-memory SQLite) |
+| Safe title unchanged | ✅ |
+| Unsafe chars (`/\:*?"<>|`) replaced with `_` | ✅ |
+| Whitespace trimmed | ✅ |
+| Empty string | ✅ |
 
-### Media (`src/api/media.rs`)
+### Discover (`src/api/discover.rs`) ✅
 
-| Case | What to assert |
+| Case | Status |
 |---|---|
-| `image_content_type` — JPEG magic bytes | returns `"image/jpeg"` |
-| `image_content_type` — PNG magic bytes | returns `"image/png"` |
-| `image_content_type` — WEBP magic bytes | returns `"image/webp"` |
-| `image_content_type` — too short | returns None |
-| `root_domain_referer` — full URL | returns scheme + root domain only |
-| `root_domain_referer` — invalid URL | returns empty string |
+| `normalize_title` lowercases | ✅ |
+| `normalize_title` strips punctuation | ✅ |
+| `normalize_title` collapses whitespace | ✅ |
+| `merge_hits` deduplicates same title | ✅ |
+| `merge_hits` preserves insertion order | ✅ |
+| `merge_hits` keeps distinct titles separate | ✅ |
+| `merge_hits` normalizes before dedup (`One-Piece` == `One Piece`) | ✅ |
 
-### Downloader (`src/downloader/mod.rs`)
+### Media helpers (`src/media/mod.rs`) ✅
 
-| Case | What to assert |
+| Case | Status |
 |---|---|
-| `pages_downloaded` increments per page | after N pages, value == N |
-| Transaction atomicity: chapter downloaded=1 + queue done in one tx | partial write leaves neither updated |
+| `is_image` accepts known extensions (jpg, jpeg, PNG, WEBP, avif) | ✅ |
+| `is_image` rejects non-image (txt, cbz, no ext, html) | ✅ |
+| `strip_jpeg_icc` — non-JPEG passed through unchanged | ✅ |
+| `strip_jpeg_icc` — too-short data passed through | ✅ |
+| `strip_jpeg_icc` — JPEG without ICC passes through | ✅ |
+| `strip_jpeg_icc` — APP2 ICC_PROFILE segment stripped | ✅ |
+
+### Media API (`src/api/media.rs`) ✅
+
+| Case | Status |
+|---|---|
+| JPEG magic bytes → `"image/jpeg"` | ✅ |
+| PNG magic bytes → `"image/png"` | ✅ |
+| WEBP magic bytes → `"image/webp"` | ✅ |
+| GIF magic bytes → `"image/gif"` | ✅ |
+| Too short → None | ✅ |
+| Unknown bytes → None | ✅ |
+| `root_domain_referer` — extracts root from subdomain | ✅ |
+| `root_domain_referer` — apex domain unchanged | ✅ |
+| `root_domain_referer` — invalid URL returns empty | ✅ |
+| `root_domain_referer` — scheme preserved | ✅ |
 
 ---
 
-## Server — Integration (cargo test, in-memory SQLite)
+## Server — Integration (HTTP-level, in-memory SQLite)
 
-Requires: `sqlx::SqlitePool` with `:memory:` + migrations applied.
-
-| Area | Case |
-|---|---|
-| Auth middleware | request without token → 401 |
-| Auth middleware | request with valid token → handler runs |
-| Auth middleware | media routes bypass auth → 200 without token |
-| Plugin install | DB insert + in-memory registry updated |
-| Plugin delete | DB delete + in-memory registry updated |
-| Source add/patch/delete | registry reflects DB state after each op |
+| Area | Case | Status |
+|---|---|---|
+| Auth | No token → 401 | ✅ |
+| Auth | Valid token → handler runs | ✅ |
+| Auth | Media routes bypass auth | ✅ |
+| Settings | `GET /api/settings` returns 200 JSON object | ✅ |
+| Settings | `POST /api/settings` persists + returns updated | ✅ |
+| Settings | `POST /api/settings` invalid reader_mode → 422 | ✅ |
+| Logs | `GET /api/logs` returns empty array on fresh buffer | ✅ |
+| Logs | `PATCH /api/logs/level` requires admin (member → 403) | ✅ |
+| Logs | `PATCH /api/logs/level` admin → 204 | ✅ |
+| Version | `GET /api/version` returns current without latest (check disabled) | ✅ |
+| Sources | Add + reload registry | 🔳 |
 
 ---
 
-## E2E (not planned)
+## E2e — Playwright (Docker Compose + Fixture Plugin)
 
-No E2E framework configured. Playwright would be the natural choice given it's already a dependency of plugin-host. Not prioritised until core unit/integration gaps are closed.
+Batch 1:
+
+| Flow | Steps | Status |
+|---|---|---|
+| Auth | Register → login → logout → login again | 🔳 |
+| Library | Login → add manga via Discover → appears in Library | 🔳 |
+| Download | Add manga → queue chapter → status reaches `done` | 🔳 |
+| Discover | Search via Fixture Plugin → results shown → add to library | 🔳 |
 
 ---
 
@@ -130,8 +173,9 @@ No E2E framework configured. Playwright would be the natural choice given it's a
 ```bash
 # Web
 cd web && npm test
+cd web && npm run test:coverage   # with coverage
 
-# Server (once tests exist)
+# Server
 cd server && cargo test
-cd server && cargo test -- --nocapture   # with output
+cd server && cargo nextest run    # via nextest (used in CI)
 ```

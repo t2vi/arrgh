@@ -16,7 +16,7 @@ const CURRENT: &str = env!("CARGO_PKG_VERSION");
 const REPO: &str = "t2vi/arrgh";
 const INTERVAL: Duration = Duration::from_secs(3600);
 
-pub(crate) struct CachedRelease {
+pub struct CachedRelease {
     /// Tag version with 'v' stripped, e.g. "0.0.9"
     version: String,
     html_url: String,

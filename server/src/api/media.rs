@@ -82,6 +82,69 @@ fn image_content_type(data: &[u8]) -> Option<&'static str> {
     None
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── image_content_type ────────────────────────────────────────────────────
+
+    #[test]
+    fn jpeg_magic_bytes() {
+        assert_eq!(image_content_type(&[0xFF, 0xD8, 0x00, 0x00]), Some("image/jpeg"));
+    }
+
+    #[test]
+    fn png_magic_bytes() {
+        assert_eq!(image_content_type(b"\x89PNG\r\n\x1a\n"), Some("image/png"));
+    }
+
+    #[test]
+    fn webp_magic_bytes() {
+        let mut data = *b"RIFF\x00\x00\x00\x00WEBP";
+        data[4..8].copy_from_slice(&[0, 0, 0, 0]);
+        assert_eq!(image_content_type(&data), Some("image/webp"));
+    }
+
+    #[test]
+    fn gif_magic_bytes() {
+        assert_eq!(image_content_type(b"GIF89a\x00\x00"), Some("image/gif"));
+    }
+
+    #[test]
+    fn too_short_returns_none() {
+        assert_eq!(image_content_type(&[0xFF, 0xD8, 0x00]), None);
+        assert_eq!(image_content_type(&[]), None);
+    }
+
+    #[test]
+    fn unknown_bytes_returns_none() {
+        assert_eq!(image_content_type(&[0x00, 0x01, 0x02, 0x03]), None);
+    }
+
+    // ── root_domain_referer ───────────────────────────────────────────────────
+
+    #[test]
+    fn extracts_root_domain() {
+        assert_eq!(root_domain_referer("https://cdn.mangapill.com/img/page.jpg"), "https://mangapill.com");
+    }
+
+    #[test]
+    fn handles_apex_domain() {
+        assert_eq!(root_domain_referer("https://mangadex.org/chapter/abc"), "https://mangadex.org");
+    }
+
+    #[test]
+    fn invalid_url_returns_empty() {
+        assert_eq!(root_domain_referer("not-a-url"), "");
+        assert_eq!(root_domain_referer(""), "");
+    }
+
+    #[test]
+    fn preserves_scheme() {
+        assert_eq!(root_domain_referer("http://sub.example.com/path"), "http://example.com");
+    }
+}
+
 async fn serve_page(
     State(state): State<AppState>,
     Path((chapter_id, page)): Path<(String, u32)>,

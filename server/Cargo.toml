@@ -3,6 +3,10 @@ name = "arrgh-server"
 version = "0.0.8"
 edition = "2021"
 
+[lib]
+name = "arrgh_server"
+path = "src/lib.rs"
+
 [[bin]]
 name = "arrgh-server"
 path = "src/main.rs"
