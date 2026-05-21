@@ -1,10 +1,42 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { Home, BookOpen, Compass, Download, Settings, User, LogOut } from 'lucide-react'
-import { api, clearToken, getUsername, getRole, type QueueItem } from '@/api'
+import { api, clearToken, getUsername, getRole, type VersionInfo, type QueueItem } from '@/api'
 import { cn } from '@/lib/utils'
 import { useDpadNav } from '@/hooks/useDpadNav'
 import { ROUTES } from '@/lib/routes'
+
+function VersionBadge() {
+  const [data, setData] = useState<VersionInfo | null>(null)
+
+  useEffect(() => {
+    api.getVersion().then(setData).catch(() => {})
+  }, [])
+
+  if (!data) return null
+
+  const hasUpdate = data.latest != null
+
+  if (hasUpdate && data.release_url) {
+    return (
+      <a
+        href={data.release_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block text-[10px] font-medium text-primary hover:text-primary/80 transition-colors text-center"
+        title={`v${data.latest} available`}
+      >
+        v{data.current} ↑
+      </a>
+    )
+  }
+
+  return (
+    <p className="text-[10px] text-muted-foreground/50 text-center">
+      v{data.current}
+    </p>
+  )
+}
 
 const NAV_ITEMS = [
   { label: 'Home',      icon: Home,     path: ROUTES.home     },
@@ -92,14 +124,7 @@ export default function AppLayout() {
             </button>
           </div>
           <div className="p-4">
-          <a
-            href="https://www.gnu.org/licenses/gpl-3.0.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors text-center"
-          >
-            GNU GPL v3
-          </a>
+            <VersionBadge />
           </div>
         </div>
       </aside>

@@ -21,10 +21,11 @@ export function ServerSettingsSection({
   const [readerMode, setReaderMode] = useState<AppSettings['reader_mode']>(settings.reader_mode)
   const [downloadDir, setMangaDir] = useState(settings.download_dir)
   const [trendingPerSource, setTrendingPerSource] = useState(settings.trending_per_source)
+  const [checkForUpdates, setCheckForUpdates] = useState(settings.check_for_updates)
   const [saved, setSaved] = useState(false)
 
   function handleSave() {
-    onSave({ download_workers: workers, index_interval_hours: hours, auto_download: autoDownload, reader_mode: readerMode, download_dir: downloadDir, trending_per_source: trendingPerSource })
+    onSave({ download_workers: workers, index_interval_hours: hours, auto_download: autoDownload, reader_mode: readerMode, download_dir: downloadDir, trending_per_source: trendingPerSource, check_for_updates: checkForUpdates })
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -66,6 +67,11 @@ export function ServerSettingsSection({
           options={[{ value: 'paged', label: 'Paged' }, { value: 'scroll', label: 'Scroll' }]}
           onChange={(v) => setReaderMode(v as AppSettings['reader_mode'])}
         />
+      </SettingRow>
+
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pt-2">Updates</h2>
+      <SettingRow label="Check for updates" hint="Polls GitHub Releases once per hour">
+        <Toggle value={checkForUpdates} onChange={setCheckForUpdates} />
       </SettingRow>
 
       <Button onClick={handleSave} disabled={saving} className="gap-1.5">

@@ -16,6 +16,7 @@ const DEFAULTS: AppSettings = {
   reader_mode: 'paged',
   download_dir: './downloads',
   trending_per_source: 5,
+  check_for_updates: false,
 }
 
 export function StepSettings({ onDone }: { onDone: () => void }) {

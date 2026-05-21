@@ -186,6 +186,13 @@ async fn openapi_spec() -> Json<Value> {
             "responses": { "200": { "description": "Array of LogEntry" } }
           }
         },
+        "/api/version": {
+          "get": {
+            "tags": ["Version"],
+            "summary": "Current server version and optional update info",
+            "responses": { "200": { "description": "{ current, latest, release_url }" } }
+          }
+        },
         "/api/logs/level": {
           "get": {
             "tags": ["Logs"],
