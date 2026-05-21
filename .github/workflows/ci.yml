@@ -40,9 +40,13 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run tests with coverage
-        run: cargo llvm-cov nextest --profile ci --lcov --output-path lcov.info --junit nextest-results.xml
+        run: cargo llvm-cov nextest --profile ci --lcov --output-path lcov.info
         env:
           SQLX_OFFLINE: true
+
+      - name: Locate JUnit XML (debug)
+        if: always()
+        run: find . -name "*.xml" 2>/dev/null || true
 
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
