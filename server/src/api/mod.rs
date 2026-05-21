@@ -26,6 +26,7 @@ mod auth_api;
 mod chapters;
 pub mod discover;
 mod docs;
+mod logs;
 mod manga;
 mod media;
 mod plugins;
@@ -45,6 +46,7 @@ pub fn router(state: AppState) -> Router<AppState> {
         .merge(settings::router())
         .merge(sources::router())
         .merge(plugins::router())
+        .merge(logs::router())
         .route_layer(middleware::from_fn_with_state(state, require_auth));
 
     Router::new()

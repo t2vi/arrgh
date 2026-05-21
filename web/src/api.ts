@@ -103,6 +103,13 @@ export interface SourceRow {
   is_community: boolean
 }
 
+export interface LogEntry {
+  timestamp: string
+  level: 'ERROR' | 'WARN' | 'INFO' | 'DEBUG'
+  target: string
+  message: string
+}
+
 export interface PluginIndexEntry {
   id: string
   name: string
@@ -329,4 +336,9 @@ export const api = {
   listPluginIndex: () => get<PluginIndexEntry[]>('/api/plugins/index'),
   installPlugin: (plugin_id: string) => post<void>('/api/plugins/install', { plugin_id }),
   deletePlugin: (plugin_id: string) => del(`/api/plugins/${encodeURIComponent(plugin_id)}`),
+
+  // Logs (admin only)
+  getLogs: (limit = 200) => get<LogEntry[]>('/api/logs', { limit: String(limit) }),
+  getLogLevel: () => get<{ level: string }>('/api/logs/level'),
+  setLogLevel: (level: string) => patch<void>('/api/logs/level', { level }),
 }

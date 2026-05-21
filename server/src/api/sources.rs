@@ -49,7 +49,11 @@ fn admin_only(claims: &Claims) -> Option<Response> {
     }
 }
 
-async fn reload_registry(state: &AppState) -> ApiResult<()> {
+/// Reload the in-memory source registry from DB.
+/// Holds `registry_lock` across load+write to prevent concurrent reloads
+/// from racing and losing each other's DB changes (lost-update pattern).
+pub(crate) async fn reload_registry(state: &AppState) -> ApiResult<()> {
+    let _guard = state.registry_lock.lock().await;
     let registry = crate::indexer::load_registry(&state.db).await;
     let map = Arc::try_unwrap(registry).unwrap_or_else(|a| (*a).clone());
     *state.sources.write().await = map;

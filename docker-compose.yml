@@ -9,7 +9,7 @@ services:
       DOWNLOAD_DIR: /data/downloads
       # JWT_SECRET: change-me-in-production
       # INDEX_INTERVAL_HOURS: 6
-      # RUST_LOG: arrgh_server=info
+      # RUST_LOG: arrgh_server=info,tower_http=warn   # default; set arrgh_server=debug for verbose stdout
       PLUGIN_URLS: "http://plugin-host:4000"
     volumes:
       - arrgh_data:/data

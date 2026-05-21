@@ -4,7 +4,7 @@ import { api, clearToken, isAdmin } from '@/api'
 import { ROUTES } from '@/lib/routes'
 import type { AppSettings } from '@/types'
 
-export type Tab = 'library' | 'users' | 'sources' | 'account'
+export type Tab = 'library' | 'users' | 'sources' | 'account' | 'logs'
 
 export interface SettingsHandle {
   tab: Tab

@@ -11,6 +11,8 @@ function makeItem(overrides: Partial<QueueItem> = {}): QueueItem {
     chapter_num: 42,
     status: 'pending',
     error: null,
+    pages_downloaded: 0,
+    pages_total: 0,
     created_at: '',
     updated_at: '',
     ...overrides,
@@ -44,5 +46,27 @@ describe('QueueRow', () => {
   it('renders error text when present', () => {
     render(<QueueRow item={makeItem({ status: 'error', error: 'Network timeout' })} onRemove={() => {}} />)
     expect(screen.getByText('Network timeout')).toBeInTheDocument()
+  })
+
+  describe('download progress bar', () => {
+    it('shows progress bar and percentage when downloading with pages', () => {
+      render(<QueueRow item={makeItem({ status: 'downloading', pages_downloaded: 6, pages_total: 20 })} onRemove={() => {}} />)
+      expect(screen.getByText('30%')).toBeInTheDocument()
+    })
+
+    it('hides progress bar when pages_total is 0', () => {
+      render(<QueueRow item={makeItem({ status: 'downloading', pages_downloaded: 0, pages_total: 0 })} onRemove={() => {}} />)
+      expect(screen.queryByText(/%/)).toBeNull()
+    })
+
+    it('shows 100% when all pages downloaded', () => {
+      render(<QueueRow item={makeItem({ status: 'downloading', pages_downloaded: 20, pages_total: 20 })} onRemove={() => {}} />)
+      expect(screen.getByText('100%')).toBeInTheDocument()
+    })
+
+    it('does not show progress bar when status is pending', () => {
+      render(<QueueRow item={makeItem({ status: 'pending', pages_downloaded: 5, pages_total: 20 })} onRemove={() => {}} />)
+      expect(screen.queryByText(/%/)).toBeNull()
+    })
   })
 })
