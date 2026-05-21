@@ -110,6 +110,12 @@ export interface LogEntry {
   message: string
 }
 
+export interface VersionInfo {
+  current: string
+  latest: string | null
+  release_url: string | null
+}
+
 export interface PluginIndexEntry {
   id: string
   name: string
@@ -341,4 +347,7 @@ export const api = {
   getLogs: (limit = 200) => get<LogEntry[]>('/api/logs', { limit: String(limit) }),
   getLogLevel: () => get<{ level: string }>('/api/logs/level'),
   setLogLevel: (level: string) => patch<void>('/api/logs/level', { level }),
+
+  // Version
+  getVersion: () => get<VersionInfo>('/api/version'),
 }

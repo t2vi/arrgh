@@ -34,6 +34,7 @@ mod progress;
 mod queue;
 pub mod settings;
 mod sources;
+pub mod version;
 
 pub fn router(state: AppState) -> Router<AppState> {
     let protected = Router::new()
@@ -47,6 +48,7 @@ pub fn router(state: AppState) -> Router<AppState> {
         .merge(sources::router())
         .merge(plugins::router())
         .merge(logs::router())
+        .merge(version::router())
         .route_layer(middleware::from_fn_with_state(state, require_auth));
 
     Router::new()

@@ -41,6 +41,8 @@ pub struct AppState {
     pub trending_cache: api::discover::TrendingCache,
     pub log_buffer: logging::LogBuffer,
     pub log_level: logging::LevelGate,
+    pub http: reqwest::Client,
+    pub update_cache: api::version::UpdateCache,
 }
 
 #[tokio::main]
@@ -116,10 +118,13 @@ async fn main() -> Result<()> {
         trending_cache: Arc::new(Mutex::new(None)),
         log_buffer: log_buf,
         log_level: log_level_gate,
+        http: reqwest::Client::new(),
+        update_cache: api::version::new_cache(),
     };
 
     indexer::start_scheduler(state.clone());
     downloader::start_worker(state.clone()).await;
+    api::version::start_update_checker(state.clone());
 
     let app = Router::new()
         .nest("/api", api::router(state.clone()))

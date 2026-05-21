@@ -52,6 +52,7 @@ export interface AppSettings {
   reader_mode: 'paged' | 'scroll'
   download_dir: string
   trending_per_source: number
+  check_for_updates: boolean
 }
 
 export interface ReadProgress {

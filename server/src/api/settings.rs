@@ -12,6 +12,7 @@ pub struct AppSettings {
     pub reader_mode: String,
     pub download_dir: String,
     pub trending_per_source: i64,
+    pub check_for_updates: bool,
 }
 
 #[derive(Deserialize)]
@@ -22,6 +23,7 @@ pub struct SaveBody {
     pub reader_mode: Option<String>,
     pub download_dir: Option<String>,
     pub trending_per_source: Option<i64>,
+    pub check_for_updates: Option<bool>,
 }
 
 pub fn router() -> Router<AppState> {
@@ -54,6 +56,9 @@ pub async fn read_settings(pool: &sqlx::SqlitePool, default_download_dir: &str) 
         trending_per_source: val(pool, "trending_per_source").await
             .and_then(|v| v.parse().ok())
             .unwrap_or(5),
+        check_for_updates: val(pool, "check_for_updates").await
+            .map(|v| v == "true")
+            .unwrap_or(false),
     }
 }
 
@@ -101,6 +106,9 @@ async fn save_settings(
     if let Some(n) = body.trending_per_source {
         let n = n.clamp(1, 50);
         upsert(&state.db, "trending_per_source", &n.to_string()).await?;
+    }
+    if let Some(v) = body.check_for_updates {
+        upsert(&state.db, "check_for_updates", if v { "true" } else { "false" }).await?;
     }
 
     Ok(Json(read_settings(&state.db, &state.config.download_dir).await).into_response())
