@@ -150,6 +150,7 @@ jobs:
 
       - name: Restore history
         run: |
+          mkdir -p allure-results
           if [ -d gh-pages/test-reports/history ]; then
             cp -r gh-pages/test-reports/history allure-results/history
           fi
