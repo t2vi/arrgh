@@ -175,6 +175,32 @@ async fn openapi_spec() -> Json<Value> {
             "parameters": [{ "name": "manga_id", "in": "path", "required": true, "schema": { "type": "string" } }],
             "responses": { "200": { "description": "Cover image" }, "307": { "description": "Redirect" } }
           }
+        },
+        "/api/logs": {
+          "get": {
+            "tags": ["Logs"],
+            "summary": "Get recent log entries from in-memory ring buffer",
+            "parameters": [
+              { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 200, "maximum": 500 } }
+            ],
+            "responses": { "200": { "description": "Array of LogEntry" } }
+          }
+        },
+        "/api/logs/level": {
+          "get": {
+            "tags": ["Logs"],
+            "summary": "Get current ring buffer capture level",
+            "responses": { "200": { "description": "{ level: string }" } }
+          },
+          "patch": {
+            "tags": ["Logs"],
+            "summary": "Set ring buffer capture level (admin only)",
+            "requestBody": {
+              "required": true,
+              "content": { "application/json": { "schema": { "type": "object", "properties": { "level": { "type": "string", "enum": ["ERROR", "WARN", "INFO", "DEBUG"] } } } } }
+            },
+            "responses": { "204": { "description": "Updated" }, "403": { "description": "Forbidden" }, "422": { "description": "Invalid level" } }
+          }
         }
       }
     }))

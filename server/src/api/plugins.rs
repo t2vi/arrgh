@@ -151,10 +151,7 @@ async fn install_plugin(
     .execute(&state.db)
     .await?;
 
-    // Reload live registry
-    let registry = crate::indexer::load_registry(&state.db).await;
-    let map = std::sync::Arc::try_unwrap(registry).unwrap_or_else(|a| (*a).clone());
-    *state.sources.write().await = map;
+    super::sources::reload_registry(&state).await?;
 
     Ok(StatusCode::CREATED.into_response())
 }
@@ -196,9 +193,7 @@ async fn delete_plugin(
             .await?;
     }
 
-    let registry = crate::indexer::load_registry(&state.db).await;
-    let map = std::sync::Arc::try_unwrap(registry).unwrap_or_else(|a| (*a).clone());
-    *state.sources.write().await = map;
+    super::sources::reload_registry(&state).await?;
 
     Ok(StatusCode::NO_CONTENT.into_response())
 }

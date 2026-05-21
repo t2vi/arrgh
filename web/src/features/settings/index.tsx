@@ -6,12 +6,14 @@ import { useSettings, type Tab } from './hooks/useSettings'
 import { ServerSettingsSection } from './components/ServerSettingsSection'
 import { UsersSection } from './components/UsersSection'
 import { SourcesSection } from './components/SourcesSection'
+import { LogsSection } from './components/LogsSection'
 import { ChangePasswordSection, ClientSection } from './components/AccountSection'
 
 const ADMIN_TABS: { id: Tab; label: string }[] = [
   { id: 'library', label: 'Library' },
   { id: 'users',   label: 'Users'   },
   { id: 'sources', label: 'Sources' },
+  { id: 'logs',    label: 'Logs'    },
   { id: 'account', label: 'Account' },
 ]
 
@@ -69,6 +71,8 @@ export default function Settings() {
         {h.tab === 'users' && h.admin && <UsersSection />}
 
         {h.tab === 'sources' && h.admin && <SourcesSection />}
+
+        {h.tab === 'logs' && h.admin && <LogsSection />}
 
         {h.tab === 'account' && (
           <div className="space-y-8">

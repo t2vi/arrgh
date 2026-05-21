@@ -13,8 +13,8 @@ vi.mock('@/api', () => ({
 import { api } from '@/api'
 
 const mockItems = [
-  { id: '1', manga_title: 'Test', chapter_num: '1', status: 'done', error: null, chapter_id: 'c1', created_at: '', updated_at: '' },
-  { id: '2', manga_title: 'Test', chapter_num: '2', status: 'pending', error: null, chapter_id: 'c2', created_at: '', updated_at: '' },
+  { id: '1', manga_title: 'Test', chapter_num: 1, status: 'done', error: null, chapter_id: 'c1', pages_downloaded: 0, pages_total: 0, created_at: '', updated_at: '' },
+  { id: '2', manga_title: 'Test', chapter_num: 2, status: 'pending', error: null, chapter_id: 'c2', pages_downloaded: 0, pages_total: 0, created_at: '', updated_at: '' },
 ]
 
 beforeEach(() => {
@@ -49,7 +49,7 @@ describe('useQueue', () => {
 
   it('canClear false when only active items', async () => {
     vi.mocked(api.getQueue).mockResolvedValue([
-      { id: '1', manga_title: 'T', chapter_num: '1', status: 'downloading', error: null, chapter_id: 'c1', created_at: '', updated_at: '' },
+      { id: '1', manga_title: 'T', chapter_num: 1, status: 'downloading', error: null, chapter_id: 'c1', pages_downloaded: 0, pages_total: 0, created_at: '', updated_at: '' },
     ] as never)
     const { result } = renderHook(() => useQueue())
     await waitFor(() => expect(result.current.loading).toBe(false))

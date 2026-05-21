@@ -7,6 +7,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU8, Ordering};
 use std::time::Instant;
 use tokio::sync::{Mutex, RwLock};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
@@ -19,6 +20,7 @@ mod config;
 mod db;
 mod downloader;
 mod indexer;
+mod logging;
 mod media;
 
 pub use config::Config;
@@ -32,19 +34,27 @@ pub struct AppState {
     pub config: Arc<Config>,
     pub jwt_secret: Arc<String>,
     pub sources: SourceMap,
+    /// Serializes concurrent registry reloads (load_registry + write).
+    /// Prevents lost-update when two admin ops race to reload sources.
+    pub registry_lock: Arc<Mutex<()>>,
     pub page_cache: PageCache,
     pub trending_cache: api::discover::TrendingCache,
+    pub log_buffer: logging::LogBuffer,
+    pub log_level: logging::LevelGate,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
 
+    let log_buf = logging::new_buffer();
+    let log_level_gate = Arc::new(AtomicU8::new(logging::LEVEL_INFO));
+
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            "arrgh_server=debug,tower_http=debug".into()
-        }))
+        .with(tracing_subscriber::EnvFilter::try_from_default_env()
+            .unwrap_or_else(|_| "arrgh_server=info,tower_http=warn".into()))
         .with(tracing_subscriber::fmt::layer())
+        .with(logging::RingBufferLayer::new(log_buf.clone(), log_level_gate.clone()))
         .init();
 
     let mut config = Config::from_env()?;
@@ -69,6 +79,16 @@ async fn main() -> Result<()> {
     }
     let config = Arc::new(config);
 
+    // Restore persisted log level for the ring buffer
+    if let Ok(Some(lvl)) = sqlx::query_scalar::<_, String>("SELECT value FROM server_settings WHERE key = 'log_level'")
+        .fetch_optional(&pool)
+        .await
+    {
+        if let Some(v) = logging::level_from_str(&lvl) {
+            log_level_gate.store(v, Ordering::Relaxed);
+        }
+    }
+
     indexer::local::verify_downloads(&pool).await?;
 
     let jwt_secret = Arc::new(get_or_create_jwt_secret(&pool).await?);
@@ -91,8 +111,11 @@ async fn main() -> Result<()> {
         config: config.clone(),
         jwt_secret,
         sources,
+        registry_lock: Arc::new(Mutex::new(())),
         page_cache: Arc::new(Mutex::new(HashMap::new())),
         trending_cache: Arc::new(Mutex::new(None)),
+        log_buffer: log_buf,
+        log_level: log_level_gate,
     };
 
     indexer::start_scheduler(state.clone());
@@ -219,7 +242,7 @@ async fn bootstrap_probe(pool: &sqlx::SqlitePool, base_url: &str) {
                 Err(e) => tracing::warn!("PLUGIN_URLS: DB insert failed for {}: {}", base_url, e),
             }
         }
-        Err(e) => tracing::warn!("PLUGIN_URLS: probe failed for {}: {}", base_url, e),
+        Err(e) => tracing::debug!("PLUGIN_URLS: probe failed for {}: {}", base_url, e),
     }
 }
 
