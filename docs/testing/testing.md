@@ -3,7 +3,7 @@
 Strategy: ADR 0012 — three-layer pyramid (Unit → Integration → E2e), sequential in CI, all reporting to Allure at `/test-reports/`. See `docs/adr/0012-testing-strategy.md`.
 
 **Frameworks**
-- Web unit: Vitest + @testing-library/react + allure-vitest
+- Web unit: Vitest + @testing-library/react + `allure-vitest@^2.x` (must stay v2 — v3 incompatible with vitest v2)
 - Server unit + integration: cargo nextest + cargo-llvm-cov
 - E2e: Playwright + allure-playwright (Docker Compose test stack + Fixture Plugin)
 
@@ -165,6 +165,25 @@ Batch 1:
 | Library | Login → add manga via Discover → appears in Library | 🔳 |
 | Download | Add manga → queue chapter → status reaches `done` | 🔳 |
 | Discover | Search via Fixture Plugin → results shown → add to library | 🔳 |
+
+---
+
+## Allure tagging
+
+Every web test automatically receives `layer=UI` and `tag=Web` via `beforeEach` in `web/src/test-setup.ts`.
+
+To tag a specific test or suite further, call inside `beforeEach` or at the top of a test:
+
+```ts
+await allure.feature('Queue')      // shows in Behaviors tab
+await allure.story('remove item')
+await allure.severity('critical')
+await allure.owner('vinny')
+```
+
+Failure categories: `allure-categories.json` at repo root — Product defects (failed), Test defects (broken), Skipped.
+
+Server tests appear under their Rust module paths in the Suites view (from JUnit XML classnames).
 
 ---
 
