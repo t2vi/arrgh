@@ -9,7 +9,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
     reporters: process.env.CI
-      ? [['allure-vitest', { resultsDir: './allure-results' }], 'verbose']
+      ? [['allure-vitest/reporter', { resultsDir: './allure-results' }], 'verbose']
       : ['verbose'],
     coverage: {
       provider: 'v8',
