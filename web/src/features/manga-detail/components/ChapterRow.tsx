@@ -27,7 +27,7 @@ export function ChapterRow({
   const isActive     = !isDownloaded && queueItem?.status === 'downloading'
   const isError      = !isDownloaded && queueItem?.status === 'error'
   const isWaiting    = pendingRead && !isDownloaded
-  const isClickable  = isDownloaded || (chapter.source_id != null && !isError)
+  const isClickable  = isDownloaded || (chapter.has_sources && !isError)
 
   return (
     <div
@@ -115,7 +115,7 @@ export function ChapterRow({
           >
             <AlertCircle className="w-3.5 h-3.5" />
           </button>
-        ) : chapter.source_id ? (
+        ) : chapter.has_sources ? (
           <button
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-accent transition-colors"
             onClick={onOpen}

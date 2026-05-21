@@ -150,8 +150,7 @@ async fn serve_page(
     Path((chapter_id, page)): Path<(String, u32)>,
 ) -> ApiResult<Response> {
     let chapter = sqlx::query!(
-        r#"SELECT c.local_path, c.downloaded, c.source_id, m.source as "source!"
-           FROM chapters c JOIN manga m ON c.manga_id = m.id
+        r#"SELECT c.local_path, c.downloaded FROM chapters c
            WHERE c.id = ?"#,
         chapter_id
     )
@@ -185,16 +184,24 @@ async fn serve_page(
         .await;
     }
 
-    let Some(source_id) = chapter.source_id else {
-        return Ok(StatusCode::NOT_FOUND.into_response());
-    };
-    let src = state.sources.read().await.get(&chapter.source).cloned();
-    let Some(src) = src else {
-        return Ok(StatusCode::BAD_GATEWAY.into_response());
-    };
+    // Load source links ordered by priority — use the cache key from the first successful source
+    let source_links = sqlx::query!(
+        r#"SELECT cs.source as "source!", cs.source_id as "source_id!"
+           FROM chapter_sources cs
+           LEFT JOIN external_sources es ON es.source_key = cs.source
+           WHERE cs.chapter_id = ?
+           ORDER BY COALESCE(es.priority, 100) ASC"#,
+        chapter_id
+    )
+    .fetch_all(&state.db)
+    .await?;
 
-    // Cache page URLs so 20 concurrent scroll requests don't each trigger a FlareSolverr call
-    let cache_key = format!("{}/{}", chapter.source, source_id);
+    if source_links.is_empty() {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+
+    // Try cached pages first
+    let cache_key = chapter_id.clone();
     let cached = {
         let cache = state.page_cache.lock().await;
         cache.get(&cache_key).and_then(|(ts, urls)| {
@@ -209,12 +216,17 @@ async fn serve_page(
     let pages = if let Some(cached) = cached {
         cached
     } else {
-        let urls = match src.get_page_urls(&source_id).await {
-            Ok(p) => p,
-            Err(e) => {
-                tracing::debug!("get_page_urls failed for {}: {}", source_id, e);
-                return Ok(StatusCode::BAD_GATEWAY.into_response());
+        let mut fetched = None;
+        for link in &source_links {
+            let src = state.sources.read().await.get(&link.source).cloned();
+            let Some(src) = src else { continue; };
+            match src.get_page_urls(&link.source_id).await {
+                Ok(urls) => { fetched = Some(urls); break; }
+                Err(e) => tracing::debug!("get_page_urls failed for {} ({}): {}", chapter_id, link.source, e),
             }
+        }
+        let Some(urls) = fetched else {
+            return Ok(StatusCode::BAD_GATEWAY.into_response());
         };
         let arc = Arc::new(urls);
         let mut cache = state.page_cache.lock().await;

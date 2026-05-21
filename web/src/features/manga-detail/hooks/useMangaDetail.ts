@@ -184,7 +184,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
 
   function openOrQueue(ch: Chapter) {
     if (ch.downloaded) { navigate(ROUTES.reader(ch.id)); return }
-    if (!ch.source_id) return
+    if (!ch.has_sources) return
     const qi = queueMap.get(ch.id)
     if (!qi || qi.status === 'error' || qi.status === 'cancelled') {
       api.downloadChapter(ch.id)
@@ -238,7 +238,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
   const downloadAll: SimpleMutation<void> = {
     mutate: () => {
       setDownloadAllPending(true)
-      const toDownload = chapters.filter((c) => !c.downloaded && c.source_id)
+      const toDownload = chapters.filter((c) => !c.downloaded && c.has_sources)
       Promise.all(toDownload.map((c) => api.downloadChapter(c.id).catch(() => {})))
         .then(() => fetchQueue())
         .finally(() => setDownloadAllPending(false))
@@ -247,12 +247,12 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     isSuccess: false,
   }
 
-  const isRemoteSource = manga?.source != null && manga.source !== 'local'
+  const isRemoteSource = manga != null && !manga.is_local
   const isSyncing = manga?.sync_status === 'syncing'
 
   const total = chapters.length
   const downloaded = chapters.filter((c) => c.downloaded).length
-  const streamable = chapters.filter((c) => !c.downloaded && c.source_id).length
+  const streamable = chapters.filter((c) => !c.downloaded && c.has_sources).length
   const readCount = allProgress.filter((p) => p.completed).length
   const readPct = total > 0 ? Math.round((readCount / total) * 100) : 0
   const activeCount = queueItems.filter((q) => q.status === 'downloading').length

@@ -288,7 +288,7 @@ export default function MangaDetail() {
                 {[
                   { label: 'Total',      value: h.total > 0 ? `${h.total} ch` : '—' },
                   { label: 'Downloaded', value: h.downloaded > 0 ? `${h.downloaded} ch` : '—', highlight: h.downloaded > 0 },
-                  { label: 'Source',     value: manga?.source ?? '—' },
+                  { label: 'Source',     value: manga ? (manga.is_local ? 'local' : 'remote') : '—' },
                   { label: 'Year',       value: manga?.year ? String(manga.year) : '—' },
                 ].map(({ label, value, highlight }) => (
                   <div key={label} className="p-3">
@@ -313,7 +313,7 @@ export default function MangaDetail() {
               </div>
             </div>
 
-            {manga && manga.source !== 'local' && (
+            {manga && !manga.is_local && (
               <AutoDownloadCard mangaId={manga.id} value={manga.auto_download} />
             )}
             {manga && <ReaderModeCard mangaId={manga.id} value={manga.reader_mode ?? null} />}

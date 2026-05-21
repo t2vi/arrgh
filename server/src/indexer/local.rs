@@ -126,7 +126,7 @@ async fn index_download_dir(db: &SqlitePool, path: &Path) -> Result<()> {
 
     let local_path = path.to_string_lossy().to_string();
 
-    upsert_manga(db, &title, &local_path, "local").await?;
+    upsert_manga(db, &title, &local_path).await?;
     Ok(())
 }
 
@@ -138,15 +138,17 @@ async fn index_archive(db: &SqlitePool, path: &Path) -> Result<()> {
         .to_string();
 
     let local_path = path.to_string_lossy().to_string();
-    upsert_manga(db, &title, &local_path, "local").await?;
+    upsert_manga(db, &title, &local_path).await?;
     Ok(())
 }
 
 /// Scan `{download_dir}/_{content_type}/` for CBZ/MD files not registered in the DB as downloaded.
 pub async fn scan_downloads(db: &SqlitePool, download_dir: &str) -> Result<()> {
-    let mangas = sqlx::query!("SELECT id, title, content_type FROM manga WHERE source != 'local'")
-        .fetch_all(db)
-        .await?;
+    let mangas = sqlx::query!(
+        "SELECT id, title, content_type FROM manga WHERE EXISTS (SELECT 1 FROM manga_sources WHERE manga_id = manga.id)"
+    )
+    .fetch_all(db)
+    .await?;
 
     for manga in mangas {
         let safe = sanitize_title(&manga.title);
@@ -240,7 +242,7 @@ fn count_cbz_pages(path: &str) -> Result<usize> {
     Ok(count)
 }
 
-async fn upsert_manga(db: &SqlitePool, title: &str, local_path: &str, source: &str) -> Result<()> {
+async fn upsert_manga(db: &SqlitePool, title: &str, local_path: &str) -> Result<()> {
     let now = Utc::now();
     let existing = sqlx::query!(
         "SELECT id FROM manga WHERE local_path = ?",
@@ -252,9 +254,9 @@ async fn upsert_manga(db: &SqlitePool, title: &str, local_path: &str, source: &s
     if existing.is_none() {
         let id = Uuid::new_v4().to_string();
         sqlx::query!(
-            r#"INSERT INTO manga (id, title, status, source, local_path, created_at, updated_at)
-               VALUES (?, ?, 'unknown', ?, ?, ?, ?)"#,
-            id, title, source, local_path, now, now
+            r#"INSERT INTO manga (id, title, status, local_path, created_at, updated_at)
+               VALUES (?, ?, 'unknown', ?, ?, ?)"#,
+            id, title, local_path, now, now
         )
         .execute(db)
         .await?;

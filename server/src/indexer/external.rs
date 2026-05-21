@@ -155,37 +155,53 @@ impl Source for ExternalSource {
 
         let count = chapters.len();
         let now = Utc::now();
-        let src_id = self.source_id.clone();
+        let src_key = self.source_id.clone();
         let mut new_count = 0usize;
 
         let mut tx = db.begin().await?;
         for ch in &chapters {
-            let existing = sqlx::query_scalar!(
-                "SELECT id FROM chapters WHERE manga_id = ? AND source_id = ?",
-                manga_id, ch.source_id
+            // Dedup by (manga_id, number) — same float number = same logical chapter
+            let chapter_id: Option<String> = sqlx::query_scalar!(
+                r#"SELECT id as "id!" FROM chapters WHERE manga_id = ? AND number = ?"#,
+                manga_id, ch.number
             )
             .fetch_optional(&mut *tx)
             .await?;
 
-            if existing.is_none() {
-                let id = Uuid::new_v4().to_string();
-                let num = ch.number;
-                let vol = ch.volume;
-                let fmt = &ch.chapter_format;
-                sqlx::query!(
-                    r#"INSERT INTO chapters (id, manga_id, title, number, volume, source_id, page_count, downloaded, chapter_format, created_at)
-                       VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)"#,
-                    id, manga_id, ch.title, num, vol, ch.source_id, fmt, now
-                )
-                .execute(&mut *tx)
-                .await?;
-                new_count += 1;
-            }
+            let chapter_id = match chapter_id {
+                Some(id) => id,
+                None => {
+                    let id = Uuid::new_v4().to_string();
+                    let num = ch.number;
+                    let vol = ch.volume;
+                    let fmt = &ch.chapter_format;
+                    sqlx::query!(
+                        r#"INSERT INTO chapters (id, manga_id, title, number, volume, page_count, downloaded, chapter_format, created_at)
+                           VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?)"#,
+                        id, manga_id, ch.title, num, vol, fmt, now
+                    )
+                    .execute(&mut *tx)
+                    .await?;
+                    new_count += 1;
+                    id
+                }
+            };
+
+            // Upsert source link for this chapter
+            let cs_id = Uuid::new_v4().to_string();
+            sqlx::query!(
+                r#"INSERT INTO chapter_sources (id, chapter_id, source, source_id)
+                   VALUES (?, ?, ?, ?)
+                   ON CONFLICT(chapter_id, source) DO UPDATE SET source_id = excluded.source_id"#,
+                cs_id, chapter_id, src_key, ch.source_id
+            )
+            .execute(&mut *tx)
+            .await?;
         }
         tx.commit().await?;
 
         if new_count > 0 {
-            tracing::info!("{}: {} new chapters for manga {} ({} total)", src_id, new_count, manga_id, count);
+            tracing::info!("{}: {} new chapters for manga {} ({} total)", src_key, new_count, manga_id, count);
         }
         Ok(count)
     }
@@ -260,5 +276,164 @@ impl Source for ExternalSource {
             chapter_count: meta.chapter_count,
             tags: meta.tags,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{Json, Router, routing::get};
+    use serde_json::{Value, json};
+    use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+    use std::sync::Arc;
+    use tokio::net::TcpListener;
+
+    async fn make_pool() -> SqlitePool {
+        let opts = SqliteConnectOptions::new()
+            .filename(":memory:")
+            .create_if_missing(true);
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(opts)
+            .await
+            .unwrap();
+        sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        pool
+    }
+
+    async fn spawn_chapters_server(chapters: Value) -> String {
+        let chapters = Arc::new(chapters);
+        let router = Router::new().route(
+            "/manga/{source_id}/chapters",
+            get(move || {
+                let data = chapters.clone();
+                async move { Json(data.as_ref().clone()) }
+            }),
+        );
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(async move { axum::serve(listener, router).await.unwrap() });
+        format!("http://127.0.0.1:{port}")
+    }
+
+    async fn seed_manga(pool: &SqlitePool, id: &str) {
+        let now = chrono::Utc::now().to_rfc3339();
+        sqlx::query(
+            "INSERT INTO manga (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+             VALUES (?, 'Test', 'unknown', 'ready', 'manga', 0, ?, ?)"
+        )
+        .bind(id).bind(&now).bind(&now)
+        .execute(pool).await.unwrap();
+    }
+
+    // Two sources with overlapping chapter numbers → 4 chapters, 6 chapter_sources rows
+    #[tokio::test]
+    async fn sync_chapters_deduplicates_by_number() {
+        let pool = make_pool().await;
+        seed_manga(&pool, "m-dedup").await;
+
+        let base_a = spawn_chapters_server(json!([
+            {"source_id": "a-ch1", "number": 1.0, "chapter_format": "pages"},
+            {"source_id": "a-ch2", "number": 2.0, "chapter_format": "pages"},
+            {"source_id": "a-ch3", "number": 3.0, "chapter_format": "pages"},
+        ])).await;
+        let src_a = ExternalSource::new(
+            "db-a".into(), "source-a".into(), "Source A".into(),
+            base_a, None, vec!["manga".into()], false,
+        );
+        src_a.sync_chapters(&pool, "m-dedup", "manga-src-id").await.unwrap();
+
+        let base_b = spawn_chapters_server(json!([
+            {"source_id": "b-ch2", "number": 2.0, "chapter_format": "pages"},
+            {"source_id": "b-ch3", "number": 3.0, "chapter_format": "pages"},
+            {"source_id": "b-ch4", "number": 4.0, "chapter_format": "pages"},
+        ])).await;
+        let src_b = ExternalSource::new(
+            "db-b".into(), "source-b".into(), "Source B".into(),
+            base_b, None, vec!["manga".into()], false,
+        );
+        src_b.sync_chapters(&pool, "m-dedup", "manga-src-id").await.unwrap();
+
+        let chapter_count: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM chapters WHERE manga_id = 'm-dedup'")
+                .fetch_one(&pool).await.unwrap();
+        assert_eq!(chapter_count, 4, "chapters 1-3 from A + ch 4 from B = 4 unique rows");
+
+        let source_count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM chapter_sources cs \
+             JOIN chapters c ON c.id = cs.chapter_id \
+             WHERE c.manga_id = 'm-dedup'"
+        ).fetch_one(&pool).await.unwrap();
+        assert_eq!(source_count, 6, "3 from source-a + 3 from source-b = 6 chapter_sources rows");
+    }
+
+    // Syncing the same source twice produces no duplicate rows
+    #[tokio::test]
+    async fn sync_chapters_is_idempotent() {
+        let pool = make_pool().await;
+        seed_manga(&pool, "m-idem").await;
+
+        let base = spawn_chapters_server(json!([
+            {"source_id": "ch1", "number": 1.0, "chapter_format": "pages"},
+            {"source_id": "ch2", "number": 2.0, "chapter_format": "pages"},
+        ])).await;
+        let src = ExternalSource::new(
+            "db-idem".into(), "source-idem".into(), "Idempotent".into(),
+            base, None, vec!["manga".into()], false,
+        );
+
+        src.sync_chapters(&pool, "m-idem", "mid").await.unwrap();
+        src.sync_chapters(&pool, "m-idem", "mid").await.unwrap();
+
+        let chapter_count: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM chapters WHERE manga_id = 'm-idem'")
+                .fetch_one(&pool).await.unwrap();
+        assert_eq!(chapter_count, 2);
+
+        let source_count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM chapter_sources cs \
+             JOIN chapters c ON c.id = cs.chapter_id \
+             WHERE c.manga_id = 'm-idem'"
+        ).fetch_one(&pool).await.unwrap();
+        assert_eq!(source_count, 2);
+    }
+
+    // ON CONFLICT updates source_id when plugin returns a new identifier for the same chapter number
+    #[tokio::test]
+    async fn sync_chapters_updates_source_id_on_conflict() {
+        let pool = make_pool().await;
+        seed_manga(&pool, "m-update").await;
+
+        let base_v1 = spawn_chapters_server(json!([
+            {"source_id": "old-id", "number": 1.0, "chapter_format": "pages"},
+        ])).await;
+        let src_v1 = ExternalSource::new(
+            "db-up".into(), "source-up".into(), "Source".into(),
+            base_v1, None, vec!["manga".into()], false,
+        );
+        src_v1.sync_chapters(&pool, "m-update", "mid").await.unwrap();
+
+        let base_v2 = spawn_chapters_server(json!([
+            {"source_id": "new-id", "number": 1.0, "chapter_format": "pages"},
+        ])).await;
+        let src_v2 = ExternalSource::new(
+            "db-up".into(), "source-up".into(), "Source".into(),
+            base_v2, None, vec!["manga".into()], false,
+        );
+        src_v2.sync_chapters(&pool, "m-update", "mid").await.unwrap();
+
+        let stored_id: String = sqlx::query_scalar(
+            "SELECT cs.source_id FROM chapter_sources cs \
+             JOIN chapters c ON c.id = cs.chapter_id \
+             WHERE c.manga_id = 'm-update' AND cs.source = 'source-up'"
+        ).fetch_one(&pool).await.unwrap();
+        assert_eq!(stored_id, "new-id", "ON CONFLICT updates source_id to the new value");
+
+        let row_count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM chapter_sources cs \
+             JOIN chapters c ON c.id = cs.chapter_id \
+             WHERE c.manga_id = 'm-update'"
+        ).fetch_one(&pool).await.unwrap();
+        assert_eq!(row_count, 1, "no duplicate rows after update");
     }
 }

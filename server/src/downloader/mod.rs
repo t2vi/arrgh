@@ -53,8 +53,7 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
     };
 
     let chapter = sqlx::query!(
-        r#"SELECT c.source_id, c.chapter_format as "chapter_format!", m.source as "source!",
-                  m.download_dir, m.content_type as "content_type!"
+        r#"SELECT c.chapter_format as "chapter_format!", m.download_dir, m.content_type as "content_type!"
            FROM chapters c JOIN manga m ON c.manga_id = m.id
            WHERE c.id = ?"#,
         item.chapter_id
@@ -62,13 +61,22 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
     .fetch_one(&state.db)
     .await?;
 
-    let source_id = match chapter.source_id {
-        Some(s) => s,
-        None => {
-            fail(state, &item.id, "chapter has no source_id").await?;
-            return Ok(());
-        }
-    };
+    // Fetch all source links for this chapter, ordered by source priority (lower = higher priority)
+    let sources = sqlx::query!(
+        r#"SELECT cs.source as "source!", cs.source_id as "source_id!"
+           FROM chapter_sources cs
+           LEFT JOIN external_sources es ON es.source_key = cs.source
+           WHERE cs.chapter_id = ?
+           ORDER BY COALESCE(es.priority, 100) ASC"#,
+        item.chapter_id
+    )
+    .fetch_all(&state.db)
+    .await?;
+
+    if sources.is_empty() {
+        fail(state, &item.id, "chapter has no source links").await?;
+        return Ok(());
+    }
 
     let is_text = chapter.chapter_format == "text";
     let file_name = if is_text {
@@ -87,21 +95,30 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
         }
     };
 
-    tracing::info!("downloading: {} Ch. {} ({})", item.manga_title, item.chapter_num, chapter.source);
+    // Try each source in priority order until one succeeds
+    let mut download_result: Result<usize> = Err(anyhow::anyhow!("no sources attempted"));
+    for row in &sources {
+        let src = match state.sources.read().await.get(&row.source).cloned() {
+            Some(s) => s,
+            None => {
+                tracing::warn!("no source impl for '{}', skipping", row.source);
+                continue;
+            }
+        };
 
-    let src = match state.sources.read().await.get(&chapter.source).cloned() {
-        Some(s) => s,
-        None => {
-            fail(state, &item.id, &format!("unknown source: {}", chapter.source)).await?;
-            return Ok(());
+        tracing::info!("downloading: {} Ch. {} ({})", item.manga_title, item.chapter_num, row.source);
+
+        download_result = if is_text {
+            download_text(src.as_ref(), &row.source_id, &dest).await.map(|_| 1usize)
+        } else {
+            download_cbz(src.as_ref(), &row.source_id, &dest, &state.db, &item.id).await
+        };
+
+        if download_result.is_ok() {
+            break;
         }
-    };
-
-    let download_result = if is_text {
-        download_text(src.as_ref(), &source_id, &dest).await.map(|_| 1usize)
-    } else {
-        download_cbz(src.as_ref(), &source_id, &dest, &state.db, &item.id).await
-    };
+        tracing::warn!("source {} failed for Ch. {}: {:?}", row.source, item.chapter_num, download_result);
+    }
 
     match download_result {
         Ok(page_count) => {
@@ -129,6 +146,7 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
             } else {
                 tracing::info!("downloaded {} pages → {:?}", page_count, dest);
             }
+
         }
         Err(e) => {
             let err = e.to_string();

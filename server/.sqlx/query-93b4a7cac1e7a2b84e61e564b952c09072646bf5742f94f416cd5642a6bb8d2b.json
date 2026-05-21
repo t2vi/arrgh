@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT\n               c.id as \"id!\",\n               c.manga_id as \"manga_id!\",\n               c.title,\n               c.number,\n               c.volume,\n               c.source_id,\n               c.local_path,\n               c.page_count,\n               (c.downloaded != 0) as \"downloaded!: bool\",\n               c.chapter_format as \"chapter_format!\",\n               c.created_at as \"created_at: _\"\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)",
+  "query": "SELECT\n               c.id as \"id!\",\n               c.manga_id as \"manga_id!\",\n               c.title,\n               c.number,\n               c.volume,\n               c.local_path,\n               c.page_count,\n               (c.downloaded != 0) as \"downloaded!: bool\",\n               (EXISTS(SELECT 1 FROM chapter_sources cs WHERE cs.chapter_id = c.id)) as \"has_sources!: bool\",\n               c.chapter_format as \"chapter_format!\",\n               c.created_at as \"created_at: _\"\n           FROM chapters c\n           JOIN manga m ON c.manga_id = m.id\n           WHERE c.manga_id = ? AND (m.is_explicit = 0 OR ? = 1)\n           ORDER BY c.number ASC",
   "describe": {
     "columns": [
       {
@@ -29,24 +29,24 @@
         "type_info": "Float"
       },
       {
-        "name": "source_id",
+        "name": "local_path",
         "ordinal": 5,
         "type_info": "Text"
       },
       {
-        "name": "local_path",
-        "ordinal": 6,
-        "type_info": "Text"
-      },
-      {
         "name": "page_count",
-        "ordinal": 7,
+        "ordinal": 6,
         "type_info": "Integer"
       },
       {
         "name": "downloaded!: bool",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "has_sources!: bool",
         "ordinal": 8,
-        "type_info": "Null"
+        "type_info": "Integer"
       },
       {
         "name": "chapter_format!",
@@ -69,12 +69,12 @@
       false,
       true,
       true,
-      true,
       false,
-      null,
+      false,
+      false,
       false,
       false
     ]
   },
-  "hash": "f5c175a9588c4b4b58d7aaeb0f38fee31ee588386ef015961e50918ca33cf0d2"
+  "hash": "93b4a7cac1e7a2b84e61e564b952c09072646bf5742f94f416cd5642a6bb8d2b"
 }

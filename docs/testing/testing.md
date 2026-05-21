@@ -52,7 +52,7 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Manga Detail | `ChapterRow` | downloading + pages_total = 0 — no progress bar | ✅ |
 | Manga Detail | `ChapterRow` | error state — AlertCircle shown | ✅ |
 | Manga Detail | `ChapterRow` | completed — read bar at 100%, opacity-50 | ✅ |
-| Manga Detail | `ChapterRow` | no source_id + not downloaded — HardDrive (unlinked) | ✅ |
+| Manga Detail | `ChapterRow` | has_sources=false + not downloaded — no action button | ✅ |
 | Settings | `SourcesSection` | browse modal open/close | ✅ |
 | Settings | `SourcesSection` | install plugin success → sources refetch | ✅ |
 | Settings | `SourcesSection` | add source 502 error → error message shown | ✅ |
@@ -120,6 +120,14 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | `strip_jpeg_icc` — JPEG without ICC passes through | ✅ |
 | `strip_jpeg_icc` — APP2 ICC_PROFILE segment stripped | ✅ |
 
+### ExternalSource (`src/indexer/external.rs`) ✅
+
+| Case | Status |
+|---|---|
+| `sync_chapters` deduplicates chapters by `(manga_id, number)` across two sources | ✅ |
+| `sync_chapters` is idempotent — syncing same source twice produces no duplicate rows | ✅ |
+| `sync_chapters` ON CONFLICT updates `source_id` when plugin returns a new identifier | ✅ |
+
 ### Media API (`src/api/media.rs`) ✅
 
 | Case | Status |
@@ -152,6 +160,18 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Logs | `PATCH /api/logs/level` admin → 204 | ✅ |
 | Version | `GET /api/version` returns current without latest (check disabled) | ✅ |
 | Sources | Add + reload registry | 🔳 |
+| Multi-source: manga schema | `is_local=true` when no `manga_sources` rows | ✅ |
+| Multi-source: manga schema | `is_local=false` when `manga_sources` row exists | ✅ |
+| Multi-source: chapter schema | `has_sources=false` when no `chapter_sources` rows | ✅ |
+| Multi-source: chapter schema | `has_sources=true` when `chapter_sources` row exists | ✅ |
+| Multi-source: download guard | `POST /chapters/:id/download` → 404 without `chapter_sources` | ✅ |
+| Multi-source: download guard | `POST /chapters/:id/download` → 202 with `chapter_sources` | ✅ |
+| Multi-source: sync | `POST /manga/:id/sync` → 404 when no `manga_sources` | ✅ |
+| Multi-source: sync | `POST /manga/:id/sync` → 202 when `manga_sources` exist | ✅ |
+| Multi-source: add_manga | Returns 400 when source not in registry | ✅ |
+| Multi-source: add_manga | Creates `manga_sources` row for primary source | ✅ |
+| Multi-source: add_manga | Creates `manga_sources` rows for alternatives | ✅ |
+| Multi-source: add_manga | Deduplicates — same source link returns same manga | ✅ |
 
 ---
 

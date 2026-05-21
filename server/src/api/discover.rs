@@ -225,7 +225,7 @@ pub struct SearchQuery {
     pub content_type: Option<String>,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct SourceAlternative {
     pub source: String,
     pub source_name: String,
@@ -265,6 +265,8 @@ pub struct AddMangaRequest {
     pub tags: Option<String>,
     #[serde(default = "default_content_type")]
     pub content_type: String,
+    #[serde(default)]
+    pub alternatives: Vec<SourceAlternative>,
 }
 
 fn default_content_type() -> String { "manga".to_string() }
@@ -515,26 +517,21 @@ async fn check_in_library(
     source_id: &str,
     alternatives: &[SourceAlternative],
 ) -> (bool, Option<String>) {
-    // Check primary
-    if let Ok(Some(row)) = sqlx::query!(
-        "SELECT m.id FROM manga m JOIN user_manga um ON um.manga_id = m.id AND um.user_id = ? WHERE m.source = ? AND m.source_id = ?",
-        user_id, source, source_id
-    )
-    .fetch_optional(db)
-    .await
-    {
-        return (true, row.id);
-    }
-    // Check alternatives
-    for alt in alternatives {
+    let all: Vec<(&str, &str)> = std::iter::once((source, source_id))
+        .chain(alternatives.iter().map(|a| (a.source.as_str(), a.id.as_str())))
+        .collect();
+    for (src, sid) in all {
         if let Ok(Some(row)) = sqlx::query!(
-            "SELECT m.id FROM manga m JOIN user_manga um ON um.manga_id = m.id AND um.user_id = ? WHERE m.source = ? AND m.source_id = ?",
-            user_id, alt.source, alt.id
+            r#"SELECT m.id as "id!" FROM manga m
+               JOIN user_manga um ON um.manga_id = m.id AND um.user_id = ?
+               JOIN manga_sources ms ON ms.manga_id = m.id
+               WHERE ms.source = ? AND ms.source_id = ?"#,
+            user_id, src, sid
         )
         .fetch_optional(db)
         .await
         {
-            return (true, row.id);
+            return (true, Some(row.id));
         }
     }
     (false, None)
@@ -805,13 +802,15 @@ async fn add_manga(
         None
     };
 
-    let existing_id = sqlx::query_scalar!(
-        r#"SELECT id as "id!" FROM manga WHERE source = ? AND source_id = ?"#,
+    // Check if this manga already exists via manga_sources
+    let existing_id: Option<String> = sqlx::query_scalar!(
+        "SELECT manga_id FROM manga_sources WHERE source = ? AND source_id = ?",
         source, body.source_id
     )
     .fetch_optional(&state.db)
     .await?;
 
+    let now_str = now.to_rfc3339();
     let manga_id: String = if let Some(eid) = existing_id {
         sqlx::query!(
             "UPDATE manga SET \
@@ -834,11 +833,11 @@ async fn add_manga(
         let is_explicit: i64 = if src.default_explicit() || tag_explicit { 1 } else { 0 };
         sqlx::query!(
             r#"INSERT INTO manga
-               (id, title, description, cover_url, status, source, source_id,
+               (id, title, description, cover_url, status,
                 author, year, tags, sync_status, content_type, is_explicit, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
             id, body.title, body.description, resolved_cover_url, body.status,
-            source, body.source_id, body.author, body.year, body.tags,
+            body.author, body.year, body.tags,
             body.content_type, is_explicit, now, now
         )
         .execute(&state.db)
@@ -846,7 +845,20 @@ async fn add_manga(
         id
     };
 
-    let now_str = now.to_rfc3339();
+    // Upsert manga_sources for primary source + all alternatives passed by the client
+    let sources_to_register: Vec<(String, String)> = std::iter::once((body.source.clone(), body.source_id.clone()))
+        .chain(body.alternatives.iter().map(|a| (a.source.clone(), a.id.clone())))
+        .collect();
+    for (src_key, src_id) in &sources_to_register {
+        let ms_id = Uuid::new_v4().to_string();
+        sqlx::query!(
+            "INSERT OR IGNORE INTO manga_sources (id, manga_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)",
+            ms_id, manga_id, src_key, src_id, now_str
+        )
+        .execute(&state.db)
+        .await?;
+    }
+
     sqlx::query!(
         "INSERT OR IGNORE INTO user_manga (user_id, manga_id, added_at) VALUES (?, ?, ?)",
         claims.sub, manga_id, now_str
@@ -856,15 +868,22 @@ async fn add_manga(
 
     let db = state.db.clone();
     let mid = manga_id.clone();
-    let source_id = body.source_id.clone();
     let cover_url = resolved_cover_url;
     let download_dir = state.config.download_dir.clone();
+    let state_sources = state.sources.clone();
     tokio::spawn(async move {
-        let result = src.sync_chapters(&db, &mid, &source_id).await;
-        if let Err(e) = &result {
-            tracing::error!("chapter sync failed for {}: {}", mid, e);
+        let mut any_ok = false;
+        for (src_key, src_id) in &sources_to_register {
+            if let Some(s) = state_sources.read().await.get(src_key).cloned() {
+                match s.sync_chapters(&db, &mid, src_id).await {
+                    Ok(_) => { any_ok = true; }
+                    Err(e) => tracing::error!("chapter sync failed for {} ({}): {}", mid, src_key, e),
+                }
+            } else {
+                tracing::warn!("no source impl for '{}' during add_manga", src_key);
+            }
         }
-        let status = if result.is_ok() { "ready" } else { "error" };
+        let status = if any_ok { "ready" } else { "error" };
         let _ = sqlx::query!("UPDATE manga SET sync_status = ? WHERE id = ?", status, mid)
             .execute(&db)
             .await;
@@ -908,8 +927,6 @@ pub async fn fetch_manga(db: &sqlx::SqlitePool, id: &str) -> Result<Manga, sqlx:
                description,
                cover_url,
                status as "status!",
-               source as "source!",
-               source_id,
                local_path,
                author,
                year,

@@ -35,8 +35,7 @@ pub struct MangaListItem {
     pub description: Option<String>,
     pub cover_url: Option<String>,
     pub status: String,
-    pub source: String,
-    pub source_id: Option<String>,
+    pub is_local: bool,
     pub local_path: Option<String>,
     pub author: Option<String>,
     pub year: Option<i64>,
@@ -105,8 +104,7 @@ async fn list_manga(
                    m.description,
                    m.cover_url,
                    m.status as "status!",
-                   m.source as "source!",
-                   m.source_id,
+                   (NOT EXISTS(SELECT 1 FROM manga_sources ms WHERE ms.manga_id = m.id)) as "is_local!: bool",
                    m.local_path,
                    m.author,
                    m.year,
@@ -151,8 +149,7 @@ async fn list_manga(
                    m.description,
                    m.cover_url,
                    m.status as "status!",
-                   m.source as "source!",
-                   m.source_id,
+                   (NOT EXISTS(SELECT 1 FROM manga_sources ms WHERE ms.manga_id = m.id)) as "is_local!: bool",
                    m.local_path,
                    m.author,
                    m.year,
@@ -208,8 +205,7 @@ async fn get_manga(
                m.description,
                m.cover_url,
                m.status as "status!",
-               m.source as "source!",
-               m.source_id,
+               (NOT EXISTS(SELECT 1 FROM manga_sources ms WHERE ms.manga_id = m.id)) as "is_local!: bool",
                m.local_path,
                m.author,
                m.year,
@@ -432,38 +428,45 @@ async fn sync_manga(
     axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(id): Path<String>,
 ) -> ApiResult<StatusCode> {
-    let manga = sqlx::query!(
-        r#"SELECT m.source as "source!", m.source_id FROM manga m
-           WHERE m.id = ?
-             AND EXISTS (SELECT 1 FROM user_manga um WHERE um.manga_id = m.id AND um.user_id = ?)"#,
+    let exists = sqlx::query!(
+        r#"SELECT id as "id!" FROM manga m WHERE m.id = ? AND EXISTS (SELECT 1 FROM user_manga um WHERE um.manga_id = m.id AND um.user_id = ?)"#,
         id, claims.sub
     )
     .fetch_optional(&state.db)
     .await?;
 
-    let Some(manga) = manga else {
+    if exists.is_none() {
         return Ok(StatusCode::NOT_FOUND);
-    };
-    let Some(source_id) = manga.source_id else {
+    }
+
+    let source_links = sqlx::query!(
+        r#"SELECT source as "source!", source_id as "source_id!" FROM manga_sources WHERE manga_id = ?"#,
+        id
+    )
+    .fetch_all(&state.db)
+    .await?;
+
+    if source_links.is_empty() {
         return Ok(StatusCode::NOT_FOUND);
-    };
+    }
 
     sqlx::query!("UPDATE manga SET sync_status = 'syncing' WHERE id = ?", id)
         .execute(&state.db)
         .await?;
 
     let db = state.db.clone();
-    let source = manga.source;
-    let src = state.sources.read().await.get(&source).cloned();
+    let state_sources = state.sources.clone();
     tokio::spawn(async move {
-        let result = match src {
-            Some(s) => s.sync_chapters(&db, &id, &source_id).await,
-            None => Err(anyhow::anyhow!("unknown source: {}", source)),
-        };
-        if let Err(e) = &result {
-            tracing::error!("sync error: {}", e);
+        let mut any_ok = false;
+        for link in &source_links {
+            if let Some(s) = state_sources.read().await.get(&link.source).cloned() {
+                match s.sync_chapters(&db, &id, &link.source_id).await {
+                    Ok(_) => { any_ok = true; }
+                    Err(e) => tracing::error!("sync error for manga {} ({}): {}", id, link.source, e),
+                }
+            }
         }
-        let status = if result.is_ok() { "ready" } else { "error" };
+        let status = if any_ok { "ready" } else { "error" };
         let _ = sqlx::query!("UPDATE manga SET sync_status = ? WHERE id = ?", status, id)
             .execute(&db)
             .await;

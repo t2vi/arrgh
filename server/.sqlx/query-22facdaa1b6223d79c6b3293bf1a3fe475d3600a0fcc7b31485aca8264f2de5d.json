@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id as \"id!\" FROM manga WHERE source = ? AND source_id = ?",
+  "query": "SELECT id as \"id!\" FROM manga m WHERE m.id = ? AND EXISTS (SELECT 1 FROM user_manga um WHERE um.manga_id = m.id AND um.user_id = ?)",
   "describe": {
     "columns": [
       {
@@ -16,5 +16,5 @@
       true
     ]
   },
-  "hash": "02aad956ee640c2d99beb4108750b1d299be8d1b9c59560f5c9ae3caa96cb0d6"
+  "hash": "22facdaa1b6223d79c6b3293bf1a3fe475d3600a0fcc7b31485aca8264f2de5d"
 }

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO chapter_sources (id, chapter_id, source, source_id)\n                   VALUES (?, ?, ?, ?)\n                   ON CONFLICT(chapter_id, source) DO UPDATE SET source_id = excluded.source_id",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "d202e9d6b75a6c10563a0bcdc946e2e4d36e3e83b3c2240e64591bc62fe66a7d"
+}

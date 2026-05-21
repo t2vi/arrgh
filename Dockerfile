@@ -10,11 +10,11 @@ ENV SQLX_OFFLINE=true
 # Cache dependencies (needs .sqlx/ for compile-time query verification)
 COPY server/Cargo.toml server/Cargo.lock ./
 COPY server/.sqlx ./.sqlx
-RUN mkdir src && echo "fn main() {}" > src/main.rs && cargo build --release && rm -rf src
+RUN mkdir src && echo "fn main() {}" > src/main.rs && echo "" > src/lib.rs && cargo build --release && rm -rf src
 
 COPY server/src ./src
 COPY server/migrations ./migrations
-RUN touch src/main.rs && cargo build --release
+RUN touch src/lib.rs src/main.rs && cargo build --release
 
 # ── Stage 2: Build the React web app ─────────────────────────────────────────
 FROM node:22-slim AS web-builder

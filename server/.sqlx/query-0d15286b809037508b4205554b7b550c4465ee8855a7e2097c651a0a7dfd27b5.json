@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT ms.manga_id as \"manga_id!\", ms.source as \"source!\", ms.source_id as \"source_id!\",\n                  m.auto_download\n           FROM manga_sources ms\n           JOIN manga m ON m.id = ms.manga_id\n           WHERE m.sync_status = 'ready'\n             AND EXISTS (SELECT 1 FROM user_manga WHERE manga_id = m.id)",
+  "describe": {
+    "columns": [
+      {
+        "name": "manga_id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "source!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "source_id!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "auto_download",
+        "ordinal": 3,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "0d15286b809037508b4205554b7b550c4465ee8855a7e2097c651a0a7dfd27b5"
+}
