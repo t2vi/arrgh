@@ -44,16 +44,12 @@ jobs:
         env:
           SQLX_OFFLINE: true
 
-      - name: Locate JUnit XML (debug)
-        if: always()
-        run: find . -name "*.xml" 2>/dev/null || true
-
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: allure-results-server
-          path: server/nextest-results.xml
+          path: server/target/nextest/ci/nextest-results.xml
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -152,12 +148,13 @@ jobs:
           merge-multiple: true
           path: allure-results
 
-      - name: Restore history
+      - name: Restore history and write categories
         run: |
           mkdir -p allure-results
           if [ -d gh-pages/test-reports/history ]; then
             cp -r gh-pages/test-reports/history allure-results/history
           fi
+          cp allure-categories.json allure-results/categories.json
 
       - name: Setup Node (for allure-commandline)
         uses: actions/setup-node@v4
