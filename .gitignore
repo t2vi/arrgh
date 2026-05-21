@@ -9,6 +9,8 @@ server/arrgh.db
 # ── Web (React + Vite) ───────────────────────────────────────
 web/node_modules/
 web/dist/
+web/allure-results/
+web/coverage/
 
 # ── Workspace ────────────────────────────────────────────────
 node_modules/
