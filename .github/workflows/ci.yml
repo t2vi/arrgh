@@ -148,12 +148,13 @@ jobs:
           merge-multiple: true
           path: allure-results
 
-      - name: Restore history
+      - name: Restore history and write categories
         run: |
           mkdir -p allure-results
           if [ -d gh-pages/test-reports/history ]; then
             cp -r gh-pages/test-reports/history allure-results/history
           fi
+          cp allure-categories.json allure-results/categories.json
 
       - name: Setup Node (for allure-commandline)
         uses: actions/setup-node@v4
