@@ -44,16 +44,12 @@ jobs:
         env:
           SQLX_OFFLINE: true
 
-      - name: Locate JUnit XML (debug)
-        if: always()
-        run: find . -name "*.xml" 2>/dev/null || true
-
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: allure-results-server
-          path: server/nextest-results.xml
+          path: server/target/nextest/ci/nextest-results.xml
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
