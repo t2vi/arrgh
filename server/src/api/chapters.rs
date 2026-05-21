@@ -35,10 +35,10 @@ async fn list_chapters(
                c.title,
                c.number,
                c.volume,
-               c.source_id,
                c.local_path,
                c.page_count,
                (c.downloaded != 0) as "downloaded!: bool",
+               (EXISTS(SELECT 1 FROM chapter_sources cs WHERE cs.chapter_id = c.id)) as "has_sources!: bool",
                c.chapter_format as "chapter_format!",
                c.created_at as "created_at: _"
            FROM chapters c
@@ -71,7 +71,8 @@ async fn queue_download(
     let row = sqlx::query!(
         r#"SELECT c.id, c.number, m.title as manga_title
            FROM chapters c JOIN manga m ON c.manga_id = m.id
-           WHERE c.id = ? AND c.source_id IS NOT NULL AND c.downloaded = 0
+           WHERE c.id = ? AND c.downloaded = 0
+             AND EXISTS(SELECT 1 FROM chapter_sources cs WHERE cs.chapter_id = c.id)
              AND (m.is_explicit = 0 OR ? = 1)"#,
         id, allow_explicit
     )
@@ -115,10 +116,10 @@ async fn get_chapter(
                c.title,
                c.number,
                c.volume,
-               c.source_id,
                c.local_path,
                c.page_count,
                (c.downloaded != 0) as "downloaded!: bool",
+               (EXISTS(SELECT 1 FROM chapter_sources cs WHERE cs.chapter_id = c.id)) as "has_sources!: bool",
                c.chapter_format as "chapter_format!",
                c.created_at as "created_at: _"
            FROM chapters c

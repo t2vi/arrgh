@@ -10,6 +10,8 @@ A self-hosted manga manager, downloader, and reader for your home server. Suppor
 ## Features
 
 - Browse and search manga from multiple sources simultaneously
+- Chapters aggregated across all known sources — completeness doesn't depend on any one source being up to date
+- Automatic download fallback — if the preferred source fails, arrgh tries the next by priority
 - Source plugin system — add new sources without recompiling or redeploying
 - Browse and install community plugins from the Settings UI
 - Download chapters to your server for offline reading

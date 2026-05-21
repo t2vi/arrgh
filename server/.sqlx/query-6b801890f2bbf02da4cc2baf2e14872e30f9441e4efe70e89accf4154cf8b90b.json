@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT c.id as \"id!\", c.number as \"number!\"\n           FROM chapters c\n           WHERE c.manga_id = ? AND c.downloaded = 0\n             AND EXISTS (SELECT 1 FROM chapter_sources WHERE chapter_id = c.id)",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "number!",
+        "ordinal": 1,
+        "type_info": "Float"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "6b801890f2bbf02da4cc2baf2e14872e30f9441e4efe70e89accf4154cf8b90b"
+}

@@ -11,7 +11,7 @@ function makeChapter(overrides: Partial<Chapter> = {}): Chapter {
     title: 'The Beginning',
     number: 1,
     volume: null,
-    source_id: 'src-1',
+    has_sources: true,
     local_path: null,
     page_count: 20,
     downloaded: false,
@@ -56,14 +56,14 @@ describe('ChapterRow', () => {
     expect(screen.getByTitle('Read')).toBeInTheDocument()
   })
 
-  it('shows Download button when not downloaded and source_id present', () => {
-    render(<ChapterRow chapter={makeChapter({ downloaded: false, source_id: 'src-1' })} progress={null} queueItem={null} pendingRead={false} onOpen={noop} onCancelDownload={noop} />)
+  it('shows Download button when not downloaded and has_sources', () => {
+    render(<ChapterRow chapter={makeChapter({ downloaded: false, has_sources: true })} progress={null} queueItem={null} pendingRead={false} onOpen={noop} onCancelDownload={noop} />)
     expect(screen.getByTitle('Download & read')).toBeInTheDocument()
   })
 
-  it('shows HardDrive icon when no source_id and not downloaded', () => {
-    const { container } = render(<ChapterRow chapter={makeChapter({ downloaded: false, source_id: null })} progress={null} queueItem={null} pendingRead={false} onOpen={noop} onCancelDownload={noop} />)
-    // HardDrive renders as SVG with no button wrapper
+  it('shows no download button when has_sources is false and not downloaded', () => {
+    const { container } = render(<ChapterRow chapter={makeChapter({ downloaded: false, has_sources: false })} progress={null} queueItem={null} pendingRead={false} onOpen={noop} onCancelDownload={noop} />)
+    // No clickable button when chapter has no sources
     expect(container.querySelector('button[title]')).toBeNull()
   })
 

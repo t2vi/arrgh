@@ -4,8 +4,7 @@ export interface Manga {
   description: string | null
   cover_url: string | null
   status: string
-  source: string
-  source_id: string | null
+  is_local: boolean
   local_path: string | null
   author: string | null
   year: number | null
@@ -37,10 +36,10 @@ export interface Chapter {
   title: string | null
   number: number
   volume: number | null
-  source_id: string | null
   local_path: string | null
   page_count: number
   downloaded: boolean
+  has_sources: boolean
   chapter_format: string
   created_at: string
 }

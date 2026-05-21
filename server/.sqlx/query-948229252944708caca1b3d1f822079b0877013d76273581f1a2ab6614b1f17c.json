@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, title, content_type FROM manga WHERE source != 'local'",
+  "query": "SELECT id, title, content_type FROM manga WHERE EXISTS (SELECT 1 FROM manga_sources WHERE manga_id = manga.id)",
   "describe": {
     "columns": [
       {
@@ -28,5 +28,5 @@
       false
     ]
   },
-  "hash": "ce4a4f3384e87c80229e50f066215aa177a8706e6ea109253b3692c64455ece9"
+  "hash": "948229252944708caca1b3d1f822079b0877013d76273581f1a2ab6614b1f17c"
 }

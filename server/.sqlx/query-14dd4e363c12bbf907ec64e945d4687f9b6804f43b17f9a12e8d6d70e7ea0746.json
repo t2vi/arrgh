@@ -1,17 +1,17 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, number FROM chapters WHERE manga_id = ? AND downloaded = 0 AND source_id IS NOT NULL",
+  "query": "SELECT c.local_path, c.downloaded FROM chapters c\n           WHERE c.id = ?",
   "describe": {
     "columns": [
       {
-        "name": "id",
+        "name": "local_path",
         "ordinal": 0,
         "type_info": "Text"
       },
       {
-        "name": "number",
+        "name": "downloaded",
         "ordinal": 1,
-        "type_info": "Float"
+        "type_info": "Integer"
       }
     ],
     "parameters": {
@@ -22,5 +22,5 @@
       false
     ]
   },
-  "hash": "c9e85d8785a27f47fbcb209f8fc92a296be3654a56610263824934d545689e95"
+  "hash": "14dd4e363c12bbf907ec64e945d4687f9b6804f43b17f9a12e8d6d70e7ea0746"
 }

@@ -1,10 +1,10 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id FROM chapters WHERE manga_id = ? AND source_id = ?",
+  "query": "SELECT id as \"id!\" FROM chapters WHERE manga_id = ? AND number = ?",
   "describe": {
     "columns": [
       {
-        "name": "id",
+        "name": "id!",
         "ordinal": 0,
         "type_info": "Text"
       }
@@ -16,5 +16,5 @@
       true
     ]
   },
-  "hash": "ac30dc393099e932e1fddfa97b492bb9dcffb10af1a2acc6187f3d3791e35b90"
+  "hash": "974035ae7839688e4daff894b6655e13546413879247a439165d89b01d56d41f"
 }

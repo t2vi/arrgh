@@ -8,8 +8,6 @@ pub struct Manga {
     pub description: Option<String>,
     pub cover_url: Option<String>,
     pub status: String,
-    pub source: String,
-    pub source_id: Option<String>,
     pub local_path: Option<String>,
     pub author: Option<String>,
     pub year: Option<i64>,
@@ -21,7 +19,14 @@ pub struct Manga {
     pub updated_at: DateTime<Utc>,
 }
 
-
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct MangaSource {
+    pub id: String,
+    pub manga_id: String,
+    pub source: String,
+    pub source_id: String,
+    pub discovered_at: DateTime<Utc>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Chapter {
@@ -30,12 +35,20 @@ pub struct Chapter {
     pub title: Option<String>,
     pub number: f64,
     pub volume: Option<f64>,
-    pub source_id: Option<String>,
     pub local_path: Option<String>,
     pub page_count: i64,
     pub downloaded: bool,
+    pub has_sources: bool,
     pub chapter_format: String,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct ChapterSource {
+    pub id: String,
+    pub chapter_id: String,
+    pub source: String,
+    pub source_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
