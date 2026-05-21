@@ -93,3 +93,33 @@ pub fn sanitize_title(s: &str) -> String {
         .trim()
         .to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn safe_title_unchanged() {
+        assert_eq!(sanitize_title("My Hero Academia"), "My Hero Academia");
+    }
+
+    #[test]
+    fn unsafe_chars_replaced() {
+        assert_eq!(sanitize_title("Title: Vol/1"), "Title_ Vol_1");
+    }
+
+    #[test]
+    fn all_unsafe_chars_replaced() {
+        assert_eq!(sanitize_title(r#"/\:*?"<>|"#), "_________");
+    }
+
+    #[test]
+    fn trims_whitespace() {
+        assert_eq!(sanitize_title("  Title  "), "Title");
+    }
+
+    #[test]
+    fn empty_string() {
+        assert_eq!(sanitize_title(""), "");
+    }
+}

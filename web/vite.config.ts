@@ -8,6 +8,15 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
+    reporters: process.env.CI
+      ? [['allure-vitest/reporter', { resultsDir: './allure-results' }], 'verbose']
+      : ['verbose'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
+      exclude: ['src/test-setup.ts', 'src/components/ui/**'],
+    },
   },
   plugins: [react(), tailwindcss()],
   css: {

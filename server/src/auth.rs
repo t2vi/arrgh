@@ -38,3 +38,34 @@ pub fn validate_token(token: &str, secret: &str) -> Result<Claims> {
     )?;
     Ok(data.claims)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const SECRET: &str = "test-secret";
+
+    #[test]
+    fn roundtrip_token() {
+        let token = create_token("user-1", "alice", "admin", true, SECRET).unwrap();
+        let claims = validate_token(&token, SECRET).unwrap();
+        assert_eq!(claims.sub, "user-1");
+        assert_eq!(claims.username, "alice");
+        assert_eq!(claims.role, "admin");
+        assert!(claims.allow_explicit);
+    }
+
+    #[test]
+    fn wrong_secret_rejected() {
+        let token = create_token("user-1", "alice", "member", false, SECRET).unwrap();
+        assert!(validate_token(&token, "wrong-secret").is_err());
+    }
+
+    #[test]
+    fn member_role_preserved() {
+        let token = create_token("u", "bob", "member", false, SECRET).unwrap();
+        let claims = validate_token(&token, SECRET).unwrap();
+        assert_eq!(claims.role, "member");
+        assert!(!claims.allow_explicit);
+    }
+}

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@radix-ui/react-scroll-area": "^1.2.10",
@@ -36,6 +37,8 @@
     "tailwindcss": "^4.3.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.8",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "allure-vitest": "^3.0.0"
   }
 }

@@ -116,3 +116,58 @@ impl tracing::field::Visit for MessageVisitor {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn level_roundtrip() {
+        for (s, v) in [("ERROR", LEVEL_ERROR), ("WARN", LEVEL_WARN), ("INFO", LEVEL_INFO), ("DEBUG", LEVEL_DEBUG)] {
+            assert_eq!(level_from_str(s), Some(v));
+            assert_eq!(level_to_str(v), s);
+        }
+    }
+
+    #[test]
+    fn level_from_str_case_insensitive() {
+        assert_eq!(level_from_str("error"), Some(LEVEL_ERROR));
+        assert_eq!(level_from_str("warn"),  Some(LEVEL_WARN));
+        assert_eq!(level_from_str("info"),  Some(LEVEL_INFO));
+        assert_eq!(level_from_str("debug"), Some(LEVEL_DEBUG));
+    }
+
+    #[test]
+    fn level_from_str_unknown_returns_none() {
+        assert_eq!(level_from_str("trace"), None);
+        assert_eq!(level_from_str(""),      None);
+        assert_eq!(level_from_str("FATAL"), None);
+    }
+
+    #[test]
+    fn level_to_str_unknown_defaults_info() {
+        assert_eq!(level_to_str(99), "INFO");
+        assert_eq!(level_to_str(0),  "INFO");
+    }
+
+    #[test]
+    fn ring_buffer_evicts_oldest_at_capacity() {
+        let buf = new_buffer();
+        {
+            let mut b = buf.lock().unwrap();
+            for i in 0..BUFFER_CAPACITY + 1 {
+                if b.len() >= BUFFER_CAPACITY {
+                    b.pop_front();
+                }
+                b.push_back(LogEntry {
+                    timestamp: chrono::Utc::now(),
+                    level: "INFO".into(),
+                    target: "test".into(),
+                    message: format!("msg {i}"),
+                });
+            }
+            assert_eq!(b.len(), BUFFER_CAPACITY);
+            assert_eq!(b.front().unwrap().message, "msg 1");
+        }
+    }
+}

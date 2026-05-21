@@ -1,53 +1,22 @@
 use anyhow::Result;
 use axum::Router;
+use arrgh_server::{api, indexer, logging, AppState, Config, SourceMap};
+#[allow(unused_imports)]
+use arrgh_server::indexer::Source as _;
 use chrono::Utc;
-use dotenvy::dotenv;
-use indexer::source::Source;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU8, Ordering};
-use std::time::Instant;
 use tokio::sync::{Mutex, RwLock};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::Uuid;
 
-mod api;
-mod auth;
-mod config;
-mod db;
-mod downloader;
-mod indexer;
-mod logging;
-mod media;
-
-pub use config::Config;
-
-pub type SourceMap = Arc<RwLock<HashMap<String, Arc<dyn indexer::Source>>>>;
-pub type PageCache = Arc<Mutex<HashMap<String, (Instant, Arc<Vec<indexer::source::PageUrl>>)>>>;
-
-#[derive(Clone)]
-pub struct AppState {
-    pub db: sqlx::SqlitePool,
-    pub config: Arc<Config>,
-    pub jwt_secret: Arc<String>,
-    pub sources: SourceMap,
-    /// Serializes concurrent registry reloads (load_registry + write).
-    /// Prevents lost-update when two admin ops race to reload sources.
-    pub registry_lock: Arc<Mutex<()>>,
-    pub page_cache: PageCache,
-    pub trending_cache: api::discover::TrendingCache,
-    pub log_buffer: logging::LogBuffer,
-    pub log_level: logging::LevelGate,
-    pub http: reqwest::Client,
-    pub update_cache: api::version::UpdateCache,
-}
-
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
+    dotenvy::dotenv().ok();
 
     let log_buf = logging::new_buffer();
     let log_level_gate = Arc::new(AtomicU8::new(logging::LEVEL_INFO));
@@ -123,7 +92,7 @@ async fn main() -> Result<()> {
     };
 
     indexer::start_scheduler(state.clone());
-    downloader::start_worker(state.clone()).await;
+    arrgh_server::downloader::start_worker(state.clone()).await;
     api::version::start_update_checker(state.clone());
 
     let app = Router::new()
@@ -142,14 +111,10 @@ async fn main() -> Result<()> {
 }
 
 /// Insert a plugin URL into external_sources if not already present.
-/// If the URL responds to GET /plugins with a JSON array, registers each entry
-/// individually at <base_url>/<plugin_id>. Otherwise falls back to the single-
-/// plugin /info protocol. Idempotent — skips already-registered URLs.
 async fn bootstrap_plugin(pool: &sqlx::SqlitePool, base_url: &str) {
     let client = reqwest::Client::new();
     let trimmed = base_url.trim_end_matches('/');
 
-    // Try the multi-plugin host protocol first.
     if let Ok(resp) = client.get(format!("{}/plugins", trimmed)).send().await {
         if resp.status().is_success() {
             if let Ok(arr) = resp.json::<Vec<serde_json::Value>>().await {
@@ -164,12 +129,9 @@ async fn bootstrap_plugin(pool: &sqlx::SqlitePool, base_url: &str) {
         }
     }
 
-    // Fall back: single-plugin /info protocol.
     bootstrap_probe(pool, trimmed).await;
 }
 
-/// Register a single plugin entry sourced from a /plugins array response.
-/// Uses the metadata already in the array entry — no additional HTTP call needed.
 async fn bootstrap_single(pool: &sqlx::SqlitePool, effective_url: &str, info: &serde_json::Value) {
     let already = sqlx::query_scalar::<_, i64>(
         "SELECT COUNT(*) FROM external_sources WHERE base_url = ?"
@@ -207,7 +169,6 @@ async fn bootstrap_single(pool: &sqlx::SqlitePool, effective_url: &str, info: &s
     }
 }
 
-/// Register a single-plugin host using the legacy /info probe.
 async fn bootstrap_probe(pool: &sqlx::SqlitePool, base_url: &str) {
     let already = sqlx::query_scalar::<_, i64>(
         "SELECT COUNT(*) FROM external_sources WHERE base_url = ?"

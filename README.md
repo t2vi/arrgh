@@ -118,7 +118,7 @@ Issues and PRs are welcome. A few things to know:
 
 - This is a personal project — I may be slow to review, but I do look at everything
 - Check open issues before starting large features; comment to claim one
-- Run `cargo test` (server) before submitting
+- Run `cargo nextest run` (server) and `npm test` (web) before submitting
 - Follow the existing code style — see [server/README.md](server/README.md) and [web/README.md](web/README.md) for dev setup
 
 No CLA, no process overhead. Just open a PR.

@@ -412,6 +412,102 @@ fn merge_hits(hits: Vec<SourceHit>) -> Vec<(String, String, crate::indexer::sour
     order.into_iter().filter_map(|k| groups.remove(&k)).collect()
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::indexer::source::MangaResult;
+
+    fn hit(source_id: &str, title: &str) -> SourceHit {
+        SourceHit {
+            source_id: source_id.to_string(),
+            source_name: source_id.to_string(),
+            result: MangaResult {
+                id: format!("{source_id}-{title}"),
+                title: title.to_string(),
+                description: None,
+                cover_url: None,
+                status: "ongoing".to_string(),
+                author: None,
+                year: None,
+                tags: None,
+                content_type: None,
+            },
+        }
+    }
+
+    // ── normalize_title ───────────────────────────────────────────────────────
+
+    #[test]
+    fn normalize_lowercases() {
+        assert_eq!(normalize_title("My Hero Academia"), "my hero academia");
+    }
+
+    #[test]
+    fn normalize_strips_punctuation() {
+        assert_eq!(normalize_title("One-Piece!"), "one piece");
+    }
+
+    #[test]
+    fn normalize_collapses_whitespace() {
+        assert_eq!(normalize_title("Solo  Leveling"), "solo leveling");
+    }
+
+    #[test]
+    fn normalize_empty() {
+        assert_eq!(normalize_title(""), "");
+    }
+
+    // ── merge_hits ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn merge_deduplicates_same_title() {
+        let hits = vec![
+            hit("mangadex", "One Piece"),
+            hit("mangapill", "One Piece"),
+        ];
+        let merged = merge_hits(hits);
+        assert_eq!(merged.len(), 1);
+        assert_eq!(merged[0].3.len(), 1, "second source should be in alternatives");
+        assert_eq!(merged[0].3[0].source, "mangapill");
+    }
+
+    #[test]
+    fn merge_preserves_insertion_order() {
+        let hits = vec![
+            hit("mangadex", "Naruto"),
+            hit("mangadex", "Bleach"),
+            hit("mangapill", "Naruto"),
+        ];
+        let merged = merge_hits(hits);
+        assert_eq!(merged.len(), 2);
+        assert_eq!(merged[0].2.title, "Naruto");
+        assert_eq!(merged[1].2.title, "Bleach");
+    }
+
+    #[test]
+    fn merge_distinct_titles_all_kept() {
+        let hits = vec![
+            hit("mangadex", "Attack on Titan"),
+            hit("mangadex", "Demon Slayer"),
+            hit("mangadex", "Jujutsu Kaisen"),
+        ];
+        let merged = merge_hits(hits);
+        assert_eq!(merged.len(), 3);
+        assert!(merged.iter().all(|m| m.3.is_empty()));
+    }
+
+    #[test]
+    fn merge_normalizes_before_dedup() {
+        // "One-Piece" and "One Piece" should be considered the same title
+        let hits = vec![
+            hit("mangadex", "One-Piece"),
+            hit("mangapill", "One Piece"),
+        ];
+        let merged = merge_hits(hits);
+        assert_eq!(merged.len(), 1);
+    }
+}
+
 async fn check_in_library(
     db: &sqlx::SqlitePool,
     user_id: &str,

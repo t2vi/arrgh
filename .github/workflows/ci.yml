@@ -7,8 +7,10 @@ on:
     branches: [main]
 
 jobs:
-  server:
-    name: Server (Rust)
+  # ── Layer 1: Unit tests ────────────────────────────────────────────────────
+
+  unit-server:
+    name: Unit — Server (Rust)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -18,6 +20,8 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
 
       - name: Cache Cargo registry
         uses: actions/cache@v4
@@ -29,13 +33,32 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
-      - name: cargo test
-        run: cargo test
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@cargo-nextest
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Run tests with coverage
+        run: cargo llvm-cov nextest --profile ci --lcov --output-path lcov.info
         env:
           SQLX_OFFLINE: true
 
-  web:
-    name: Web (Node)
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-server
+          path: server/nextest-results.xml
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-server
+          path: server/lcov.info
+
+  unit-web:
+    name: Unit — Web (Node)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -53,11 +76,28 @@ jobs:
       - name: npm ci
         run: npm ci
 
-      - name: npm test
-        run: npm test
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        env:
+          CI: true
 
-      - name: npm run build
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-web
+          path: web/allure-results
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-web
+          path: web/coverage
+
+      - name: Build
         run: npm run build
+
+  # ── Plugins (independent, no test layer yet) ───────────────────────────────
 
   plugins:
     name: Plugins + Plugin Host (Node)
@@ -81,3 +121,52 @@ jobs:
       - name: Build plugin-host
         run: npm run build
         working-directory: plugin-host
+
+  # ── Allure report → GitHub Pages /test-reports/ ───────────────────────────
+
+  report:
+    name: Allure Report
+    runs-on: ubuntu-latest
+    needs: [unit-server, unit-web]
+    if: always()
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch previous Allure history
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true
+
+      - name: Download all Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          merge-multiple: true
+          path: allure-results
+
+      - name: Restore history
+        run: |
+          mkdir -p allure-results
+          if [ -d gh-pages/test-reports/history ]; then
+            cp -r gh-pages/test-reports/history allure-results/history
+          fi
+
+      - name: Setup Node (for allure-commandline)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate Allure report
+        run: npx allure-commandline@2 generate allure-results --clean -o allure-report
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: allure-report
+          target-folder: test-reports
+          clean: true
+          clean-exclude: docs
