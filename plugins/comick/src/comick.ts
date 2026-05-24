@@ -87,7 +87,7 @@ interface ChapterEntry {
 }
 
 interface ChaptersResponse {
-  chapters: ChapterEntry[]
+  chapters: ChapterEntry[] | null
   total: number
 }
 
@@ -168,7 +168,7 @@ function buildTags(content_rating: string, genres?: Genre[]): string | null {
 function toSearchItem(c: ComicResult, authors?: Author[]): SearchItem {
   const author = (c.authors ?? authors ?? [])[0]?.name ?? null
   return {
-    id: c.slug,
+    id: c.hid,
     title: c.title,
     description: c.desc ?? null,
     cover_url: coverUrl(c.md_covers),
@@ -222,7 +222,12 @@ export async function chapters(slug: string, langs: string[]): Promise<ChapterIt
       lang: langs[0] ?? 'en',
     })
 
-    for (const ch of data.chapters) {
+    const chapterList = Array.isArray(data.chapters) ? data.chapters : []
+    if (!Array.isArray(data.chapters)) {
+      console.warn(`[comick] unexpected chapters shape for "${slug}" page ${page}:`, JSON.stringify(data).slice(0, 200))
+    }
+
+    for (const ch of chapterList) {
       const num = parseFloat(ch.chap ?? '')
       if (isNaN(num)) continue
       if (!seen.has(num)) {
@@ -235,7 +240,7 @@ export async function chapters(slug: string, langs: string[]): Promise<ChapterIt
       }
     }
 
-    if (page * LIMIT >= data.total || data.chapters.length === 0) break
+    if (page * LIMIT >= data.total || chapterList.length === 0) break
     page++
   }
 
@@ -245,4 +250,26 @@ export async function chapters(slug: string, langs: string[]): Promise<ChapterIt
 export async function pages(chapterHid: string): Promise<string[]> {
   const data = await fetchComick<ChapterDetailResponse>(`/chapter/${chapterHid}`)
   return data.chapter.md_images.map((img) => img.url)
+}
+
+export async function cover(url: string): Promise<Buffer> {
+  const browser = await _ctx!.getBrowser()
+  const bctx = await browser.newContext()
+  const page = await bctx.newPage()
+  try {
+    const b64: string = await page.evaluate(async (imgUrl: string) => {
+      const resp = await fetch(imgUrl, {
+        headers: { Referer: 'https://comick.io/', Accept: 'image/*,*/*' },
+      })
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      const ab = await resp.arrayBuffer()
+      const bytes = new Uint8Array(ab)
+      let str = ''
+      bytes.forEach((b) => { str += String.fromCharCode(b) })
+      return btoa(str)
+    }, url)
+    return Buffer.from(b64, 'base64')
+  } finally {
+    await bctx.close()
+  }
 }

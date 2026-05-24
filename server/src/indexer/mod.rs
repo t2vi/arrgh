@@ -108,9 +108,14 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
     }
 
     for (manga_id, links) in by_manga {
-        sqlx::query!("UPDATE manga SET sync_status = 'syncing' WHERE id = ?", manga_id)
+        let updated = sqlx::query!("UPDATE manga SET sync_status = 'syncing' WHERE id = ?", manga_id)
             .execute(&state.db)
             .await?;
+
+        if updated.rows_affected() == 0 {
+            tracing::debug!("manga {} removed between sync query and sync loop, skipping", manga_id);
+            continue;
+        }
 
         let auto_download = links.first().and_then(|(_, _, v)| *v);
         let mut any_ok = false;
