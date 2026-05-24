@@ -149,9 +149,12 @@ impl Source for ExternalSource {
 
     async fn sync_chapters(&self, db: &SqlitePool, manga_id: &str, source_id: &str) -> Result<usize> {
         let path = format!("/manga/{}/chapters", urlencoding::encode(source_id));
-        let chapters: Vec<ChapterItem> = self.get(&path)
-            .send().await?
-            .error_for_status()?.json().await?;
+        let resp = self.get(&path).send().await?;
+        if resp.status() == reqwest::StatusCode::BAD_GATEWAY {
+            tracing::warn!("{}: chapters endpoint returned 502, source temporarily unavailable", self.source_id);
+            return Ok(0);
+        }
+        let chapters: Vec<ChapterItem> = resp.error_for_status()?.json().await?;
 
         let count = chapters.len();
         let now = Utc::now();
@@ -227,11 +230,11 @@ impl Source for ExternalSource {
     }
 
     async fn fetch_cover(&self, url: &str) -> Result<Vec<u8>> {
-        // Try plugin's /cover endpoint first — it handles source-specific Referer/auth.
-        // Fall back to direct fetch for plugins that don't implement /cover.
         let resp = self.get(&format!("/cover?url={}", urlencoding::encode(url))).send().await?;
-        if resp.status().is_success() {
-            return Ok(resp.bytes().await?.to_vec());
+        match resp.status() {
+            s if s.is_success() => return Ok(resp.bytes().await?.to_vec()),
+            reqwest::StatusCode::NOT_IMPLEMENTED => {} // plugin has no /cover → fall through
+            s => return Err(anyhow!("cover proxy returned {}", s)),
         }
         Ok(self.client.get(url).header("User-Agent", "Mozilla/5.0").send().await?.bytes().await?.to_vec())
     }
@@ -283,6 +286,7 @@ impl Source for ExternalSource {
 mod tests {
     use super::*;
     use axum::{Json, Router, routing::get};
+    use axum::http::StatusCode as AxumStatus;
     use serde_json::{Value, json};
     use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
     use std::sync::Arc;
@@ -299,6 +303,17 @@ mod tests {
             .unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
+    }
+
+    async fn spawn_502_chapters_server() -> String {
+        let router = Router::new().route(
+            "/manga/{source_id}/chapters",
+            get(|| async { AxumStatus::BAD_GATEWAY }),
+        );
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(async move { axum::serve(listener, router).await.unwrap() });
+        format!("http://127.0.0.1:{port}")
     }
 
     async fn spawn_chapters_server(chapters: Value) -> String {
@@ -435,5 +450,51 @@ mod tests {
              WHERE c.manga_id = 'm-update'"
         ).fetch_one(&pool).await.unwrap();
         assert_eq!(row_count, 1, "no duplicate rows after update");
+    }
+
+    // 502 from plugin-host → Ok(0), not Err — source temporarily unavailable
+    #[tokio::test]
+    async fn sync_chapters_returns_zero_on_502() {
+        let pool = make_pool().await;
+        seed_manga(&pool, "m-502").await;
+
+        let base = spawn_502_chapters_server().await;
+        let src = ExternalSource::new(
+            "db-502".into(), "source-502".into(), "Flaky".into(),
+            base, None, vec!["manga".into()], false,
+        );
+
+        let result = src.sync_chapters(&pool, "m-502", "mid").await;
+        assert!(result.is_ok(), "502 should not propagate as Err: {:?}", result.err());
+        assert_eq!(result.unwrap(), 0);
+    }
+
+    // Existing chapters are preserved when source returns 502 on a subsequent sync
+    #[tokio::test]
+    async fn sync_chapters_preserves_existing_on_502() {
+        let pool = make_pool().await;
+        seed_manga(&pool, "m-502-preserve").await;
+
+        let base_ok = spawn_chapters_server(json!([
+            {"source_id": "ch1", "number": 1.0, "chapter_format": "pages"},
+        ])).await;
+        let src_ok = ExternalSource::new(
+            "db-pp".into(), "src-pp".into(), "Src".into(),
+            base_ok, None, vec!["manga".into()], false,
+        );
+        src_ok.sync_chapters(&pool, "m-502-preserve", "mid").await.unwrap();
+
+        let base_502 = spawn_502_chapters_server().await;
+        let src_502 = ExternalSource::new(
+            "db-pp".into(), "src-pp".into(), "Src".into(),
+            base_502, None, vec!["manga".into()], false,
+        );
+        let result = src_502.sync_chapters(&pool, "m-502-preserve", "mid").await;
+        assert!(result.is_ok());
+
+        let count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM chapters WHERE manga_id = 'm-502-preserve'"
+        ).fetch_one(&pool).await.unwrap();
+        assert_eq!(count, 1, "chapter from successful sync must survive 502");
     }
 }

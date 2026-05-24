@@ -19,6 +19,7 @@ export const search = c.search
 export const trending = c.trending
 export const meta = c.meta
 export const pages = c.pages
+export const cover = c.cover
 
 export function chapters(id: string, langs?: string[]): Promise<c.ChapterItem[]> {
   return c.chapters(id, langs ?? LANGS)
