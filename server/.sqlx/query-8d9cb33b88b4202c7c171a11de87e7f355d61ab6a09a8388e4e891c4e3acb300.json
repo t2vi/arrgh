@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT queued_by FROM download_queue WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "queued_by",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "8d9cb33b88b4202c7c171a11de87e7f355d61ab6a09a8388e4e891c4e3acb300"
+}

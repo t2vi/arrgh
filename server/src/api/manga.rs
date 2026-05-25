@@ -270,7 +270,7 @@ async fn remove_manga(
     .await?;
 
     if remaining == 0 {
-        if q.delete_files.unwrap_or(false) {
+        if q.delete_files.unwrap_or(false) && claims.role == "admin" {
             let paths = sqlx::query_scalar!(
                 "SELECT local_path FROM chapters WHERE manga_id = ? AND local_path IS NOT NULL",
                 id

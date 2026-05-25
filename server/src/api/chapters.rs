@@ -87,14 +87,15 @@ async fn queue_download(
     let queue_id = Uuid::new_v4().to_string();
 
     sqlx::query!(
-        r#"INSERT INTO download_queue (id, chapter_id, manga_title, chapter_num, status, created_at, updated_at)
-           VALUES (?, ?, ?, ?, 'pending', ?, ?)
+        r#"INSERT INTO download_queue (id, chapter_id, manga_title, chapter_num, status, created_at, updated_at, queued_by)
+           VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)
            ON CONFLICT(chapter_id) DO UPDATE SET
              status = 'pending',
              error = NULL,
+             queued_by = excluded.queued_by,
              updated_at = excluded.updated_at
            WHERE download_queue.status IN ('error', 'cancelled')"#,
-        queue_id, row.id, row.manga_title, row.number, now, now
+        queue_id, row.id, row.manga_title, row.number, now, now, claims.sub
     )
     .execute(&state.db)
     .await?;
