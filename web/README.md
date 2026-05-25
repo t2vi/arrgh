@@ -30,10 +30,13 @@ npm test
 ```
 src/
 ├── lib/
-│   ├── api.ts        # API client + shared domain types
-│   ├── queryKeys.ts  # TanStack Query key factory
+│   ├── api.ts        # API client + all shared domain types
 │   └── utils.ts      # cn() utility
 ├── features/         # Page-level features (library, discover, reader…)
+│   └── <name>/
+│       ├── index.tsx       # Thin layout shell
+│       ├── hooks/          # All state logic (useEffect/useState — no TanStack)
+│       └── components/     # Feature-local components
 ├── components/       # Shared UI components + shadcn primitives
 └── hooks/            # Cross-feature hooks
 ```

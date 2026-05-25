@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Play, Plus, X, BookOpen, CheckCircle2, Loader2, Download } from 'lucide-react'
+import { useState } from 'react'
+import { Play, Plus, X, CheckCircle2, Loader2, Download } from 'lucide-react'
 import { api, type SearchResult, type NewReleaseItem, type ContinueItem } from '@/api'
 import type { Manga } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -164,7 +164,7 @@ export function TrendingCard({ result, badge, onClick }: {
       </div>
       <div className="mt-2 px-0.5">
         <p className="text-sm font-semibold line-clamp-1">{result.title}</p>
-        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{result.source_name}</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{result.author ?? result.content_type}</p>
         {result.in_library && (
           <p className="text-[11px] text-primary mt-0.5 font-medium">In library</p>
         )}
@@ -233,17 +233,7 @@ export function TrendingModal({
   onViewDetails: (libraryId: string) => void
 }) {
   const [coverFailed, setCoverFailed] = useState(false)
-  const proxied = result.cover_url ? api.proxyImageUrl(result.cover_url) : ''
-
-  const [detail, setDetail] = useState<Awaited<ReturnType<typeof api.getDiscoverDetail>> | undefined>()
-  const [detailLoading, setDetailLoading] = useState(true)
-
-  useEffect(() => {
-    api.getDiscoverDetail(result.source, result.id, result.title)
-      .then(setDetail)
-      .catch(() => {})
-      .finally(() => setDetailLoading(false))
-  }, [result.source, result.id])
+  const coverUrl = result.cover_url ? api.proxyImageUrl(result.cover_url) : ''
 
   const [addPending, setAddPending] = useState(false)
   const [addSuccess, setAddSuccess] = useState(false)
@@ -251,7 +241,7 @@ export function TrendingModal({
   async function handleAdd() {
     setAddPending(true)
     try {
-      await api.addManga({ ...result, description: detail?.description ?? result.description })
+      await api.addManga(result)
       setAddSuccess(true)
     } catch {
       // ignore
@@ -260,10 +250,8 @@ export function TrendingModal({
     }
   }
 
-  const coverUrl = detail?.cover_url ? api.proxyImageUrl(detail.cover_url) : proxied
-  const tags = result.tags?.split(', ').filter(Boolean) ?? []
-  const chapterCount = detail?.chapter_count ?? 0
-  const description = detail?.description ?? result.description
+  const tags = result.tags?.split(',').filter(Boolean) ?? []
+  const description = result.description
 
   return (
     <div
@@ -297,28 +285,17 @@ export function TrendingModal({
                 {result.status}
               </span>
             )}
+            {result.author && (
+              <span className="text-[11px] text-muted-foreground">{result.author}</span>
+            )}
             {result.in_library && (
               <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
                 <CheckCircle2 className="w-3.5 h-3.5" /> In library
               </span>
             )}
-            {detailLoading ? (
-              <span className="text-[11px] text-muted-foreground animate-pulse">Loading…</span>
-            ) : chapterCount > 0 ? (
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <BookOpen className="w-3.5 h-3.5" />
-                {chapterCount} chapter{chapterCount !== 1 ? 's' : ''}
-              </span>
-            ) : null}
           </div>
 
-          {detailLoading ? (
-            <div className="space-y-1.5">
-              <Skeleton className="h-3.5 w-full" />
-              <Skeleton className="h-3.5 w-5/6" />
-              <Skeleton className="h-3.5 w-3/4" />
-            </div>
-          ) : description ? (
+          {description ? (
             <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">{description}</p>
           ) : (
             <p className="text-sm text-muted-foreground italic">No description available.</p>

@@ -11,10 +11,10 @@ vi.mock('@/api', () => ({
 
 function makeResult(overrides: object = {}) {
   return {
-    id: 't1', source: 'mangadex', source_name: 'MangaDex', title: 'Berserk',
+    mangaupdates_id: 't1', title: 'Berserk',
     description: null, cover_url: null, status: 'ongoing',
-    author: null, year: null, tags: null, content_type: 'manga',
-    in_library: false, library_id: undefined, alternatives: [],
+    author: 'Miura, Kentaro', year: 1989, tags: null, content_type: 'manga',
+    in_library: false, library_id: null,
     ...overrides,
   }
 }
@@ -73,12 +73,12 @@ describe('TrendingCard', () => {
     })
   })
 
-  it('shows title and source_name below cover', () => {
+  it('shows title and author below cover', () => {
     render(
       <TrendingCard result={makeResult()} badge="NEW" onClick={() => {}} />
     )
     expect(screen.getByText('Berserk')).toBeTruthy()
-    expect(screen.getByText('MangaDex')).toBeTruthy()
+    expect(screen.getByText('Miura, Kentaro')).toBeTruthy()
   })
 
   it('shows badge', () => {

@@ -32,10 +32,9 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Login | `useLogin` | initial state, submit success/fail, loading cleared | ✅ |
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
 | Library | `MangaCard` | render, remove button | ✅ |
-| Discover | `useDiscover` | content types, submit, blank guard, reset, navigate, 502 | ✅ |
-| Discover | `ContentTypeFilter` | render, onChange | ✅ |
+| Discover | `useDiscover` | submit, blank guard, navigate, 502, added tracking | ✅ |
 | Home | `useHome` | — | ✅ |
-| Home | `Cards` | render variants | ✅ |
+| Home | `Cards` | render variants, title+author below cover, error→emoji | ✅ |
 | Settings | `useSettings` | load, tab defaults, save, logout | ✅ |
 | Queue | `useQueue` | fetch, sort, canClear, remove+refetch | ✅ |
 | Queue | `QueueRow` | render, remove btn hidden while downloading, onRemove, error | ✅ |
@@ -170,10 +169,12 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Multi-source: download guard | `POST /chapters/:id/download` → 202 with `chapter_sources` | ✅ |
 | Multi-source: sync | `POST /manga/:id/sync` → 404 when no `manga_sources` | ✅ |
 | Multi-source: sync | `POST /manga/:id/sync` → 202 when `manga_sources` exist | ✅ |
-| Multi-source: add_manga | Returns 400 when source not in registry | ✅ |
-| Multi-source: add_manga | Creates `manga_sources` row for primary source | ✅ |
-| Multi-source: add_manga | Creates `manga_sources` rows for alternatives | ✅ |
-| Multi-source: add_manga | Deduplicates — same source link returns same manga | ✅ |
+| add_manga (MU) | Creates manga row with `mangaupdates_id` | ✅ |
+| add_manga (MU) | Creates `user_manga` subscription for the requesting user | ✅ |
+| add_manga (MU) | Sets `is_explicit = 1` when tags contain `"adult"` | ✅ |
+| add_manga (MU) | Deduplicates — same `mangaupdates_id` returns same manga | ✅ |
+| Trending | Returns pre-seeded cache results without hitting MangaUpdates network | ✅ |
+| Trending | Marks `in_library=true` when series already added to library | ✅ |
 | Queue: explicit filter | Member without `allow_explicit` cannot see explicit queue items | ✅ |
 | Queue: explicit filter | Member with `allow_explicit` sees explicit queue items | ✅ |
 | Queue: explicit filter | Admin sees explicit queue items regardless of `allow_explicit` flag | ✅ |

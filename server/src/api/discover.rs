@@ -13,232 +13,23 @@ use std::time::Instant;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::{auth, db::Manga, indexer::source::{MangaResult, Source}, AppState};
+use crate::{auth, db::Manga, mangaupdates::{MangaUpdatesClient, MuSeries}, AppState};
 use super::ApiResult;
 
 // ── Trending cache ────────────────────────────────────────────────────────────
 
-#[derive(Clone)]
-pub struct CachedTrendingEntry {
-    pub source_id: String,
-    pub source_name: String,
-    pub result: MangaResult,
-    pub alternatives: Vec<SourceAlternative>,
-}
+pub type TrendingCache = Arc<Mutex<Option<(Instant, Vec<MuSeries>)>>>;
 
-pub type TrendingCache = Arc<Mutex<Option<(Instant, Vec<CachedTrendingEntry>)>>>;
-
-#[derive(Deserialize)]
-pub struct DetailQuery {
-    pub source: String,
-    pub source_id: String,
-    pub title: Option<String>,
-}
-
-#[derive(Serialize)]
-pub struct MangaDetailResult {
-    pub description: Option<String>,
-    pub cover_url: Option<String>,
-    pub chapter_count: usize,
-    pub tags: Option<String>,
-}
-
-// ── Title metadata cache helpers ──────────────────────────────────────────────
-
-struct MetaCacheRow {
-    cover_local_path: Option<String>,
-    cover_cdn_url: Option<String>,
-    description: Option<String>,
-}
-
-async fn batch_lookup_meta(
-    db: &sqlx::SqlitePool,
-    keys: &[String],
-) -> std::collections::HashMap<String, MetaCacheRow> {
-    if keys.is_empty() {
-        return std::collections::HashMap::new();
-    }
-    let placeholders = keys.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-    let sql = format!(
-        "SELECT title_key, cover_local_path, cover_cdn_url, description FROM title_meta WHERE title_key IN ({})",
-        placeholders
-    );
-    let mut q = sqlx::query(&sql);
-    for k in keys {
-        q = q.bind(k.as_str());
-    }
-    match q.fetch_all(db).await {
-        Ok(rows) => {
-            use sqlx::Row;
-            rows.into_iter().map(|row| {
-                let key: String = row.get("title_key");
-                (key, MetaCacheRow {
-                    cover_local_path: row.get("cover_local_path"),
-                    cover_cdn_url: row.get("cover_cdn_url"),
-                    description: row.get("description"),
-                })
-            }).collect()
-        }
-        Err(e) => { tracing::warn!("batch_lookup_meta: {}", e); Default::default() }
-    }
-}
-
-fn meta_cover_url(key: &str) -> String {
-    format!("/api/media/meta-cover?key={}", urlencoding::encode(key))
-}
-
-fn enrich_with_cache(
-    cache: &std::collections::HashMap<String, MetaCacheRow>,
-    results: &mut Vec<SearchResult>,
-) {
-    for result in results.iter_mut() {
-        let key = normalize_title(&result.title);
-        if let Some(m) = cache.get(&key) {
-            if m.cover_local_path.is_some() {
-                result.cover_url = Some(meta_cover_url(&key));
-            } else if result.cover_url.is_none() {
-                result.cover_url = m.cover_cdn_url.clone();
-            }
-            if result.description.is_none() {
-                result.description = m.description.clone();
-            }
-        }
-    }
-}
-
-fn spawn_cover_download(
-    db: sqlx::SqlitePool,
-    src: Arc<dyn Source>,
-    cdn_url: String,
-    title_key: String,
-    download_dir: String,
-) {
-    tokio::spawn(async move {
-        download_meta_cover(&db, src, cdn_url, title_key, download_dir).await;
-    });
-}
-
-async fn seed_results_meta(
-    db: &sqlx::SqlitePool,
-    sources: &[(String, Arc<dyn Source>)],
-    download_dir: &str,
-    results: &[SearchResult],
-    meta_cache: &std::collections::HashMap<String, MetaCacheRow>,
-) {
-    for result in results {
-        let cover_cdn_url = match &result.cover_url {
-            Some(u) if !u.starts_with("/api/") => u.clone(),
-            _ => continue,
-        };
-        let key = normalize_title(&result.title);
-
-        if let Some(row) = meta_cache.get(&key) {
-            if row.cover_local_path.is_none() {
-                let cdn = row.cover_cdn_url.clone().unwrap_or_else(|| cover_cdn_url.clone());
-                if let Some((_, src)) = sources.iter().find(|(sid, _)| sid == &result.source) {
-                    spawn_cover_download(db.clone(), src.clone(), cdn, key, download_dir.to_string());
-                }
-            }
-            continue;
-        }
-
-        store_meta(
-            db, &key, &result.source, &result.id,
-            result.description.as_deref(),
-            Some(&cover_cdn_url),
-            result.tags.as_deref(),
-            0,
-        ).await;
-
-        if let Some((_, src)) = sources.iter().find(|(sid, _)| sid == &result.source) {
-            spawn_cover_download(db.clone(), src.clone(), cover_cdn_url, key, download_dir.to_string());
-        }
-    }
-}
-
-async fn store_meta(
-    db: &sqlx::SqlitePool,
-    key: &str,
-    source: &str,
-    source_id: &str,
-    description: Option<&str>,
-    cover_cdn_url: Option<&str>,
-    tags: Option<&str>,
-    chapter_count: usize,
-) {
-    let now = Utc::now().to_rfc3339();
-    let count = chapter_count as i64;
-    if let Err(e) = sqlx::query!(
-        r#"INSERT INTO title_meta (title_key, cover_cdn_url, description, tags, chapter_count, source, source_id, fetched_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-           ON CONFLICT(title_key) DO UPDATE SET
-             description  = COALESCE(excluded.description, title_meta.description),
-             cover_cdn_url = COALESCE(excluded.cover_cdn_url, title_meta.cover_cdn_url),
-             tags         = COALESCE(excluded.tags, title_meta.tags),
-             chapter_count = excluded.chapter_count,
-             fetched_at   = excluded.fetched_at"#,
-        key, cover_cdn_url, description, tags, count, source, source_id, now
-    )
-    .execute(db)
-    .await
-    {
-        tracing::warn!("store_meta failed for '{}': {}", key, e);
-    }
-}
-
-async fn download_meta_cover(
-    db: &sqlx::SqlitePool,
-    src: Arc<dyn Source>,
-    cdn_url: String,
-    title_key: String,
-    download_dir: String,
-) {
-    let ext = cdn_url.split('?').next().unwrap_or("cover")
-        .rsplit('.').next().unwrap_or("jpg");
-    let safe = title_key.chars().map(|c| if c.is_alphanumeric() { c } else { '_' }).collect::<String>();
-    let cover_path = Path::new(&download_dir)
-        .join("_meta")
-        .join(format!("{}.{}", safe, ext));
-
-    match src.fetch_cover(&cdn_url).await {
-        Ok(bytes) => {
-            if let Some(parent) = cover_path.parent() {
-                let _ = tokio::fs::create_dir_all(parent).await;
-            }
-            if tokio::fs::write(&cover_path, &bytes).await.is_ok() {
-                let path_str = cover_path.to_string_lossy().to_string();
-                let _ = sqlx::query!(
-                    "UPDATE title_meta SET cover_local_path = ? WHERE title_key = ?",
-                    path_str, title_key
-                )
-                .execute(db)
-                .await;
-            }
-        }
-        Err(e) => tracing::warn!("meta cover download failed for '{}': {}", title_key, e),
-    }
-}
+// ── Wire types ────────────────────────────────────────────────────────────────
 
 #[derive(Deserialize)]
 pub struct SearchQuery {
     pub q: String,
-    pub content_type: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct SourceAlternative {
-    pub source: String,
-    pub source_name: String,
-    pub id: String,
-    pub cover_url: Option<String>,
-    pub status: String,
 }
 
 #[derive(Serialize)]
 pub struct SearchResult {
-    pub id: String,
-    pub source: String,
-    pub source_name: String,
+    pub mangaupdates_id: String,
     pub title: String,
     pub description: Option<String>,
     pub cover_url: Option<String>,
@@ -249,13 +40,11 @@ pub struct SearchResult {
     pub content_type: String,
     pub in_library: bool,
     pub library_id: Option<String>,
-    pub alternatives: Vec<SourceAlternative>,
 }
 
 #[derive(Deserialize)]
 pub struct AddMangaRequest {
-    pub source: String,
-    pub source_id: String,
+    pub mangaupdates_id: String,
     pub title: String,
     pub description: Option<String>,
     pub cover_url: Option<String>,
@@ -265,8 +54,6 @@ pub struct AddMangaRequest {
     pub tags: Option<String>,
     #[serde(default = "default_content_type")]
     pub content_type: String,
-    #[serde(default)]
-    pub alternatives: Vec<SourceAlternative>,
 }
 
 fn default_content_type() -> String { "manga".to_string() }
@@ -275,13 +62,12 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/discover", get(search))
         .route("/discover/trending", get(trending))
-        .route("/discover/detail", get(detail_meta))
         .route("/discover/add", post(add_manga))
 }
 
-// ── Fan-out helpers ───────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn normalize_title(title: &str) -> String {
+pub fn normalize_title(title: &str) -> String {
     title
         .chars()
         .map(|c| if c.is_alphanumeric() { c } else { ' ' })
@@ -292,249 +78,125 @@ fn normalize_title(title: &str) -> String {
         .to_lowercase()
 }
 
-struct SourceHit {
-    source_id: String,
-    source_name: String,
-    result: crate::indexer::source::MangaResult,
-}
-
-async fn fan_out(
-    sources: Vec<(String, String, Arc<dyn Source>)>,
-    mode: FanOutMode,
-) -> Vec<SourceHit> {
-    let tasks: Vec<_> = sources
-        .into_iter()
-        .map(|(sid, sname, src)| {
-            let mode = mode.clone();
-            tokio::spawn(async move {
-                let res = match &mode {
-                    FanOutMode::Search(q) => src.search(q).await,
-                    FanOutMode::Trending   => src.trending().await,
-                };
-                match res {
-                    Ok(items) => items
-                        .into_iter()
-                        .map(|r| SourceHit { source_id: sid.clone(), source_name: sname.clone(), result: r })
-                        .collect::<Vec<_>>(),
-                    Err(e) => {
-                        tracing::debug!("{} {} failed: {}", sid, mode.label(), e);
-                        vec![]
-                    }
-                }
-            })
-        })
-        .collect();
-
-    let mut hits = Vec::new();
-    for task in tasks {
-        if let Ok(batch) = task.await { hits.extend(batch); }
-    }
-    hits
-}
-
-#[derive(Clone)]
-enum FanOutMode {
-    Search(String),
-    Trending,
-}
-
-impl FanOutMode {
-    fn label(&self) -> &str {
-        match self { Self::Search(_) => "search", Self::Trending => "trending" }
-    }
-}
-
-fn snapshot_sources(
-    registry: &std::collections::HashMap<String, Arc<dyn Source>>,
-    content_type_filter: Option<&str>,
-) -> Vec<(String, String, Arc<dyn Source>)> {
-    registry
-        .iter()
-        .filter(|(_, src)| {
-            match content_type_filter {
-                None => true,
-                Some(ct) => src.content_types().iter().any(|t| t == ct),
-            }
-        })
-        .map(|(id, src)| (id.clone(), src.name().to_string(), src.clone()))
-        .collect()
-}
-
-/// Merge hits from multiple sources by normalized title.
-/// Returns one `SearchResult` per unique title with `alternatives` for secondary sources.
-fn interleave_and_limit(hits: Vec<SourceHit>, per_source: usize) -> Vec<SourceHit> {
-    let mut source_order: Vec<String> = Vec::new();
-    let mut groups: std::collections::HashMap<String, Vec<SourceHit>> = std::collections::HashMap::new();
-    for hit in hits {
-        if !groups.contains_key(&hit.source_id) {
-            source_order.push(hit.source_id.clone());
-        }
-        groups.entry(hit.source_id.clone()).or_default().push(hit);
-    }
-    let mut lanes: Vec<std::collections::VecDeque<SourceHit>> = source_order
-        .into_iter()
-        .map(|sid| groups.remove(&sid).unwrap_or_default().into_iter().take(per_source).collect())
-        .collect();
-    let mut out = Vec::new();
-    loop {
-        let mut advanced = false;
-        for lane in &mut lanes {
-            if let Some(hit) = lane.pop_front() {
-                out.push(hit);
-                advanced = true;
-            }
-        }
-        if !advanced { break; }
-    }
-    out
-}
-
-fn merge_hits(hits: Vec<SourceHit>) -> Vec<(String, String, crate::indexer::source::MangaResult, Vec<SourceAlternative>)> {
-    // preserve insertion order per title — first source wins as primary
-    let mut order: Vec<String> = Vec::new();
-    let mut groups: std::collections::HashMap<String, (String, String, crate::indexer::source::MangaResult, Vec<SourceAlternative>)> =
-        std::collections::HashMap::new();
-
-    for hit in hits {
-        let key = normalize_title(&hit.result.title);
-        if let Some(entry) = groups.get_mut(&key) {
-            entry.3.push(SourceAlternative {
-                source: hit.source_id,
-                source_name: hit.source_name,
-                id: hit.result.id,
-                cover_url: hit.result.cover_url,
-                status: hit.result.status,
-            });
-        } else {
-            order.push(key.clone());
-            groups.insert(key, (hit.source_id, hit.source_name, hit.result, vec![]));
-        }
-    }
-
-    order.into_iter().filter_map(|k| groups.remove(&k)).collect()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::indexer::source::MangaResult;
-
-    fn hit(source_id: &str, title: &str) -> SourceHit {
-        SourceHit {
-            source_id: source_id.to_string(),
-            source_name: source_id.to_string(),
-            result: MangaResult {
-                id: format!("{source_id}-{title}"),
-                title: title.to_string(),
-                description: None,
-                cover_url: None,
-                status: "ongoing".to_string(),
-                author: None,
-                year: None,
-                tags: None,
-                content_type: None,
-            },
-        }
-    }
-
-    // ── normalize_title ───────────────────────────────────────────────────────
-
-    #[test]
-    fn normalize_lowercases() {
-        assert_eq!(normalize_title("My Hero Academia"), "my hero academia");
-    }
-
-    #[test]
-    fn normalize_strips_punctuation() {
-        assert_eq!(normalize_title("One-Piece!"), "one piece");
-    }
-
-    #[test]
-    fn normalize_collapses_whitespace() {
-        assert_eq!(normalize_title("Solo  Leveling"), "solo leveling");
-    }
-
-    #[test]
-    fn normalize_empty() {
-        assert_eq!(normalize_title(""), "");
-    }
-
-    // ── merge_hits ────────────────────────────────────────────────────────────
-
-    #[test]
-    fn merge_deduplicates_same_title() {
-        let hits = vec![
-            hit("mangadex", "One Piece"),
-            hit("mangapill", "One Piece"),
-        ];
-        let merged = merge_hits(hits);
-        assert_eq!(merged.len(), 1);
-        assert_eq!(merged[0].3.len(), 1, "second source should be in alternatives");
-        assert_eq!(merged[0].3[0].source, "mangapill");
-    }
-
-    #[test]
-    fn merge_preserves_insertion_order() {
-        let hits = vec![
-            hit("mangadex", "Naruto"),
-            hit("mangadex", "Bleach"),
-            hit("mangapill", "Naruto"),
-        ];
-        let merged = merge_hits(hits);
-        assert_eq!(merged.len(), 2);
-        assert_eq!(merged[0].2.title, "Naruto");
-        assert_eq!(merged[1].2.title, "Bleach");
-    }
-
-    #[test]
-    fn merge_distinct_titles_all_kept() {
-        let hits = vec![
-            hit("mangadex", "Attack on Titan"),
-            hit("mangadex", "Demon Slayer"),
-            hit("mangadex", "Jujutsu Kaisen"),
-        ];
-        let merged = merge_hits(hits);
-        assert_eq!(merged.len(), 3);
-        assert!(merged.iter().all(|m| m.3.is_empty()));
-    }
-
-    #[test]
-    fn merge_normalizes_before_dedup() {
-        // "One-Piece" and "One Piece" should be considered the same title
-        let hits = vec![
-            hit("mangadex", "One-Piece"),
-            hit("mangapill", "One Piece"),
-        ];
-        let merged = merge_hits(hits);
-        assert_eq!(merged.len(), 1);
-    }
+fn meta_cover_url(key: &str) -> String {
+    format!("/api/media/meta-cover?key={}", urlencoding::encode(key))
 }
 
 async fn check_in_library(
     db: &sqlx::SqlitePool,
     user_id: &str,
-    source: &str,
-    source_id: &str,
-    alternatives: &[SourceAlternative],
+    mangaupdates_id: &str,
 ) -> (bool, Option<String>) {
-    let all: Vec<(&str, &str)> = std::iter::once((source, source_id))
-        .chain(alternatives.iter().map(|a| (a.source.as_str(), a.id.as_str())))
-        .collect();
-    for (src, sid) in all {
-        if let Ok(Some(row)) = sqlx::query!(
-            r#"SELECT m.id as "id!" FROM manga m
-               JOIN user_manga um ON um.manga_id = m.id AND um.user_id = ?
-               JOIN manga_sources ms ON ms.manga_id = m.id
-               WHERE ms.source = ? AND ms.source_id = ?"#,
-            user_id, src, sid
-        )
-        .fetch_optional(db)
-        .await
-        {
-            return (true, Some(row.id));
-        }
+    match sqlx::query!(
+        r#"SELECT m.id as "id!" FROM manga m
+           JOIN user_manga um ON um.manga_id = m.id AND um.user_id = ?
+           WHERE m.mangaupdates_id = ?"#,
+        user_id, mangaupdates_id
+    )
+    .fetch_optional(db)
+    .await
+    {
+        Ok(Some(row)) => (true, Some(row.id)),
+        _ => (false, None),
     }
-    (false, None)
+}
+
+async fn enrich_cover(
+    db: &sqlx::SqlitePool,
+    result: &mut SearchResult,
+) {
+    let key = normalize_title(&result.title);
+    match sqlx::query!(
+        "SELECT cover_local_path, cover_cdn_url FROM title_meta WHERE title_key = ?",
+        key
+    )
+    .fetch_optional(db)
+    .await
+    {
+        Ok(Some(row)) => {
+            if row.cover_local_path.is_some() {
+                result.cover_url = Some(meta_cover_url(&key));
+            } else if result.cover_url.is_none() {
+                result.cover_url = row.cover_cdn_url;
+            }
+        }
+        _ => {}
+    }
+}
+
+async fn seed_and_cache_cover(
+    db: sqlx::SqlitePool,
+    http: reqwest::Client,
+    title: String,
+    cdn_url: String,
+    download_dir: String,
+) {
+    let key = normalize_title(&title);
+    let now = Utc::now().to_rfc3339();
+
+    // Upsert title_meta row
+    if let Err(e) = sqlx::query!(
+        r#"INSERT INTO title_meta (title_key, cover_cdn_url, fetched_at)
+           VALUES (?, ?, ?)
+           ON CONFLICT(title_key) DO UPDATE SET
+             cover_cdn_url = COALESCE(title_meta.cover_cdn_url, excluded.cover_cdn_url),
+             fetched_at    = excluded.fetched_at"#,
+        key, cdn_url, now
+    )
+    .execute(&db)
+    .await
+    {
+        tracing::warn!("seed_and_cache_cover insert error for '{}': {}", key, e);
+        return;
+    }
+
+    // Download cover bytes directly via reqwest (MU CDN, no plugin needed)
+    let bytes = match http
+        .get(&cdn_url)
+        .header("User-Agent", "Mozilla/5.0")
+        .send()
+        .await
+        .and_then(|r| r.error_for_status())
+    {
+        Ok(resp) => match resp.bytes().await {
+            Ok(b) => b,
+            Err(e) => { tracing::warn!("cover read error for '{}': {}", key, e); return; }
+        },
+        Err(e) => { tracing::warn!("cover fetch error for '{}': {}", key, e); return; }
+    };
+
+    let ext = cdn_url.split('?').next().unwrap_or("cover").rsplit('.').next().unwrap_or("jpg");
+    let safe = key.chars().map(|c| if c.is_alphanumeric() { c } else { '_' }).collect::<String>();
+    let path = Path::new(&download_dir).join("_meta").join(format!("{}.{}", safe, ext));
+
+    if let Some(parent) = path.parent() {
+        let _ = tokio::fs::create_dir_all(parent).await;
+    }
+    if tokio::fs::write(&path, &bytes).await.is_ok() {
+        let path_str = path.to_string_lossy().to_string();
+        let _ = sqlx::query!(
+            "UPDATE title_meta SET cover_local_path = ? WHERE title_key = ?",
+            path_str, key
+        )
+        .execute(&db)
+        .await;
+    }
+}
+
+fn mu_to_search_result(s: &MuSeries, in_library: bool, library_id: Option<String>) -> SearchResult {
+    SearchResult {
+        mangaupdates_id: s.series_id.to_string(),
+        title: s.title.clone(),
+        description: s.description.clone(),
+        cover_url: s.cover_url.clone(),
+        status: s.status.clone(),
+        author: s.author.clone(),
+        year: s.year,
+        tags: s.tags.clone(),
+        content_type: s.content_type.clone(),
+        in_library,
+        library_id,
+    }
 }
 
 // ── Handlers ──────────────────────────────────────────────────────────────────
@@ -544,45 +206,37 @@ async fn search(
     axum::Extension(claims): axum::Extension<auth::Claims>,
     Query(q): Query<SearchQuery>,
 ) -> ApiResult<Response> {
-    let ct = q.content_type.as_deref();
-    let sources = snapshot_sources(&*state.sources.read().await, ct);
-    if sources.is_empty() {
-        return Ok(Json(Vec::<SearchResult>::new()).into_response());
-    }
-    let hits = fan_out(sources, FanOutMode::Search(q.q)).await;
-    let merged = merge_hits(hits);
-    let user_id = &claims.sub;
-    let mut out = Vec::with_capacity(merged.len());
-
-    for (src_id, src_name, r, alts) in merged {
-        let (in_library, library_id) = check_in_library(&state.db, user_id, &src_id, &r.id, &alts).await;
-        out.push(SearchResult {
-            in_library,
-            library_id,
-            source: src_id,
-            source_name: src_name,
-            id: r.id,
-            title: r.title,
-            description: r.description,
-            cover_url: r.cover_url,
-            status: r.status,
-            author: r.author,
-            year: r.year,
-            tags: r.tags,
-            content_type: r.content_type.unwrap_or_else(|| "manga".to_string()),
-            alternatives: alts,
-        });
-    }
-
-    let sources_for_seed: Vec<(String, Arc<dyn Source>)> = {
-        let reg = state.sources.read().await;
-        reg.iter().map(|(id, src)| (id.clone(), src.clone())).collect()
+    let mu = MangaUpdatesClient::new(&state.http);
+    let series = match mu.search(&q.q, 1).await {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!("MangaUpdates search error: {}", e);
+            return Ok(StatusCode::BAD_GATEWAY.into_response());
+        }
     };
-    let keys: Vec<String> = out.iter().map(|r| normalize_title(&r.title)).collect();
-    let meta_cache = batch_lookup_meta(&state.db, &keys).await;
-    seed_results_meta(&state.db, &sources_for_seed, &state.config.download_dir, &out, &meta_cache).await;
-    enrich_with_cache(&meta_cache, &mut out);
-    Ok(Json(out).into_response())
+
+    let mut results = Vec::with_capacity(series.len());
+    for s in &series {
+        let mu_id = s.series_id.to_string();
+        let (in_library, library_id) = check_in_library(&state.db, &claims.sub, &mu_id).await;
+        let mut r = mu_to_search_result(s, in_library, library_id);
+        enrich_cover(&state.db, &mut r).await;
+
+        // Seed cover in background if we have a CDN URL
+        if let Some(ref cdn) = s.cover_url {
+            tokio::spawn(seed_and_cache_cover(
+                state.db.clone(),
+                state.http.clone(),
+                s.title.clone(),
+                cdn.clone(),
+                state.config.download_dir.clone(),
+            ));
+        }
+
+        results.push(r);
+    }
+
+    Ok(Json(results).into_response())
 }
 
 async fn trending(
@@ -591,183 +245,57 @@ async fn trending(
 ) -> ApiResult<Response> {
     const CACHE_TTL: std::time::Duration = std::time::Duration::from_secs(3600);
 
-    let per_source: usize = sqlx::query_scalar!(
-        "SELECT value FROM server_settings WHERE key = 'trending_per_source'"
-    )
-    .fetch_optional(&state.db)
-    .await
-    .ok()
-    .flatten()
-    .and_then(|v: String| v.parse().ok())
-    .unwrap_or(5);
-
-    // Snapshot sources once for seeding (used in all response paths)
-    let sources_for_seed: Vec<(String, Arc<dyn Source>)> = {
-        let reg = state.sources.read().await;
-        reg.iter().map(|(id, src)| (id.clone(), src.clone())).collect()
-    };
-
-    // Serve from cache if still fresh
-    {
+    let cached = {
         let guard = state.trending_cache.lock().await;
-        if let Some((ts, entries)) = guard.as_ref() {
-            if ts.elapsed() < CACHE_TTL {
-                return build_trending_response(&state.db, &claims.sub, entries, &sources_for_seed, &state.config.download_dir).await;
-            }
-        }
-    }
-
-    // Fetch fresh results from all sources
-    let sources = snapshot_sources(&*state.sources.read().await, None);
-    let fresh = if sources.is_empty() {
-        vec![]
-    } else {
-        fan_out(sources, FanOutMode::Trending).await
-    };
-
-    // On empty fetch, serve stale cache or empty
-    if fresh.is_empty() {
-        let guard = state.trending_cache.lock().await;
-        if let Some((_, entries)) = guard.as_ref() {
-            tracing::debug!("trending: serving stale cache (sources returned nothing)");
-            return build_trending_response(&state.db, &claims.sub, entries, &sources_for_seed, &state.config.download_dir).await;
-        }
-        return Ok(Json(Vec::<SearchResult>::new()).into_response());
-    }
-
-    // Interleave, limit per source, merge duplicates, then cache
-    let limited = interleave_and_limit(fresh, per_source);
-    let merged = merge_hits(limited);
-    let entries: Vec<CachedTrendingEntry> = merged
-        .into_iter()
-        .map(|(source_id, source_name, result, alternatives)| CachedTrendingEntry {
-            source_id, source_name, result, alternatives,
+        guard.as_ref().and_then(|(ts, entries)| {
+            if ts.elapsed() < CACHE_TTL { Some(entries.clone()) } else { None }
         })
-        .collect();
+    };
 
-    {
-        let mut guard = state.trending_cache.lock().await;
-        *guard = Some((Instant::now(), entries.clone()));
-    }
-
-    build_trending_response(&state.db, &claims.sub, &entries, &sources_for_seed, &state.config.download_dir).await
-}
-
-async fn build_trending_response(
-    db: &sqlx::SqlitePool,
-    user_id: &str,
-    entries: &[CachedTrendingEntry],
-    sources_for_seed: &[(String, Arc<dyn Source>)],
-    download_dir: &str,
-) -> ApiResult<Response> {
-    let mut out = Vec::with_capacity(entries.len());
-    for entry in entries {
-        let (in_library, library_id) =
-            check_in_library(db, user_id, &entry.source_id, &entry.result.id, &entry.alternatives).await;
-        out.push(SearchResult {
-            in_library,
-            library_id,
-            source: entry.source_id.clone(),
-            source_name: entry.source_name.clone(),
-            id: entry.result.id.clone(),
-            title: entry.result.title.clone(),
-            description: entry.result.description.clone(),
-            cover_url: entry.result.cover_url.clone(),
-            status: entry.result.status.clone(),
-            author: entry.result.author.clone(),
-            year: entry.result.year,
-            tags: entry.result.tags.clone(),
-            content_type: entry.result.content_type.clone().unwrap_or_else(|| "manga".to_string()),
-            alternatives: entry.alternatives.clone(),
-        });
-    }
-    let keys: Vec<String> = out.iter().map(|r| normalize_title(&r.title)).collect();
-    let meta_cache = batch_lookup_meta(db, &keys).await;
-    seed_results_meta(db, sources_for_seed, download_dir, &out, &meta_cache).await;
-    enrich_with_cache(&meta_cache, &mut out);
-    Ok(Json(out).into_response())
-}
-
-async fn detail_meta(
-    State(state): State<AppState>,
-    Query(q): Query<DetailQuery>,
-) -> ApiResult<Response> {
-    let title_key = q.title.as_deref().map(normalize_title);
-
-    // Cache hit → return immediately (re-trigger download if cover missing locally)
-    if let Some(ref key) = title_key {
-        if let Ok(Some(cached)) = sqlx::query!(
-            "SELECT description, cover_local_path, cover_cdn_url, tags, chapter_count FROM title_meta WHERE title_key = ?",
-            key
-        )
-        .fetch_optional(&state.db)
-        .await
-        {
-            if cached.cover_local_path.is_none() {
-                if let Some(ref cdn_url) = cached.cover_cdn_url {
-                    let src = state.sources.read().await.get(&q.source).cloned();
-                    if let Some(src) = src {
-                        spawn_cover_download(
-                            state.db.clone(), src, cdn_url.clone(),
-                            key.clone(), state.config.download_dir.clone(),
-                        );
-                    }
+    let series = if let Some(c) = cached {
+        c
+    } else {
+        let mu = MangaUpdatesClient::new(&state.http);
+        let fresh = match mu.latest_releases().await {
+            Ok(s) if !s.is_empty() => s,
+            Ok(_) => {
+                // Empty result — serve stale if available
+                let guard = state.trending_cache.lock().await;
+                if let Some((_, entries)) = guard.as_ref() {
+                    tracing::debug!("trending: serving stale cache (MU returned nothing)");
+                    entries.clone()
+                } else {
+                    return Ok(Json(Vec::<SearchResult>::new()).into_response());
                 }
             }
-            let cover_url = if cached.cover_local_path.is_some() {
-                Some(meta_cover_url(key))
-            } else {
-                cached.cover_cdn_url
-            };
-            return Ok(Json(MangaDetailResult {
-                description: cached.description,
-                cover_url,
-                chapter_count: cached.chapter_count as usize,
-                tags: cached.tags,
-            }).into_response());
+            Err(e) => {
+                tracing::error!("MangaUpdates latest_releases error: {}", e);
+                // Serve stale if available
+                let guard = state.trending_cache.lock().await;
+                if let Some((_, entries)) = guard.as_ref() {
+                    entries.clone()
+                } else {
+                    return Ok(StatusCode::BAD_GATEWAY.into_response());
+                }
+            }
+        };
+        {
+            let mut guard = state.trending_cache.lock().await;
+            *guard = Some((Instant::now(), fresh.clone()));
         }
-    }
-
-    // Cache miss → fetch from source
-    let src = state.sources.read().await.get(&q.source).cloned();
-    let Some(src) = src else {
-        return Ok(StatusCode::BAD_GATEWAY.into_response());
+        fresh
     };
 
-    let meta = match src.fetch_meta(&q.source_id).await {
-        Ok(m) => m,
-        Err(e) => {
-            tracing::error!("detail fetch error: {}", e);
-            return Ok(StatusCode::BAD_GATEWAY.into_response());
-        }
-    };
-
-    // Store in cache and spawn cover download
-    if let Some(ref key) = title_key {
-        store_meta(
-            &state.db, key, &q.source, &q.source_id,
-            meta.description.as_deref(),
-            meta.cover_url.as_deref(),
-            meta.tags.as_deref(),
-            meta.chapter_count,
-        ).await;
-
-        if let Some(cdn_url) = meta.cover_url.clone() {
-            let db = state.db.clone();
-            let dir = state.config.download_dir.clone();
-            let key = key.clone();
-            tokio::spawn(async move {
-                download_meta_cover(&db, src, cdn_url, key, dir).await;
-            });
-        }
+    let mut results = Vec::with_capacity(series.len());
+    for s in &series {
+        let mu_id = s.series_id.to_string();
+        let (in_library, library_id) = check_in_library(&state.db, &claims.sub, &mu_id).await;
+        let mut r = mu_to_search_result(s, in_library, library_id);
+        enrich_cover(&state.db, &mut r).await;
+        results.push(r);
     }
 
-    Ok(Json(MangaDetailResult {
-        description: meta.description,
-        cover_url: meta.cover_url,
-        chapter_count: meta.chapter_count,
-        tags: meta.tags,
-    }).into_response())
+    Ok(Json(results).into_response())
 }
 
 async fn add_manga(
@@ -776,18 +304,14 @@ async fn add_manga(
     Json(body): Json<AddMangaRequest>,
 ) -> ApiResult<Response> {
     let now = Utc::now();
-    let source = body.source.as_str();
+    let now_str = now.to_rfc3339();
 
-    let src = state.sources.read().await.get(source).cloned();
-    let Some(src) = src else {
-        return Ok(StatusCode::BAD_REQUEST.into_response());
-    };
-
-    // If cover_url is an internal meta-cover path (injected by enrich_with_cache),
-    // resolve it back to the CDN URL so we don't store an internal API path in the DB.
+    // Resolve cover: if the client passed a meta-cover path, resolve back to CDN URL
     let resolved_cover_url: Option<String> = if let Some(ref url) = body.cover_url {
         if let Some(encoded_key) = url.strip_prefix("/api/media/meta-cover?key=") {
-            let key = urlencoding::decode(encoded_key).unwrap_or_else(|_| encoded_key.into()).into_owned();
+            let key = urlencoding::decode(encoded_key)
+                .unwrap_or_else(|_| encoded_key.into())
+                .into_owned();
             sqlx::query_scalar!(
                 "SELECT cover_cdn_url FROM title_meta WHERE title_key = ?",
                 key
@@ -802,23 +326,22 @@ async fn add_manga(
         None
     };
 
-    // Check if this manga already exists via manga_sources
-    let existing_id: Option<String> = sqlx::query_scalar!(
-        "SELECT manga_id FROM manga_sources WHERE source = ? AND source_id = ?",
-        source, body.source_id
+    // Check if manga with this MU ID already exists
+    let existing: Option<String> = sqlx::query_scalar!(
+        r#"SELECT id as "id!" FROM manga WHERE mangaupdates_id = ?"#,
+        body.mangaupdates_id
     )
     .fetch_optional(&state.db)
     .await?;
 
-    let now_str = now.to_rfc3339();
-    let manga_id: String = if let Some(eid) = existing_id {
+    let manga_id: String = if let Some(eid) = existing {
+        // Already in catalog — update metadata if missing
         sqlx::query!(
             "UPDATE manga SET \
-             description = COALESCE(description, ?), \
-             author = COALESCE(author, ?), \
-             year = COALESCE(year, ?), \
-             tags = COALESCE(tags, ?), \
-             sync_status = 'syncing' \
+             description  = COALESCE(description, ?), \
+             author       = COALESCE(author, ?), \
+             year         = COALESCE(year, ?), \
+             tags         = COALESCE(tags, ?) \
              WHERE id = ?",
             body.description, body.author, body.year, body.tags, eid
         )
@@ -830,14 +353,15 @@ async fn add_manga(
         let tag_explicit = body.tags.as_deref()
             .map(|t| t.split(',').any(|tag| tag.trim().eq_ignore_ascii_case("adult")))
             .unwrap_or(false);
-        let is_explicit: i64 = if src.default_explicit() || tag_explicit { 1 } else { 0 };
+        let is_explicit: i64 = if tag_explicit { 1 } else { 0 };
+
         sqlx::query!(
             r#"INSERT INTO manga
-               (id, title, description, cover_url, status,
+               (id, mangaupdates_id, title, description, cover_url, status,
                 author, year, tags, sync_status, content_type, is_explicit, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
-            id, body.title, body.description, resolved_cover_url, body.status,
-            body.author, body.year, body.tags,
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
+            id, body.mangaupdates_id, body.title, body.description, resolved_cover_url,
+            body.status, body.author, body.year, body.tags,
             body.content_type, is_explicit, now, now
         )
         .execute(&state.db)
@@ -845,20 +369,7 @@ async fn add_manga(
         id
     };
 
-    // Upsert manga_sources for primary source + all alternatives passed by the client
-    let sources_to_register: Vec<(String, String)> = std::iter::once((body.source.clone(), body.source_id.clone()))
-        .chain(body.alternatives.iter().map(|a| (a.source.clone(), a.id.clone())))
-        .collect();
-    for (src_key, src_id) in &sources_to_register {
-        let ms_id = Uuid::new_v4().to_string();
-        sqlx::query!(
-            "INSERT OR IGNORE INTO manga_sources (id, manga_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)",
-            ms_id, manga_id, src_key, src_id, now_str
-        )
-        .execute(&state.db)
-        .await?;
-    }
-
+    // Subscribe this user to the manga
     sqlx::query!(
         "INSERT OR IGNORE INTO user_manga (user_id, manga_id, added_at) VALUES (?, ?, ?)",
         claims.sub, manga_id, now_str
@@ -866,52 +377,92 @@ async fn add_manga(
     .execute(&state.db)
     .await?;
 
+    // Async: download cover + match sources + sync chapters
     let db = state.db.clone();
+    let http = state.http.clone();
+    let sources = state.sources.clone();
     let mid = manga_id.clone();
-    let cover_url = resolved_cover_url;
+    let title = body.title.clone();
+    let cover_cdn = resolved_cover_url.clone();
     let download_dir = state.config.download_dir.clone();
-    let state_sources = state.sources.clone();
-    tokio::spawn(async move {
-        let mut any_ok = false;
-        for (src_key, src_id) in &sources_to_register {
-            if let Some(s) = state_sources.read().await.get(src_key).cloned() {
-                match s.sync_chapters(&db, &mid, src_id).await {
-                    Ok(_) => { any_ok = true; }
-                    Err(e) => tracing::error!("chapter sync failed for {} ({}): {}", mid, src_key, e),
-                }
-            } else {
-                tracing::warn!("no source impl for '{}' during add_manga", src_key);
-            }
-        }
-        let status = if any_ok { "ready" } else { "error" };
-        let _ = sqlx::query!("UPDATE manga SET sync_status = ? WHERE id = ?", status, mid)
-            .execute(&db)
-            .await;
 
-        if let Some(cdn_url) = cover_url {
+    tokio::spawn(async move {
+        // 1. Download manga cover
+        if let Some(cdn_url) = cover_cdn {
             let ext = cdn_url.split('?').next().unwrap_or("cover")
                 .rsplit('.').next().unwrap_or("jpg");
             let cover_path = Path::new(&download_dir)
                 .join("_covers")
                 .join(format!("{}.{}", mid, ext));
-            match src.fetch_cover(&cdn_url).await {
-                Ok(bytes) => {
-                    if let Some(parent) = cover_path.parent() {
-                        let _ = tokio::fs::create_dir_all(parent).await;
+            match http.get(&cdn_url)
+                .header("User-Agent", "Mozilla/5.0")
+                .send()
+                .await
+                .and_then(|r| r.error_for_status())
+            {
+                Ok(resp) => match resp.bytes().await {
+                    Ok(bytes) => {
+                        if let Some(parent) = cover_path.parent() {
+                            let _ = tokio::fs::create_dir_all(parent).await;
+                        }
+                        if tokio::fs::write(&cover_path, &bytes).await.is_ok() {
+                            let path_str = cover_path.to_string_lossy().to_string();
+                            let _ = sqlx::query!(
+                                "UPDATE manga SET cover_url = ? WHERE id = ?",
+                                path_str, mid
+                            )
+                            .execute(&db)
+                            .await;
+                        }
                     }
-                    if tokio::fs::write(&cover_path, bytes).await.is_ok() {
-                        let path_str = cover_path.to_string_lossy().to_string();
-                        let _ = sqlx::query!(
-                            "UPDATE manga SET cover_url = ? WHERE id = ?",
-                            path_str, mid
-                        )
-                        .execute(&db)
-                        .await;
-                    }
-                }
-                Err(e) => tracing::warn!("cover download failed for {}: {}", mid, e),
+                    Err(e) => tracing::warn!("cover read failed for {}: {}", mid, e),
+                },
+                Err(e) => tracing::warn!("cover fetch failed for {}: {}", mid, e),
             }
         }
+
+        // 2. Match against registered sources by title search
+        let norm = normalize_title(&title);
+        let source_snapshot: Vec<(String, Arc<dyn crate::indexer::Source>)> = {
+            let reg = sources.read().await;
+            reg.iter().map(|(id, src)| (id.clone(), src.clone())).collect()
+        };
+
+        let mut any_ok = false;
+        for (src_key, src) in &source_snapshot {
+            let results = match src.search(&title).await {
+                Ok(r) => r,
+                Err(e) => {
+                    tracing::debug!("source match search '{}' for '{}': {}", src_key, title, e);
+                    continue;
+                }
+            };
+            let best = results.iter().find(|r| normalize_title(&r.title) == norm);
+            let Some(hit) = best else { continue };
+
+            let ms_id = Uuid::new_v4().to_string();
+            let disc = Utc::now().to_rfc3339();
+            if let Err(e) = sqlx::query!(
+                "INSERT OR IGNORE INTO manga_sources (id, manga_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)",
+                ms_id, mid, src_key, hit.id, disc
+            )
+            .execute(&db)
+            .await
+            {
+                tracing::warn!("manga_sources insert error: {}", e);
+                continue;
+            }
+
+            match src.sync_chapters(&db, &mid, &hit.id).await {
+                Ok(_) => { any_ok = true; }
+                Err(e) => tracing::error!("chapter sync failed for {} ({}): {}", mid, src_key, e),
+            }
+        }
+
+        let status = if source_snapshot.is_empty() || any_ok { "ready" } else { "error" };
+        let _ = sqlx::query!("UPDATE manga SET sync_status = ? WHERE id = ?", status, mid)
+            .execute(&db)
+            .await;
     });
 
     let manga = fetch_manga(&state.db, &manga_id).await?;
@@ -941,4 +492,29 @@ pub async fn fetch_manga(db: &sqlx::SqlitePool, id: &str) -> Result<Manga, sqlx:
     )
     .fetch_one(db)
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalize_lowercases() {
+        assert_eq!(normalize_title("My Hero Academia"), "my hero academia");
+    }
+
+    #[test]
+    fn normalize_strips_punctuation() {
+        assert_eq!(normalize_title("One-Piece!"), "one piece");
+    }
+
+    #[test]
+    fn normalize_collapses_whitespace() {
+        assert_eq!(normalize_title("Solo  Leveling"), "solo leveling");
+    }
+
+    #[test]
+    fn normalize_empty() {
+        assert_eq!(normalize_title(""), "");
+    }
 }

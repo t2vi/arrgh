@@ -46,10 +46,11 @@ cargo test
 
 ```
 src/
-├── api/        # Route handlers
-├── db/         # SQLx models
-├── downloader/ # Background download worker
-├── indexer/    # Source scrapers + sync scheduler
-└── media/      # Image serving helpers
-migrations/     # SQLx migration files
+├── api/            # Route handlers
+├── db/             # SQLx models
+├── downloader/     # Background download worker
+├── indexer/        # Source scrapers + sync scheduler
+├── mangaupdates.rs # MangaUpdates API client (search, series detail, latest releases)
+└── media/          # Image serving helpers
+migrations/         # SQLx migration files
 ```
