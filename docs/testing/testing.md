@@ -174,6 +174,15 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Multi-source: add_manga | Creates `manga_sources` row for primary source | ✅ |
 | Multi-source: add_manga | Creates `manga_sources` rows for alternatives | ✅ |
 | Multi-source: add_manga | Deduplicates — same source link returns same manga | ✅ |
+| Queue: explicit filter | Member without `allow_explicit` cannot see explicit queue items | ✅ |
+| Queue: explicit filter | Member with `allow_explicit` sees explicit queue items | ✅ |
+| Queue: explicit filter | Admin sees explicit queue items regardless of `allow_explicit` flag | ✅ |
+| Queue: clear_completed | Member → 403 | ✅ |
+| Queue: clear_completed | Admin → 204 | ✅ |
+| Queue: cancel ownership | Member cannot cancel another user's item → 403 | ✅ |
+| Queue: cancel ownership | Member can cancel their own item → 204 | ✅ |
+| Queue: cancel ownership | Admin can cancel any item → 204 | ✅ |
+| Queue: delete_files | Member remove with `?delete_files=true` returns 204 (param silently ignored) | ✅ |
 
 ---
 

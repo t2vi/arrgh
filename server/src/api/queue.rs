@@ -8,7 +8,7 @@ use axum::{
 use chrono::Utc;
 use serde::Serialize;
 
-use crate::AppState;
+use crate::{auth, AppState};
 use super::ApiResult;
 
 #[derive(Serialize, sqlx::FromRow)]
@@ -35,14 +35,21 @@ pub fn router() -> Router<AppState> {
 
 async fn list_queue(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
 ) -> ApiResult<Json<Vec<QueueItem>>> {
+    let allow_explicit: i64 = if claims.allow_explicit || claims.role == "admin" { 1 } else { 0 };
     let items = sqlx::query_as!(
         QueueItem,
-        r#"SELECT id as "id!", chapter_id as "chapter_id!", manga_title as "manga_title!",
-                  chapter_num as "chapter_num!", status as "status!", error,
-                  pages_downloaded as "pages_downloaded!", pages_total as "pages_total!",
-                  created_at as "created_at!", updated_at as "updated_at!"
-           FROM download_queue ORDER BY created_at DESC LIMIT 100"#
+        r#"SELECT dq.id as "id!", dq.chapter_id as "chapter_id!", dq.manga_title as "manga_title!",
+                  dq.chapter_num as "chapter_num!", dq.status as "status!", dq.error,
+                  dq.pages_downloaded as "pages_downloaded!", dq.pages_total as "pages_total!",
+                  dq.created_at as "created_at!", dq.updated_at as "updated_at!"
+           FROM download_queue dq
+           JOIN chapters c ON c.id = dq.chapter_id
+           JOIN manga m ON m.id = c.manga_id
+           WHERE (m.is_explicit = 0 OR ? = 1)
+           ORDER BY dq.created_at DESC LIMIT 100"#,
+        allow_explicit
     )
     .fetch_all(&state.db)
     .await?;
@@ -52,8 +59,10 @@ async fn list_queue(
 
 async fn list_manga_queue(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(manga_id): Path<String>,
 ) -> ApiResult<Json<Vec<QueueItem>>> {
+    let allow_explicit: i64 = if claims.allow_explicit || claims.role == "admin" { 1 } else { 0 };
     let items = sqlx::query_as!(
         QueueItem,
         r#"SELECT dq.id as "id!", dq.chapter_id as "chapter_id!",
@@ -63,9 +72,10 @@ async fn list_manga_queue(
                   dq.created_at as "created_at!", dq.updated_at as "updated_at!"
            FROM download_queue dq
            JOIN chapters c ON c.id = dq.chapter_id
-           WHERE c.manga_id = ?
+           JOIN manga m ON m.id = c.manga_id
+           WHERE c.manga_id = ? AND (m.is_explicit = 0 OR ? = 1)
            ORDER BY dq.chapter_num ASC"#,
-        manga_id
+        manga_id, allow_explicit
     )
     .fetch_all(&state.db)
     .await?;
@@ -75,7 +85,11 @@ async fn list_manga_queue(
 
 async fn clear_completed(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
 ) -> ApiResult<StatusCode> {
+    if claims.role != "admin" {
+        return Ok(StatusCode::FORBIDDEN);
+    }
     sqlx::query!(
         "DELETE FROM download_queue WHERE status IN ('done', 'cancelled', 'error')"
     )
@@ -86,10 +100,28 @@ async fn clear_completed(
 
 async fn remove_from_queue(
     State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
     Path(id): Path<String>,
 ) -> ApiResult<StatusCode> {
-    let now = Utc::now();
+    let item = sqlx::query!(
+        r#"SELECT queued_by FROM download_queue WHERE id = ?"#,
+        id
+    )
+    .fetch_optional(&state.db)
+    .await?;
 
+    let Some(item) = item else {
+        return Ok(StatusCode::NOT_FOUND);
+    };
+
+    if claims.role != "admin" {
+        let owned = item.queued_by.as_deref() == Some(claims.sub.as_str());
+        if !owned {
+            return Ok(StatusCode::FORBIDDEN);
+        }
+    }
+
+    let now = Utc::now();
     let rows = sqlx::query!(
         "DELETE FROM download_queue WHERE id = ? AND status IN ('pending', 'error', 'done', 'cancelled')",
         id

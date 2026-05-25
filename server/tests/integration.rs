@@ -125,6 +125,35 @@ async fn seed_chapter_source(pool: &sqlx::SqlitePool, chapter_id: &str, source: 
         .execute(pool).await.unwrap();
 }
 
+async fn seed_explicit_manga(pool: &sqlx::SqlitePool, id: &str) {
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "INSERT INTO manga (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+         VALUES (?, 'Explicit Manga', 'unknown', 'ready', 'manga', 1, ?, ?)"
+    )
+    .bind(id).bind(&now).bind(&now)
+    .execute(pool).await.unwrap();
+}
+
+async fn seed_member_user(pool: &sqlx::SqlitePool) {
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "INSERT OR IGNORE INTO users (id, username, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)"
+    )
+    .bind("user-member").bind("member").bind("test-hash").bind("member").bind(&now)
+    .execute(pool).await.unwrap();
+}
+
+async fn seed_queue_item(pool: &sqlx::SqlitePool, queue_id: &str, chapter_id: &str, queued_by: Option<&str>) {
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "INSERT INTO download_queue (id, chapter_id, manga_title, chapter_num, status, created_at, updated_at, queued_by) \
+         VALUES (?, ?, 'Test', 1.0, 'pending', ?, ?, ?)"
+    )
+    .bind(queue_id).bind(chapter_id).bind(&now).bind(&now).bind(queued_by)
+    .execute(pool).await.unwrap();
+}
+
 // ── MockSource ────────────────────────────────────────────────────────────────
 
 struct MockSource { id: String }
@@ -145,6 +174,11 @@ fn admin_token() -> String {
 
 fn member_token() -> String {
     auth::create_token("user-member", "member", "member", false, JWT_SECRET)
+        .expect("token")
+}
+
+fn member_explicit_token() -> String {
+    auth::create_token("user-member", "member", "member", true, JWT_SECRET)
         .expect("token")
 }
 
@@ -202,6 +236,18 @@ async fn req_patch(app: &Router, path: &str, token: Option<&str>, payload: Value
     let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX).await.unwrap();
     let body = serde_json::from_slice(&bytes).unwrap_or(Value::Null);
     (status, body)
+}
+
+async fn req_delete(app: &Router, path: &str, token: Option<&str>) -> StatusCode {
+    let mut req = Request::builder().method("DELETE").uri(path);
+    if let Some(t) = token {
+        req = req.header(header::AUTHORIZATION, format!("Bearer {}", t));
+    }
+    app.clone()
+        .oneshot(req.body(Body::empty()).unwrap())
+        .await
+        .unwrap()
+        .status()
 }
 
 // ── auth ─────────────────────────────────────────────────────────────────────
@@ -527,4 +573,134 @@ async fn add_manga_deduplicates_on_same_source_link() {
     )
     .fetch_one(&state.db).await.unwrap();
     assert_eq!(count, 1, "only one manga_sources row despite two add calls");
+}
+
+// ── queue: explicit filter ────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn queue_hides_explicit_items_from_member_without_permission() {
+    let (app, state) = build_state().await;
+
+    seed_explicit_manga(&state.db, "m-expl-q1").await;
+    seed_chapter(&state.db, "ch-expl-q1", "m-expl-q1", 1.0).await;
+    seed_queue_item(&state.db, "qi-expl-1", "ch-expl-q1", None).await;
+
+    let token = member_token(); // allow_explicit = false
+    let (status, body) = req_get(&app, "/api/queue", Some(&token)).await;
+    assert_eq!(status, StatusCode::OK);
+    let items = body.as_array().unwrap();
+    assert!(items.is_empty(), "member without explicit perm must not see explicit queue items");
+}
+
+#[tokio::test]
+async fn queue_shows_explicit_items_to_member_with_permission() {
+    let (app, state) = build_state().await;
+
+    seed_explicit_manga(&state.db, "m-expl-q2").await;
+    seed_chapter(&state.db, "ch-expl-q2", "m-expl-q2", 1.0).await;
+    seed_queue_item(&state.db, "qi-expl-2", "ch-expl-q2", None).await;
+
+    let token = member_explicit_token(); // allow_explicit = true
+    let (status, body) = req_get(&app, "/api/queue", Some(&token)).await;
+    assert_eq!(status, StatusCode::OK);
+    let items = body.as_array().unwrap();
+    assert_eq!(items.len(), 1, "member with explicit perm sees explicit queue items");
+}
+
+#[tokio::test]
+async fn queue_shows_explicit_items_to_admin() {
+    let (app, state) = build_state().await;
+
+    seed_explicit_manga(&state.db, "m-expl-q3").await;
+    seed_chapter(&state.db, "ch-expl-q3", "m-expl-q3", 1.0).await;
+    seed_queue_item(&state.db, "qi-expl-3", "ch-expl-q3", None).await;
+
+    let token = admin_token();
+    let (status, body) = req_get(&app, "/api/queue", Some(&token)).await;
+    assert_eq!(status, StatusCode::OK);
+    let items = body.as_array().unwrap();
+    assert_eq!(items.len(), 1, "admin sees explicit queue items");
+}
+
+// ── queue: clear_completed admin-only ────────────────────────────────────────
+
+#[tokio::test]
+async fn clear_completed_forbidden_for_member() {
+    let (app, _state) = build_state().await;
+    let token = member_token();
+    let status = req_delete(&app, "/api/queue/completed", Some(&token)).await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "members cannot clear completed queue items");
+}
+
+#[tokio::test]
+async fn clear_completed_allowed_for_admin() {
+    let (app, _state) = build_state().await;
+    let token = admin_token();
+    let status = req_delete(&app, "/api/queue/completed", Some(&token)).await;
+    assert_eq!(status, StatusCode::NO_CONTENT, "admin can clear completed queue items");
+}
+
+// ── queue: cancel ownership ───────────────────────────────────────────────────
+
+#[tokio::test]
+async fn member_cannot_cancel_another_users_queue_item() {
+    let (app, state) = build_state().await;
+    seed_member_user(&state.db).await;
+
+    seed_manga(&state.db, "m-cancel-1").await;
+    seed_chapter(&state.db, "ch-cancel-1", "m-cancel-1", 1.0).await;
+    // queued by admin (ADMIN_UID), not the member
+    seed_queue_item(&state.db, "qi-cancel-1", "ch-cancel-1", Some(ADMIN_UID)).await;
+
+    let token = member_token();
+    let status = req_delete(&app, "/api/queue/qi-cancel-1", Some(&token)).await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "member cannot cancel admin's queue item");
+}
+
+#[tokio::test]
+async fn member_can_cancel_own_queue_item() {
+    let (app, state) = build_state().await;
+    seed_member_user(&state.db).await;
+
+    seed_manga(&state.db, "m-cancel-2").await;
+    seed_chapter(&state.db, "ch-cancel-2", "m-cancel-2", 1.0).await;
+    seed_queue_item(&state.db, "qi-cancel-2", "ch-cancel-2", Some("user-member")).await;
+
+    let token = member_token();
+    let status = req_delete(&app, "/api/queue/qi-cancel-2", Some(&token)).await;
+    assert_eq!(status, StatusCode::NO_CONTENT, "member can cancel their own queue item");
+}
+
+#[tokio::test]
+async fn admin_can_cancel_any_queue_item() {
+    let (app, state) = build_state().await;
+    seed_member_user(&state.db).await;
+
+    seed_manga(&state.db, "m-cancel-3").await;
+    seed_chapter(&state.db, "ch-cancel-3", "m-cancel-3", 1.0).await;
+    seed_queue_item(&state.db, "qi-cancel-3", "ch-cancel-3", Some("user-member")).await;
+
+    let token = admin_token();
+    let status = req_delete(&app, "/api/queue/qi-cancel-3", Some(&token)).await;
+    assert_eq!(status, StatusCode::NO_CONTENT, "admin can cancel any queue item");
+}
+
+// ── remove_manga: delete_files admin-only ─────────────────────────────────────
+
+#[tokio::test]
+async fn member_cannot_delete_files_on_remove() {
+    let (app, state) = build_state().await;
+    seed_member_user(&state.db).await;
+
+    // Seed manga subscribed to by the member user
+    seed_manga(&state.db, "m-rmfiles-1").await;
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query("INSERT INTO user_manga (user_id, manga_id, added_at) VALUES (?, ?, ?)")
+        .bind("user-member").bind("m-rmfiles-1").bind(&now)
+        .execute(&state.db).await.unwrap();
+
+    let token = member_token();
+    // delete_files=true should be silently ignored — member still gets 204
+    let status = req_delete(&app, "/api/manga/m-rmfiles-1?delete_files=true", Some(&token)).await;
+    assert_eq!(status, StatusCode::NO_CONTENT, "member remove returns 204 (delete_files silently ignored)");
 }
