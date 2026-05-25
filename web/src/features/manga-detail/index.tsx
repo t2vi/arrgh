@@ -28,18 +28,20 @@ export default function MangaDetail() {
       {loadingManga ? (
         <div className="h-64 bg-muted animate-pulse shrink-0" />
       ) : manga && (
-        <div className="relative shrink-0 overflow-hidden" style={{ minHeight: 272 }}>
-          <div
-            className="absolute inset-0 scale-110"
-            style={{
-              backgroundImage: `url(${h.coverSrc})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center top',
-              filter: 'blur(28px)',
-              opacity: 0.35,
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/75 to-background" />
+        <div className="relative shrink-0" style={{ minHeight: 272 }}>
+          <div className="absolute inset-0 overflow-hidden">
+            <div
+              className="absolute inset-0 scale-110"
+              style={{
+                backgroundImage: `url(${h.coverSrc})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center top',
+                filter: 'blur(28px)',
+                opacity: 0.35,
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/75 to-background" />
+          </div>
 
           <div className="relative z-10 flex items-end gap-6 px-6 pt-10 pb-6 max-w-5xl mx-auto">
             <CoverImg coverUrl={manga.cover_url} mangaId={manga.id} />
@@ -127,10 +129,14 @@ export default function MangaDetail() {
                       >
                         Remove from library
                       </button>
-                      {h.downloaded > 0 && (
+                      {isAdmin() && (
                         <button
                           className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                          onClick={async () => { await api.removeManga(id!, true); navigate(ROUTES.library) }}
+                          onClick={async () => {
+                            if (!window.confirm('Delete all downloaded files for this manga? This cannot be undone.')) return
+                            await api.removeManga(id!, true)
+                            navigate(ROUTES.library)
+                          }}
                         >
                           Remove + delete files
                         </button>
