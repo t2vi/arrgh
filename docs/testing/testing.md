@@ -127,6 +127,8 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | `sync_chapters` deduplicates chapters by `(manga_id, number)` across two sources | ✅ |
 | `sync_chapters` is idempotent — syncing same source twice produces no duplicate rows | ✅ |
 | `sync_chapters` ON CONFLICT updates `source_id` when plugin returns a new identifier | ✅ |
+| `sync_chapters` returns Ok(0) on 502 (source temporarily unavailable) | ✅ |
+| `sync_chapters` preserves existing chapters when source returns 502 | ✅ |
 
 ### Media API (`src/api/media.rs`) ✅
 
