@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO manga\n               (id, mangaupdates_id, title, description, cover_url, status,\n                author, year, tags, sync_status, content_type, is_explicit, created_at, updated_at)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 13
+    },
+    "nullable": []
+  },
+  "hash": "e0da6253ed229519f5bed6501b69116a74171f7cb915f9463d59e9b278806a09"
+}

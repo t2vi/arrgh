@@ -1,17 +1,7 @@
 import type { AppSettings, Chapter, Manga, PaginatedManga, ReadProgress } from './types'
 
-export interface SourceAlternative {
-  source: string
-  source_name: string
-  id: string
-  cover_url: string | null
-  status: string
-}
-
 export interface SearchResult {
-  id: string
-  source: string
-  source_name: string
+  mangaupdates_id: string
   title: string
   description: string | null
   cover_url: string | null
@@ -21,15 +11,7 @@ export interface SearchResult {
   tags: string | null
   content_type: string
   in_library: boolean
-  library_id?: string
-  alternatives: SourceAlternative[]
-}
-
-export interface MangaDetailResult {
-  description: string | null
-  cover_url: string | null
-  chapter_count: number
-  tags: string | null
+  library_id: string | null
 }
 
 export interface QueueItem {
@@ -276,18 +258,14 @@ export const api = {
   updateProgress: (chapterId: string, currentPage: number, completed: boolean) =>
     put<ReadProgress>(`/api/progress/${chapterId}`, { current_page: currentPage, completed }),
 
-  searchManga: (q: string, contentType?: string) =>
-    get<SearchResult[]>('/api/discover', { q, ...(contentType ? { content_type: contentType } : {}) }),
+  searchManga: (q: string) =>
+    get<SearchResult[]>('/api/discover', { q }),
 
   getTrending: () => get<SearchResult[]>('/api/discover/trending'),
 
-  getDiscoverDetail: (source: string, sourceId: string, title?: string) =>
-    get<MangaDetailResult>('/api/discover/detail', { source, source_id: sourceId, ...(title ? { title } : {}) }),
-
-  addManga: (result: SearchResult & { source_id?: string }) =>
+  addManga: (result: SearchResult) =>
     post<Manga>('/api/discover/add', {
-      source: result.source,
-      source_id: result.source_id ?? result.id,
+      mangaupdates_id: result.mangaupdates_id,
       title: result.title,
       description: result.description,
       cover_url: result.cover_url,
@@ -296,7 +274,6 @@ export const api = {
       year: result.year,
       tags: result.tags,
       content_type: result.content_type,
-      alternatives: result.alternatives ?? [],
     }),
 
   getQueue: () => get<QueueItem[]>('/api/queue'),

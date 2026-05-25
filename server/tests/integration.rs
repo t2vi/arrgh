@@ -13,6 +13,7 @@ use tower::ServiceExt;
 
 use arrgh_server::{AppState, Config, api, auth, logging};
 use arrgh_server::indexer::source::{MangaResult, PageUrl, Source};
+use arrgh_server::mangaupdates::MuSeries;
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -482,34 +483,37 @@ async fn sync_manga_returns_202_when_source_links_exist() {
     assert_eq!(status, StatusCode::ACCEPTED);
 }
 
-// ── add_manga multi-source ────────────────────────────────────────────────────
+// ── add_manga (MangaUpdates-based) ───────────────────────────────────────────
 
 #[tokio::test]
-async fn add_manga_returns_400_when_source_not_in_registry() {
-    let (app, _state) = build_state().await;
+async fn add_manga_creates_manga_with_mangaupdates_id() {
+    let (app, state) = build_state().await;
     let token = admin_token();
 
-    let (status, _) = req_post(&app, "/api/discover/add", Some(&token), json!({
-        "source": "nonexistent-source",
-        "source_id": "m-001",
+    let (status, body) = req_post(&app, "/api/discover/add", Some(&token), json!({
+        "mangaupdates_id": "99001",
         "title": "Test Manga",
         "status": "ongoing",
         "content_type": "manga",
     })).await;
-    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(status, StatusCode::OK);
+
+    let manga_id = body["id"].as_str().unwrap();
+    let stored: Option<String> = sqlx::query_scalar(
+        "SELECT mangaupdates_id FROM manga WHERE id = ?"
+    )
+    .bind(manga_id).fetch_one(&state.db).await.unwrap();
+    assert_eq!(stored.as_deref(), Some("99001"), "mangaupdates_id stored on manga row");
 }
 
 #[tokio::test]
-async fn add_manga_creates_manga_source_link_for_primary() {
+async fn add_manga_subscribes_user_to_manga() {
     let (app, state) = build_state().await;
     let token = admin_token();
 
-    state.sources.write().await.insert("mock".into(), Arc::new(MockSource { id: "mock".into() }));
-
     let (status, body) = req_post(&app, "/api/discover/add", Some(&token), json!({
-        "source": "mock",
-        "source_id": "m-primary",
-        "title": "Test Manga",
+        "mangaupdates_id": "99002",
+        "title": "Sub Manga",
         "status": "ongoing",
         "content_type": "manga",
     })).await;
@@ -517,47 +521,41 @@ async fn add_manga_creates_manga_source_link_for_primary() {
 
     let manga_id = body["id"].as_str().unwrap();
     let exists: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM manga_sources WHERE manga_id = ? AND source = 'mock' AND source_id = 'm-primary'"
+        "SELECT COUNT(*) FROM user_manga WHERE manga_id = ? AND user_id = 'user-test'"
     )
     .bind(manga_id).fetch_one(&state.db).await.unwrap();
-    assert_eq!(exists, 1, "primary source link created in manga_sources");
+    assert_eq!(exists, 1, "user_manga subscription created");
 }
 
 #[tokio::test]
-async fn add_manga_creates_source_links_for_alternatives() {
+async fn add_manga_sets_explicit_flag_from_adult_tag() {
     let (app, state) = build_state().await;
     let token = admin_token();
 
-    state.sources.write().await.insert("mock".into(), Arc::new(MockSource { id: "mock".into() }));
-
     let (status, body) = req_post(&app, "/api/discover/add", Some(&token), json!({
-        "source": "mock",
-        "source_id": "m-primary",
-        "title": "Test Manga",
+        "mangaupdates_id": "99003",
+        "title": "Explicit Manga",
         "status": "ongoing",
         "content_type": "manga",
-        "alternatives": [
-            { "source": "mock-alt", "source_name": "Mock Alt", "id": "m-alt-1", "cover_url": null, "status": "ongoing" }
-        ]
+        "tags": "Action,adult,Comedy",
     })).await;
     assert_eq!(status, StatusCode::OK);
 
     let manga_id = body["id"].as_str().unwrap();
-    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM manga_sources WHERE manga_id = ?")
-        .bind(manga_id).fetch_one(&state.db).await.unwrap();
-    assert_eq!(count, 2, "primary + one alternative stored in manga_sources");
+    let is_explicit: i64 = sqlx::query_scalar(
+        "SELECT is_explicit FROM manga WHERE id = ?"
+    )
+    .bind(manga_id).fetch_one(&state.db).await.unwrap();
+    assert_eq!(is_explicit, 1, "is_explicit = 1 when tags contain 'adult'");
 }
 
 #[tokio::test]
-async fn add_manga_deduplicates_on_same_source_link() {
+async fn add_manga_deduplicates_on_mangaupdates_id() {
     let (app, state) = build_state().await;
     let token = admin_token();
 
-    state.sources.write().await.insert("mock".into(), Arc::new(MockSource { id: "mock".into() }));
-
     let payload = json!({
-        "source": "mock",
-        "source_id": "m-dedup",
+        "mangaupdates_id": "99004",
         "title": "Dedup Manga",
         "status": "ongoing",
         "content_type": "manga",
@@ -566,13 +564,86 @@ async fn add_manga_deduplicates_on_same_source_link() {
     let (_, body1) = req_post(&app, "/api/discover/add", Some(&token), payload.clone()).await;
     let (_, body2) = req_post(&app, "/api/discover/add", Some(&token), payload).await;
 
-    assert_eq!(body1["id"], body2["id"], "same source link → same manga returned");
+    assert_eq!(body1["id"], body2["id"], "same mangaupdates_id → same manga returned");
 
     let count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM manga_sources WHERE source = 'mock' AND source_id = 'm-dedup'"
+        "SELECT COUNT(*) FROM manga WHERE mangaupdates_id = '99004'"
     )
     .fetch_one(&state.db).await.unwrap();
-    assert_eq!(count, 1, "only one manga_sources row despite two add calls");
+    assert_eq!(count, 1, "only one manga row despite two add calls");
+}
+
+// ── trending (cache-backed) ───────────────────────────────────────────────────
+
+#[tokio::test]
+async fn trending_returns_cached_results_without_hitting_network() {
+    let (app, state) = build_state().await;
+    let token = admin_token();
+
+    // Pre-seed cache — no live MU call needed
+    {
+        let mut guard = state.trending_cache.lock().await;
+        *guard = Some((std::time::Instant::now(), vec![
+            MuSeries {
+                series_id: 42,
+                title: "Cached Series".into(),
+                description: Some("desc".into()),
+                cover_url: None,
+                status: "ongoing".into(),
+                content_type: "manga".into(),
+                author: Some("Author A".into()),
+                year: Some(2020),
+                tags: None,
+            },
+        ]));
+    }
+
+    let (status, body) = req_get(&app, "/api/discover/trending", Some(&token)).await;
+    assert_eq!(status, StatusCode::OK);
+    let items = body.as_array().expect("array response");
+    assert_eq!(items.len(), 1);
+    assert_eq!(items[0]["mangaupdates_id"], "42");
+    assert_eq!(items[0]["title"], "Cached Series");
+    assert_eq!(items[0]["in_library"], false);
+}
+
+#[tokio::test]
+async fn trending_marks_in_library_when_manga_already_added() {
+    let (app, state) = build_state().await;
+    let token = admin_token();
+
+    // Add manga via discover so it gets mangaupdates_id = "77"
+    req_post(&app, "/api/discover/add", Some(&token), serde_json::json!({
+        "mangaupdates_id": "77",
+        "title": "Library Series",
+        "status": "ongoing",
+        "content_type": "manga",
+    })).await;
+
+    // Pre-seed cache with same series_id
+    {
+        let mut guard = state.trending_cache.lock().await;
+        *guard = Some((std::time::Instant::now(), vec![
+            MuSeries {
+                series_id: 77,
+                title: "Library Series".into(),
+                description: None,
+                cover_url: None,
+                status: "ongoing".into(),
+                content_type: "manga".into(),
+                author: None,
+                year: None,
+                tags: None,
+            },
+        ]));
+    }
+
+    let (status, body) = req_get(&app, "/api/discover/trending", Some(&token)).await;
+    assert_eq!(status, StatusCode::OK);
+    let items = body.as_array().expect("array response");
+    assert_eq!(items.len(), 1);
+    assert_eq!(items[0]["in_library"], true, "series already in library must be flagged");
+    assert!(items[0]["library_id"].is_string(), "library_id populated");
 }
 
 // ── queue: explicit filter ────────────────────────────────────────────────────

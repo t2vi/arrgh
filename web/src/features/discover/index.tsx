@@ -2,10 +2,8 @@ import { Search, ChevronRight, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ROUTES } from '@/lib/routes'
 import { useDiscover } from './hooks/useDiscover'
 import { SearchRow } from './components/SearchRow'
-import { ContentTypeFilter } from './components/ContentTypeFilter'
 import { SearchSkeleton } from './components/SearchSkeleton'
 
 export default function Discover() {
@@ -27,7 +25,7 @@ export default function Discover() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 className="pl-9"
-                placeholder="Search all sources…"
+                placeholder="Search MangaUpdates…"
                 value={h.query}
                 onChange={(e) => h.setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && h.submit()}
@@ -38,12 +36,6 @@ export default function Discover() {
               {h.isFetching ? '…' : 'Search'}
             </Button>
           </div>
-
-          <ContentTypeFilter
-            value={h.contentType}
-            onChange={h.setContentType}
-            availableTypes={h.availableContentTypes}
-          />
 
           {(h.searchError || h.addError) && (
             <div className="flex items-center gap-2 text-destructive text-sm rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
@@ -57,29 +49,21 @@ export default function Discover() {
           {h.data && !h.isFetching && (
             <div className="space-y-3">
               {h.data.length === 0 && (
-                <p className="text-muted-foreground text-sm">
-                  {h.contentType && !h.availableContentTypes.has(h.contentType)
-                    ? `No sources registered for "${h.contentType}". Add a plugin in Settings → Sources.`
-                    : 'No results.'}
-                </p>
+                <p className="text-muted-foreground text-sm">No results.</p>
               )}
               {h.data.map((r) => {
-                const primaryKey = `${r.source}:${r.id}`
-                const inLibraryNow = r.in_library || h.added.has(primaryKey) ||
-                  r.alternatives.some((a) => h.added.has(`${a.source}:${a.id}`))
-                const libraryId = r.library_id ??
-                  h.added.get(primaryKey) ??
-                  r.alternatives.map((a) => h.added.get(`${a.source}:${a.id}`)).find(Boolean)
+                const inLibraryNow = r.in_library || h.added.has(r.mangaupdates_id)
+                const libraryId = r.library_id ?? h.added.get(r.mangaupdates_id)
 
                 return (
                   <SearchRow
-                    key={primaryKey}
+                    key={r.mangaupdates_id}
                     result={r}
                     inLibrary={inLibraryNow}
-                    addingKey={h.addingKey}
+                    addingId={h.addingId}
                     libraryId={libraryId}
-                    onAdd={(alt) => h.handleAdd(r, alt)}
-                    onView={(id) => h.navigate(ROUTES.manga(id))}
+                    onAdd={() => h.handleAdd(r)}
+                    onView={(id) => h.navigate(`/manga/${id}`)}
                   />
                 )
               })}

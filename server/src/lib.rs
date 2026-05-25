@@ -5,6 +5,7 @@ pub mod db;
 pub mod downloader;
 pub mod indexer;
 pub mod logging;
+pub mod mangaupdates;
 pub mod media;
 
 pub use config::Config;

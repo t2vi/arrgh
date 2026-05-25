@@ -9,10 +9,10 @@ A self-hosted manga manager, downloader, and reader for your home server. Suppor
 
 ## Features
 
-- Browse and search manga from multiple sources simultaneously
-- Chapters aggregated across all known sources — completeness doesn't depend on any one source being up to date
+- **Discover** powered by [MangaUpdates](https://www.mangaupdates.com/) — consistent metadata (titles, covers, descriptions, tags, authors) from a single authoritative source
+- Chapters aggregated across all registered sources — completeness doesn't depend on any one source being up to date
 - Automatic download fallback — if the preferred source fails, arrgh tries the next by priority
-- Source plugin system — add new sources without recompiling or redeploying
+- Source plugin system — add new download sources without recompiling or redeploying
 - Browse and install community plugins from the Settings UI
 - Download chapters to your server for offline reading
 - Real-time download progress with per-chapter percentage bars
@@ -20,7 +20,7 @@ A self-hosted manga manager, downloader, and reader for your home server. Suppor
 - Multi-user support — per-user libraries with shared file storage, per-user reading progress
 - Auto-download new chapters on a schedule
 - Explicit content controls — admin grants access per user
-- Content-type filtering — search only manga, manhwa, manhua, or all at once
+- Shared download queue — visible to all users, members cancel own items, admins cancel any
 
 ---
 
@@ -66,29 +66,25 @@ CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromiu
 
 ### Source Plugin Protocol
 
+Plugins are **download-only backends**. Metadata (search, descriptions, covers, trending) comes from MangaUpdates — plugins only need to serve chapter lists and page content.
+
 Every plugin must implement:
 
 ```
 GET /info                         → { id, name, default_explicit, content_types }
-GET /search?q=<query>             → [MangaResult]
 GET /manga/:source_id/chapters    → [ChapterResult]
 GET /chapter/:source_id/pages     → [image_url]
 ```
 
-Optional endpoints (gracefully skipped if absent):
+Optional:
 
 ```
-GET /trending
-GET /manga/:source_id/meta        → { description, cover_url, chapter_count, tags? }
-GET /cover?url=<encoded_cdn_url>  → raw image bytes
-GET /chapter/:source_id/text      → Markdown string (novel chapters only)
+GET /chapter/:source_id/text      → Markdown string (novel/light-novel chapters only)
 ```
-
-`/cover` lets a plugin fetch CDN images with source-specific headers (e.g. custom `Referer`). When absent, arrgh fetches directly with a browser User-Agent.
-
-`tags` in meta is a comma-separated genre string. Include `"adult"` to signal explicit content — arrgh sets `is_explicit = true` on sync and hides the title from users without Explicit Permission.
 
 Plugins can be written in any language. See `plugins/mangadex/` (API-backed) and `plugins/toonily/` (scraper + CloakBrowser) for reference implementations.
+
+> **Note**: older plugins that implement `/search`, `/trending`, `/meta`, or `/cover` continue to work — arrgh ignores those routes but doesn't reject plugins that expose them.
 
 ---
 

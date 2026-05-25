@@ -110,7 +110,7 @@ export default function Home() {
                       ))
                     : h.trending.map((r, i) => (
                         <TrendingCard
-                          key={r.id}
+                          key={r.mangaupdates_id}
                           result={r}
                           badge={['HOT', 'TOP', 'NEW', '🔥', '📈', '⭐', '💥', '🎯'][i] ?? '•'}
                           onClick={() => h.setSelectedTrending(r)}

@@ -4,6 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [v0.0.11](docs/releases/v0.0.11.md) | 2026-05-25 | MangaUpdates as metadata authority, Discover rewrite, queue ownership, manga detail dropdown fixes |
 | [v0.0.10](docs/releases/v0.0.10.md) | 2026-05-25 | Comick 502 fixes, corrupt cover fix, chapter lookup fix, FK race fix |
 | [v0.0.9](docs/releases/v0.0.9.md) | 2026-05-21 | Multi-source pool, chapter aggregation, download fallback |
 | [v0.0.8](docs/releases/v0.0.8.md) | 2026-05-21 | Log viewer, quieter docker logs, plugin probe fix |

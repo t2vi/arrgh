@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO title_meta (title_key, cover_cdn_url, fetched_at)\n           VALUES (?, ?, ?)\n           ON CONFLICT(title_key) DO UPDATE SET\n             cover_cdn_url = COALESCE(title_meta.cover_cdn_url, excluded.cover_cdn_url),\n             fetched_at    = excluded.fetched_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "2e069785ba83ae18a8c64ac3fc2c0822735f9c41e66b6ad7c16b3a16bfd66068"
+}
