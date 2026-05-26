@@ -9,12 +9,12 @@ use chrono::Utc;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::{auth, db::Chapter, indexer::local::verify_manga_downloads, AppState};
+use crate::{auth, db::Chapter, indexer::local::verify_title_downloads, AppState};
 use super::ApiResult;
 
 pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/chapters/manga/{manga_id}", get(list_chapters))
+        .route("/chapters/title/{title_id}", get(list_chapters))
         .route("/chapters/{id}", get(get_chapter))
         .route("/chapters/{id}/text", get(get_chapter_text))
         .route("/chapters/{id}/download", post(queue_download))
@@ -23,7 +23,7 @@ pub fn router() -> Router<AppState> {
 async fn list_chapters(
     State(state): State<AppState>,
     axum::Extension(claims): axum::Extension<auth::Claims>,
-    Path(manga_id): Path<String>,
+    Path(title_id): Path<String>,
 ) -> ApiResult<Json<Vec<Chapter>>> {
     let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
 
@@ -31,7 +31,7 @@ async fn list_chapters(
         Chapter,
         r#"SELECT
                c.id as "id!",
-               c.manga_id as "manga_id!",
+               c.title_id as "title_id!",
                c.title,
                c.number,
                c.volume,
@@ -42,20 +42,20 @@ async fn list_chapters(
                c.chapter_format as "chapter_format!",
                c.created_at as "created_at: _"
            FROM chapters c
-           JOIN manga m ON c.manga_id = m.id
-           WHERE c.manga_id = ? AND (m.is_explicit = 0 OR ? = 1)
+           JOIN titles m ON c.title_id = m.id
+           WHERE c.title_id = ? AND (m.is_explicit = 0 OR ? = 1)
            ORDER BY c.number ASC"#,
-        manga_id, allow_explicit
+        title_id, allow_explicit
     )
     .fetch_all(&state.db)
     .await?;
 
     // Background: reset any stale downloaded=1 entries whose files are gone
     let db = state.db.clone();
-    let mid = manga_id.clone();
+    let tid = title_id.clone();
     tokio::spawn(async move {
-        if let Err(e) = verify_manga_downloads(&db, &mid).await {
-            tracing::warn!("verify_manga_downloads error for {}: {}", mid, e);
+        if let Err(e) = verify_title_downloads(&db, &tid).await {
+            tracing::warn!("verify_title_downloads error for {}: {}", tid, e);
         }
     });
 
@@ -70,7 +70,7 @@ async fn queue_download(
     let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
     let row = sqlx::query!(
         r#"SELECT c.id, c.number, m.title as manga_title
-           FROM chapters c JOIN manga m ON c.manga_id = m.id
+           FROM chapters c JOIN titles m ON c.title_id = m.id
            WHERE c.id = ? AND c.downloaded = 0
              AND EXISTS(SELECT 1 FROM chapter_sources cs WHERE cs.chapter_id = c.id)
              AND (m.is_explicit = 0 OR ? = 1)"#,
@@ -113,7 +113,7 @@ async fn get_chapter(
         Chapter,
         r#"SELECT
                c.id as "id!",
-               c.manga_id as "manga_id!",
+               c.title_id as "title_id!",
                c.title,
                c.number,
                c.volume,
@@ -124,7 +124,7 @@ async fn get_chapter(
                c.chapter_format as "chapter_format!",
                c.created_at as "created_at: _"
            FROM chapters c
-           JOIN manga m ON c.manga_id = m.id
+           JOIN titles m ON c.title_id = m.id
            WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)"#,
         id, allow_explicit
     )
@@ -145,7 +145,7 @@ async fn get_chapter_text(
     let allow_explicit: i64 = if claims.allow_explicit { 1 } else { 0 };
     let row = sqlx::query!(
         r#"SELECT c.local_path, c.downloaded, c.chapter_format as "chapter_format!"
-           FROM chapters c JOIN manga m ON c.manga_id = m.id
+           FROM chapters c JOIN titles m ON c.title_id = m.id
            WHERE c.id = ? AND (m.is_explicit = 0 OR ? = 1)"#,
         id, allow_explicit
     )

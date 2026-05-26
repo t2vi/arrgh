@@ -5,11 +5,11 @@ use std::path::Path;
 use tokio::fs;
 use uuid::Uuid;
 
-pub async fn verify_manga_downloads(db: &SqlitePool, manga_id: &str) -> Result<()> {
+pub async fn verify_title_downloads(db: &SqlitePool, title_id: &str) -> Result<()> {
     let rows = sqlx::query!(
         r#"SELECT id as "id!", local_path FROM chapters
-           WHERE manga_id = ? AND downloaded = 1 AND local_path IS NOT NULL"#,
-        manga_id
+           WHERE title_id = ? AND downloaded = 1 AND local_path IS NOT NULL"#,
+        title_id
     )
     .fetch_all(db)
     .await?;
@@ -85,7 +85,7 @@ async fn path_has_content(path: &str) -> bool {
 use super::source::sanitize_title;
 
 pub async fn scan(db: &SqlitePool, download_dir: &str) -> Result<()> {
-    tracing::info!("scanning local manga dir: {}", download_dir);
+    tracing::info!("scanning local title dir: {}", download_dir);
 
     let root = Path::new(download_dir);
     if !root.exists() {
@@ -97,7 +97,7 @@ pub async fn scan(db: &SqlitePool, download_dir: &str) -> Result<()> {
     while let Some(entry) = entries.next_entry().await? {
         let path = entry.path();
         let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        // Skip internal directories (e.g. _downloads for MangaDex chapters)
+        // Skip internal directories
         if name.starts_with('_') {
             continue;
         }
@@ -126,7 +126,7 @@ async fn index_download_dir(db: &SqlitePool, path: &Path) -> Result<()> {
 
     let local_path = path.to_string_lossy().to_string();
 
-    upsert_manga(db, &title, &local_path).await?;
+    upsert_title(db, &title, &local_path).await?;
     Ok(())
 }
 
@@ -138,21 +138,21 @@ async fn index_archive(db: &SqlitePool, path: &Path) -> Result<()> {
         .to_string();
 
     let local_path = path.to_string_lossy().to_string();
-    upsert_manga(db, &title, &local_path).await?;
+    upsert_title(db, &title, &local_path).await?;
     Ok(())
 }
 
 /// Scan `{download_dir}/_{content_type}/` for CBZ/MD files not registered in the DB as downloaded.
 pub async fn scan_downloads(db: &SqlitePool, download_dir: &str) -> Result<()> {
-    let mangas = sqlx::query!(
-        "SELECT id, title, content_type FROM manga WHERE EXISTS (SELECT 1 FROM manga_sources WHERE manga_id = manga.id)"
+    let titles = sqlx::query!(
+        "SELECT id, title, content_type FROM titles WHERE EXISTS (SELECT 1 FROM title_sources WHERE title_id = titles.id)"
     )
     .fetch_all(db)
     .await?;
 
-    for manga in mangas {
-        let safe = sanitize_title(&manga.title);
-        let content_type = manga.content_type.as_str();
+    for title in titles {
+        let safe = sanitize_title(&title.title);
+        let content_type = title.content_type.as_str();
 
         let candidate_dirs = [
             Path::new(download_dir).join(format!("_{content_type}")).join(&safe),
@@ -187,8 +187,8 @@ pub async fn scan_downloads(db: &SqlitePool, download_dir: &str) -> Result<()> {
                 };
 
                 let chapter = sqlx::query!(
-                    "SELECT id FROM chapters WHERE manga_id = ? AND number = ? AND downloaded = 0",
-                    manga.id, chapter_num
+                    "SELECT id FROM chapters WHERE title_id = ? AND number = ? AND downloaded = 0",
+                    title.id, chapter_num
                 )
                 .fetch_optional(db)
                 .await?;
@@ -242,10 +242,10 @@ fn count_cbz_pages(path: &str) -> Result<usize> {
     Ok(count)
 }
 
-async fn upsert_manga(db: &SqlitePool, title: &str, local_path: &str) -> Result<()> {
+async fn upsert_title(db: &SqlitePool, title: &str, local_path: &str) -> Result<()> {
     let now = Utc::now();
     let existing = sqlx::query!(
-        "SELECT id FROM manga WHERE local_path = ?",
+        "SELECT id FROM titles WHERE local_path = ?",
         local_path
     )
     .fetch_optional(db)
@@ -254,13 +254,13 @@ async fn upsert_manga(db: &SqlitePool, title: &str, local_path: &str) -> Result<
     if existing.is_none() {
         let id = Uuid::new_v4().to_string();
         sqlx::query!(
-            r#"INSERT INTO manga (id, title, status, local_path, created_at, updated_at)
+            r#"INSERT INTO titles (id, title, status, local_path, created_at, updated_at)
                VALUES (?, ?, 'unknown', ?, ?, ?)"#,
             id, title, local_path, now, now
         )
         .execute(db)
         .await?;
-        tracing::info!("indexed new manga: {}", title);
+        tracing::info!("indexed new title: {}", title);
     }
 
     Ok(())

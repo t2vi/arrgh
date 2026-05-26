@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Loader2, Trash2 } from 'lucide-react'
 import { api } from '@/api'
-import type { Manga } from '@/types'
+import type { Title } from '@/types'
 import { cn } from '@/lib/utils'
 import { ContentTypePill } from '@/components/ContentTypePill'
 
 export function MangaCard({
   manga, onClick, onRemove, isRemoving,
 }: {
-  manga: Manga
+  manga: Title
   onClick: () => void
   onRemove: (deleteFiles: boolean) => void
   isRemoving: boolean

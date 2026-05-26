@@ -29,7 +29,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/queue", get(list_queue))
         .route("/queue/completed", delete(clear_completed))
-        .route("/queue/manga/{manga_id}", get(list_manga_queue))
+        .route("/queue/title/{title_id}", get(list_title_queue))
         .route("/queue/{id}", delete(remove_from_queue))
 }
 
@@ -46,7 +46,7 @@ async fn list_queue(
                   dq.created_at as "created_at!", dq.updated_at as "updated_at!"
            FROM download_queue dq
            JOIN chapters c ON c.id = dq.chapter_id
-           JOIN manga m ON m.id = c.manga_id
+           JOIN titles m ON m.id = c.title_id
            WHERE (m.is_explicit = 0 OR ? = 1)
            ORDER BY dq.created_at DESC LIMIT 100"#,
         allow_explicit
@@ -57,10 +57,10 @@ async fn list_queue(
     Ok(Json(items))
 }
 
-async fn list_manga_queue(
+async fn list_title_queue(
     State(state): State<AppState>,
     axum::Extension(claims): axum::Extension<auth::Claims>,
-    Path(manga_id): Path<String>,
+    Path(title_id): Path<String>,
 ) -> ApiResult<Json<Vec<QueueItem>>> {
     let allow_explicit: i64 = if claims.allow_explicit || claims.role == "admin" { 1 } else { 0 };
     let items = sqlx::query_as!(
@@ -72,10 +72,10 @@ async fn list_manga_queue(
                   dq.created_at as "created_at!", dq.updated_at as "updated_at!"
            FROM download_queue dq
            JOIN chapters c ON c.id = dq.chapter_id
-           JOIN manga m ON m.id = c.manga_id
-           WHERE c.manga_id = ? AND (m.is_explicit = 0 OR ? = 1)
+           JOIN titles m ON m.id = c.title_id
+           WHERE c.title_id = ? AND (m.is_explicit = 0 OR ? = 1)
            ORDER BY dq.chapter_num ASC"#,
-        manga_id, allow_explicit
+        title_id, allow_explicit
     )
     .fetch_all(&state.db)
     .await?;

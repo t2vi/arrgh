@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT source as \"source!\", source_id as \"source_id!\" FROM title_sources WHERE title_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "source!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "source_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "21c89c39e8c0de58ed504f05e859f86037f37ffbe08ac1145c1f4702492f1554"
+}

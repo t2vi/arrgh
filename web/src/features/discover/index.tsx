@@ -63,7 +63,7 @@ export default function Discover() {
                     addingId={h.addingId}
                     libraryId={libraryId}
                     onAdd={() => h.handleAdd(r)}
-                    onView={(id) => h.navigate(`/manga/${id}`)}
+                    onView={(id) => h.navigate(`/title/${id}`)}
                   />
                 )
               })}

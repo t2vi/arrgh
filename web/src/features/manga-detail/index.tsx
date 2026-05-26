@@ -125,7 +125,7 @@ export default function MangaDetail() {
                     <div className="absolute right-0 top-full mt-1 w-56 rounded-lg border border-border bg-card shadow-lg z-50 overflow-hidden">
                       <button
                         className="w-full text-left px-4 py-2.5 text-sm hover:bg-accent/60 transition-colors"
-                        onClick={async () => { await api.removeManga(id!, false); navigate(ROUTES.library) }}
+                        onClick={async () => { await api.removeTitle(id!, false); navigate(ROUTES.library) }}
                       >
                         Remove from library
                       </button>
@@ -134,7 +134,7 @@ export default function MangaDetail() {
                           className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                           onClick={async () => {
                             if (!window.confirm('Delete all downloaded files for this manga? This cannot be undone.')) return
-                            await api.removeManga(id!, true)
+                            await api.removeTitle(id!, true)
                             navigate(ROUTES.library)
                           }}
                         >

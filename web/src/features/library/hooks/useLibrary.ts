@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { api } from '@/api'
-import type { PaginatedManga } from '@/types'
+import type { PaginatedTitle } from '@/types'
 
 export interface LibraryHandle {
   search: string
   setSearch: (v: string) => void
   page: number
   setPage: (fn: (p: number) => number) => void
-  data: PaginatedManga | undefined
+  data: PaginatedTitle | undefined
   loading: boolean
   removingId: string | null
   totalPages: number
@@ -17,13 +17,13 @@ export interface LibraryHandle {
 export function useLibrary(): LibraryHandle {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [data, setData] = useState<PaginatedManga | undefined>()
+  const [data, setData] = useState<PaginatedTitle | undefined>()
   const [loading, setLoading] = useState(true)
   const [removingId, setRemovingId] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const fetchData = useCallback(() => {
-    api.listManga(page, search || undefined)
+    api.listTitles(page, search || undefined)
       .then(setData)
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -38,7 +38,7 @@ export function useLibrary(): LibraryHandle {
     if (intervalRef.current) clearInterval(intervalRef.current)
     intervalRef.current = setInterval(() => {
       if (data?.items.some((m) => m.sync_status === 'syncing')) {
-        api.listManga(page, search || undefined).then(setData).catch(() => {})
+        api.listTitles(page, search || undefined).then(setData).catch(() => {})
       }
     }, 2000)
     return () => {
@@ -49,7 +49,7 @@ export function useLibrary(): LibraryHandle {
   async function handleRemove(id: string, deleteFiles: boolean) {
     setRemovingId(id)
     try {
-      await api.removeManga(id, deleteFiles)
+      await api.removeTitle(id, deleteFiles)
       fetchData()
     } catch {
       // ignore

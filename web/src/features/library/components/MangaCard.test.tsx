@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MangaCard } from './MangaCard'
-import type { Manga } from '@/types'
+import type { Title } from '@/types'
 
 vi.mock('@/api', () => ({
   api: { coverUrl: (id: string) => `/covers/${id}` },
 }))
 
-function makeManga(overrides: Partial<Manga> = {}): Manga {
+function makeManga(overrides: Partial<Title> = {}): Title {
   return {
     id: 'm1',
     title: 'Vinland Saga',
@@ -17,8 +17,7 @@ function makeManga(overrides: Partial<Manga> = {}): Manga {
     status: 'ongoing',
     content_type: 'manga',
     sync_status: 'ready',
-    source: 'mangadex',
-    source_id: 'src1',
+    is_local: false,
     local_path: null,
     year: null,
     tags: null,

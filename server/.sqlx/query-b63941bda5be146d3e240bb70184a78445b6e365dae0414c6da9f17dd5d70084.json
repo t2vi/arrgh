@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!\" FROM titles m WHERE m.id = ? AND EXISTS (SELECT 1 FROM user_titles ut WHERE ut.title_id = m.id AND ut.user_id = ?)",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "b63941bda5be146d3e240bb70184a78445b6e365dae0414c6da9f17dd5d70084"
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api, getUsername } from '@/api'
-import type { Manga } from '@/types'
+import type { Title } from '@/types'
 
 function greeting(): string {
   const hour = new Date().getHours()
@@ -28,7 +28,7 @@ export function GreetingJumbotron({
 }: {
   typeCounts: Record<string, number>
   totalRead: number
-  coverManga: Pick<Manga, 'id' | 'cover_url'> | null
+  coverManga: Pick<Title, 'id' | 'cover_url'> | null
 }) {
   const totalManga = Object.values(typeCounts).reduce((a, b) => a + b, 0)
   const [failed, setFailed] = useState(false)

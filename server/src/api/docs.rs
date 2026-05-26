@@ -38,44 +38,44 @@ async fn openapi_spec() -> Json<Value> {
       },
       "servers": [{ "url": "http://localhost:3000" }],
       "paths": {
-        "/api/manga": {
+        "/api/titles": {
           "get": {
             "tags": ["Library"],
-            "summary": "List manga",
+            "summary": "List titles",
             "parameters": [
               { "name": "page",   "in": "query", "schema": { "type": "integer" } },
               { "name": "search", "in": "query", "schema": { "type": "string"  } }
             ],
-            "responses": { "200": { "description": "Paginated manga list" } }
+            "responses": { "200": { "description": "Paginated title list" } }
           }
         },
-        "/api/manga/{id}": {
+        "/api/titles/{id}": {
           "get": {
             "tags": ["Library"],
-            "summary": "Get manga by ID",
+            "summary": "Get title by ID",
             "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-            "responses": { "200": { "description": "Manga object" }, "404": { "description": "Not found" } }
+            "responses": { "200": { "description": "Title object" }, "404": { "description": "Not found" } }
           },
           "delete": {
             "tags": ["Library"],
-            "summary": "Remove manga from library",
+            "summary": "Remove title from library",
             "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
             "responses": { "204": { "description": "Deleted" } }
           }
         },
-        "/api/manga/{id}/sync": {
+        "/api/titles/{id}/sync": {
           "post": {
             "tags": ["Library"],
-            "summary": "Sync chapters from MangaDex",
+            "summary": "Sync chapters for a title",
             "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
             "responses": { "202": { "description": "Sync started" } }
           }
         },
-        "/api/chapters/manga/{manga_id}": {
+        "/api/chapters/title/{title_id}": {
           "get": {
             "tags": ["Chapters"],
-            "summary": "List chapters for a manga",
-            "parameters": [{ "name": "manga_id", "in": "path", "required": true, "schema": { "type": "string" } }],
+            "summary": "List chapters for a title",
+            "parameters": [{ "name": "title_id", "in": "path", "required": true, "schema": { "type": "string" } }],
             "responses": { "200": { "description": "Chapter list" } }
           }
         },
@@ -94,11 +94,11 @@ async fn openapi_spec() -> Json<Value> {
             "responses": { "200": { "description": "Queue items" } }
           }
         },
-        "/api/queue/manga/{manga_id}": {
+        "/api/queue/title/{title_id}": {
           "get": {
             "tags": ["Queue"],
-            "summary": "Queue items for a specific manga",
-            "parameters": [{ "name": "manga_id", "in": "path", "required": true, "schema": { "type": "string" } }],
+            "summary": "Queue items for a specific title",
+            "parameters": [{ "name": "title_id", "in": "path", "required": true, "schema": { "type": "string" } }],
             "responses": { "200": { "description": "Queue items" } }
           }
         },
@@ -134,18 +134,18 @@ async fn openapi_spec() -> Json<Value> {
             "responses": { "200": { "description": "Updated progress" } }
           }
         },
-        "/api/progress/manga/{manga_id}": {
+        "/api/progress/title/{title_id}": {
           "get": {
             "tags": ["Progress"],
-            "summary": "Get all read progress for a manga",
-            "parameters": [{ "name": "manga_id", "in": "path", "required": true, "schema": { "type": "string" } }],
+            "summary": "Get all read progress for a title",
+            "parameters": [{ "name": "title_id", "in": "path", "required": true, "schema": { "type": "string" } }],
             "responses": { "200": { "description": "Progress list" } }
           }
         },
         "/api/discover": {
           "get": {
             "tags": ["Discover"],
-            "summary": "Search MangaDex",
+            "summary": "Search MangaUpdates",
             "parameters": [{ "name": "q", "in": "query", "required": true, "schema": { "type": "string" } }],
             "responses": { "200": { "description": "Search results" } }
           }
@@ -153,8 +153,8 @@ async fn openapi_spec() -> Json<Value> {
         "/api/discover/add": {
           "post": {
             "tags": ["Discover"],
-            "summary": "Add manga to library from MangaDex",
-            "responses": { "200": { "description": "Added manga" } }
+            "summary": "Add title to library from MangaUpdates",
+            "responses": { "200": { "description": "Added title" } }
           }
         },
         "/api/media/page/{chapter_id}/{page}": {
@@ -168,11 +168,11 @@ async fn openapi_spec() -> Json<Value> {
             "responses": { "200": { "description": "Image" }, "307": { "description": "Redirect to CDN" } }
           }
         },
-        "/api/media/cover/{manga_id}": {
+        "/api/media/cover/{title_id}": {
           "get": {
             "tags": ["Media"],
             "summary": "Get cover image (local file or 307 redirect)",
-            "parameters": [{ "name": "manga_id", "in": "path", "required": true, "schema": { "type": "string" } }],
+            "parameters": [{ "name": "title_id", "in": "path", "required": true, "schema": { "type": "string" } }],
             "responses": { "200": { "description": "Cover image" }, "307": { "description": "Redirect" } }
           }
         },

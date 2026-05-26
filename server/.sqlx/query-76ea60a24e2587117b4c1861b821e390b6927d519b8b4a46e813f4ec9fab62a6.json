@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE titles SET sync_status = 'syncing' WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "76ea60a24e2587117b4c1861b821e390b6927d519b8b4a46e813f4ec9fab62a6"
+}

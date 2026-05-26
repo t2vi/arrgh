@@ -3,8 +3,8 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 vi.mock('@/api', () => ({
   api: {
-    listManga: vi.fn(),
-    removeManga: vi.fn(),
+    listTitles: vi.fn(),
+    removeTitle: vi.fn(),
   },
 }))
 
@@ -20,8 +20,8 @@ const mockPage = {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(api.listManga).mockResolvedValue(mockPage as never)
-  vi.mocked(api.removeManga).mockResolvedValue(undefined as never)
+  vi.mocked(api.listTitles).mockResolvedValue(mockPage as never)
+  vi.mocked(api.removeTitle).mockResolvedValue(undefined as never)
 })
 
 afterEach(() => {
@@ -32,12 +32,12 @@ describe('useLibrary', () => {
   it('fetches on mount and sets data', async () => {
     const { result } = renderHook(() => useLibrary())
     await waitFor(() => expect(result.current.loading).toBe(false))
-    expect(api.listManga).toHaveBeenCalledTimes(1)
+    expect(api.listTitles).toHaveBeenCalledTimes(1)
     expect(result.current.data?.items).toHaveLength(1)
   })
 
   it('computes totalPages correctly', async () => {
-    vi.mocked(api.listManga).mockResolvedValue({ items: [], total: 45, page: 1, limit: 20 } as never)
+    vi.mocked(api.listTitles).mockResolvedValue({ items: [], total: 45, page: 1, limit: 20 } as never)
     const { result } = renderHook(() => useLibrary())
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.totalPages).toBe(3)
@@ -47,13 +47,13 @@ describe('useLibrary', () => {
     const { result } = renderHook(() => useLibrary())
     await waitFor(() => expect(result.current.loading).toBe(false))
     await act(() => result.current.handleRemove('m1', false))
-    expect(api.removeManga).toHaveBeenCalledWith('m1', false)
-    expect(api.listManga).toHaveBeenCalledTimes(2)
+    expect(api.removeTitle).toHaveBeenCalledWith('m1', false)
+    expect(api.listTitles).toHaveBeenCalledTimes(2)
   })
 
   it('sets removingId during removal then clears it', async () => {
     let resolve!: () => void
-    vi.mocked(api.removeManga).mockReturnValue(new Promise<void>((r) => { resolve = r }) as never)
+    vi.mocked(api.removeTitle).mockReturnValue(new Promise<void>((r) => { resolve = r }) as never)
     const { result } = renderHook(() => useLibrary())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
@@ -70,17 +70,17 @@ describe('useLibrary', () => {
       items: [{ id: 'm1', title: 'X', sync_status: 'syncing' }],
       total: 1, page: 1, limit: 20,
     }
-    vi.mocked(api.listManga).mockResolvedValue(syncingPage as never)
+    vi.mocked(api.listTitles).mockResolvedValue(syncingPage as never)
 
     const { result } = renderHook(() => useLibrary())
     // Flush the initial fetch promise
     await act(async () => { await Promise.resolve() })
-    const callsBefore = (api.listManga as ReturnType<typeof vi.fn>).mock.calls.length
+    const callsBefore = (api.listTitles as ReturnType<typeof vi.fn>).mock.calls.length
 
     await act(async () => {
       vi.advanceTimersByTime(2000)
       await Promise.resolve()
     })
-    expect((api.listManga as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(callsBefore)
+    expect((api.listTitles as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(callsBefore)
   })
 })

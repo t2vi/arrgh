@@ -1,4 +1,4 @@
-export interface Manga {
+export interface Title {
   id: string
   title: string
   description: string | null
@@ -23,8 +23,8 @@ export interface Manga {
   chapters_read?: number
 }
 
-export interface PaginatedManga {
-  items: Manga[]
+export interface PaginatedTitle {
+  items: Title[]
   total: number
   page: number
   limit: number
@@ -32,7 +32,7 @@ export interface PaginatedManga {
 
 export interface Chapter {
   id: string
-  manga_id: string
+  title_id: string
   title: string | null
   number: number
   volume: number | null

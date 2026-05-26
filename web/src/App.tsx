@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
 import Home from './features/home'
 import Library from './features/library'
@@ -12,6 +12,11 @@ import Login from './features/login'
 import Setup from './features/setup'
 import { api, getToken, clearToken } from './api'
 import { ROUTES } from './lib/routes'
+
+function MangaLegacyRedirect() {
+  const { id } = useParams<{ id: string }>()
+  return <Navigate to={`/title/${id}`} replace />
+}
 
 type AuthState = 'checking' | 'needs_setup' | 'needs_login' | 'authenticated'
 
@@ -77,7 +82,8 @@ export default function App() {
       }>
         <Route path={ROUTES.home}     element={<Home />} />
         <Route path={ROUTES.library}  element={<Library />} />
-        <Route path="/manga/:id"      element={<MangaDetail />} />
+        <Route path="/title/:id"      element={<MangaDetail />} />
+        <Route path="/manga/:id"      element={<MangaLegacyRedirect />} />
         <Route path={ROUTES.settings} element={<Settings />} />
         <Route path={ROUTES.discover} element={<Discover />} />
         <Route path={ROUTES.queue}    element={<Queue />} />

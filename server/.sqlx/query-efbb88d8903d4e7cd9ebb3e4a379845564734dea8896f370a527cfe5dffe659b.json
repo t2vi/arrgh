@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT OR IGNORE INTO title_sources (id, title_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "efbb88d8903d4e7cd9ebb3e4a379845564734dea8896f370a527cfe5dffe659b"
+}

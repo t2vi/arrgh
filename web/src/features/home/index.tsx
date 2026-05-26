@@ -43,7 +43,7 @@ export default function Home() {
                       key={item.chapter_id}
                       item={item}
                       onPlay={() => navigate(ROUTES.reader(item.chapter_id))}
-                      onDetail={() => navigate(ROUTES.manga(item.manga_id))}
+                      onDetail={() => navigate(ROUTES.title(item.title_id))}
                     />
                   ))}
                 </div>
@@ -62,7 +62,7 @@ export default function Home() {
               </div>
               <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {h.items.slice(0, 10).map((m) => (
-                  <LibraryCoverCard key={m.id} manga={m} onClick={() => navigate(ROUTES.manga(m.id))} />
+                  <LibraryCoverCard key={m.id} manga={m} onClick={() => navigate(ROUTES.title(m.id))} />
                 ))}
               </div>
             </section>
@@ -79,7 +79,7 @@ export default function Home() {
                       key={r.chapter_id}
                       item={r}
                       onClick={() => navigate(ROUTES.reader(r.chapter_id))}
-                      onMangaClick={() => navigate(ROUTES.manga(r.manga_id))}
+                      onMangaClick={() => navigate(ROUTES.title(r.manga_id))}
                     />
                   ))}
                 </div>
@@ -91,7 +91,7 @@ export default function Home() {
                 <h2 className="text-xl font-bold">Recently Updated</h2>
                 <div className="grid grid-cols-3 gap-3">
                   {h.recentUp.map((m) => (
-                    <RecentCard key={m.id} manga={m} onClick={() => navigate(ROUTES.manga(m.id))} />
+                    <RecentCard key={m.id} manga={m} onClick={() => navigate(ROUTES.title(m.id))} />
                   ))}
                 </div>
               </section>
@@ -136,7 +136,7 @@ export default function Home() {
         <TrendingModal
           result={h.selectedTrending}
           onClose={() => h.setSelectedTrending(null)}
-          onViewDetails={(id) => { h.setSelectedTrending(null); navigate(ROUTES.manga(id)) }}
+          onViewDetails={(id) => { h.setSelectedTrending(null); navigate(ROUTES.title(id)) }}
         />
       )}
     </>

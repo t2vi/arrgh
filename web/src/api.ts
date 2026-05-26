@@ -1,4 +1,4 @@
-import type { AppSettings, Chapter, Manga, PaginatedManga, ReadProgress } from './types'
+import type { AppSettings, Chapter, Title, PaginatedTitle, ReadProgress } from './types'
 
 export interface SearchResult {
   mangaupdates_id: string
@@ -28,7 +28,7 @@ export interface QueueItem {
 }
 
 export interface ContinueItem {
-  manga_id: string
+  title_id: string
   manga_title: string
   cover_url: string | null
   chapter_id: string
@@ -235,26 +235,26 @@ export const api = {
     patch<void>(`/api/users/${id}`, body),
   deleteUser: (id: string) => del(`/api/users/${id}`),
 
-  getNewReleases: () => get<NewReleaseItem[]>('/api/manga/new-releases'),
+  getNewReleases: () => get<NewReleaseItem[]>('/api/titles/new-releases'),
   getContinueReading: () => get<ContinueItem[]>('/api/progress/continue'),
 
-  // Manga
-  listManga: (page = 1, search?: string) =>
-    get<PaginatedManga>('/api/manga', {
+  // Titles
+  listTitles: (page = 1, search?: string) =>
+    get<PaginatedTitle>('/api/titles', {
       page: String(page),
       ...(search ? { search } : {}),
     }),
 
-  getManga: (id: string) => get<Manga>(`/api/manga/${id}`),
-  syncManga: (id: string) => post<void>(`/api/manga/${id}/sync`),
+  getTitle: (id: string) => get<Title>(`/api/titles/${id}`),
+  syncTitle: (id: string) => post<void>(`/api/titles/${id}/sync`),
 
-  listChapters: (mangaId: string) => get<Chapter[]>(`/api/chapters/manga/${mangaId}`),
+  listChapters: (titleId: string) => get<Chapter[]>(`/api/chapters/title/${titleId}`),
   getChapter: (id: string) => get<Chapter>(`/api/chapters/${id}`),
   getChapterText: (id: string) => get<{ content: string }>(`/api/chapters/${id}/text`),
   downloadChapter: (id: string) => post<void>(`/api/chapters/${id}/download`),
 
   getProgress: (chapterId: string) => get<ReadProgress>(`/api/progress/${chapterId}`),
-  getMangaProgress: (mangaId: string) => get<ReadProgress[]>(`/api/progress/manga/${mangaId}`),
+  getTitleProgress: (titleId: string) => get<ReadProgress[]>(`/api/progress/title/${titleId}`),
   updateProgress: (chapterId: string, currentPage: number, completed: boolean) =>
     put<ReadProgress>(`/api/progress/${chapterId}`, { current_page: currentPage, completed }),
 
@@ -263,8 +263,8 @@ export const api = {
 
   getTrending: () => get<SearchResult[]>('/api/discover/trending'),
 
-  addManga: (result: SearchResult) =>
-    post<Manga>('/api/discover/add', {
+  addTitle: (result: SearchResult) =>
+    post<Title>('/api/discover/add', {
       mangaupdates_id: result.mangaupdates_id,
       title: result.title,
       description: result.description,
@@ -277,28 +277,28 @@ export const api = {
     }),
 
   getQueue: () => get<QueueItem[]>('/api/queue'),
-  getMangaQueue: (mangaId: string) => get<QueueItem[]>(`/api/queue/manga/${mangaId}`),
+  getTitleQueue: (titleId: string) => get<QueueItem[]>(`/api/queue/title/${titleId}`),
 
-  removeManga: (id: string, deleteFiles = false) =>
-    del(`/api/manga/${id}`, deleteFiles ? { delete_files: 'true' } : undefined),
+  removeTitle: (id: string, deleteFiles = false) =>
+    del(`/api/titles/${id}`, deleteFiles ? { delete_files: 'true' } : undefined),
 
   removeFromQueue: (id: string) => del(`/api/queue/${id}`),
   clearCompletedQueue: () => del('/api/queue/completed'),
 
-  setMangaReaderMode: (id: string, value: string | null) =>
-    patch<void>(`/api/manga/${id}`, { reader_mode: value }),
+  setTitleReaderMode: (id: string, value: string | null) =>
+    patch<void>(`/api/titles/${id}`, { reader_mode: value }),
 
-  setMangaAutoDownload: (id: string, value: boolean | null) =>
-    patch<void>(`/api/manga/${id}`, { auto_download: value }),
+  setTitleAutoDownload: (id: string, value: boolean | null) =>
+    patch<void>(`/api/titles/${id}`, { auto_download: value }),
 
-  setMangaDownloadDir: (id: string, value: string | null) =>
-    patch<void>(`/api/manga/${id}`, { download_dir: value }),
+  setTitleDownloadDir: (id: string, value: string | null) =>
+    patch<void>(`/api/titles/${id}`, { download_dir: value }),
 
-  setMangaExplicit: (id: string, value: boolean) =>
-    patch<void>(`/api/manga/${id}`, { is_explicit: value }),
+  setTitleExplicit: (id: string, value: boolean) =>
+    patch<void>(`/api/titles/${id}`, { is_explicit: value }),
 
-  setMangaCoverUrl: (id: string, url: string) =>
-    patch<void>(`/api/manga/${id}`, { cover_url: url }),
+  setTitleCoverUrl: (id: string, url: string) =>
+    patch<void>(`/api/titles/${id}`, { cover_url: url }),
 
   getSettings: () => get<AppSettings>('/api/settings'),
   saveSettings: (s: Partial<AppSettings>) => post<AppSettings>('/api/settings', s),

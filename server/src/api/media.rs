@@ -25,7 +25,7 @@ struct MetaCoverQuery {
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/media/page/{chapter_id}/{page}", get(serve_page))
-        .route("/media/cover/{manga_id}", get(serve_cover))
+        .route("/media/cover/{title_id}", get(serve_cover))
         .route("/media/meta-cover", get(serve_meta_cover))
         .route("/media/proxy", get(proxy_image))
 }
@@ -323,9 +323,9 @@ async fn serve_meta_cover(
 
 async fn serve_cover(
     State(state): State<AppState>,
-    Path(manga_id): Path<String>,
+    Path(title_id): Path<String>,
 ) -> ApiResult<Response> {
-    let manga = sqlx::query!("SELECT cover_url FROM manga WHERE id = ?", manga_id)
+    let manga = sqlx::query!("SELECT cover_url FROM titles WHERE id = ?", title_id)
         .fetch_optional(&state.db)
         .await?;
 
@@ -349,8 +349,8 @@ async fn serve_cover(
         Ok(d) => d,
         Err(_) => {
             let _ = sqlx::query!(
-                "UPDATE manga SET cover_url = NULL WHERE id = ?",
-                manga_id
+                "UPDATE titles SET cover_url = NULL WHERE id = ?",
+                title_id
             )
             .execute(&state.db)
             .await;

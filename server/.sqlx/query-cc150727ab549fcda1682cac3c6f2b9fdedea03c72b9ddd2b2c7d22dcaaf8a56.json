@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE titles SET description  = COALESCE(description, ?), author       = COALESCE(author, ?), year         = COALESCE(year, ?), tags         = COALESCE(tags, ?) WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "cc150727ab549fcda1682cac3c6f2b9fdedea03c72b9ddd2b2c7d22dcaaf8a56"
+}

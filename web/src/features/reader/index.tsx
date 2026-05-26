@@ -20,7 +20,7 @@ export default function Reader() {
   return (
     <div className="reader-page">
       <header className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card/90 backdrop-blur shrink-0">
-        <Button variant="ghost" size="icon" onClick={() => h.navigate(ROUTES.manga(h.chapter!.manga_id))} title="Back">
+        <Button variant="ghost" size="icon" onClick={() => h.navigate(ROUTES.title(h.chapter!.title_id))} title="Back">
           <ChevronRight className="w-4 h-4 rotate-180" />
         </Button>
         <Button variant="ghost" size="icon" onClick={() => h.navigate(ROUTES.home)} title="Home">

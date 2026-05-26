@@ -33,7 +33,7 @@ export function useReader(): ReaderHandle {
   const [chapter, setChapter] = useState<Awaited<ReturnType<typeof api.getChapter>> | undefined>()
   const [progress, setProgress] = useState<Awaited<ReturnType<typeof api.getProgress>> | null>(null)
   const [settings, setSettings] = useState<Awaited<ReturnType<typeof api.getSettings>> | undefined>()
-  const [manga, setManga] = useState<Awaited<ReturnType<typeof api.getManga>> | undefined>()
+  const [manga, setManga] = useState<Awaited<ReturnType<typeof api.getTitle>> | undefined>()
   const [novelContent, setNovelContent] = useState<string | null>(null)
   const [novelError, setNovelError] = useState(false)
 
@@ -54,9 +54,9 @@ export function useReader(): ReaderHandle {
   }, [chapterId, chapter?.chapter_format])
 
   useEffect(() => {
-    if (!chapter?.manga_id) return
-    api.getManga(chapter.manga_id).then(setManga).catch(() => {})
-  }, [chapter?.manga_id])
+    if (!chapter?.title_id) return
+    api.getTitle(chapter.title_id).then(setManga).catch(() => {})
+  }, [chapter?.title_id])
 
   const effectiveMode: 'paged' | 'scroll' =
     modeOverride ?? (manga?.reader_mode as 'paged' | 'scroll' | null) ?? settings?.reader_mode ?? 'paged'
