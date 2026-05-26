@@ -54,7 +54,7 @@ async fn tick(state: &AppState, claim_lock: &Mutex<()>) -> Result<()> {
 
     let chapter = sqlx::query!(
         r#"SELECT c.chapter_format as "chapter_format!", m.download_dir, m.content_type as "content_type!"
-           FROM chapters c JOIN manga m ON c.manga_id = m.id
+           FROM chapters c JOIN titles m ON c.title_id = m.id
            WHERE c.id = ?"#,
         item.chapter_id
     )

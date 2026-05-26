@@ -86,34 +86,34 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
 
     let global_auto_dl = read_setting_bool(&state.db, "auto_download").await;
 
-    // Fetch all (manga_id, source, source_id) for manga that are ready and in at least one library
+    // Fetch all (title_id, source, source_id) for titles that are ready and in at least one library
     let source_links = sqlx::query!(
-        r#"SELECT ms.manga_id as "manga_id!", ms.source as "source!", ms.source_id as "source_id!",
+        r#"SELECT ts.title_id as "title_id!", ts.source as "source!", ts.source_id as "source_id!",
                   m.auto_download
-           FROM manga_sources ms
-           JOIN manga m ON m.id = ms.manga_id
+           FROM title_sources ts
+           JOIN titles m ON m.id = ts.title_id
            WHERE m.sync_status = 'ready'
-             AND EXISTS (SELECT 1 FROM user_manga WHERE manga_id = m.id)"#
+             AND EXISTS (SELECT 1 FROM user_titles WHERE title_id = m.id)"#
     )
     .fetch_all(&state.db)
     .await?;
 
-    // Group source links by manga_id
-    let mut by_manga: HashMap<String, Vec<(String, String, Option<i64>)>> = HashMap::new();
+    // Group source links by title_id
+    let mut by_title: HashMap<String, Vec<(String, String, Option<i64>)>> = HashMap::new();
     for row in source_links {
-        by_manga
-            .entry(row.manga_id)
+        by_title
+            .entry(row.title_id)
             .or_default()
             .push((row.source, row.source_id, row.auto_download));
     }
 
-    for (manga_id, links) in by_manga {
-        let updated = sqlx::query!("UPDATE manga SET sync_status = 'syncing' WHERE id = ?", manga_id)
+    for (title_id, links) in by_title {
+        let updated = sqlx::query!("UPDATE titles SET sync_status = 'syncing' WHERE id = ?", title_id)
             .execute(&state.db)
             .await?;
 
         if updated.rows_affected() == 0 {
-            tracing::debug!("manga {} removed between sync query and sync loop, skipping", manga_id);
+            tracing::debug!("title {} removed between sync query and sync loop, skipping", title_id);
             continue;
         }
 
@@ -129,9 +129,9 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
                 }
             };
 
-            match src.sync_chapters(&state.db, &manga_id, source_id).await {
+            match src.sync_chapters(&state.db, &title_id, source_id).await {
                 Ok(_) => { any_ok = true; }
-                Err(e) => tracing::error!("sync error for manga {} source {}: {}", manga_id, source, e),
+                Err(e) => tracing::error!("sync error for title {} source {}: {}", title_id, source, e),
             }
 
             // Update is_explicit from meta tags using first responsive source
@@ -142,12 +142,12 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
                             .any(|t| t.trim().eq_ignore_ascii_case("adult"));
                         if tag_explicit {
                             let _ = sqlx::query!(
-                                "UPDATE manga SET is_explicit = 1, tags = COALESCE(tags, ?) WHERE id = ?",
-                                tags, manga_id
+                                "UPDATE titles SET is_explicit = 1, tags = COALESCE(tags, ?) WHERE id = ?",
+                                tags, title_id
                             )
                             .execute(&state.db)
                             .await
-                            .map_err(|e| tracing::warn!("is_explicit update error for {}: {}", manga_id, e));
+                            .map_err(|e| tracing::warn!("is_explicit update error for {}: {}", title_id, e));
                         }
                     }
                 }
@@ -155,15 +155,15 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
         }
 
         let status = if any_ok { "ready" } else { "error" };
-        sqlx::query!("UPDATE manga SET sync_status = ? WHERE id = ?", status, manga_id)
+        sqlx::query!("UPDATE titles SET sync_status = ? WHERE id = ?", status, title_id)
             .execute(&state.db)
             .await?;
 
         if any_ok {
             let effective = auto_download.map(|v| v != 0).unwrap_or(global_auto_dl);
             if effective {
-                if let Err(e) = queue_new_chapters(&state.db, &manga_id).await {
-                    tracing::error!("queue_new_chapters error for {}: {}", manga_id, e);
+                if let Err(e) = queue_new_chapters(&state.db, &title_id).await {
+                    tracing::error!("queue_new_chapters error for {}: {}", title_id, e);
                 }
             }
         }
@@ -172,8 +172,8 @@ pub async fn sync_library(state: &AppState) -> Result<()> {
     Ok(())
 }
 
-async fn queue_new_chapters(db: &SqlitePool, manga_id: &str) -> Result<()> {
-    let manga = sqlx::query!("SELECT title FROM manga WHERE id = ?", manga_id)
+async fn queue_new_chapters(db: &SqlitePool, title_id: &str) -> Result<()> {
+    let title = sqlx::query!("SELECT title FROM titles WHERE id = ?", title_id)
         .fetch_one(db)
         .await?;
 
@@ -181,9 +181,9 @@ async fn queue_new_chapters(db: &SqlitePool, manga_id: &str) -> Result<()> {
     let chapters = sqlx::query!(
         r#"SELECT c.id as "id!", c.number as "number!"
            FROM chapters c
-           WHERE c.manga_id = ? AND c.downloaded = 0
+           WHERE c.title_id = ? AND c.downloaded = 0
              AND EXISTS (SELECT 1 FROM chapter_sources WHERE chapter_id = c.id)"#,
-        manga_id
+        title_id
     )
     .fetch_all(db)
     .await?;
@@ -197,7 +197,7 @@ async fn queue_new_chapters(db: &SqlitePool, manga_id: &str) -> Result<()> {
                ON CONFLICT(chapter_id) DO UPDATE SET
                  status = 'pending', error = NULL, updated_at = excluded.updated_at
                WHERE download_queue.status IN ('error', 'cancelled')"#,
-            qid, ch.id, manga.title, ch.number, now, now
+            qid, ch.id, title.title, ch.number, now, now
         )
         .execute(db)
         .await?;

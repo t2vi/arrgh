@@ -14,7 +14,7 @@ export interface SimpleMutation<TArgs = void> {
 }
 
 export interface MangaDetailHandle {
-  manga: Awaited<ReturnType<typeof api.getManga>> | undefined
+  manga: Awaited<ReturnType<typeof api.getTitle>> | undefined
   chapters: Chapter[]
   allProgress: ReadProgress[]
   queueItems: QueueItem[]
@@ -70,7 +70,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
   const [pendingReadId, setPendingReadId] = useState<string | null>(null)
   const removeMenuRef = useRef<HTMLDivElement>(null)
 
-  const [manga, setManga] = useState<Awaited<ReturnType<typeof api.getManga>> | undefined>()
+  const [manga, setManga] = useState<Awaited<ReturnType<typeof api.getTitle>> | undefined>()
   const [loadingManga, setLoadingManga] = useState(true)
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [loadingChapters, setLoadingChapters] = useState(true)
@@ -97,7 +97,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
 
   const fetchManga = useCallback(() => {
     if (!id) return
-    api.getManga(id).then(setManga).catch(() => {}).finally(() => setLoadingManga(false))
+    api.getTitle(id).then(setManga).catch(() => {}).finally(() => setLoadingManga(false))
   }, [id])
 
   const fetchChapters = useCallback(() => {
@@ -107,12 +107,12 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
 
   const fetchProgress = useCallback(() => {
     if (!id) return
-    api.getMangaProgress(id).then(setAllProgress).catch(() => {})
+    api.getTitleProgress(id).then(setAllProgress).catch(() => {})
   }, [id])
 
   const fetchQueue = useCallback(() => {
     if (!id) return
-    api.getMangaQueue(id).then(setQueueItems).catch(() => {})
+    api.getTitleQueue(id).then(setQueueItems).catch(() => {})
   }, [id])
 
   // Initial fetches
@@ -199,7 +199,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
       if (!id) return
       setSyncPending(true)
       setSyncSuccess(false)
-      api.syncManga(id)
+      api.syncTitle(id)
         .then(() => {
           setSyncSuccess(true)
           fetchManga()

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM user_titles WHERE user_id = ? AND title_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "5865071bf60ca584453082ea035f1f22529851d1b563b6fa3889fa853811b17c"
+}

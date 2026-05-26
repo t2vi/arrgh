@@ -123,7 +123,7 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 
 | Case | Status |
 |---|---|
-| `sync_chapters` deduplicates chapters by `(manga_id, number)` across two sources | ✅ |
+| `sync_chapters` deduplicates chapters by `(title_id, number)` across two sources | ✅ |
 | `sync_chapters` is idempotent — syncing same source twice produces no duplicate rows | ✅ |
 | `sync_chapters` ON CONFLICT updates `source_id` when plugin returns a new identifier | ✅ |
 | `sync_chapters` returns Ok(0) on 502 (source temporarily unavailable) | ✅ |
@@ -161,18 +161,18 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Logs | `PATCH /api/logs/level` admin → 204 | ✅ |
 | Version | `GET /api/version` returns current without latest (check disabled) | ✅ |
 | Sources | Add + reload registry | 🔳 |
-| Multi-source: manga schema | `is_local=true` when no `manga_sources` rows | ✅ |
-| Multi-source: manga schema | `is_local=false` when `manga_sources` row exists | ✅ |
+| Multi-source: title schema | `is_local=true` when no `title_sources` rows | ✅ |
+| Multi-source: title schema | `is_local=false` when `title_sources` row exists | ✅ |
 | Multi-source: chapter schema | `has_sources=false` when no `chapter_sources` rows | ✅ |
 | Multi-source: chapter schema | `has_sources=true` when `chapter_sources` row exists | ✅ |
 | Multi-source: download guard | `POST /chapters/:id/download` → 404 without `chapter_sources` | ✅ |
 | Multi-source: download guard | `POST /chapters/:id/download` → 202 with `chapter_sources` | ✅ |
-| Multi-source: sync | `POST /manga/:id/sync` → 404 when no `manga_sources` | ✅ |
-| Multi-source: sync | `POST /manga/:id/sync` → 202 when `manga_sources` exist | ✅ |
-| add_manga (MU) | Creates manga row with `mangaupdates_id` | ✅ |
-| add_manga (MU) | Creates `user_manga` subscription for the requesting user | ✅ |
-| add_manga (MU) | Sets `is_explicit = 1` when tags contain `"adult"` | ✅ |
-| add_manga (MU) | Deduplicates — same `mangaupdates_id` returns same manga | ✅ |
+| Multi-source: sync | `POST /titles/:id/sync` → 404 when no `title_sources` | ✅ |
+| Multi-source: sync | `POST /titles/:id/sync` → 202 when `title_sources` exist | ✅ |
+| add_title (MU) | Creates titles row with `mangaupdates_id` | ✅ |
+| add_title (MU) | Creates `user_titles` subscription for the requesting user | ✅ |
+| add_title (MU) | Sets `is_explicit = 1` when tags contain `"adult"` | ✅ |
+| add_title (MU) | Deduplicates — same `mangaupdates_id` returns same title | ✅ |
 | Trending | Returns pre-seeded cache results without hitting MangaUpdates network | ✅ |
 | Trending | Marks `in_library=true` when series already added to library | ✅ |
 | Queue: explicit filter | Member without `allow_explicit` cannot see explicit queue items | ✅ |
@@ -184,6 +184,7 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Queue: cancel ownership | Member can cancel their own item → 204 | ✅ |
 | Queue: cancel ownership | Admin can cancel any item → 204 | ✅ |
 | Queue: delete_files | Member remove with `?delete_files=true` returns 204 (param silently ignored) | ✅ |
+| ExternalSource | `sync_chapters` deduplicates chapters by `(title_id, number)` across two sources | ✅ |
 
 ---
 

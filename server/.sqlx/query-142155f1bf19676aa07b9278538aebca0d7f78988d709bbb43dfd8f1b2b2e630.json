@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id FROM chapters WHERE title_id = ? AND number = ? AND downloaded = 0",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "142155f1bf19676aa07b9278538aebca0d7f78988d709bbb43dfd8f1b2b2e630"
+}

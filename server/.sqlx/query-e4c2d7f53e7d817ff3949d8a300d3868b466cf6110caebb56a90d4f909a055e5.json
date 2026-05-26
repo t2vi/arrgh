@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE titles SET is_explicit = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "e4c2d7f53e7d817ff3949d8a300d3868b466cf6110caebb56a90d4f909a055e5"
+}

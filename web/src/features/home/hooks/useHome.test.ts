@@ -3,7 +3,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 vi.mock('@/api', () => ({
   api: {
-    listManga: vi.fn(),
+    listTitles: vi.fn(),
     getTrending: vi.fn(),
     getNewReleases: vi.fn(),
     getContinueReading: vi.fn(),
@@ -27,7 +27,7 @@ function makeTrendingResult(overrides: object = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(api.listManga).mockResolvedValue(emptyPage as never)
+  vi.mocked(api.listTitles).mockResolvedValue(emptyPage as never)
   vi.mocked(api.getTrending).mockResolvedValue([])
   vi.mocked(api.getNewReleases).mockResolvedValue([])
   vi.mocked(api.getContinueReading).mockResolvedValue([])

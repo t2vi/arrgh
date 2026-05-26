@@ -6,6 +6,6 @@ export const ROUTES = {
   settings: '/settings',
   login:    '/login',
   setup:    '/setup',
-  manga:    (id: string) => `/manga/${id}`,
+  title:    (id: string) => `/title/${id}`,
   reader:   (id: string) => `/reader/${id}`,
 }

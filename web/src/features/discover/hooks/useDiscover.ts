@@ -51,7 +51,7 @@ export function useDiscover(): DiscoverHandle {
     setAddError(null)
     setAddingId(result.mangaupdates_id)
     try {
-      const manga = await api.addManga(result)
+      const manga = await api.addTitle(result)
       setAdded((prev) => {
         const next = new Map(prev)
         next.set(result.mangaupdates_id, manga.id)

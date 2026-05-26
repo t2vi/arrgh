@@ -13,7 +13,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.mock('@/api', () => ({
   api: {
     searchManga: vi.fn(),
-    addManga: vi.fn(),
+    addTitle: vi.fn(),
   },
 }))
 
@@ -60,7 +60,7 @@ describe('useDiscover', () => {
 
   it('navigates to library after handleAdd succeeds', async () => {
     const mockManga = { id: 'manga-1', title: 'Test' }
-    vi.mocked(api.addManga).mockResolvedValue(mockManga as never)
+    vi.mocked(api.addTitle).mockResolvedValue(mockManga as never)
     const { result } = renderHook(() => useDiscover(), { wrapper })
     await act(async () => {
       await result.current.handleAdd(mockResult)
@@ -78,7 +78,7 @@ describe('useDiscover', () => {
 
   it('tracks added manga by mangaupdates_id', async () => {
     const mockManga = { id: 'manga-99', title: 'Test' }
-    vi.mocked(api.addManga).mockResolvedValue(mockManga as never)
+    vi.mocked(api.addTitle).mockResolvedValue(mockManga as never)
     const { result } = renderHook(() => useDiscover(), { wrapper })
     await act(async () => { await result.current.handleAdd(mockResult) })
     expect(result.current.added.get('mu-001')).toBe('manga-99')

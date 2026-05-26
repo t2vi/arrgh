@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Play, Plus, X, CheckCircle2, Loader2, Download } from 'lucide-react'
 import { api, type SearchResult, type NewReleaseItem, type ContinueItem } from '@/api'
-import type { Manga } from '@/types'
+import type { Title } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -17,11 +17,11 @@ function timeAgo(iso: string): string {
   return `${days} days ago`
 }
 
-function imgSrc(manga: Manga): string {
+function imgSrc(manga: Title): string {
   return !manga.cover_url?.startsWith('http') ? api.coverUrl(manga.id) : manga.cover_url
 }
 
-export function LibraryCoverCard({ manga, onClick }: { manga: Manga; onClick: () => void }) {
+export function LibraryCoverCard({ manga, onClick }: { manga: Title; onClick: () => void }) {
   const [failed, setFailed] = useState(false)
   const src = !failed ? imgSrc(manga) : ''
   const tags = manga.tags?.split(', ').slice(0, 2).join(', ') ?? ''
@@ -55,7 +55,7 @@ export function LibraryCoverCard({ manga, onClick }: { manga: Manga; onClick: ()
   )
 }
 
-export function RecentCard({ manga, onClick }: { manga: Manga; onClick: () => void }) {
+export function RecentCard({ manga, onClick }: { manga: Title; onClick: () => void }) {
   const [failed, setFailed] = useState(false)
   const src = !failed ? imgSrc(manga) : ''
 
@@ -180,7 +180,7 @@ export function ContinueCard({ item, onPlay, onDetail }: {
 }) {
   const [failed, setFailed] = useState(false)
   const src = !failed
-    ? (item.cover_url?.startsWith('http') ? item.cover_url : item.cover_url ? api.coverUrl(item.manga_id) : '')
+    ? (item.cover_url?.startsWith('http') ? item.cover_url : item.cover_url ? api.coverUrl(item.title_id) : '')
     : ''
   const pct = item.total_chapters > 0
     ? Math.round((item.chapters_read / item.total_chapters) * 100)
@@ -241,7 +241,7 @@ export function TrendingModal({
   async function handleAdd() {
     setAddPending(true)
     try {
-      await api.addManga(result)
+      await api.addTitle(result)
       setAddSuccess(true)
     } catch {
       // ignore

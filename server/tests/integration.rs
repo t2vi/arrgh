@@ -61,7 +61,7 @@ async fn build_state() -> (Router, AppState) {
         update_cache: api::version::new_cache(),
     };
 
-    // Seed the admin user so FK constraints on user_manga are satisfied
+    // Seed the admin user so FK constraints on user_titles are satisfied
     let now = chrono::Utc::now().to_rfc3339();
     sqlx::query(
         "INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)"
@@ -85,37 +85,37 @@ async fn build_app() -> Router {
 async fn seed_manga(pool: &sqlx::SqlitePool, id: &str) {
     let now = chrono::Utc::now().to_rfc3339();
     sqlx::query(
-        "INSERT INTO manga (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+        "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
          VALUES (?, 'Test', 'unknown', 'ready', 'manga', 0, ?, ?)"
     )
     .bind(id).bind(&now).bind(&now)
     .execute(pool).await.unwrap();
 }
 
-async fn seed_user_manga(pool: &sqlx::SqlitePool, manga_id: &str) {
+async fn seed_user_manga(pool: &sqlx::SqlitePool, title_id: &str) {
     let now = chrono::Utc::now().to_rfc3339();
-    sqlx::query("INSERT OR IGNORE INTO user_manga (user_id, manga_id, added_at) VALUES (?, ?, ?)")
-        .bind(ADMIN_UID).bind(manga_id).bind(&now)
+    sqlx::query("INSERT OR IGNORE INTO user_titles (user_id, title_id, added_at) VALUES (?, ?, ?)")
+        .bind(ADMIN_UID).bind(title_id).bind(&now)
         .execute(pool).await.unwrap();
 }
 
-async fn seed_manga_source(pool: &sqlx::SqlitePool, manga_id: &str, source: &str, source_id: &str) {
+async fn seed_manga_source(pool: &sqlx::SqlitePool, title_id: &str, source: &str, source_id: &str) {
     let id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().to_rfc3339();
     sqlx::query(
-        "INSERT INTO manga_sources (id, manga_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)"
+        "INSERT INTO title_sources (id, title_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)"
     )
-    .bind(&id).bind(manga_id).bind(source).bind(source_id).bind(&now)
+    .bind(&id).bind(title_id).bind(source).bind(source_id).bind(&now)
     .execute(pool).await.unwrap();
 }
 
-async fn seed_chapter(pool: &sqlx::SqlitePool, chapter_id: &str, manga_id: &str, number: f64) {
+async fn seed_chapter(pool: &sqlx::SqlitePool, chapter_id: &str, title_id: &str, number: f64) {
     let now = chrono::Utc::now().to_rfc3339();
     sqlx::query(
-        "INSERT INTO chapters (id, manga_id, number, page_count, downloaded, chapter_format, created_at) \
+        "INSERT INTO chapters (id, title_id, number, page_count, downloaded, chapter_format, created_at) \
          VALUES (?, ?, ?, 0, 0, 'pages', ?)"
     )
-    .bind(chapter_id).bind(manga_id).bind(number).bind(&now)
+    .bind(chapter_id).bind(title_id).bind(number).bind(&now)
     .execute(pool).await.unwrap();
 }
 
@@ -129,7 +129,7 @@ async fn seed_chapter_source(pool: &sqlx::SqlitePool, chapter_id: &str, source: 
 async fn seed_explicit_manga(pool: &sqlx::SqlitePool, id: &str) {
     let now = chrono::Utc::now().to_rfc3339();
     sqlx::query(
-        "INSERT INTO manga (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+        "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
          VALUES (?, 'Explicit Manga', 'unknown', 'ready', 'manga', 1, ?, ?)"
     )
     .bind(id).bind(&now).bind(&now)
@@ -377,9 +377,9 @@ async fn manga_is_local_when_no_source_links() {
     seed_manga(&state.db, "m-local").await;
     seed_user_manga(&state.db, "m-local").await;
 
-    let (status, body) = req_get(&app, "/api/manga/m-local", Some(&token)).await;
+    let (status, body) = req_get(&app, "/api/titles/m-local", Some(&token)).await;
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(body["is_local"], true, "manga with no manga_sources rows is local");
+    assert_eq!(body["is_local"], true, "title with no title_sources rows is local");
 }
 
 #[tokio::test]
@@ -391,9 +391,9 @@ async fn manga_is_not_local_when_source_links_exist() {
     seed_user_manga(&state.db, "m-remote").await;
     seed_manga_source(&state.db, "m-remote", "mangadex", "src-001").await;
 
-    let (status, body) = req_get(&app, "/api/manga/m-remote", Some(&token)).await;
+    let (status, body) = req_get(&app, "/api/titles/m-remote", Some(&token)).await;
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(body["is_local"], false, "manga with manga_sources rows is not local");
+    assert_eq!(body["is_local"], false, "title with title_sources rows is not local");
 }
 
 // ── chapters schema: has_sources ─────────────────────────────────────────────
@@ -406,7 +406,7 @@ async fn chapter_has_sources_false_without_chapter_sources() {
     seed_manga(&state.db, "m-ch1").await;
     seed_chapter(&state.db, "ch-no-src", "m-ch1", 1.0).await;
 
-    let (status, body) = req_get(&app, "/api/chapters/manga/m-ch1", Some(&token)).await;
+    let (status, body) = req_get(&app, "/api/chapters/title/m-ch1", Some(&token)).await;
     assert_eq!(status, StatusCode::OK);
     let chapters = body.as_array().unwrap();
     assert_eq!(chapters.len(), 1);
@@ -422,7 +422,7 @@ async fn chapter_has_sources_true_with_chapter_sources() {
     seed_chapter(&state.db, "ch-with-src", "m-ch2", 1.0).await;
     seed_chapter_source(&state.db, "ch-with-src", "mangadex", "cs-001").await;
 
-    let (status, body) = req_get(&app, "/api/chapters/manga/m-ch2", Some(&token)).await;
+    let (status, body) = req_get(&app, "/api/chapters/title/m-ch2", Some(&token)).await;
     assert_eq!(status, StatusCode::OK);
     let chapters = body.as_array().unwrap();
     assert_eq!(chapters.len(), 1);
@@ -466,8 +466,8 @@ async fn sync_manga_returns_404_when_no_source_links() {
     seed_manga(&state.db, "m-sync1").await;
     seed_user_manga(&state.db, "m-sync1").await;
 
-    let (status, _) = req_post(&app, "/api/manga/m-sync1/sync", Some(&token), json!({})).await;
-    assert_eq!(status, StatusCode::NOT_FOUND, "local-only manga has no source links to sync");
+    let (status, _) = req_post(&app, "/api/titles/m-sync1/sync", Some(&token), json!({})).await;
+    assert_eq!(status, StatusCode::NOT_FOUND, "local-only title has no source links to sync");
 }
 
 #[tokio::test]
@@ -479,7 +479,7 @@ async fn sync_manga_returns_202_when_source_links_exist() {
     seed_user_manga(&state.db, "m-sync2").await;
     seed_manga_source(&state.db, "m-sync2", "mangadex", "src-sync").await;
 
-    let (status, _) = req_post(&app, "/api/manga/m-sync2/sync", Some(&token), json!({})).await;
+    let (status, _) = req_post(&app, "/api/titles/m-sync2/sync", Some(&token), json!({})).await;
     assert_eq!(status, StatusCode::ACCEPTED);
 }
 
@@ -500,10 +500,10 @@ async fn add_manga_creates_manga_with_mangaupdates_id() {
 
     let manga_id = body["id"].as_str().unwrap();
     let stored: Option<String> = sqlx::query_scalar(
-        "SELECT mangaupdates_id FROM manga WHERE id = ?"
+        "SELECT mangaupdates_id FROM titles WHERE id = ?"
     )
     .bind(manga_id).fetch_one(&state.db).await.unwrap();
-    assert_eq!(stored.as_deref(), Some("99001"), "mangaupdates_id stored on manga row");
+    assert_eq!(stored.as_deref(), Some("99001"), "mangaupdates_id stored on titles row");
 }
 
 #[tokio::test]
@@ -521,10 +521,10 @@ async fn add_manga_subscribes_user_to_manga() {
 
     let manga_id = body["id"].as_str().unwrap();
     let exists: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM user_manga WHERE manga_id = ? AND user_id = 'user-test'"
+        "SELECT COUNT(*) FROM user_titles WHERE title_id = ? AND user_id = 'user-test'"
     )
     .bind(manga_id).fetch_one(&state.db).await.unwrap();
-    assert_eq!(exists, 1, "user_manga subscription created");
+    assert_eq!(exists, 1, "user_titles subscription created");
 }
 
 #[tokio::test]
@@ -543,7 +543,7 @@ async fn add_manga_sets_explicit_flag_from_adult_tag() {
 
     let manga_id = body["id"].as_str().unwrap();
     let is_explicit: i64 = sqlx::query_scalar(
-        "SELECT is_explicit FROM manga WHERE id = ?"
+        "SELECT is_explicit FROM titles WHERE id = ?"
     )
     .bind(manga_id).fetch_one(&state.db).await.unwrap();
     assert_eq!(is_explicit, 1, "is_explicit = 1 when tags contain 'adult'");
@@ -564,13 +564,13 @@ async fn add_manga_deduplicates_on_mangaupdates_id() {
     let (_, body1) = req_post(&app, "/api/discover/add", Some(&token), payload.clone()).await;
     let (_, body2) = req_post(&app, "/api/discover/add", Some(&token), payload).await;
 
-    assert_eq!(body1["id"], body2["id"], "same mangaupdates_id → same manga returned");
+    assert_eq!(body1["id"], body2["id"], "same mangaupdates_id → same title returned");
 
     let count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM manga WHERE mangaupdates_id = '99004'"
+        "SELECT COUNT(*) FROM titles WHERE mangaupdates_id = '99004'"
     )
     .fetch_one(&state.db).await.unwrap();
-    assert_eq!(count, 1, "only one manga row despite two add calls");
+    assert_eq!(count, 1, "only one titles row despite two add calls");
 }
 
 // ── trending (cache-backed) ───────────────────────────────────────────────────
@@ -766,12 +766,12 @@ async fn member_cannot_delete_files_on_remove() {
     // Seed manga subscribed to by the member user
     seed_manga(&state.db, "m-rmfiles-1").await;
     let now = chrono::Utc::now().to_rfc3339();
-    sqlx::query("INSERT INTO user_manga (user_id, manga_id, added_at) VALUES (?, ?, ?)")
+    sqlx::query("INSERT INTO user_titles (user_id, title_id, added_at) VALUES (?, ?, ?)")
         .bind("user-member").bind("m-rmfiles-1").bind(&now)
         .execute(&state.db).await.unwrap();
 
     let token = member_token();
     // delete_files=true should be silently ignored — member still gets 204
-    let status = req_delete(&app, "/api/manga/m-rmfiles-1?delete_files=true", Some(&token)).await;
+    let status = req_delete(&app, "/api/titles/m-rmfiles-1?delete_files=true", Some(&token)).await;
     assert_eq!(status, StatusCode::NO_CONTENT, "member remove returns 204 (delete_files silently ignored)");
 }

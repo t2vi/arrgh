@@ -74,7 +74,7 @@ export function ReaderModeCard({ mangaId, value }: { mangaId: string; value: str
   async function handleSelect(i: number) {
     const v = options[i].v
     setCurrent(v)
-    await api.setMangaReaderMode(mangaId, v).catch(() => {})
+    await api.setTitleReaderMode(mangaId, v).catch(() => {})
   }
 
   return (
@@ -108,7 +108,7 @@ export function AutoDownloadCard({ mangaId, value }: { mangaId: string; value: b
   async function handleSelect(i: number) {
     const v = options[i].v
     setCurrent(v)
-    await api.setMangaAutoDownload(mangaId, v).catch(() => {})
+    await api.setTitleAutoDownload(mangaId, v).catch(() => {})
   }
 
   return (
@@ -137,7 +137,7 @@ export function ExplicitCard({ mangaId, value }: { mangaId: string; value: boole
   async function toggle() {
     const next = !current
     setCurrent(next)
-    await api.setMangaExplicit(mangaId, next).catch(() => setCurrent(current))
+    await api.setTitleExplicit(mangaId, next).catch(() => setCurrent(current))
   }
 
   return (
@@ -149,9 +149,9 @@ export function ExplicitCard({ mangaId, value }: { mangaId: string; value: boole
         <button
           type="button"
           onClick={toggle}
-          className={`relative w-10 h-[22px] rounded-full transition-colors ${current ? 'bg-orange-500' : 'bg-muted'}`}
+          className={`relative w-10 h-[22px] rounded-full transition-colors overflow-hidden ${current ? 'bg-orange-500' : 'bg-muted'}`}
         >
-          <span className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow transition-transform ${current ? 'translate-x-5' : 'translate-x-[3px]'}`} />
+          <span className={`absolute top-[3px] left-0 w-4 h-4 rounded-full bg-white shadow transition-transform ${current ? 'translate-x-[21px]' : 'translate-x-[3px]'}`} />
         </button>
       </div>
       <p className="text-xs text-muted-foreground">
@@ -167,7 +167,7 @@ export function DownloadDirCard({ mangaId, value }: { mangaId: string; value: st
 
   async function handleSave(v: string | null) {
     setSaving(true)
-    await api.setMangaDownloadDir(mangaId, v).catch(() => {})
+    await api.setTitleDownloadDir(mangaId, v).catch(() => {})
     setSaving(false)
   }
 
@@ -229,7 +229,7 @@ export function CoverUrlCard({
 
   async function handleSave(v: string) {
     setSaving(true)
-    await api.setMangaCoverUrl(mangaId, v).catch(() => {})
+    await api.setTitleCoverUrl(mangaId, v).catch(() => {})
     setSaving(false)
     onSaved()
   }

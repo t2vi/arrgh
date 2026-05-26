@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO titles (id, title, status, local_path, created_at, updated_at)\n               VALUES (?, ?, 'unknown', ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "6e0f9402e2888fb80425e64c4b51e49a2f53f6a9b295a7fcdb82139c36469f50"
+}

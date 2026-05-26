@@ -13,7 +13,7 @@ use std::time::Instant;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::{auth, db::Manga, mangaupdates::{MangaUpdatesClient, MuSeries}, AppState};
+use crate::{auth, db::Title, mangaupdates::{MangaUpdatesClient, MuSeries}, AppState};
 use super::ApiResult;
 
 // ── Trending cache ────────────────────────────────────────────────────────────
@@ -88,8 +88,8 @@ async fn check_in_library(
     mangaupdates_id: &str,
 ) -> (bool, Option<String>) {
     match sqlx::query!(
-        r#"SELECT m.id as "id!" FROM manga m
-           JOIN user_manga um ON um.manga_id = m.id AND um.user_id = ?
+        r#"SELECT m.id as "id!" FROM titles m
+           JOIN user_titles ut ON ut.title_id = m.id AND ut.user_id = ?
            WHERE m.mangaupdates_id = ?"#,
         user_id, mangaupdates_id
     )
@@ -328,16 +328,16 @@ async fn add_manga(
 
     // Check if manga with this MU ID already exists
     let existing: Option<String> = sqlx::query_scalar!(
-        r#"SELECT id as "id!" FROM manga WHERE mangaupdates_id = ?"#,
+        r#"SELECT id as "id!" FROM titles WHERE mangaupdates_id = ?"#,
         body.mangaupdates_id
     )
     .fetch_optional(&state.db)
     .await?;
 
-    let manga_id: String = if let Some(eid) = existing {
+    let title_id: String = if let Some(eid) = existing {
         // Already in catalog — update metadata if missing
         sqlx::query!(
-            "UPDATE manga SET \
+            "UPDATE titles SET \
              description  = COALESCE(description, ?), \
              author       = COALESCE(author, ?), \
              year         = COALESCE(year, ?), \
@@ -356,7 +356,7 @@ async fn add_manga(
         let is_explicit: i64 = if tag_explicit { 1 } else { 0 };
 
         sqlx::query!(
-            r#"INSERT INTO manga
+            r#"INSERT INTO titles
                (id, mangaupdates_id, title, description, cover_url, status,
                 author, year, tags, sync_status, content_type, is_explicit, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
@@ -369,10 +369,10 @@ async fn add_manga(
         id
     };
 
-    // Subscribe this user to the manga
+    // Subscribe this user to the title
     sqlx::query!(
-        "INSERT OR IGNORE INTO user_manga (user_id, manga_id, added_at) VALUES (?, ?, ?)",
-        claims.sub, manga_id, now_str
+        "INSERT OR IGNORE INTO user_titles (user_id, title_id, added_at) VALUES (?, ?, ?)",
+        claims.sub, title_id, now_str
     )
     .execute(&state.db)
     .await?;
@@ -381,7 +381,7 @@ async fn add_manga(
     let db = state.db.clone();
     let http = state.http.clone();
     let sources = state.sources.clone();
-    let mid = manga_id.clone();
+    let mid = title_id.clone();
     let title = body.title.clone();
     let cover_cdn = resolved_cover_url.clone();
     let download_dir = state.config.download_dir.clone();
@@ -408,7 +408,7 @@ async fn add_manga(
                         if tokio::fs::write(&cover_path, &bytes).await.is_ok() {
                             let path_str = cover_path.to_string_lossy().to_string();
                             let _ = sqlx::query!(
-                                "UPDATE manga SET cover_url = ? WHERE id = ?",
+                                "UPDATE titles SET cover_url = ? WHERE id = ?",
                                 path_str, mid
                             )
                             .execute(&db)
@@ -443,13 +443,13 @@ async fn add_manga(
             let ms_id = Uuid::new_v4().to_string();
             let disc = Utc::now().to_rfc3339();
             if let Err(e) = sqlx::query!(
-                "INSERT OR IGNORE INTO manga_sources (id, manga_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO title_sources (id, title_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)",
                 ms_id, mid, src_key, hit.id, disc
             )
             .execute(&db)
             .await
             {
-                tracing::warn!("manga_sources insert error: {}", e);
+                tracing::warn!("title_sources insert error: {}", e);
                 continue;
             }
 
@@ -460,18 +460,18 @@ async fn add_manga(
         }
 
         let status = if source_snapshot.is_empty() || any_ok { "ready" } else { "error" };
-        let _ = sqlx::query!("UPDATE manga SET sync_status = ? WHERE id = ?", status, mid)
+        let _ = sqlx::query!("UPDATE titles SET sync_status = ? WHERE id = ?", status, mid)
             .execute(&db)
             .await;
     });
 
-    let manga = fetch_manga(&state.db, &manga_id).await?;
-    Ok(Json(manga).into_response())
+    let title = fetch_title(&state.db, &title_id).await?;
+    Ok(Json(title).into_response())
 }
 
-pub async fn fetch_manga(db: &sqlx::SqlitePool, id: &str) -> Result<Manga, sqlx::Error> {
+pub async fn fetch_title(db: &sqlx::SqlitePool, id: &str) -> Result<Title, sqlx::Error> {
     sqlx::query_as!(
-        Manga,
+        Title,
         r#"SELECT
                id as "id!",
                title as "title!",
@@ -487,7 +487,7 @@ pub async fn fetch_manga(db: &sqlx::SqlitePool, id: &str) -> Result<Manga, sqlx:
                (is_explicit != 0) as "is_explicit!: bool",
                created_at as "created_at: _",
                updated_at as "updated_at: _"
-           FROM manga WHERE id = ?"#,
+           FROM titles WHERE id = ?"#,
         id
     )
     .fetch_one(db)

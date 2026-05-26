@@ -27,7 +27,7 @@ mod chapters;
 pub mod discover;
 mod docs;
 mod logs;
-mod manga;
+mod titles;
 mod media;
 mod plugins;
 mod progress;
@@ -38,7 +38,7 @@ pub mod version;
 
 pub fn router(state: AppState) -> Router<AppState> {
     let protected = Router::new()
-        .merge(manga::router())
+        .merge(titles::router())
         .merge(chapters::router())
         .merge(progress::router())
         .merge(discover::router())

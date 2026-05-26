@@ -35,13 +35,13 @@ function SourceRowItem({ source, onToggle, onDelete }: {
         title={source.enabled ? 'Enabled — click to disable' : 'Disabled — click to enable'}
         onClick={() => onToggle(source.id, source.enabled)}
         className={cn(
-          'relative w-8 h-[18px] rounded-full transition-colors shrink-0',
+          'relative w-8 h-[18px] rounded-full transition-colors shrink-0 overflow-hidden',
           source.enabled ? 'bg-primary' : 'bg-muted border border-border',
         )}
       >
         <span className={cn(
-          'absolute top-[2px] w-3.5 h-3.5 rounded-full bg-white shadow transition-transform',
-          source.enabled ? 'translate-x-[14px]' : 'translate-x-[2px]',
+          'absolute top-[2px] left-0 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform',
+          source.enabled ? 'translate-x-[16px]' : 'translate-x-[2px]',
         )} />
       </button>
 

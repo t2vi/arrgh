@@ -58,7 +58,7 @@ pub trait Source: Send + Sync {
     async fn sync_chapters(
         &self,
         db: &SqlitePool,
-        manga_id: &str,
+        title_id: &str,
         source_id: &str,
     ) -> Result<usize>;
 

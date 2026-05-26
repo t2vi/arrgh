@@ -65,7 +65,7 @@ export default function Library() {
                   <MangaCard
                     key={m.id}
                     manga={m}
-                    onClick={() => navigate(ROUTES.manga(m.id))}
+                    onClick={() => navigate(ROUTES.title(m.id))}
                     onRemove={(deleteFiles) => h.handleRemove(m.id, deleteFiles)}
                     isRemoving={h.removingId === m.id}
                   />

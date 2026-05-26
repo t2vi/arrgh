@@ -124,7 +124,7 @@ fn map_series(rec: SeriesRecord) -> MuSeries {
                 .iter()
                 .map(|g| {
                     let lower = g.genre.to_lowercase();
-                    if ["mature", "adult", "hentai", "smut", "18+", "erotic"]
+                    if ["adult", "hentai", "smut", "18+", "erotic"]
                         .iter()
                         .any(|&e| lower == e)
                     {

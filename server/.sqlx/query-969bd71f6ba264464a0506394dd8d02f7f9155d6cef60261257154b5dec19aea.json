@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO user_title_settings (user_id, title_id, reader_mode)\n               VALUES (?, ?, ?)\n               ON CONFLICT(user_id, title_id) DO UPDATE SET reader_mode = excluded.reader_mode",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "969bd71f6ba264464a0506394dd8d02f7f9155d6cef60261257154b5dec19aea"
+}

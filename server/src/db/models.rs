@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct Manga {
+pub struct Title {
     pub id: String,
     pub title: String,
     pub description: Option<String>,
@@ -20,9 +20,9 @@ pub struct Manga {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct MangaSource {
+pub struct TitleSource {
     pub id: String,
-    pub manga_id: String,
+    pub title_id: String,
     pub source: String,
     pub source_id: String,
     pub discovered_at: DateTime<Utc>,
@@ -31,7 +31,7 @@ pub struct MangaSource {
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Chapter {
     pub id: String,
-    pub manga_id: String,
+    pub title_id: String,
     pub title: Option<String>,
     pub number: f64,
     pub volume: Option<f64>,

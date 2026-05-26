@@ -147,7 +147,7 @@ impl Source for ExternalSource {
         }).collect())
     }
 
-    async fn sync_chapters(&self, db: &SqlitePool, manga_id: &str, source_id: &str) -> Result<usize> {
+    async fn sync_chapters(&self, db: &SqlitePool, title_id: &str, source_id: &str) -> Result<usize> {
         let path = format!("/manga/{}/chapters", urlencoding::encode(source_id));
         let resp = self.get(&path).send().await?;
         if resp.status() == reqwest::StatusCode::BAD_GATEWAY {
@@ -163,10 +163,10 @@ impl Source for ExternalSource {
 
         let mut tx = db.begin().await?;
         for ch in &chapters {
-            // Dedup by (manga_id, number) — same float number = same logical chapter
+            // Dedup by (title_id, number) — same float number = same logical chapter
             let chapter_id: Option<String> = sqlx::query_scalar!(
-                r#"SELECT id as "id!" FROM chapters WHERE manga_id = ? AND number = ?"#,
-                manga_id, ch.number
+                r#"SELECT id as "id!" FROM chapters WHERE title_id = ? AND number = ?"#,
+                title_id, ch.number
             )
             .fetch_optional(&mut *tx)
             .await?;
@@ -179,9 +179,9 @@ impl Source for ExternalSource {
                     let vol = ch.volume;
                     let fmt = &ch.chapter_format;
                     sqlx::query!(
-                        r#"INSERT INTO chapters (id, manga_id, title, number, volume, page_count, downloaded, chapter_format, created_at)
+                        r#"INSERT INTO chapters (id, title_id, title, number, volume, page_count, downloaded, chapter_format, created_at)
                            VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?)"#,
-                        id, manga_id, ch.title, num, vol, fmt, now
+                        id, title_id, ch.title, num, vol, fmt, now
                     )
                     .execute(&mut *tx)
                     .await?;
@@ -204,7 +204,7 @@ impl Source for ExternalSource {
         tx.commit().await?;
 
         if new_count > 0 {
-            tracing::info!("{}: {} new chapters for manga {} ({} total)", src_key, new_count, manga_id, count);
+            tracing::info!("{}: {} new chapters for title {} ({} total)", src_key, new_count, title_id, count);
         }
         Ok(count)
     }
@@ -334,7 +334,7 @@ mod tests {
     async fn seed_manga(pool: &SqlitePool, id: &str) {
         let now = chrono::Utc::now().to_rfc3339();
         sqlx::query(
-            "INSERT INTO manga (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+            "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
              VALUES (?, 'Test', 'unknown', 'ready', 'manga', 0, ?, ?)"
         )
         .bind(id).bind(&now).bind(&now)
@@ -370,14 +370,14 @@ mod tests {
         src_b.sync_chapters(&pool, "m-dedup", "manga-src-id").await.unwrap();
 
         let chapter_count: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM chapters WHERE manga_id = 'm-dedup'")
+            sqlx::query_scalar("SELECT COUNT(*) FROM chapters WHERE title_id = 'm-dedup'")
                 .fetch_one(&pool).await.unwrap();
         assert_eq!(chapter_count, 4, "chapters 1-3 from A + ch 4 from B = 4 unique rows");
 
         let source_count: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM chapter_sources cs \
              JOIN chapters c ON c.id = cs.chapter_id \
-             WHERE c.manga_id = 'm-dedup'"
+             WHERE c.title_id = 'm-dedup'"
         ).fetch_one(&pool).await.unwrap();
         assert_eq!(source_count, 6, "3 from source-a + 3 from source-b = 6 chapter_sources rows");
     }
@@ -401,14 +401,14 @@ mod tests {
         src.sync_chapters(&pool, "m-idem", "mid").await.unwrap();
 
         let chapter_count: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM chapters WHERE manga_id = 'm-idem'")
+            sqlx::query_scalar("SELECT COUNT(*) FROM chapters WHERE title_id = 'm-idem'")
                 .fetch_one(&pool).await.unwrap();
         assert_eq!(chapter_count, 2);
 
         let source_count: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM chapter_sources cs \
              JOIN chapters c ON c.id = cs.chapter_id \
-             WHERE c.manga_id = 'm-idem'"
+             WHERE c.title_id = 'm-idem'"
         ).fetch_one(&pool).await.unwrap();
         assert_eq!(source_count, 2);
     }
@@ -440,14 +440,14 @@ mod tests {
         let stored_id: String = sqlx::query_scalar(
             "SELECT cs.source_id FROM chapter_sources cs \
              JOIN chapters c ON c.id = cs.chapter_id \
-             WHERE c.manga_id = 'm-update' AND cs.source = 'source-up'"
+             WHERE c.title_id = 'm-update' AND cs.source = 'source-up'"
         ).fetch_one(&pool).await.unwrap();
         assert_eq!(stored_id, "new-id", "ON CONFLICT updates source_id to the new value");
 
         let row_count: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM chapter_sources cs \
              JOIN chapters c ON c.id = cs.chapter_id \
-             WHERE c.manga_id = 'm-update'"
+             WHERE c.title_id = 'm-update'"
         ).fetch_one(&pool).await.unwrap();
         assert_eq!(row_count, 1, "no duplicate rows after update");
     }
@@ -493,7 +493,7 @@ mod tests {
         assert!(result.is_ok());
 
         let count: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM chapters WHERE manga_id = 'm-502-preserve'"
+            "SELECT COUNT(*) FROM chapters WHERE title_id = 'm-502-preserve'"
         ).fetch_one(&pool).await.unwrap();
         assert_eq!(count, 1, "chapter from successful sync must survive 502");
     }

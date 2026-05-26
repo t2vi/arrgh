@@ -7,7 +7,7 @@ import type { QueueItem } from '@/api'
 function makeChapter(overrides: Partial<Chapter> = {}): Chapter {
   return {
     id: 'ch-1',
-    manga_id: 'manga-1',
+    title_id: 'manga-1',
     title: 'The Beginning',
     number: 1,
     volume: null,
