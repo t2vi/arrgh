@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AlignJustify, BookOpen } from 'lucide-react'
 import { api } from '@/api'
+import type { Chapter } from '@/types'
 
 export interface ReaderHandle {
   chapterId: string | undefined
@@ -17,6 +18,10 @@ export interface ReaderHandle {
   isNovel: boolean
   novelContent: string | null
   novelError: boolean
+  prevChapter: Chapter | null
+  nextChapter: Chapter | null
+  progress: number
+  setNovelProgress: (pct: number) => void
   goTo: (p: number) => void
   markNovelRead: () => void
   toggleMode: () => void
@@ -29,18 +34,20 @@ export function useReader(): ReaderHandle {
   const [page, setPage] = useState(0)
   const [lastPage, setLastPage] = useState<number | null>(null)
   const [modeOverride, setModeOverride] = useState<'paged' | 'scroll' | null>(null)
+  const [novelProgress, setNovelProgress] = useState(0)
 
   const [chapter, setChapter] = useState<Awaited<ReturnType<typeof api.getChapter>> | undefined>()
-  const [progress, setProgress] = useState<Awaited<ReturnType<typeof api.getProgress>> | null>(null)
+  const [readProgress, setReadProgress] = useState<Awaited<ReturnType<typeof api.getProgress>> | null>(null)
   const [settings, setSettings] = useState<Awaited<ReturnType<typeof api.getSettings>> | undefined>()
   const [manga, setManga] = useState<Awaited<ReturnType<typeof api.getTitle>> | undefined>()
+  const [chapters, setChapters] = useState<Chapter[]>([])
   const [novelContent, setNovelContent] = useState<string | null>(null)
   const [novelError, setNovelError] = useState(false)
 
   useEffect(() => {
     if (!chapterId) return
     api.getChapter(chapterId).then(setChapter).catch(() => {})
-    api.getProgress(chapterId).then(setProgress).catch(() => {})
+    api.getProgress(chapterId).then(setReadProgress).catch(() => {})
     api.getSettings().then(setSettings).catch(() => {})
   }, [chapterId])
 
@@ -56,21 +63,34 @@ export function useReader(): ReaderHandle {
   useEffect(() => {
     if (!chapter?.title_id) return
     api.getTitle(chapter.title_id).then(setManga).catch(() => {})
+    api.listChapters(chapter.title_id).then((list) => {
+      const sorted = [...list].sort((a, b) => a.number - b.number)
+      setChapters(sorted)
+    }).catch(() => {})
   }, [chapter?.title_id])
 
   const effectiveMode: 'paged' | 'scroll' =
     modeOverride ?? (manga?.reader_mode as 'paged' | 'scroll' | null) ?? settings?.reader_mode ?? 'paged'
 
   useEffect(() => {
-    if (progress?.current_page != null && !progress.completed) {
-      setPage(progress.current_page)
+    if (readProgress?.current_page != null && !readProgress.completed) {
+      setPage(readProgress.current_page)
     }
-  }, [progress])
+  }, [readProgress])
 
   const knownTotal = chapter?.page_count ?? 0
   const total = knownTotal > 0 ? knownTotal : (lastPage != null ? lastPage : null)
   const totalLabel = total != null ? String(total) : '?'
   const atEnd = total != null && page >= total - 1
+
+  const currentIndex = chapters.findIndex((c) => c.id === chapterId)
+  const prevChapter = currentIndex > 0 ? chapters[currentIndex - 1] : null
+  const nextChapter = currentIndex >= 0 && currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null
+
+  const isNovel = chapter?.chapter_format === 'text'
+  const progress = isNovel
+    ? novelProgress
+    : total != null && total > 0 ? (page + 1) / total : 0
 
   function goTo(p: number) {
     const clamped = total != null
@@ -95,12 +115,15 @@ export function useReader(): ReaderHandle {
     setModeOverride((m) => (m ?? effectiveMode) === 'paged' ? 'scroll' : 'paged')
   }
 
-  const isNovel = chapter?.chapter_format === 'text'
   const ModeIcon = effectiveMode === 'scroll' ? BookOpen : AlignJustify
 
   function markNovelRead() {
     api.updateProgress(chapterId!, 0, true).catch(() => {})
   }
+
+  const handleNovelProgress = useCallback((pct: number) => {
+    setNovelProgress(pct)
+  }, [])
 
   return {
     chapterId, navigate,
@@ -108,6 +131,9 @@ export function useReader(): ReaderHandle {
     effectiveMode, chapter,
     total, totalLabel, atEnd,
     isNovel, novelContent, novelError,
+    prevChapter, nextChapter,
+    progress,
+    setNovelProgress: handleNovelProgress,
     goTo, markNovelRead, toggleMode, ModeIcon,
   }
 }

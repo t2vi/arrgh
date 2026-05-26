@@ -25,7 +25,7 @@ export default function Discover() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 className="pl-9"
-                placeholder="Search MangaUpdates…"
+                placeholder="Search for manga, manhwa, manhua, or light novels…"
                 value={h.query}
                 onChange={(e) => h.setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && h.submit()}

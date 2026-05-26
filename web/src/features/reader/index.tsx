@@ -6,16 +6,22 @@ import { Button } from '@/components/ui/button'
 import { useReader } from './hooks/useReader'
 import { ScrollReader } from './components/ScrollReader'
 import { NovelReader } from './components/NovelReader'
+import { ReaderFooter } from './components/ReaderFooter'
+import { ProgressBar } from './components/ProgressBar'
+import { FontSizeControl, useNovelFontSize } from './components/FontSizeControl'
 
 export default function Reader() {
   const h = useReader()
   const [imgLoading, setImgLoading] = useState(true)
+  const { size: fontSize, apply: applyFontSize } = useNovelFontSize()
 
   useEffect(() => { setImgLoading(true) }, [h.page])
 
   if (!h.chapter) {
     return <div className="flex items-center justify-center h-full text-muted-foreground">Loading…</div>
   }
+
+  const footerMode = h.isNovel ? 'novel' : h.effectiveMode
 
   return (
     <div className="reader-page">
@@ -29,7 +35,9 @@ export default function Reader() {
         <p className="text-sm font-medium flex-1 truncate">
           Ch. {h.chapter.number}{h.chapter.title ? ` — ${h.chapter.title}` : ''}
         </p>
-        {!h.isNovel && (
+        {h.isNovel ? (
+          <FontSizeControl size={fontSize} onApply={applyFontSize} />
+        ) : (
           <>
             <span className="text-xs text-muted-foreground shrink-0 mr-1">
               {h.effectiveMode === 'paged'
@@ -48,9 +56,16 @@ export default function Reader() {
         )}
       </header>
 
+      <ProgressBar value={h.progress} />
+
       {h.isNovel ? (
         h.novelContent != null
-          ? <NovelReader content={h.novelContent} onRead={h.markNovelRead} />
+          ? <NovelReader
+              content={h.novelContent}
+              fontSize={fontSize}
+              onRead={h.markNovelRead}
+              onProgress={h.setNovelProgress}
+            />
           : h.novelError
           ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
@@ -66,34 +81,21 @@ export default function Reader() {
           )
           : <div className="flex items-center justify-center h-full text-muted-foreground">Loading…</div>
       ) : h.effectiveMode === 'paged' ? (
-        <>
-          <div className="reader-scroll" onClick={() => h.goTo(h.page + 1)}>
-            {imgLoading && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/60" />
-              </div>
-            )}
-            <img
-              key={h.page}
-              src={api.pageUrl(h.chapterId!, h.page)}
-              alt={`Page ${h.page + 1}`}
-              onClick={(e) => { e.stopPropagation(); h.goTo(h.page + 1) }}
-              onLoad={() => setImgLoading(false)}
-              onError={() => { setImgLoading(false); if (h.page > 0) h.setLastPage(h.page) }}
-            />
-          </div>
-          <footer className="flex items-center justify-center gap-4 px-4 py-3 border-t border-border bg-card/90 backdrop-blur shrink-0">
-            <Button variant="outline" size="sm" disabled={h.page === 0} onClick={() => h.goTo(h.page - 1)} className="gap-1">
-              <ChevronLeft className="w-3 h-3" /> Prev
-            </Button>
-            <span className="text-sm text-muted-foreground min-w-16 text-center">
-              {h.page + 1} / {h.totalLabel}
-            </span>
-            <Button variant="outline" size="sm" disabled={h.atEnd} onClick={() => h.goTo(h.page + 1)} className="gap-1">
-              Next <ChevronRight className="w-3 h-3" />
-            </Button>
-          </footer>
-        </>
+        <div className="reader-scroll" onClick={() => h.goTo(h.page + 1)}>
+          {imgLoading && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground/60" />
+            </div>
+          )}
+          <img
+            key={h.page}
+            src={api.pageUrl(h.chapterId!, h.page)}
+            alt={`Page ${h.page + 1}`}
+            onClick={(e) => { e.stopPropagation(); h.goTo(h.page + 1) }}
+            onLoad={() => setImgLoading(false)}
+            onError={() => { setImgLoading(false); if (h.page > 0) h.setLastPage(h.page) }}
+          />
+        </div>
       ) : (
         <ScrollReader
           chapterId={h.chapterId!}
@@ -103,6 +105,19 @@ export default function Reader() {
           initialPage={h.page}
         />
       )}
+
+      <ReaderFooter
+        mode={footerMode}
+        page={h.page}
+        total={h.total}
+        totalLabel={h.totalLabel}
+        atEnd={h.atEnd}
+        prevChapter={h.prevChapter}
+        nextChapter={h.nextChapter}
+        navigate={h.navigate}
+        onPrevPage={() => h.goTo(h.page - 1)}
+        onNextPage={() => h.goTo(h.page + 1)}
+      />
     </div>
   )
 }
