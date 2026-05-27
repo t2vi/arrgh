@@ -1,5 +1,5 @@
 # *ARRgh!
-[![CI](https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ci.yml) [![Docker](https://github.com/t2vi/arrgh/actions/workflows/docker.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/docker.yml)
+[![CI](https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ci.yml) [![Docs-site](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml) 
 
 A self-hosted manga manager, downloader, and reader for your home server. Supports manga, manhwa, and manhua from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
 
