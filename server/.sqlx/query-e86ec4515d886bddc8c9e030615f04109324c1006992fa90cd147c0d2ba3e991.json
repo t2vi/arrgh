@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT\n                   m.id as \"id!\",\n                   m.title as \"title!\",\n                   m.description,\n                   m.cover_url,\n                   m.status as \"status!\",\n                   (NOT EXISTS(SELECT 1 FROM title_sources ts WHERE ts.title_id = m.id)) as \"is_local!: bool\",\n                   m.local_path,\n                   m.author,\n                   m.year,\n                   m.tags,\n                   m.sync_status as \"sync_status!\",\n                   m.content_type as \"content_type!\",\n                   (m.is_explicit != 0) as \"is_explicit!: bool\",\n                   m.auto_download,\n                   (SELECT ums.reader_mode FROM user_title_settings ums\n                    WHERE ums.title_id = m.id AND ums.user_id = ?) as reader_mode,\n                   m.download_dir,\n                   m.created_at as \"created_at: _\",\n                   m.updated_at as \"updated_at: _\",\n                   (SELECT COUNT(*) FROM chapters WHERE title_id = m.id) as \"total_chapters!: i64\",\n                   (SELECT COUNT(*) FROM chapters WHERE title_id = m.id AND downloaded = 1) as \"downloaded_chapters!: i64\",\n                   (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id\n                    WHERE c.title_id = m.id AND rp.completed = 1 AND rp.user_id = ?) as \"chapters_read!: i64\"\n               FROM titles m\n               WHERE m.title LIKE ?\n                 AND EXISTS (SELECT 1 FROM user_titles ut WHERE ut.title_id = m.id AND ut.user_id = ?)\n                 AND (m.is_explicit = 0 OR ? = 1)\n               ORDER BY m.title LIMIT ? OFFSET ?",
+  "query": "SELECT\n                   m.id as \"id!\",\n                   m.title as \"title!\",\n                   m.description,\n                   m.cover_url,\n                   m.status as \"status!\",\n                   (NOT EXISTS(SELECT 1 FROM title_sources ts WHERE ts.title_id = m.id)) as \"is_local!: bool\",\n                   m.local_path,\n                   m.author,\n                   m.year,\n                   m.tags,\n                   m.sync_status as \"sync_status!\",\n                   m.content_type as \"content_type!\",\n                   (m.is_explicit != 0) as \"is_explicit!: bool\",\n                   m.auto_download,\n                   (SELECT ums.reader_mode FROM user_title_settings ums\n                    WHERE ums.title_id = m.id AND ums.user_id = ?) as reader_mode,\n                   m.download_dir,\n                   m.created_at as \"created_at: _\",\n                   m.updated_at as \"updated_at: _\",\n                   (SELECT COUNT(*) FROM chapters WHERE title_id = m.id) as \"total_chapters!: i64\",\n                   (SELECT COUNT(*) FROM chapters WHERE title_id = m.id AND downloaded = 1) as \"downloaded_chapters!: i64\",\n                   (SELECT COUNT(*) FROM read_progress rp JOIN chapters c ON c.id = rp.chapter_id\n                    WHERE c.title_id = m.id AND rp.completed = 1 AND rp.user_id = ?) as \"chapters_read!: i64\",\n                   EXISTS(SELECT 1 FROM sync_warnings sw WHERE sw.title_id = m.id) as \"has_sync_warnings!: bool\"\n               FROM titles m\n               WHERE m.title LIKE ?\n                 AND EXISTS (SELECT 1 FROM user_titles ut WHERE ut.title_id = m.id AND ut.user_id = ?)\n                 AND (m.is_explicit = 0 OR ? = 1)\n               ORDER BY m.title LIMIT ? OFFSET ?",
   "describe": {
     "columns": [
       {
@@ -107,6 +107,11 @@
         "name": "chapters_read!: i64",
         "ordinal": 20,
         "type_info": "Integer"
+      },
+      {
+        "name": "has_sync_warnings!: bool",
+        "ordinal": 21,
+        "type_info": "Integer"
       }
     ],
     "parameters": {
@@ -133,8 +138,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "ad5e7e690b4e59fcd67b8e89210835d75bbd46549d026d70ddde13e872d178e8"
+  "hash": "e86ec4515d886bddc8c9e030615f04109324c1006992fa90cd147c0d2ba3e991"
 }

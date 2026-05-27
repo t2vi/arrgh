@@ -24,6 +24,7 @@ pub struct MuSeries {
     pub author: Option<String>,
     pub year: Option<i64>,
     pub tags: Option<String>,
+    pub associated_names: Vec<String>,
 }
 
 // ── Wire types ────────────────────────────────────────────────────────────────
@@ -51,6 +52,12 @@ struct SeriesRecord {
     status: Option<String>,
     authors: Option<Vec<MuAuthor>>,
     genres: Option<Vec<MuGenre>>,
+    associated: Option<Vec<AssociatedName>>,
+}
+
+#[derive(Deserialize)]
+struct AssociatedName {
+    title: String,
 }
 
 #[derive(Deserialize)]
@@ -135,7 +142,9 @@ fn map_series(rec: SeriesRecord) -> MuSeries {
                 .iter()
                 .map(|g| {
                     let lower = g.genre.to_lowercase();
-                    if ["adult", "hentai", "smut", "18+", "erotic"]
+                    if lower == "hentai" {
+                        "hentai".to_string()
+                    } else if ["adult", "smut", "18+", "erotic"]
                         .iter()
                         .any(|&e| lower == e)
                     {
@@ -157,6 +166,12 @@ fn map_series(rec: SeriesRecord) -> MuSeries {
     // Strip basic HTML tags from description
     let description = rec.description.map(|d| strip_html(&d)).filter(|s| !s.is_empty());
 
+    let associated_names = rec.associated
+        .unwrap_or_default()
+        .into_iter()
+        .map(|a| a.title)
+        .collect();
+
     MuSeries {
         series_id: rec.series_id,
         title: rec.title,
@@ -167,6 +182,7 @@ fn map_series(rec: SeriesRecord) -> MuSeries {
         author,
         year,
         tags,
+        associated_names,
     }
 }
 
@@ -393,10 +409,12 @@ mod tests {
 
     #[test]
     fn map_series_explicit_genre_normalised() {
-        let json = r#"{"series_id":1,"title":"T","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":[{"genre":"Action"},{"genre":"Hentai"}]}"#;
+        let json = r#"{"series_id":1,"title":"T","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":[{"genre":"Action"},{"genre":"Hentai"},{"genre":"Smut"}]}"#;
         let rec: SeriesRecord = serde_json::from_str(json).unwrap();
         let tags = map_series(rec).tags.unwrap();
-        assert!(tags.contains("adult"), "expected 'adult' in tags, got: {tags}");
+        // "Hentai" stays as "hentai" (used for source routing); other explicit tags → "adult"
+        assert!(tags.contains("hentai"), "expected 'hentai' in tags, got: {tags}");
+        assert!(tags.contains("adult"), "expected 'adult' (from Smut) in tags, got: {tags}");
         assert!(tags.contains("Action"));
     }
 

@@ -1,0 +1,13 @@
+{
+  "name": "arrgh-plugin-nhentai",
+  "version": "1.0.0",
+  "description": "nhentai source plugin for *ARRgh (plugin-host bundle format)",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=bundles/nhentai.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.5.0"
+  }
+}

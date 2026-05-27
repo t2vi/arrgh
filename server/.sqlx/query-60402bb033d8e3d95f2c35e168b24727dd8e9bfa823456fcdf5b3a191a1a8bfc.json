@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT mangaupdates_id FROM titles m\n           WHERE m.id = ?\n             AND EXISTS (SELECT 1 FROM user_titles ut WHERE ut.title_id = m.id AND ut.user_id = ?)",
+  "describe": {
+    "columns": [
+      {
+        "name": "mangaupdates_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "60402bb033d8e3d95f2c35e168b24727dd8e9bfa823456fcdf5b3a191a1a8bfc"
+}

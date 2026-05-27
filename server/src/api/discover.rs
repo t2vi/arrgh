@@ -78,6 +78,36 @@ pub fn normalize_title(title: &str) -> String {
         .to_lowercase()
 }
 
+/// True if two normalized titles are close enough to be the same work.
+/// Exact match first; falls back to levenshtein within 20% of the longer string.
+pub fn title_matches(a: &str, b: &str) -> bool {
+    if a == b { return true; }
+    let max_len = a.len().max(b.len());
+    if max_len == 0 { return true; }
+    levenshtein(a, b) * 5 <= max_len
+}
+
+fn levenshtein(a: &str, b: &str) -> usize {
+    let a: Vec<char> = a.chars().collect();
+    let b: Vec<char> = b.chars().collect();
+    let (m, n) = (a.len(), b.len());
+    let mut row: Vec<usize> = (0..=n).collect();
+    for i in 1..=m {
+        let mut prev = row[0];
+        row[0] = i;
+        for j in 1..=n {
+            let old = row[j];
+            row[j] = if a[i-1] == b[j-1] {
+                prev
+            } else {
+                1 + prev.min(row[j]).min(row[j-1])
+            };
+            prev = old;
+        }
+    }
+    row[n]
+}
+
 fn meta_cover_url(key: &str) -> String {
     format!("/api/media/meta-cover?key={}", urlencoding::encode(key))
 }
@@ -130,18 +160,20 @@ async fn seed_and_cache_cover(
     title: String,
     cdn_url: String,
     download_dir: String,
+    mu_id: String,
 ) {
     let key = normalize_title(&title);
     let now = Utc::now().to_rfc3339();
+    let source = "mangaupdates";
 
     // Upsert title_meta row
     if let Err(e) = sqlx::query!(
-        r#"INSERT INTO title_meta (title_key, cover_cdn_url, fetched_at)
-           VALUES (?, ?, ?)
+        r#"INSERT INTO title_meta (title_key, cover_cdn_url, fetched_at, source, source_id)
+           VALUES (?, ?, ?, ?, ?)
            ON CONFLICT(title_key) DO UPDATE SET
              cover_cdn_url = COALESCE(title_meta.cover_cdn_url, excluded.cover_cdn_url),
              fetched_at    = excluded.fetched_at"#,
-        key, cdn_url, now
+        key, cdn_url, now, source, mu_id
     )
     .execute(&db)
     .await
@@ -230,6 +262,7 @@ async fn search(
                 s.title.clone(),
                 cdn.clone(),
                 state.config.download_dir.clone(),
+                mu_id.clone(),
             ));
         }
 
@@ -351,7 +384,10 @@ async fn add_manga(
     } else {
         let id = Uuid::new_v4().to_string();
         let tag_explicit = body.tags.as_deref()
-            .map(|t| t.split(',').any(|tag| tag.trim().eq_ignore_ascii_case("adult")))
+            .map(|t| t.split(',').any(|tag| {
+                let t = tag.trim();
+                t.eq_ignore_ascii_case("adult") || t.eq_ignore_ascii_case("hentai")
+            }))
             .unwrap_or(false);
         let is_explicit: i64 = if tag_explicit { 1 } else { 0 };
 
@@ -377,7 +413,7 @@ async fn add_manga(
     .execute(&state.db)
     .await?;
 
-    // Async: download cover + match sources + sync chapters
+    // Async: download cover + fetch aliases + match sources + sync chapters
     let db = state.db.clone();
     let http = state.http.clone();
     let sources = state.sources.clone();
@@ -385,9 +421,14 @@ async fn add_manga(
     let title = body.title.clone();
     let cover_cdn = resolved_cover_url.clone();
     let download_dir = state.config.download_dir.clone();
+    let mu_id_str = body.mangaupdates_id.clone();
+    let content_type = body.content_type.clone();
+    let has_hentai_tag = body.tags.as_deref()
+        .map(|t| t.split(',').any(|tag| tag.trim().eq_ignore_ascii_case("hentai")))
+        .unwrap_or(false);
 
     tokio::spawn(async move {
-        // 1. Download manga cover
+        // 1. Download cover
         if let Some(cdn_url) = cover_cdn {
             let ext = cdn_url.split('?').next().unwrap_or("cover")
                 .rsplit('.').next().unwrap_or("jpg");
@@ -421,24 +462,108 @@ async fn add_manga(
             }
         }
 
-        // 2. Match against registered sources by title search
-        let norm = normalize_title(&title);
+        // 2. Fetch and store associated names from MangaUpdates
+        if let Ok(mu_id) = mu_id_str.parse::<u64>() {
+            let mu = MangaUpdatesClient::new(&http);
+            match mu.series_detail(mu_id).await {
+                Ok(Some(series)) => {
+                    let _ = sqlx::query!("DELETE FROM title_aliases WHERE title_id = ?", mid)
+                        .execute(&db).await;
+                    for alias in &series.associated_names {
+                        let alias_id = Uuid::new_v4().to_string();
+                        let _ = sqlx::query!(
+                            "INSERT INTO title_aliases (id, title_id, alias) VALUES (?, ?, ?)",
+                            alias_id, mid, alias
+                        )
+                        .execute(&db).await;
+                    }
+                }
+                Ok(None) => {}
+                Err(e) => tracing::warn!("series_detail fetch failed for {}: {}", mid, e),
+            }
+        }
+
+        // 3. Match against registered sources: primary title first, then aliases
+        let aliases: Vec<String> = sqlx::query_scalar!(
+            "SELECT alias FROM title_aliases WHERE title_id = ?", mid
+        )
+        .fetch_all(&db).await.unwrap_or_default();
+
+        let known_norms: Vec<String> = std::iter::once(normalize_title(&title))
+            .chain(aliases.iter().map(|a| normalize_title(a)))
+            .collect();
+
+        let candidates: Vec<String> = std::iter::once(title.clone())
+            .chain(aliases.iter().cloned())
+            .collect();
+
         let source_snapshot: Vec<(String, Arc<dyn crate::indexer::Source>)> = {
             let reg = sources.read().await;
-            reg.iter().map(|(id, src)| (id.clone(), src.clone())).collect()
+            reg.iter()
+                .filter(|(_, src)| {
+                    src.content_types().iter().any(|ct| ct == &content_type)
+                        && src.default_explicit() == has_hentai_tag
+                })
+                .map(|(id, src)| (id.clone(), src.clone()))
+                .collect()
         };
+
+        // Emit a sentinel warning when no source pool matches this title's routing tier,
+        // so the amber indicator appears even if no per-source search was attempted.
+        if source_snapshot.is_empty() {
+            let warn_id = Uuid::new_v4().to_string();
+            let now_w = Utc::now().to_rfc3339();
+            let tier = if has_hentai_tag { "hentai" } else { "non-hentai" };
+            let msg = format!("no {} source registered for content_type '{}'", tier, content_type);
+            let _ = sqlx::query!(
+                "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at)
+                 VALUES (?, ?, ?, ?, ?)
+                 ON CONFLICT(title_id, plugin_id) DO UPDATE SET message = excluded.message, created_at = excluded.created_at",
+                warn_id, mid, "_no_source", msg, now_w
+            )
+            .execute(&db).await;
+        }
 
         let mut any_ok = false;
         for (src_key, src) in &source_snapshot {
-            let results = match src.search(&title).await {
-                Ok(r) => r,
-                Err(e) => {
-                    tracing::debug!("source match search '{}' for '{}': {}", src_key, title, e);
-                    continue;
+            let mut matched_hit: Option<crate::indexer::source::MangaResult> = None;
+
+            'candidates: for candidate in &candidates {
+                let results = match src.search(candidate).await {
+                    Ok(r) => r,
+                    Err(e) => {
+                        tracing::debug!("source match '{}' for '{}' on {}: {}", candidate, title, src_key, e);
+                        continue;
+                    }
+                };
+                for r in &results {
+                    if known_norms.iter().any(|kn| title_matches(kn, &normalize_title(&r.title))) {
+                        matched_hit = Some(r.clone());
+                        break 'candidates;
+                    }
                 }
+            }
+
+            let Some(hit) = matched_hit else {
+                let warn_id = Uuid::new_v4().to_string();
+                let now_w = Utc::now().to_rfc3339();
+                let msg = format!("no matching source found for '{}' or any alias", title);
+                let _ = sqlx::query!(
+                    "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at)
+                     VALUES (?, ?, ?, ?, ?)
+                     ON CONFLICT(title_id, plugin_id) DO UPDATE SET message = excluded.message, created_at = excluded.created_at",
+                    warn_id, mid, src_key, msg, now_w
+                )
+                .execute(&db).await;
+                continue;
             };
-            let best = results.iter().find(|r| normalize_title(&r.title) == norm);
-            let Some(hit) = best else { continue };
+
+            // Clear warning for this source — match succeeded
+            let _ = sqlx::query!(
+                "DELETE FROM sync_warnings WHERE title_id = ? AND plugin_id = ?",
+                mid, src_key
+            )
+            .execute(&db).await;
 
             let ms_id = Uuid::new_v4().to_string();
             let disc = Utc::now().to_rfc3339();
@@ -457,6 +582,15 @@ async fn add_manga(
                 Ok(_) => { any_ok = true; }
                 Err(e) => tracing::error!("chapter sync failed for {} ({}): {}", mid, src_key, e),
             }
+        }
+
+        // Clear the sentinel no-source warning once a real match attempt ran
+        if !source_snapshot.is_empty() {
+            let _ = sqlx::query!(
+                "DELETE FROM sync_warnings WHERE title_id = ? AND plugin_id = '_no_source'",
+                mid
+            )
+            .execute(&db).await;
         }
 
         let status = if source_snapshot.is_empty() || any_ok { "ready" } else { "error" };
@@ -485,6 +619,7 @@ pub async fn fetch_title(db: &sqlx::SqlitePool, id: &str) -> Result<Title, sqlx:
                sync_status as "sync_status!",
                content_type as "content_type!",
                (is_explicit != 0) as "is_explicit!: bool",
+               EXISTS(SELECT 1 FROM sync_warnings WHERE title_id = titles.id) as "has_sync_warnings!: bool",
                created_at as "created_at: _",
                updated_at as "updated_at: _"
            FROM titles WHERE id = ?"#,

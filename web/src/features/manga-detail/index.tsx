@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  Download, RefreshCw, Loader2, X, ArrowUp, ArrowDown, Trash2, ChevronDown,
+  Download, RefreshCw, Loader2, X, ArrowUp, ArrowDown, Trash2, ChevronDown, AlertTriangle,
 } from 'lucide-react'
 import { api, isAdmin } from '@/api'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ import { useMangaDetail, CHAPTERS_PREVIEW, type FilterMode } from './hooks/useMa
 import { ChapterRow } from './components/ChapterRow'
 import {
   SectionHeading, CoverImg, ChapterListSkeleton,
-  ReaderModeCard, AutoDownloadCard, ExplicitCard, DownloadDirCard, CoverUrlCard,
+  ReaderModeCard, AutoDownloadCard, ExplicitCard, DownloadDirCard, CoverUrlCard, ContentTypeCard,
 } from './components/SidebarCards'
 
 export default function MangaDetail() {
@@ -107,9 +107,22 @@ export default function MangaDetail() {
                     size="icon"
                     onClick={() => h.sync.mutate()}
                     disabled={h.sync.isPending || isSyncing}
-                    title="Sync"
+                    title="Sync chapters"
                   >
                     <RefreshCw className={cn('w-4 h-4', (h.sync.isPending || isSyncing) && 'animate-spin')} />
+                  </Button>
+                )}
+                {manga.has_sync_warnings && (
+                  <Button
+                    size="icon"
+                    onClick={() => h.refreshMetadata.mutate()}
+                    disabled={h.refreshMetadata.isPending}
+                    title="Source match failed — click to refresh metadata and retry"
+                    className="bg-amber-500 hover:bg-amber-600 text-white border-0"
+                  >
+                    {h.refreshMetadata.isPending
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <AlertTriangle className="w-4 h-4" />}
                   </Button>
                 )}
                 <div className="relative" ref={h.removeMenuRef as React.RefObject<HTMLDivElement>}>
@@ -326,6 +339,9 @@ export default function MangaDetail() {
             {manga && <DownloadDirCard mangaId={manga.id} value={manga.download_dir ?? null} />}
             {manga && isAdmin() && (
               <ExplicitCard mangaId={manga.id} value={manga.is_explicit ?? false} />
+            )}
+            {manga && isAdmin() && (
+              <ContentTypeCard mangaId={manga.id} value={manga.content_type} />
             )}
             {manga && isAdmin() && (
               <CoverUrlCard

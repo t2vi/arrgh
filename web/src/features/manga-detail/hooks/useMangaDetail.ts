@@ -52,6 +52,7 @@ export interface MangaDetailHandle {
   // Actions
   openOrQueue: (ch: Chapter) => void
   sync: SimpleMutation<void>
+  refreshMetadata: SimpleMutation<void>
   removeFromQueue: SimpleMutation<string>
   cancelAll: SimpleMutation<void>
   downloadAll: SimpleMutation<void>
@@ -80,6 +81,8 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
   // Mutation states
   const [syncPending, setSyncPending] = useState(false)
   const [syncSuccess, setSyncSuccess] = useState(false)
+  const [refreshMetaPending, setRefreshMetaPending] = useState(false)
+  const [refreshMetaSuccess, setRefreshMetaSuccess] = useState(false)
   const [removeFromQueuePending, setRemoveFromQueuePending] = useState(false)
   const [cancelAllPending, setCancelAllPending] = useState(false)
   const [downloadAllPending, setDownloadAllPending] = useState(false)
@@ -212,6 +215,24 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     isSuccess: syncSuccess,
   }
 
+  const refreshMetadata: SimpleMutation<void> = {
+    mutate: () => {
+      if (!id) return
+      setRefreshMetaPending(true)
+      setRefreshMetaSuccess(false)
+      api.refreshMetadata(id)
+        .then(() => {
+          setRefreshMetaSuccess(true)
+          fetchManga()
+          setTimeout(() => fetchChapters(), 3000)
+        })
+        .catch(() => {})
+        .finally(() => setRefreshMetaPending(false))
+    },
+    isPending: refreshMetaPending,
+    isSuccess: refreshMetaSuccess,
+  }
+
   const removeFromQueue: SimpleMutation<string> = {
     mutate: (itemId: string) => {
       setRemoveFromQueuePending(true)
@@ -317,6 +338,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     pendingReadId,
     openOrQueue,
     sync,
+    refreshMetadata,
     removeFromQueue,
     cancelAll,
     downloadAll,

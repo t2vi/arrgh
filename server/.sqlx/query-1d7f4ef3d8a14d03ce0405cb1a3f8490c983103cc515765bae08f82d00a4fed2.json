@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM chapters WHERE title_id = ? AND NOT EXISTS (SELECT 1 FROM chapter_sources cs WHERE cs.chapter_id = chapters.id)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "1d7f4ef3d8a14d03ce0405cb1a3f8490c983103cc515765bae08f82d00a4fed2"
+}

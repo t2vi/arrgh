@@ -18,8 +18,9 @@ export function MangaCard({
   const src = !imgFailed && (manga.cover_url?.startsWith('http') || manga.cover_url?.startsWith('/api/'))
     ? manga.cover_url
     : api.coverUrl(manga.id)
-  const isSyncing    = manga.sync_status === 'syncing'
-  const hasDownloads = (manga.downloaded_chapters ?? 0) > 0
+  const isSyncing     = manga.sync_status === 'syncing'
+  const hasWarnings   = manga.has_sync_warnings
+  const hasDownloads  = (manga.downloaded_chapters ?? 0) > 0
 
   return (
     <div
@@ -50,6 +51,14 @@ export function MangaCard({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 pointer-events-none">
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
             <span className="text-[10px] font-medium text-primary">Building…</span>
+          </div>
+        )}
+        {hasWarnings && !isSyncing && (
+          <div
+            className="absolute top-2 left-2 w-5 h-5 rounded-full bg-amber-500/90 flex items-center justify-center"
+            title="Some sources could not be matched — click title to refresh metadata"
+          >
+            <span className="text-[9px] font-bold text-white leading-none">!</span>
           </div>
         )}
         {!confirming ? (

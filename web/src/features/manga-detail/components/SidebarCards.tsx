@@ -161,6 +161,51 @@ export function ExplicitCard({ mangaId, value }: { mangaId: string; value: boole
   )
 }
 
+const CONTENT_TYPES = ['manga', 'manhwa', 'manhua', 'novel'] as const
+
+export function ContentTypeCard({ mangaId, value }: { mangaId: string; value: string }) {
+  const [current, setCurrent] = useState(value)
+  const [saving, setSaving] = useState(false)
+
+  async function handleChange(next: string) {
+    if (next === current) return
+    setSaving(true)
+    const prev = current
+    setCurrent(next)
+    await api.setTitleContentType(mangaId, next).catch(() => setCurrent(prev))
+    setSaving(false)
+  }
+
+  return (
+    <div className="rounded-lg bg-card border border-border p-4 space-y-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Content Type
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {CONTENT_TYPES.map((ct) => (
+          <button
+            key={ct}
+            type="button"
+            disabled={saving}
+            onClick={() => handleChange(ct)}
+            className={cn(
+              'px-2.5 py-1 rounded-md text-xs font-medium capitalize transition-colors',
+              current === ct
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80',
+            )}
+          >
+            {ct}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Changing type clears incompatible sources and re-matches.
+      </p>
+    </div>
+  )
+}
+
 export function DownloadDirCard({ mangaId, value }: { mangaId: string; value: string | null }) {
   const [draft, setDraft] = useState(value ?? '')
   const [saving, setSaving] = useState(false)

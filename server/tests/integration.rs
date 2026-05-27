@@ -594,6 +594,7 @@ async fn trending_returns_cached_results_without_hitting_network() {
                 author: Some("Author A".into()),
                 year: Some(2020),
                 tags: None,
+                associated_names: vec![],
             },
         ]));
     }
@@ -634,6 +635,7 @@ async fn trending_marks_in_library_when_manga_already_added() {
                 author: None,
                 year: None,
                 tags: None,
+                associated_names: vec![],
             },
         ]));
     }

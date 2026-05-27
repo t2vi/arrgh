@@ -247,6 +247,7 @@ export const api = {
 
   getTitle: (id: string) => get<Title>(`/api/titles/${id}`),
   syncTitle: (id: string) => post<void>(`/api/titles/${id}/sync`),
+  refreshMetadata: (id: string) => post<void>(`/api/titles/${id}/refresh-metadata`),
 
   listChapters: (titleId: string) => get<Chapter[]>(`/api/chapters/title/${titleId}`),
   getChapter: (id: string) => get<Chapter>(`/api/chapters/${id}`),
@@ -296,6 +297,9 @@ export const api = {
 
   setTitleExplicit: (id: string, value: boolean) =>
     patch<void>(`/api/titles/${id}`, { is_explicit: value }),
+
+  setTitleContentType: (id: string, value: string) =>
+    patch<void>(`/api/titles/${id}`, { content_type: value }),
 
   setTitleCoverUrl: (id: string, url: string) =>
     patch<void>(`/api/titles/${id}`, { cover_url: url }),

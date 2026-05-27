@@ -15,6 +15,7 @@ export interface Title {
   reader_mode: string | null
   download_dir: string | null
   is_explicit: boolean
+  has_sync_warnings: boolean
   created_at: string
   updated_at: string
   // Present on list endpoint only

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM sync_warnings WHERE title_id = ? AND plugin_id = '_no_source'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "78b558e92ec2a6bf83857aa5645229187cf77e18eaf387c8ad8ec1bade0566ff"
+}
