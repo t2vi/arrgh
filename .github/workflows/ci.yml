@@ -170,4 +170,12 @@ jobs:
           folder: allure-report
           target-folder: test-reports
           clean: true
-          clean-exclude: docs
+          clean-exclude: |
+            docs
+            assets
+            index.html
+            getting-started
+            deploy
+            plugins
+            releases
+            favicon.svg

@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { idToVersion } from '@/lib/releases'
+
+const releases = await getCollection('releases')
+const sorted = releases.sort((a, b) => b.id.localeCompare(a.id))
+---
+
+<BaseLayout title="Releases">
+  <div class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-black tracking-tight text-foreground mb-2">Releases</h1>
+    <p class="text-muted-foreground mb-10">Full release history for *ARRgh.</p>
+
+    <div class="space-y-3">
+      {sorted.map((r) => (
+        <a
+          href={`/arrgh/releases/${r.id}`}
+          class="flex items-center justify-between px-4 py-3 rounded-lg border border-border bg-card hover:border-primary/40 hover:bg-muted/30 transition-colors group"
+        >
+          <span class="font-mono text-sm font-semibold text-primary">{idToVersion(r.id)}</span>
+          <span class="text-xs text-muted-foreground group-hover:text-foreground transition-colors">View notes →</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
