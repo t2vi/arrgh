@@ -1,0 +1,82 @@
+---
+import DocsLayout from '@/layouts/DocsLayout.astro'
+
+const scaffold = `// my-source/index.ts
+import type { PluginInfo, SearchResult, Chapter, PageList } from '../plugin-host/src/types'
+
+export const info: PluginInfo = {
+  name: 'My Source',
+  version: '1.0.0',
+  base_url: 'https://my-source.com',
+  content_types: ['manga'],
+  has_api_key: false,
+  is_community: true,
+  default_explicit: false,
+}
+
+export async function search(q: string): Promise<SearchResult[]> {
+  // fetch from source, return normalised results
+}
+
+export async function chapters(sourceId: string): Promise<Chapter[]> {
+  // ...
+}
+
+export async function pages(sourceId: string, chapterId: string): Promise<PageList> {
+  // ...
+}`
+
+const browserSnippet = `import { getBrowser } from '../plugin-host/src/browser'
+
+const browser = await getBrowser()
+const page = await browser.newPage()
+await page.goto(url)
+const html = await page.content()`
+
+const buildSnippet = `# Build your plugin
+cd my-source
+npm run build   # esbuild → dist/index.js
+
+# Install into arrgh via Settings → Sources → Add custom source
+# URL: http://your-plugin-host:port`
+---
+
+<DocsLayout title="Plugin Development" section="plugins">
+  <h1>Plugin Development</h1>
+
+  <p>*ARRgh's source plugins are esbuild-bundled TypeScript modules that implement a simple HTTP API. The plugin host loads them and proxies requests from the Rust server.</p>
+
+  <h2>Plugin protocol</h2>
+
+  <p>A plugin exposes these endpoints over HTTP:</p>
+
+  <table>
+    <thead>
+      <tr><th>Endpoint</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>GET /info</code></td><td>Plugin metadata (name, version, base_url, content_types)</td></tr>
+      <tr><td><code>GET /search?q=&lt;query&gt;</code></td><td>Search for titles</td></tr>
+      <tr><td><code>GET /:source_id/chapters</code></td><td>List chapters for a title</td></tr>
+      <tr><td><code>GET /:source_id/chapters/:chapter_id/pages</code></td><td>Get image URLs for a chapter</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Minimal plugin scaffold</h2>
+
+  <pre><code set:text={scaffold} /></pre>
+
+  <h2>Cloudflare-protected sources</h2>
+
+  <p>Plugins that need to bypass Cloudflare can access the CloakBrowser stealth Chromium instance via the <code>getBrowser()</code> helper provided by the plugin host:</p>
+
+  <pre><code set:text={browserSnippet} /></pre>
+
+  <h2>Build and install</h2>
+
+  <pre><code set:text={buildSnippet} /></pre>
+
+  <h2>Distributing via the plugin index</h2>
+
+  <p>Community plugins can be listed in the <a href="https://github.com/t2vi/arrgh/blob/main/plugin-index/index.json" target="_blank" rel="noopener noreferrer">plugin index</a> so users can browse and install them from Settings. Open a PR to add your plugin.</p>
+</DocsLayout>

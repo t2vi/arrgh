@@ -1,0 +1,101 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { getCollection } from 'astro:content'
+import { idToVersion } from '@/lib/releases'
+
+const releases = await getCollection('releases')
+const latest = releases
+  .sort((a, b) => b.id.localeCompare(a.id))
+  .slice(0, 1)[0]
+
+const FEATURES = [
+  { icon: '🔍', title: 'MangaUpdates metadata', body: 'Consistent titles, covers, descriptions and tags from a single authoritative source.' },
+  { icon: '⬇️', title: 'Multi-source download', body: 'Chapters aggregated across sources — automatic fallback if one goes down.' },
+  { icon: '🧩', title: 'Plugin system', body: 'Add new download sources without recompiling. Browse and install community plugins from Settings.' },
+  { icon: '📖', title: 'Web reader', body: 'Paged or scroll mode, chapter navigation, reading progress, novel font size control.' },
+  { icon: '👥', title: 'Multi-user', body: 'Per-user libraries with shared file storage and individual reading progress.' },
+  { icon: '⚙️', title: 'Self-hosted', body: 'Single Docker Compose file. Runs on a NAS, Raspberry Pi, or any always-on box.' },
+]
+---
+
+<BaseLayout title="*ARRgh" description="Self-hosted manga manager, downloader, and reader.">
+  <!-- Hero -->
+  <section class="max-w-6xl mx-auto px-4 pt-20 pb-16 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-xs font-medium mb-6">
+      {latest && <span>Latest: {idToVersion(latest.id)}</span>}
+    </div>
+    <h1 class="text-5xl sm:text-6xl font-black tracking-tight text-foreground mb-4">
+      *<span class="text-primary">ARR</span>gh
+    </h1>
+    <p class="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
+      Self-hosted manga manager, downloader, and reader. Runs on your NAS, Pi, or any home server.
+    </p>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/arrgh/getting-started"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-colors"
+      >
+        Get started →
+      </a>
+      <a
+        href="/arrgh/deploy/docker-compose"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-border bg-card text-foreground font-semibold text-sm hover:bg-muted transition-colors"
+      >
+        Deploy with Docker
+      </a>
+    </div>
+  </section>
+
+  <!-- Quick start snippet -->
+  <section class="max-w-2xl mx-auto px-4 pb-16">
+    <div class="rounded-xl border border-border bg-card overflow-hidden">
+      <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/50">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span>
+        <span class="ml-2 text-xs text-muted-foreground font-mono">terminal</span>
+      </div>
+      <pre class="p-4 text-sm font-mono text-foreground overflow-x-auto"><code><span class="text-muted-foreground"># Pull and start</span>
+curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
+docker compose up -d
+
+<span class="text-muted-foreground"># Open in browser</span>
+open http://localhost:8080</code></pre>
+    </div>
+  </section>
+
+  <!-- Status badges -->
+  <section class="max-w-6xl mx-auto px-4 pb-16">
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 text-center">Build Status</h2>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a href="https://github.com/t2vi/arrgh/actions/workflows/ci.yml" target="_blank" rel="noopener noreferrer">
+        <img src="https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg" alt="CI" class="h-5" />
+      </a>
+      <a href="https://github.com/t2vi/arrgh/actions/workflows/docker.yml" target="_blank" rel="noopener noreferrer">
+        <img src="https://github.com/t2vi/arrgh/actions/workflows/docker.yml/badge.svg" alt="Docker" class="h-5" />
+      </a>
+      <a
+        href="/test-reports"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-muted border border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        📊 Full test report ↗
+      </a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="max-w-6xl mx-auto px-4 pb-20">
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-8 text-center">Features</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {FEATURES.map((f) => (
+        <div class="rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors">
+          <div class="text-2xl mb-3">{f.icon}</div>
+          <h3 class="text-sm font-semibold text-foreground mb-1">{f.title}</h3>
+          <p class="text-sm text-muted-foreground leading-relaxed">{f.body}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

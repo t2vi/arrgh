@@ -1,0 +1,25 @@
+---
+import { getCollection, render } from 'astro:content'
+import DocsLayout from '@/layouts/DocsLayout.astro'
+
+export async function getStaticPaths() {
+  const entries = await getCollection('deploy')
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }))
+}
+
+const { entry } = Astro.props
+const { Content } = await render(entry)
+
+const titleMap: Record<string, string> = {
+  'docker-compose': 'Docker Compose',
+  'manual': 'Manual Deployment',
+  'nginx': 'Nginx Configuration',
+}
+---
+
+<DocsLayout title={titleMap[entry.id] ?? entry.id} section="deploy">
+  <Content />
+</DocsLayout>

@@ -1,0 +1,24 @@
+---
+import { getCollection, render } from 'astro:content'
+import DocsLayout from '@/layouts/DocsLayout.astro'
+import { idToVersion } from '@/lib/releases'
+
+export async function getStaticPaths() {
+  const entries = await getCollection('releases')
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }))
+}
+
+const { entry } = Astro.props
+const { Content } = await render(entry)
+---
+
+<DocsLayout title={idToVersion(entry.id)} section="releases">
+  <div class="flex items-center gap-3 mb-6 not-prose">
+    <a href="/arrgh/releases" class="text-xs text-muted-foreground hover:text-foreground transition-colors">← All releases</a>
+    <span class="font-mono text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">{idToVersion(entry.id)}</span>
+  </div>
+  <Content />
+</DocsLayout>

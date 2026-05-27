@@ -1,0 +1,56 @@
+---
+import DocsLayout from '@/layouts/DocsLayout.astro'
+---
+
+<DocsLayout title="Getting Started" section="getting-started">
+  <h1>Getting Started</h1>
+
+  <p>*ARRgh is a self-hosted manga manager that runs as a single Docker Compose stack. This guide gets you from zero to reading in under five minutes.</p>
+
+  <h2>Prerequisites</h2>
+  <ul>
+    <li>Docker + Docker Compose v2</li>
+    <li>A machine on your local network (NAS, Raspberry Pi, mini PC, or any Linux box)</li>
+    <li>Ports <code>8080</code> available (configurable)</li>
+  </ul>
+
+  <h2>Install</h2>
+
+  <pre><code>curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
+docker compose up -d</code></pre>
+
+  <p>Open <code>http://&lt;your-server-ip&gt;:8080</code>. The setup wizard runs on first launch and creates your admin account.</p>
+
+  <h2>What's included</h2>
+  <p>The default Compose file starts three services:</p>
+  <ul>
+    <li><strong>arrgh</strong> — Rust API server + nginx serving the web UI on port 8080</li>
+    <li><strong>plugin-host</strong> — Node.js process that loads plugin bundles (internal only)</li>
+    <li><strong>cloakbrowser</strong> — Stealth Chromium for Cloudflare-protected sources (internal only)</li>
+  </ul>
+
+  <p>MangaDex and Mangapill plugins auto-register on first boot — no manual configuration needed.</p>
+
+  <h2>Add a source</h2>
+  <ol>
+    <li>Go to <strong>Settings → Sources</strong></li>
+    <li>Click <strong>Browse plugins</strong></li>
+    <li>Install any community plugin</li>
+    <li>Enable it with the toggle</li>
+  </ol>
+
+  <h2>Discover and add titles</h2>
+  <ol>
+    <li>Click <strong>Discover</strong> in the sidebar</li>
+    <li>Search for a series by name</li>
+    <li>Click <strong>Add to library</strong> — metadata is pulled from MangaUpdates</li>
+    <li>On the title page, download chapters individually or use <strong>Download All</strong></li>
+  </ol>
+
+  <h2>Next steps</h2>
+  <ul>
+    <li><a href="/arrgh/deploy/docker-compose">Full Docker Compose reference</a> — environment variables, volumes, reverse proxy</li>
+    <li><a href="/arrgh/plugins">Plugin development</a> — write your own source plugin</li>
+    <li><a href="/arrgh/deploy/nginx">HTTPS with nginx</a> — put arrgh behind a reverse proxy</li>
+  </ul>
+</DocsLayout>

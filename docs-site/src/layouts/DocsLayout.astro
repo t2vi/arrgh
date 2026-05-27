@@ -1,0 +1,52 @@
+---
+import BaseLayout from './BaseLayout.astro'
+
+interface Props {
+  title?: string
+  description?: string
+  section?: 'deploy' | 'releases' | 'plugins' | 'getting-started'
+}
+
+const { title, description, section } = Astro.props
+const current = Astro.url.pathname
+
+const SIDEBAR: Record<string, { label: string; href: string }[]> = {
+  deploy: [
+    { label: 'Docker Compose', href: '/arrgh/deploy/docker-compose' },
+    { label: 'Manual', href: '/arrgh/deploy/manual' },
+    { label: 'Nginx', href: '/arrgh/deploy/nginx' },
+  ],
+  releases: [],
+  plugins: [],
+  'getting-started': [],
+}
+
+const sidebarItems = section ? SIDEBAR[section] : []
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="max-w-6xl mx-auto px-4 py-10 flex gap-10">
+    {sidebarItems.length > 0 && (
+      <aside class="hidden lg:block w-52 shrink-0">
+        <nav class="sticky top-24 space-y-1">
+          {sidebarItems.map((item) => (
+            <a
+              href={item.href}
+              class={`block px-3 py-1.5 rounded-md text-sm transition-colors ${
+                current === item.href
+                  ? 'bg-primary/15 text-primary font-medium'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </aside>
+    )}
+
+    <article class="flex-1 min-w-0 prose">
+      <slot />
+    </article>
+  </div>
+</BaseLayout>
