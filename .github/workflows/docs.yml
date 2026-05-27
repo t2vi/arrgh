@@ -37,6 +37,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: docs-site/dist
+          target-folder: arrgh
           clean: true
-          clean-exclude: |
-            test-reports
