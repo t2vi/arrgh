@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { label: 'Deploy', href: '/arrgh/deploy/docker-compose' },
   { label: 'Plugins', href: '/arrgh/plugins' },
   { label: 'Releases', href: '/arrgh/releases' },
-  { label: 'Test Reports', href: '/test-reports', external: true },
+  { label: 'Test Reports', href: '/arrgh/test-reports', external: true },
 ]
 
 export function MobileMenu({ current }: { current: string }) {
