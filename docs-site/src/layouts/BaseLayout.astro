@@ -7,7 +7,7 @@ interface Props {
   description?: string
 }
 
-const { title = '*ARRgh', description = 'Self-hosted manga manager, downloader, and reader.' } = Astro.props
+const { title = '*ARRgh', description = 'Self-hosted East Asian comics and novel manager, downloader, and reader.' } = Astro.props
 const current = Astro.url.pathname
 
 const NAV_ITEMS = [
@@ -75,7 +75,7 @@ const NAV_ITEMS = [
 
     <footer class="border-t border-border mt-20 py-8">
       <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-        <span><span class="text-primary font-bold">*ARRgh</span> — self-hosted manga manager</span>
+        <span><span class="text-primary font-bold">*ARRgh</span> — self-hosted East Asian comics & novel manager</span>
         <div class="flex items-center gap-4">
           <a href="https://github.com/t2vi/arrgh" class="hover:text-foreground transition-colors">GitHub</a>
           <a href="/arrgh/test-reports" class="hover:text-foreground transition-colors">Test Reports ↗</a>
