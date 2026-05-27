@@ -168,5 +168,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: allure-report
-          target-folder: arrgh/test-reports
+          target-folder: test-reports
           clean: true
