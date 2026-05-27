@@ -45,7 +45,7 @@ describe('MangaCard', () => {
     render(<MangaCard manga={makeManga()} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
     const trashBtn = screen.getByRole('button')
     await userEvent.click(trashBtn)
-    expect(screen.getByText('Remove manga?')).toBeInTheDocument()
+    expect(screen.getByText('Remove title?')).toBeInTheDocument()
   })
 
   it('calls onRemove(false) from "Library only" confirm', async () => {
@@ -68,7 +68,7 @@ describe('MangaCard', () => {
     render(<MangaCard manga={makeManga()} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
     await userEvent.click(screen.getByRole('button'))
     await userEvent.click(screen.getByText('Cancel'))
-    expect(screen.queryByText('Remove manga?')).toBeNull()
+    expect(screen.queryByText('Remove title?')).toBeNull()
   })
 
   it('shows Building overlay when syncing', () => {

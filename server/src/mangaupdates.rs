@@ -1,8 +1,17 @@
 use anyhow::Result;
 use reqwest::Client;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
 const BASE: &str = "https://api.mangaupdates.com/v1";
+
+fn deserialize_u64_flexible<'de, D: Deserializer<'de>>(d: D) -> std::result::Result<u64, D::Error> {
+    let v = serde_json::Value::deserialize(d)?;
+    match &v {
+        serde_json::Value::Number(n) => n.as_u64().ok_or_else(|| serde::de::Error::custom("expected u64")),
+        serde_json::Value::String(s) => s.parse::<u64>().map_err(serde::de::Error::custom),
+        _ => Err(serde::de::Error::custom(format!("expected number or string, got {v}"))),
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct MuSeries {
@@ -31,6 +40,7 @@ struct SearchHit {
 
 #[derive(Deserialize)]
 struct SeriesRecord {
+    #[serde(deserialize_with = "deserialize_u64_flexible")]
     series_id: u64,
     title: String,
     description: Option<String>,
@@ -83,6 +93,7 @@ struct ReleaseMetadata {
 
 #[derive(Deserialize)]
 struct ReleaseSeries {
+    #[serde(deserialize_with = "deserialize_u64_flexible")]
     series_id: u64,
 }
 
@@ -222,15 +233,19 @@ impl MangaUpdatesClient {
             "per_page": 100,
             "include_metadata": true
         });
-        let resp = self
+        let raw = self
             .client
             .post(format!("{BASE}/releases/search"))
             .json(&body)
             .send()
             .await?
             .error_for_status()?
-            .json::<ReleasesResponse>()
+            .text()
             .await?;
+        let resp: ReleasesResponse = serde_json::from_str(&raw).map_err(|e| {
+            tracing::error!("MangaUpdates releases/search decode error: {e}\nraw: {raw}");
+            e
+        })?;
 
         let mut seen = std::collections::HashSet::new();
         let series_ids: Vec<u64> = resp
@@ -271,5 +286,134 @@ impl MangaUpdatesClient {
             }
         }
         Ok(results)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── ReleasesResponse ──────────────────────────────────────────────────────
+
+    #[test]
+    fn releases_response_numeric_series_id() {
+        let json = r#"{"results":[{"metadata":{"series":{"series_id":12345}}}]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 12345);
+    }
+
+    #[test]
+    fn releases_response_string_series_id() {
+        let json = r#"{"results":[{"metadata":{"series":{"series_id":"67890"}}}]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 67890);
+    }
+
+    #[test]
+    fn releases_response_null_metadata() {
+        let json = r#"{"results":[{"metadata":null},{"metadata":{"series":{"series_id":1}}}]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert!(r.results[0].metadata.is_none());
+        assert_eq!(r.results[1].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 1);
+    }
+
+    #[test]
+    fn releases_response_null_series() {
+        let json = r#"{"results":[{"metadata":{"series":null}}]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert!(r.results[0].metadata.as_ref().unwrap().series.is_none());
+    }
+
+    #[test]
+    fn releases_response_missing_metadata_field() {
+        let json = r#"{"results":[{}]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert!(r.results[0].metadata.is_none());
+    }
+
+    #[test]
+    fn releases_response_empty_results() {
+        let json = r#"{"results":[]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert!(r.results.is_empty());
+    }
+
+    // ── SeriesRecord / map_series ─────────────────────────────────────────────
+
+    #[test]
+    fn series_record_numeric_series_id() {
+        let json = r#"{"series_id":999,"title":"Test Manga","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":null}"#;
+        let rec: SeriesRecord = serde_json::from_str(json).unwrap();
+        assert_eq!(rec.series_id, 999);
+    }
+
+    #[test]
+    fn series_record_string_series_id() {
+        let json = r#"{"series_id":"42","title":"Test","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":null}"#;
+        let rec: SeriesRecord = serde_json::from_str(json).unwrap();
+        assert_eq!(rec.series_id, 42);
+    }
+
+    #[test]
+    fn map_series_strips_html_description() {
+        let json = r#"{"series_id":1,"title":"T","description":"<b>Bold</b> text","image":null,"type":null,"year":null,"status":null,"authors":null,"genres":null}"#;
+        let rec: SeriesRecord = serde_json::from_str(json).unwrap();
+        let s = map_series(rec);
+        assert_eq!(s.description.unwrap(), "Bold text");
+    }
+
+    #[test]
+    fn map_series_content_type_mapping() {
+        for (input, expected) in [
+            (Some("Manhwa"), "manhwa"),
+            (Some("manhua"), "manhua"),
+            (Some("Novel"), "novel"),
+            (Some("Light Novel"), "novel"),
+            (Some("Web Novel"), "novel"),
+            (Some("Manga"), "manga"),
+            (None, "manga"),
+        ] {
+            assert_eq!(map_content_type(input), expected, "failed for {input:?}");
+        }
+    }
+
+    #[test]
+    fn map_series_year_as_string() {
+        let json = r#"{"series_id":1,"title":"T","description":null,"image":null,"type":null,"year":"2020","status":null,"authors":null,"genres":null}"#;
+        let rec: SeriesRecord = serde_json::from_str(json).unwrap();
+        assert_eq!(map_series(rec).year, Some(2020));
+    }
+
+    #[test]
+    fn map_series_author_prefers_author_type() {
+        let json = r#"{"series_id":1,"title":"T","description":null,"image":null,"type":null,"year":null,"status":null,"authors":[{"name":"Artist","type":"Artist"},{"name":"Writer","type":"Author"}],"genres":null}"#;
+        let rec: SeriesRecord = serde_json::from_str(json).unwrap();
+        assert_eq!(map_series(rec).author.unwrap(), "Writer");
+    }
+
+    #[test]
+    fn map_series_explicit_genre_normalised() {
+        let json = r#"{"series_id":1,"title":"T","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":[{"genre":"Action"},{"genre":"Hentai"}]}"#;
+        let rec: SeriesRecord = serde_json::from_str(json).unwrap();
+        let tags = map_series(rec).tags.unwrap();
+        assert!(tags.contains("adult"), "expected 'adult' in tags, got: {tags}");
+        assert!(tags.contains("Action"));
+    }
+
+    // ── strip_html ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn strip_html_removes_tags() {
+        assert_eq!(strip_html("<b>hello</b> <i>world</i>"), "hello world");
+    }
+
+    #[test]
+    fn strip_html_plain_text_unchanged() {
+        assert_eq!(strip_html("plain text"), "plain text");
+    }
+
+    #[test]
+    fn strip_html_trims_whitespace() {
+        assert_eq!(strip_html("  <p>hi</p>  "), "hi");
     }
 }
