@@ -20,5 +20,23 @@ const { Content } = await render(entry)
     <a href="/arrgh/releases" class="text-xs text-muted-foreground hover:text-foreground transition-colors">← All releases</a>
     <span class="font-mono text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">{idToVersion(entry.id)}</span>
   </div>
+
+  <div class="not-prose mb-8 rounded-xl border border-border bg-card overflow-hidden">
+    <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/50">
+      <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span>
+      <span class="ml-2 text-xs text-muted-foreground font-mono">docker pull</span>
+      <a
+        href={`https://github.com/t2vi/arrgh/pkgs/container/arrgh`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors"
+      >GHCR ↗</a>
+    </div>
+    <pre class="p-4 text-sm font-mono text-foreground overflow-x-auto leading-relaxed"><code>ghcr.io/t2vi/arrgh:{idToVersion(entry.id).slice(1)}
+ghcr.io/t2vi/plugin-host:{idToVersion(entry.id).slice(1)}</code></pre>
+  </div>
+
   <Content />
 </DocsLayout>
