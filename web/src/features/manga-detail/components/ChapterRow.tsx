@@ -54,7 +54,7 @@ export function ChapterRow({
           {chapter.page_count > 0 && (
             <>
               <span className="opacity-40">•</span>
-              <span>{chapter.page_count} Pages</span>
+              <span>{chapter.page_count} pages</span>
             </>
           )}
           {isStarted && (

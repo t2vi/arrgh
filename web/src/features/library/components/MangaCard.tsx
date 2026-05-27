@@ -65,7 +65,7 @@ export function MangaCard({
             className="absolute inset-x-2 top-2 bg-card/95 backdrop-blur rounded-lg p-2 flex flex-col gap-1.5 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-[10px] font-semibold text-center text-foreground">Remove manga?</p>
+            <p className="text-[10px] font-semibold text-center text-foreground">Remove title?</p>
             {hasDownloads && (
               <button
                 className="w-full text-[10px] px-2 py-1 rounded bg-destructive text-destructive-foreground font-medium hover:opacity-90 transition-opacity"

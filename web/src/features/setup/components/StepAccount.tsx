@@ -36,17 +36,17 @@ export function StepAccount({ onDone }: { onDone: () => void }) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Username</label>
         <Input type="text" autoComplete="username" value={username}
-          onChange={(e) => setUsername(e.target.value)} placeholder="username" required autoFocus />
+          onChange={(e) => setUsername(e.target.value)} placeholder="Username" required autoFocus />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium">Password</label>
         <Input type="password" autoComplete="new-password" value={password}
-          onChange={(e) => setPassword(e.target.value)} placeholder="min 6 characters" required />
+          onChange={(e) => setPassword(e.target.value)} placeholder="Min. 6 characters" required />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium">Confirm Password</label>
         <Input type="password" autoComplete="new-password" value={confirm}
-          onChange={(e) => setConfirm(e.target.value)} placeholder="repeat password" required />
+          onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat password" required />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" className="w-full" disabled={loading}>
