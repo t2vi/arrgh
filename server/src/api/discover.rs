@@ -13,7 +13,7 @@ use std::time::Instant;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::{auth, db::Title, mangaupdates::{MangaUpdatesClient, MuSeries}, AppState};
+use crate::{auth, db::Title, ehentai::EHentaiClient, mangaupdates::{MangaUpdatesClient, MuSeries}, AppState};
 use super::ApiResult;
 
 // ── Trending cache ────────────────────────────────────────────────────────────
@@ -40,6 +40,7 @@ pub struct SearchResult {
     pub content_type: String,
     pub in_library: bool,
     pub library_id: Option<String>,
+    pub source: String,
 }
 
 #[derive(Deserialize)]
@@ -160,11 +161,11 @@ async fn seed_and_cache_cover(
     title: String,
     cdn_url: String,
     download_dir: String,
-    mu_id: String,
+    source: String,
+    source_id: String,
 ) {
     let key = normalize_title(&title);
     let now = Utc::now().to_rfc3339();
-    let source = "mangaupdates";
 
     // Upsert title_meta row
     if let Err(e) = sqlx::query!(
@@ -173,7 +174,7 @@ async fn seed_and_cache_cover(
            ON CONFLICT(title_key) DO UPDATE SET
              cover_cdn_url = COALESCE(title_meta.cover_cdn_url, excluded.cover_cdn_url),
              fetched_at    = excluded.fetched_at"#,
-        key, cdn_url, now, source, mu_id
+        key, cdn_url, now, source, source_id
     )
     .execute(&db)
     .await
@@ -228,6 +229,7 @@ fn mu_to_search_result(s: &MuSeries, in_library: bool, library_id: Option<String
         content_type: s.content_type.clone(),
         in_library,
         library_id,
+        source: "mangaupdates".to_string(),
     }
 }
 
@@ -247,14 +249,51 @@ async fn search(
         }
     };
 
-    let mut results = Vec::with_capacity(series.len());
-    for s in &series {
-        let mu_id = s.series_id.to_string();
-        let (in_library, library_id) = check_in_library(&state.db, &claims.sub, &mu_id).await;
-        let mut r = mu_to_search_result(s, in_library, library_id);
-        enrich_cover(&state.db, &mut r).await;
+    if !series.is_empty() {
+        let mut results = Vec::with_capacity(series.len());
+        for s in &series {
+            let mu_id = s.series_id.to_string();
+            let (in_library, library_id) = check_in_library(&state.db, &claims.sub, &mu_id).await;
+            let mut r = mu_to_search_result(s, in_library, library_id);
+            enrich_cover(&state.db, &mut r).await;
 
-        // Seed cover in background if we have a CDN URL
+            if let Some(ref cdn) = s.cover_url {
+                tokio::spawn(seed_and_cache_cover(
+                    state.db.clone(),
+                    state.http.clone(),
+                    s.title.clone(),
+                    cdn.clone(),
+                    state.config.download_dir.clone(),
+                    "mangaupdates".to_string(),
+                    mu_id.clone(),
+                ));
+            }
+
+            results.push(r);
+        }
+        return Ok(Json(results).into_response());
+    }
+
+    // MU returned nothing — fall back to E-Hentai
+    tracing::debug!("MU returned no results for '{}', trying E-Hentai", q.q);
+    let eh = EHentaiClient::new(&state.http);
+    let eh_series = match eh.search(&q.q).await {
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!("E-Hentai search error for '{}': {}", q.q, e);
+            return Ok(Json(Vec::<SearchResult>::new()).into_response());
+        }
+    };
+
+    let mut results = Vec::with_capacity(eh_series.len());
+    for s in &eh_series {
+        let (in_library, library_id) = check_in_library(&state.db, &claims.sub, &s.series_id).await;
+        let description = if s.gallery_count > 1 {
+            Some(format!("{} English galleries on E-Hentai", s.gallery_count))
+        } else {
+            None
+        };
+
         if let Some(ref cdn) = s.cover_url {
             tokio::spawn(seed_and_cache_cover(
                 state.db.clone(),
@@ -262,11 +301,25 @@ async fn search(
                 s.title.clone(),
                 cdn.clone(),
                 state.config.download_dir.clone(),
-                mu_id.clone(),
+                "ehentai".to_string(),
+                s.series_id.clone(),
             ));
         }
 
-        results.push(r);
+        results.push(SearchResult {
+            mangaupdates_id: s.series_id.clone(),
+            title: s.title.clone(),
+            description,
+            cover_url: s.cover_url.clone(),
+            status: "Complete".to_string(),
+            author: s.author.clone(),
+            year: None,
+            tags: Some(s.tags.clone()),
+            content_type: "manga".to_string(),
+            in_library,
+            library_id,
+            source: "ehentai".to_string(),
+        });
     }
 
     Ok(Json(results).into_response())

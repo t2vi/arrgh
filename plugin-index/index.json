@@ -16,8 +16,8 @@
     "version": "1.0.0",
     "download_url": null,
     "bundled": true,
-    "default_explicit": true,
-    "content_types": ["manga"]
+    "default_explicit": false,
+    "content_types": ["manhwa"]
   },
   {
     "id": "comick",
@@ -58,5 +58,15 @@
     "bundled": true,
     "default_explicit": false,
     "content_types": ["novel"]
+  },
+  {
+    "id": "nhentai",
+    "name": "nhentai",
+    "description": "Hentai doujin galleries (English only). Cloudflare-protected — requires CloakBrowser.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": true,
+    "content_types": ["manga"]
   }
 ]

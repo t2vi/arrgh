@@ -8,6 +8,7 @@ services:
       dockerfile: plugin-host/Dockerfile
 
   cloakbrowser:
+    platform: linux/amd64
     build:
       context: docker/cloakbrowser-server
       dockerfile: Dockerfile

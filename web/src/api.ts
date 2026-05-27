@@ -12,6 +12,7 @@ export interface SearchResult {
   content_type: string
   in_library: boolean
   library_id: string | null
+  source: string
 }
 
 export interface QueueItem {

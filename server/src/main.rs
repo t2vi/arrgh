@@ -152,15 +152,18 @@ async fn bootstrap_single(pool: &sqlx::SqlitePool, effective_url: &str, info: &s
         .map(|arr| arr.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>().join(","))
         .filter(|s| !s.is_empty())
         .unwrap_or_else(|| "manga".to_string());
+    let default_explicit: i64 = info.get("default_explicit")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false) as i64;
 
     let id = Uuid::new_v4().to_string();
     let now = Utc::now();
     match sqlx::query(
         "INSERT OR IGNORE INTO external_sources
-         (id, name, base_url, api_key, content_types, enabled, created_at)
-         VALUES (?, ?, ?, NULL, ?, 1, ?)"
+         (id, name, base_url, api_key, content_types, enabled, default_explicit, created_at)
+         VALUES (?, ?, ?, NULL, ?, 1, ?, ?)"
     )
-    .bind(&id).bind(&name).bind(effective_url).bind(&content_types).bind(now)
+    .bind(&id).bind(&name).bind(effective_url).bind(&content_types).bind(default_explicit).bind(now)
     .execute(pool)
     .await
     {
@@ -195,12 +198,13 @@ async fn bootstrap_probe(pool: &sqlx::SqlitePool, base_url: &str) {
             let now = Utc::now();
             let content_types = src.content_types().join(",");
             let name = src.name().to_string();
+            let default_explicit = src.default_explicit() as i64;
             match sqlx::query(
                 "INSERT OR IGNORE INTO external_sources
-                 (id, name, base_url, api_key, content_types, enabled, created_at)
-                 VALUES (?, ?, ?, NULL, ?, 1, ?)"
+                 (id, name, base_url, api_key, content_types, enabled, default_explicit, created_at)
+                 VALUES (?, ?, ?, NULL, ?, 1, ?, ?)"
             )
-            .bind(&id).bind(&name).bind(base_url).bind(&content_types).bind(now)
+            .bind(&id).bind(&name).bind(base_url).bind(&content_types).bind(default_explicit).bind(now)
             .execute(pool)
             .await
             {

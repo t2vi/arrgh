@@ -13,5 +13,6 @@ export function init(ctx: PluginContext): void {
   setContext(ctx)
 }
 
+export const search = n.search
 export const chapters = n.chapters
 export const pages = n.pages

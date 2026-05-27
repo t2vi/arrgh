@@ -677,6 +677,16 @@ async fn refresh_metadata(
         None => return Ok(StatusCode::NOT_FOUND),
     };
 
+    // Update cover_url from MU if currently missing
+    if let Some(ref cover) = series.cover_url {
+        sqlx::query!(
+            "UPDATE titles SET cover_url = ? WHERE id = ? AND cover_url IS NULL",
+            cover, id
+        )
+        .execute(&state.db)
+        .await?;
+    }
+
     // Replace aliases with fresh set
     sqlx::query!("DELETE FROM title_aliases WHERE title_id = ?", id)
         .execute(&state.db)
@@ -704,13 +714,20 @@ async fn refresh_metadata(
         )
         .fetch_all(&db).await.unwrap_or_default();
 
-        let known_norms: Vec<String> = std::iter::once(normalize_title(&title_str))
-            .chain(aliases.iter().map(|a| normalize_title(a)))
-            .collect();
+        // Also include the title stored in the DB — MU's primary title may be in a different
+        // language (e.g. Japanese) while the user added the title using its English name.
+        let db_title: Option<String> = sqlx::query_scalar!(
+            "SELECT title FROM titles WHERE id = ?", mid
+        )
+        .fetch_optional(&db).await.ok().flatten();
 
-        let candidates: Vec<String> = std::iter::once(title_str.clone())
+        let all_names: Vec<String> = std::iter::once(title_str.clone())
+            .chain(db_title.into_iter().filter(|t| t != &title_str))
             .chain(aliases.iter().cloned())
             .collect();
+
+        let known_norms: Vec<String> = all_names.iter().map(|n| normalize_title(n)).collect();
+        let candidates: Vec<String> = all_names;
 
         // Only retry sources that have warnings (no point re-running sources that already matched)
         let warned_plugins: Vec<String> = sqlx::query_scalar!(
@@ -718,12 +735,40 @@ async fn refresh_metadata(
         )
         .fetch_all(&db).await.unwrap_or_default();
 
+        // _no_source sentinel means no source pool existed at add time — re-run full routing match
+        let has_no_source_warning = warned_plugins.iter().any(|p| p == "_no_source");
+
+        let (content_type, has_hentai_tag) = if has_no_source_warning {
+            let row = sqlx::query!(
+                r#"SELECT content_type as "content_type!", tags FROM titles WHERE id = ?"#, mid
+            )
+            .fetch_optional(&db).await.ok().flatten();
+            let ct = row.as_ref().map(|r| r.content_type.clone()).unwrap_or_else(|| "manga".to_string());
+            let hentai = row.and_then(|r| r.tags).map(|t| {
+                t.split(',').any(|tag| tag.trim().eq_ignore_ascii_case("hentai"))
+            }).unwrap_or(false);
+            (ct, hentai)
+        } else {
+            (String::new(), false)
+        };
+
         let source_snapshot: Vec<(String, std::sync::Arc<dyn crate::indexer::Source>)> = {
             let reg = sources.read().await;
-            reg.iter()
-                .filter(|(id, _)| warned_plugins.contains(id))
-                .map(|(id, src)| (id.clone(), src.clone()))
-                .collect()
+            if has_no_source_warning {
+                // Re-run against all routing-eligible sources
+                reg.iter()
+                    .filter(|(_, src)| {
+                        src.content_types().iter().any(|ct| ct == &content_type)
+                            && src.default_explicit() == has_hentai_tag
+                    })
+                    .map(|(id, src)| (id.clone(), src.clone()))
+                    .collect()
+            } else {
+                reg.iter()
+                    .filter(|(id, _)| warned_plugins.contains(id))
+                    .map(|(id, src)| (id.clone(), src.clone()))
+                    .collect()
+            }
         };
 
         for (src_key, src) in &source_snapshot {
@@ -744,9 +789,14 @@ async fn refresh_metadata(
             }
 
             if let Some(hit) = matched {
+                // Clear per-source warning and sentinel
                 let _ = sqlx::query!(
                     "DELETE FROM sync_warnings WHERE title_id = ? AND plugin_id = ?",
                     mid, src_key
+                ).execute(&db).await;
+                let _ = sqlx::query!(
+                    "DELETE FROM sync_warnings WHERE title_id = ? AND plugin_id = '_no_source'",
+                    mid
                 ).execute(&db).await;
 
                 let ms_id = uuid::Uuid::new_v4().to_string();

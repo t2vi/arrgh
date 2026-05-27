@@ -17,35 +17,59 @@ pub use source::Source;
 pub type SourceRegistry = Arc<HashMap<String, Arc<dyn Source>>>;
 
 /// Rebuild registry merging compiled-in sources with enabled external sources from DB.
+/// Probes each source's /info to get current default_explicit and content_types,
+/// updating the DB record so the stored value stays in sync.
 pub async fn load_registry(db: &sqlx::SqlitePool) -> SourceRegistry {
     let mut map: HashMap<String, Arc<dyn Source>> = HashMap::new();
 
-    match sqlx::query!(
+    let rows = match sqlx::query!(
         r#"SELECT id as "id!", name as "name!", base_url as "base_url!",
-                  api_key, content_types as "content_types!"
+                  api_key, content_types as "content_types!",
+                  default_explicit as "default_explicit!"
            FROM external_sources WHERE enabled = 1"#
     )
     .fetch_all(db)
     .await {
-        Ok(rows) => {
-            for row in rows {
-                let source_key = row.base_url
-                    .trim_end_matches('/')
-                    .rsplit('/')
-                    .next()
-                    .unwrap_or(&row.base_url)
-                    .to_string();
+        Ok(r) => r,
+        Err(e) => { tracing::warn!("failed to load external sources from DB: {}", e); return Arc::new(map); }
+    };
+
+    for row in rows {
+        let source_key = row.base_url
+            .trim_end_matches('/')
+            .rsplit('/')
+            .next()
+            .unwrap_or(&row.base_url)
+            .to_string();
+
+        // Probe /info to get live default_explicit and content_types.
+        // If probe fails, fall back to DB values.
+        let src = match external::ExternalSource::probe(
+            row.id.clone(),
+            row.base_url.clone(),
+            row.api_key.clone(),
+        ).await {
+            Ok(probed) => {
+                // Update DB with probed values so they stay in sync
+                let explicit_i = probed.default_explicit() as i64;
+                let ct_str = probed.content_types().join(",");
+                let _ = sqlx::query!(
+                    "UPDATE external_sources SET default_explicit = ?, content_types = ?, source_key = ? WHERE id = ?",
+                    explicit_i, ct_str, source_key, row.id
+                )
+                .execute(db)
+                .await
+                .map_err(|e| tracing::warn!("failed to update source metadata for {}: {}", row.id, e));
+                probed
+            }
+            Err(e) => {
+                tracing::debug!("probe failed for {} ({}), using DB values: {}", row.name, row.base_url, e);
                 let ct: Vec<String> = row.content_types
                     .split(',')
                     .map(|s| s.trim().to_string())
                     .filter(|s| !s.is_empty())
                     .collect();
                 let ct = if ct.is_empty() { vec!["manga".to_string()] } else { ct };
-                let src = external::ExternalSource::new(
-                    row.id.clone(), source_key.clone(), row.name, row.base_url, row.api_key, ct, false,
-                );
-
-                // Persist source_key so downloader can join on it for priority ordering
                 let _ = sqlx::query!(
                     "UPDATE external_sources SET source_key = ? WHERE id = ?",
                     source_key, row.id
@@ -53,12 +77,15 @@ pub async fn load_registry(db: &sqlx::SqlitePool) -> SourceRegistry {
                 .execute(db)
                 .await
                 .map_err(|e| tracing::warn!("failed to update source_key for {}: {}", row.id, e));
-
-                tracing::info!("loaded external source: {} ({})", src.name(), src.id());
-                map.insert(source_key, Arc::new(src));
+                external::ExternalSource::new(
+                    row.id.clone(), source_key.clone(), row.name, row.base_url, row.api_key, ct,
+                    row.default_explicit != 0,
+                )
             }
-        }
-        Err(e) => tracing::warn!("failed to load external sources from DB: {}", e),
+        };
+
+        tracing::info!("loaded external source: {} ({}, explicit={})", src.name(), src.id(), src.default_explicit());
+        map.insert(source_key, Arc::new(src));
     }
 
     Arc::new(map)

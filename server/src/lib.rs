@@ -3,6 +3,7 @@ pub mod auth;
 pub mod config;
 pub mod db;
 pub mod downloader;
+pub mod ehentai;
 pub mod indexer;
 pub mod logging;
 pub mod mangaupdates;

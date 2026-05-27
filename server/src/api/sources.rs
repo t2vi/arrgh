@@ -116,10 +116,11 @@ async fn add_source(
     let now = Utc::now();
     let content_types = probe.content_types().join(",");
     let name = probe.name().to_string();
+    let default_explicit = probe.default_explicit() as i64;
     sqlx::query!(
-        "INSERT INTO external_sources (id, name, base_url, api_key, content_types, enabled, created_at)
-         VALUES (?, ?, ?, ?, ?, 1, ?)",
-        db_id, name, body.base_url, body.api_key, content_types, now
+        "INSERT INTO external_sources (id, name, base_url, api_key, content_types, enabled, default_explicit, created_at)
+         VALUES (?, ?, ?, ?, ?, 1, ?, ?)",
+        db_id, name, body.base_url, body.api_key, content_types, default_explicit, now
     )
     .execute(&state.db)
     .await?;

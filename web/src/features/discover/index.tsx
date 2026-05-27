@@ -1,4 +1,4 @@
-import { Search, ChevronRight, AlertCircle } from 'lucide-react'
+import { Search, ChevronRight, AlertCircle, ExternalLink } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -8,6 +8,7 @@ import { SearchSkeleton } from './components/SearchSkeleton'
 
 export default function Discover() {
   const h = useDiscover()
+  const isEhentai = h.data != null && h.data.length > 0 && h.data[0].source === 'ehentai'
 
   return (
     <div className="flex flex-col h-full">
@@ -25,7 +26,7 @@ export default function Discover() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 className="pl-9"
-                placeholder="Search for manga, manhwa, manhua, or light novels…"
+                placeholder="Search for manga, manhwa, manhua, novels, or hentai…"
                 value={h.query}
                 onChange={(e) => h.setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && h.submit()}
@@ -51,6 +52,14 @@ export default function Discover() {
               {h.data.length === 0 && (
                 <p className="text-muted-foreground text-sm">No results.</p>
               )}
+
+              {isEhentai && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground rounded-lg border border-border bg-muted/40 px-3 py-2">
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                  No results from MangaUpdates — showing results from E-Hentai
+                </div>
+              )}
+
               {h.data.map((r) => {
                 const inLibraryNow = r.in_library || h.added.has(r.mangaupdates_id)
                 const libraryId = r.library_id ?? h.added.get(r.mangaupdates_id)
