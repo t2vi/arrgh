@@ -41,7 +41,7 @@ See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full conf
 
 ## Sources
 
-*ARRgh uses a plugin system for content sources. Each source is an HTTP server implementing the Source Plugin Protocol.
+*ARRgh! uses a plugin system for content sources. Each source is an HTTP server implementing the Source Plugin Protocol.
 
 ### Bundled plugins
 
