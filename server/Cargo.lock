@@ -73,7 +73,7 @@ dependencies = [
 
 [[package]]
 name = "arrgh-server"
-version = "0.0.13"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "async-trait",

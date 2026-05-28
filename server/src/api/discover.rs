@@ -651,15 +651,26 @@ async fn add_manga(
                 continue;
             }
 
+            // Source was matched — title is in this source regardless of chapter sync result
+            any_ok = true;
+
             super::append_sync_log(&db, &mid, &format!("Syncing chapters from {}…", src_key)).await;
             match src.sync_chapters(&db, &mid, &hit.id).await {
                 Ok(n) => {
                     super::append_sync_log(&db, &mid, &format!("Synced {} chapters from {}", n, src_key)).await;
-                    any_ok = true;
                 }
                 Err(e) => {
-                    tracing::error!("chapter sync failed for {} ({}): {}", mid, src_key, e);
+                    tracing::warn!("chapter sync failed for {} ({}): {}", mid, src_key, e);
                     super::append_sync_log(&db, &mid, &format!("Chapter sync failed for {}: {}", src_key, e)).await;
+                    let warn_id = Uuid::new_v4().to_string();
+                    let now_w = Utc::now().to_rfc3339();
+                    let msg = format!("chapter sync failed for '{}': {}", src_key, e);
+                    let _ = sqlx::query!(
+                        "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at)
+                         VALUES (?, ?, ?, ?, ?)
+                         ON CONFLICT(title_id, plugin_id) DO UPDATE SET message = excluded.message, created_at = excluded.created_at",
+                        warn_id, mid, src_key, msg, now_w
+                    ).execute(&db).await;
                 }
             }
         }

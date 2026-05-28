@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::Mutex;
 
-use crate::{auth::Claims, AppState};
+use crate::AppState;
 use super::ApiResult;
 
 const CURRENT: &str = env!("CARGO_PKG_VERSION");
@@ -44,7 +44,6 @@ pub fn router() -> Router<AppState> {
 
 async fn get_version(
     State(state): State<AppState>,
-    Extension(_claims): Extension<Claims>,
 ) -> ApiResult<Response> {
     let cache = state.update_cache.lock().await;
     let (latest, release_url) = match &*cache {

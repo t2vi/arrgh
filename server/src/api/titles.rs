@@ -584,14 +584,25 @@ async fn patch_title(
                         ms_id, id2, src_key, hit.id, disc
                     ).execute(&db2).await;
 
+                    any_ok = true;
+
                     super::append_sync_log(&db2, &id2, &format!("Syncing chapters from {}…", src_key)).await;
                     match src.sync_chapters(&db2, &id2, &hit.id).await {
                         Ok(n) => {
                             super::append_sync_log(&db2, &id2, &format!("Synced {} chapters from {}", n, src_key)).await;
-                            any_ok = true;
                         }
                         Err(e) => {
+                            tracing::warn!("chapter sync failed for {} ({}): {}", id2, src_key, e);
                             super::append_sync_log(&db2, &id2, &format!("Chapter sync failed for {}: {}", src_key, e)).await;
+                            let warn_id = uuid::Uuid::new_v4().to_string();
+                            let now_w = chrono::Utc::now().to_rfc3339();
+                            let msg = format!("chapter sync failed for '{}': {}", src_key, e);
+                            let _ = sqlx::query!(
+                                "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at)
+                                 VALUES (?, ?, ?, ?, ?)
+                                 ON CONFLICT(title_id, plugin_id) DO UPDATE SET message = excluded.message, created_at = excluded.created_at",
+                                warn_id, id2, src_key, msg, now_w
+                            ).execute(&db2).await;
                         }
                     }
                 }
@@ -693,15 +704,25 @@ async fn sync_title(
         let mut any_ok = false;
         for link in &source_links {
             if let Some(s) = state_sources.read().await.get(&link.source).cloned() {
+                any_ok = true;
+
                 super::append_sync_log(&db, &id, &format!("Syncing chapters from {}…", link.source)).await;
                 match s.sync_chapters(&db, &id, &link.source_id).await {
                     Ok(n) => {
                         super::append_sync_log(&db, &id, &format!("Synced {} chapters from {}", n, link.source)).await;
-                        any_ok = true;
                     }
                     Err(e) => {
-                        tracing::error!("sync error for title {} ({}): {}", id, link.source, e);
+                        tracing::warn!("sync error for title {} ({}): {}", id, link.source, e);
                         super::append_sync_log(&db, &id, &format!("Chapter sync failed for {}: {}", link.source, e)).await;
+                        let warn_id = uuid::Uuid::new_v4().to_string();
+                        let now_w = chrono::Utc::now().to_rfc3339();
+                        let msg = format!("chapter sync failed for '{}': {}", link.source, e);
+                        let _ = sqlx::query!(
+                            "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at)
+                             VALUES (?, ?, ?, ?, ?)
+                             ON CONFLICT(title_id, plugin_id) DO UPDATE SET message = excluded.message, created_at = excluded.created_at",
+                            warn_id, id, link.source, msg, now_w
+                        ).execute(&db).await;
                     }
                 }
             }

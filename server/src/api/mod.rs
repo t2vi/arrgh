@@ -59,13 +59,13 @@ pub fn router(state: AppState) -> Router<AppState> {
         .merge(sources::router())
         .merge(plugins::router())
         .merge(logs::router())
-        .merge(version::router())
         .route_layer(middleware::from_fn_with_state(state, require_auth));
 
     Router::new()
         .merge(auth_api::public_router())
         .merge(media::router())   // img tags can't send auth headers
         .merge(docs::router())
+        .merge(version::router())   // public — health checks + login page version display
         .merge(protected)
 }
 
