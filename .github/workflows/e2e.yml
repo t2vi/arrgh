@@ -71,38 +71,26 @@ jobs:
           path: gh-pages
         continue-on-error: true
 
-      - name: Restore previous Allure history
-        run: |
-          mkdir -p allure-results
-          if [ -d gh-pages/allure-raw/e2e ]; then
-            cp -r gh-pages/allure-raw/e2e/. allure-results/
-          fi
-          if [ -d gh-pages/test-reports/history ]; then
-            cp -r gh-pages/test-reports/history allure-results/history
-          fi
-          cp allure-categories.json allure-results/categories.json
-
-      - name: Copy fresh e2e Allure results
-        run: |
-          if [ -d e2e/allure-results ]; then
-            cp -r e2e/allure-results/. allure-results/
-          fi
-
       - name: Setup Node for Allure
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
+      - name: Push raw e2e results to gh-pages cache
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: e2e/allure-results
+          target-folder: allure-raw/e2e
+          clean: true
+
       - name: Generate combined Allure report
         run: |
           mkdir -p combined-raw
-          # Merge all three layers if present
-          for layer in server web e2e; do
-            if [ -d gh-pages/allure-raw/$layer ]; then
-              cp -r gh-pages/allure-raw/$layer/. combined-raw/
-            fi
-          done
-          # Fresh e2e results override
+          # unit+integration from last ci run
+          if [ -d gh-pages/allure-raw/unit-integration ]; then
+            cp -r gh-pages/allure-raw/unit-integration/. combined-raw/
+          fi
+          # fresh e2e results
           if [ -d e2e/allure-results ]; then
             cp -r e2e/allure-results/. combined-raw/
           fi
@@ -113,13 +101,6 @@ jobs:
           npx allure-commandline@2 generate combined-raw --clean -o allure-report
           cp .allure/custom.css allure-report/custom.css
           sed -i 's|</head>|<script>document.documentElement.setAttribute("data-theme","dark")</script><link rel="stylesheet" href="custom.css"></head>|' allure-report/index.html
-
-      - name: Push raw e2e results to gh-pages cache
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: e2e/allure-results
-          target-folder: allure-raw/e2e
-          clean: true
 
       - name: Deploy combined Allure report
         uses: JamesIves/github-pages-deploy-action@v4
