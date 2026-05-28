@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="en" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Self-hosted East Asian comics and novel manager, downloader, and reader."><title>v0.1.2 — *ARRgh!</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="icon" type="image/x-icon" href="/arrgh/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/arrgh/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/arrgh/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/arrgh/apple-touch-icon.png"><link rel="manifest" href="/arrgh/site.webmanifest"><meta name="theme-color" content="#121415"><link rel="stylesheet" href="/arrgh/_astro/BaseLayout.BAlayEYi.css"></head> <body class="min-h-screen bg-background text-foreground"> <header class="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-xl"> <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-6 relative"> <a href="/arrgh" class="text-lg font-black tracking-tight text-primary shrink-0">*ARRgh!</a> <nav class="hidden md:flex items-center gap-1 flex-1"> <a href="/arrgh/getting-started" class="px-3 py-1.5 rounded-md text-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"> Getting Started </a><a href="/arrgh/deploy/docker-compose" class="px-3 py-1.5 rounded-md text-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"> Deploy </a><a href="/arrgh/plugins" class="px-3 py-1.5 rounded-md text-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"> Plugins </a><a href="/arrgh/releases" class="px-3 py-1.5 rounded-md text-sm transition-colors bg-primary/15 text-primary font-medium"> Releases </a><a href="/arrgh/test-reports" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-md text-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"> Test Reports<span class="ml-1 text-xs opacity-60">↗</span> </a> </nav> <div class="hidden md:flex items-center gap-2 ml-auto"> <a href="https://github.com/t2vi/arrgh" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="GitHub"> <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg> </a> </div> <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var g=Object.defineProperty;var w=(c,s,d)=>s in c?g(c,s,{enumerable:!0,configurable:!0,writable:!0,value:d}):c[s]=d;var l=(c,s,d)=>w(c,typeof s!="symbol"?s+"":s,d);var E=new Set(["__proto__","constructor","prototype"]);{let c={0:t=>y(t),1:t=>d(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(d(t)),5:t=>new Set(d(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>Number.POSITIVE_INFINITY*t},s=t=>{let[p,e]=t;return p in c?c[p](e):void 0},d=t=>t.map(s),y=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([p,e])=>[p,s(e)]));class f extends HTMLElement{constructor(){super(...arguments);l(this,"Component");l(this,"hydrator");l(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let n=this.querySelectorAll("astro-slot"),r={},i=this.querySelectorAll("template[data-astro-template]");for(let o of i){let a=o.closest(this.tagName);a!=null&&a.isSameNode(this)&&(r[o.getAttribute("data-astro-template")||"default"]=o.innerHTML,o.remove())}for(let o of n){let a=o.closest(this.tagName);a!=null&&a.isSameNode(this)&&(r[o.getAttribute("name")||"default"]=o.innerHTML)}let u;try{u=this.hasAttribute("props")?y(JSON.parse(this.getAttribute("props"))):{}}catch(o){let a=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(a+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${a}`,this.getAttribute("props"),o),o}let h;await this.hydrator(this)(this.Component,u,r,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});l(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),n.disconnect(),this.childrenConnectedCallback()},n=new MutationObserver(()=>{var r;((r=this.lastChild)==null?void 0:r.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});n.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}getRetryImportUrl(e){let n=new URL(e,document.baseURI),r=`astro-retry=${Date.now()}`,i=n.hash.replace(/^#/,"");return n.hash=i?`${i}&${r}`:r,n.toString()}async importWithRetry(e){try{return await import(e)}catch(n){return await new Promise(r=>setTimeout(r,1e3)),import(this.getRetryImportUrl(e))}}handleHydrationError(e){let n=this.getAttribute("component-url"),r=new CustomEvent("astro:hydration-error",{cancelable:!0,bubbles:!0,composed:!0,detail:{error:e,componentUrl:n}});this.dispatchEvent(r)&&console.error(`[astro-island] Error hydrating ${n}`,e)}async start(){let e=JSON.parse(this.getAttribute("opts")),n=this.getAttribute("client");if(Astro[n]===void 0){window.addEventListener(`astro:${n}`,()=>this.start(),{once:!0});return}try{await Astro[n](async()=>{let r=this.getAttribute("renderer-url");try{let[i,{default:u}]=await Promise.all([this.importWithRetry(this.getAttribute("component-url")),r?this.importWithRetry(r):Promise.resolve({default:()=>()=>{}})]),h=this.getAttribute("component-export")||"default";if(h.includes(".")){this.Component=i;for(let m of h.split(".")){if(E.has(m)||!this.Component||typeof this.Component!="object"&&typeof this.Component!="function"||!Object.hasOwn(this.Component,m))throw new Error(`Invalid component export path: ${h}`);this.Component=this.Component[m]}}else{if(E.has(h))throw new Error(`Invalid component export path: ${h}`);this.Component=i[h]}return this.hydrator=u,this.hydrate}catch(i){return this.handleHydrationError(i),()=>{}}},e,this)}catch(r){this.handleHydrationError(r)}}attributeChangedCallback(){this.hydrate()}}l(f,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",f)}})();</script><astro-island uid="1MKqkK" prefix="r1" component-url="/arrgh/_astro/MobileMenu.TwCd47W5.js" component-export="MobileMenu" renderer-url="/arrgh/_astro/client.Duvn7qkI.js" props="{&quot;current&quot;:[0,&quot;/arrgh/releases/v012/&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;MobileMenu&quot;,&quot;value&quot;:true}" await-children><div class="md:hidden"><button class="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Toggle menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu w-4 h-4"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div><!--astro:end--></astro-island> </div> </header> <main>  <div class="max-w-6xl mx-auto px-4 py-10 flex gap-10">  <article class="flex-1 min-w-0 prose">  <div class="flex items-center gap-3 mb-6 not-prose"> <a href="/arrgh/releases" class="text-xs text-muted-foreground hover:text-foreground transition-colors">← All releases</a> <span class="font-mono text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">v0.1.2</span> </div> <div class="not-prose mb-8 rounded-xl border border-border bg-card overflow-hidden"> <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/50"> <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span> <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span> <span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span> <span class="ml-2 text-xs text-muted-foreground font-mono">docker pull</span> <a href="https://github.com/t2vi/arrgh/pkgs/container/arrgh" target="_blank" rel="noopener noreferrer" class="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">GHCR ↗</a> </div> <pre class="p-4 text-sm font-mono text-foreground overflow-x-auto leading-relaxed"><code>ghcr.io/t2vi/arrgh:0.1.2
+ghcr.io/t2vi/plugin-host:0.1.2</code></pre> </div> <h1 id="arrgh-v012--e2e-testing--bug-fixes">*ARRgh v0.1.2 — E2e Testing + Bug Fixes</h1>
+<p><strong>Released</strong>: 2026-05-28</p>
+<hr>
+<h2 id="whats-new">What’s new</h2>
+<h3 id="e2e-test-layer-playwright">E2e test layer (Playwright)</h3>
+<p>Full end-to-end test suite against a real Docker Compose stack using a deterministic Fixture Plugin — no live sources, no network flakiness in CI.</p>
+<p><strong>Infrastructure:</strong></p>
+<ul>
+<li><code>plugins/fixture/</code> — standalone Express server implementing the Source Plugin Protocol with 4 deterministic modes (happy path, no-match, 502, empty pages)</li>
+<li><code>docker-compose.test.yml</code> — test stack: same <code>arrgh</code> image, fixture replaces plugin-host, no CloakBrowser, isolated volume</li>
+<li><code>e2e/</code> — Playwright suite with <code>globalSetup</code> (seeds admin via API → <code>storageState</code>), fixtures, and 4 spec files</li>
+<li><code>.github/workflows/e2e.yml</code> — runs on push to <code>main</code>, deploys results to shared Allure cache on <code>gh-pages</code></li>
+<li>Shared <code>allure-raw/</code> cache on <code>gh-pages</code> — unit + integration + e2e all feed one combined report at <code>/test-reports/</code></li>
+</ul>
+<p><strong>11 scenarios verified:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Scenario</th><th>Spec</th></tr></thead><tbody><tr><td>Unauthenticated → redirected to login</td><td>auth</td></tr><tr><td>Login → logout → login again</td><td>auth</td></tr><tr><td>Wrong password → error shown</td><td>auth</td></tr><tr><td>Add title → appears in library</td><td>library</td></tr><tr><td>Sync progress overlay visible while building</td><td>library</td></tr><tr><td>Source match fails → Sync Warning badge shown</td><td>library</td></tr><tr><td>Queue chapter → download reaches done</td><td>download</td></tr><tr><td>Source 502 on chapter sync → sync warning shown</td><td>download</td></tr><tr><td>Empty pages → queue item shows error</td><td>download</td></tr><tr><td>Navigate to bad title → error state, no crash</td><td>discover</td></tr><tr><td>Discover page loads with search input</td><td>discover</td></tr></tbody></table>
+<p>See ADR 0023 for full architecture decisions.</p>
+<h3 id="allure-dark-theme">Allure dark theme</h3>
+<p>Test reports at <code>/test-reports/</code> now use the Obsidian Immersive palette (dark background <code>#121415</code>, violet <code>#8b5cf6</code>, Geist font). Applied via CSS injection post-<code>allure generate</code> in CI, forcing <code>data-theme="dark"</code> on the HTML element.</p>
+<h3 id="favicon--branding">Favicon + branding</h3>
+<p>Skull pirate logo now appears in browser tabs, bookmarks, and home screen shortcuts for both the web app (<code>web/public/</code>) and the docs site (<code>docs-site/public/</code>). Docs site hero shows the logo above the title.</p>
+<hr>
+<h2 id="bug-fixes">Bug fixes</h2>
+<h3 id="502-on-chapter-sync-fails-silently--no-sync-warning-fixes-69">502 on chapter sync fails silently — no sync warning (fixes #69)</h3>
+<p>Previously, when a source’s chapters endpoint returned 502, <code>sync_chapters</code> returned <code>Ok(0)</code> and the title silently ended up with 0 chapters and no amber warning badge.</p>
+<p><strong>Fix:</strong> <code>sync_chapters</code> now returns <code>Err("source temporarily unavailable (502)")</code> on 502. All three call sites (<code>add_manga</code>, <code>patch_title</code> spawn, <code>sync_title</code> spawn) insert a <code>sync_warnings</code> row in the error branch. <code>any_ok</code> is now set when a source is <strong>matched</strong> (not when chapter sync succeeds), so <code>sync_status</code> stays <code>ready</code> even when chapters are temporarily unavailable.</p>
+<p><strong>Found via:</strong> e2e “Fixture 502” scenario.</p>
+<h3 id="get-apiversion-required-authentication-fixes-70"><code>GET /api/version</code> required authentication (fixes #70)</h3>
+<p><code>/api/version</code> was inside the auth-protected router, returning 401 without a token. Version info should be public — used for health checks, server-ready detection, and could be displayed on the login screen.</p>
+<p><strong>Fix:</strong> <code>version::router()</code> moved to the public (pre-auth) section. Unused <code>Extension(Claims)</code> extractor removed from the handler.</p>
+<p><strong>Found via:</strong> <code>globalSetup.ts</code> in e2e using <code>/api/version</code> as server-ready check.</p>
+<h3 id="ghcr-build-cache-sas-token-expiry">GHCR build cache SAS token expiry</h3>
+<p>The <code>arrgh</code> Docker image build (multi-platform Rust, <code>linux/amd64+arm64</code>) was taking >60 minutes, causing the GitHub Actions Cache SAS token to expire during layer export, failing the GHCR push.</p>
+<p><strong>Fix:</strong> <code>arrgh</code> switched from <code>type=gha,mode=max</code> to <code>type=registry</code> (layers cached in GHCR under <code>:buildcache</code> tag — no SAS token, no expiry). <code>plugin-host</code> and <code>cloakbrowser-server</code> switched to <code>mode=min</code>.</p>
+<hr>
+<h2 id="bugs-found-during-e2e-implementation-test-infrastructure-not-product">Bugs found during e2e implementation (test infrastructure, not product)</h2>
+<p>During e2e bringup, several issues were caught and fixed before CI ran:</p>
+<ul>
+<li><strong>Wrong localStorage key</strong> — <code>globalSetup</code> stored token as <code>'token'</code>; app reads <code>'arrgh_token'</code>. Fixed: all four keys (<code>arrgh_token</code>, <code>arrgh_username</code>, <code>arrgh_role</code>, <code>arrgh_allow_explicit</code>) now set correctly.</li>
+<li><strong><code>waitForServer</code> polling <code>/api/version</code></strong> — returned 401 before #70 fix, never resolved. Fixed: uses <code>/api/auth/login</code> as ready-check (always responds).</li>
+<li><strong><code>page.evaluate</code> SecurityError</strong> — reading <code>localStorage</code> before page navigation. Fixed: uses <code>context().storageState()</code> instead.</li>
+<li><strong>Discover UI hits MangaUpdates</strong> — library/download tests that added titles via the Discover search would be flaky in CI (live MangaUpdates calls). Fixed: all add-title flows use <code>POST /api/discover/add</code> API directly; only the Discover smoke test hits the UI.</li>
+</ul>
+<hr>
+<h2 id="other-changes">Other changes</h2>
+<ul>
+<li><code>CONTEXT.MD</code> — corrected: <code>GET /search</code> IS part of the Source Plugin Protocol (required for Source Matching). Previous entry incorrectly said search was not part of the protocol.</li>
+<li><code>docs-site</code> — features card, getting-started, and plugins protocol page updated to reflect nhentai, E-Hentai authority, hentai source routing, and correct plugin protocol endpoints.</li>
+<li><code>docs/adr/0023-e2e-testing-architecture.md</code> — added.</li>
+</ul>
+<hr>
+<h2 id="upgrading">Upgrading</h2>
+<pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#61AFEF">docker</span><span style="color:#98C379"> compose</span><span style="color:#98C379"> pull</span></span>
+<span class="line"><span style="color:#61AFEF">docker</span><span style="color:#98C379"> compose</span><span style="color:#98C379"> up</span><span style="color:#D19A66"> -d</span></span></code></pre>
+<p>No DB migrations. No API breaking changes.</p>  </article> </div>  </main> <footer class="border-t border-border mt-20 py-8"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground"> <span><span class="text-primary font-bold">*ARRgh!</span> — self-hosted East Asian comics & novel manager</span> <div class="flex items-center gap-4"> <a href="https://github.com/t2vi/arrgh" class="hover:text-foreground transition-colors">GitHub</a> <a href="/arrgh/test-reports" class="hover:text-foreground transition-colors">Test Reports ↗</a> </div> </div> </footer> </body></html>
