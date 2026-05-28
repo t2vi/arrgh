@@ -9,14 +9,18 @@ A self-hosted East Asian comics and novel manager, downloader, and reader for yo
 
 ## Features
 
-- **Discover** powered by [MangaUpdates](https://www.mangaupdates.com/) — consistent metadata (titles, covers, descriptions, tags, authors) from a single authoritative source
+- **Discover** powered by [MangaUpdates](https://www.mangaupdates.com/) — consistent metadata (titles, covers, descriptions, tags, authors) from a single authoritative source; [E-Hentai](https://e-hentai.org/) for explicit titles
+- Title aliases from MangaUpdates associated names — improves cross-source matching for series with multiple romanisations
 - Chapters aggregated across all registered sources — completeness doesn't depend on any one source being up to date
 - Automatic download fallback — if the preferred source fails, arrgh tries the next by priority
+- Hentai source routing — explicit sources only matched for titles tagged `hentai`; non-explicit sources skipped for them
 - Source plugin system — add new download sources without recompiling or redeploying
 - Browse and install community plugins from the Settings UI
 - Download chapters to your server for offline reading
 - Real-time download progress with per-chapter percentage bars
-- Web reader (paged or scroll mode)
+- Live sync progress — library card and title detail page show step-by-step sync status while building
+- Sync warnings — amber badge when a source couldn't be matched; re-sync to retry
+- Web reader (paged or scroll mode for comics; prose mode for novels)
 - Multi-user support — per-user libraries with shared file storage, per-user reading progress
 - Auto-download new chapters on a schedule
 - Explicit content controls — admin grants access per user
@@ -53,8 +57,9 @@ All default sources compile into a single **plugin-host** container — no per-p
 | **MangaDex** | Manga, Manhwa, Manhua, One-shot | `plugins/mangadex/` | |
 | **Toonily** | Manhwa | `plugins/toonily/` | CF-protected — uses CloakBrowser |
 | **Comick** | Manga, Manhwa, Manhua | `plugins/comick/` | CF-protected — uses CloakBrowser |
-| **Royal Road** | Novel | `plugins/royalroad/` |  |
+| **Royal Road** | Novel | `plugins/royalroad/` | |
 | **NovelFull** | Novel | `plugins/novelfull/` | CF-protected — uses CloakBrowser |
+| **nhentai** | Hentai doujinshi | `plugins/nhentai/` | CF-protected — uses CloakBrowser; explicit-only source |
 
 CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromium, source-level fingerprint patches). Plugin Host holds the CDP connection; plugins call `ctx.getBrowser()` via `PluginContext`.
 
@@ -66,7 +71,7 @@ CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromiu
 
 ### Source Plugin Protocol
 
-Plugins are **download-only backends**. Metadata (search, descriptions, covers, trending) comes from MangaUpdates — plugins only need to serve chapter lists and page content.
+Plugins are **download-only backends**. Metadata (search, descriptions, covers, trending) comes from MangaUpdates for standard titles, or E-Hentai for explicit titles — plugins only need to serve chapter lists and page content.
 
 Every plugin must implement:
 
@@ -101,7 +106,8 @@ arrgh/
     ├── toonily/
     ├── comick/
     ├── royalroad/
-    └── novelfull/
+    ├── novelfull/
+    └── nhentai/
 ```
 
 - **Backend**: Rust, Axum, SQLx (SQLite), Tokio

@@ -52,15 +52,17 @@ npm run build   # esbuild → dist/index.js
 
   <table>
     <thead>
-      <tr><th>Endpoint</th><th>Description</th></tr>
+      <tr><th>Endpoint</th><th>Required</th><th>Description</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>GET /info</code></td><td>Plugin metadata (name, version, base_url, content_types)</td></tr>
-      <tr><td><code>GET /search?q=&lt;query&gt;</code></td><td>Search for titles</td></tr>
-      <tr><td><code>GET /:source_id/chapters</code></td><td>List chapters for a title</td></tr>
-      <tr><td><code>GET /:source_id/chapters/:chapter_id/pages</code></td><td>Get image URLs for a chapter</td></tr>
+      <tr><td><code>GET /info</code></td><td>Yes</td><td>Plugin metadata — <code>id</code>, <code>name</code>, <code>content_types</code>, <code>default_explicit</code></td></tr>
+      <tr><td><code>GET /manga/:source_id/chapters</code></td><td>Yes</td><td>Chapter list for a title</td></tr>
+      <tr><td><code>GET /chapter/:source_id/pages</code></td><td>Yes (comics)</td><td>Image URLs for a chapter</td></tr>
+      <tr><td><code>GET /chapter/:source_id/text</code></td><td>Yes (novels)</td><td>Markdown text for a novel chapter</td></tr>
     </tbody>
   </table>
+
+  <p>Plugins are <strong>download-only</strong>. Search, covers, and metadata come from MangaUpdates (or E-Hentai for explicit titles) — plugins do not need to implement <code>/search</code> or <code>/meta</code>.</p>
 
   <h2>Minimal plugin scaffold</h2>
 
