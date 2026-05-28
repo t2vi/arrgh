@@ -126,7 +126,8 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | `sync_chapters` deduplicates chapters by `(title_id, number)` across two sources | ✅ |
 | `sync_chapters` is idempotent — syncing same source twice produces no duplicate rows | ✅ |
 | `sync_chapters` ON CONFLICT updates `source_id` when plugin returns a new identifier | ✅ |
-| `sync_chapters` returns Ok(0) on 502 (source temporarily unavailable) | ✅ |
+| `sync_chapters` returns `Err` on 502 (source temporarily unavailable) | ✅ |
+| `sync_chapters` preserves existing chapters when source returns 502 | ✅ |
 | `sync_chapters` preserves existing chapters when source returns 502 | ✅ |
 
 ### Media API (`src/api/media.rs`) ✅
@@ -188,7 +189,7 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Logs | `PATCH /api/logs/level` requires admin (member → 403) | ✅ |
 | Logs | `PATCH /api/logs/level` admin → 204 | ✅ |
 | Version | `GET /api/version` returns current without latest (check disabled) | ✅ |
-| Sources | Add + reload registry | 🔳 |
+| Sources | Add + reload registry | ✅ |
 | Multi-source: title schema | `is_local=true` when no `title_sources` rows | ✅ |
 | Multi-source: title schema | `is_local=false` when `title_sources` row exists | ✅ |
 | Multi-source: chapter schema | `has_sources=false` when no `chapter_sources` rows | ✅ |
@@ -224,14 +225,34 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 
 ## E2e — Playwright (Docker Compose + Fixture Plugin)
 
-Batch 1:
+See ADR 0023 for full architecture decisions (fixture server, isolation, CI, shared Allure cache).
 
-| Flow | Steps | Status |
-|---|---|---|
-| Auth | Register → login → logout → login again | 🔳 |
-| Library | Login → add manga via Discover → appears in Library | 🔳 |
-| Download | Add manga → queue chapter → status reaches `done` | 🔳 |
-| Discover | Search via Fixture Plugin → results shown → add to library | 🔳 |
+**Infrastructure**: `docker-compose.test.yml` — replaces plugin-host with standalone Fixture Plugin server at `http://fixture:4001`. No CloakBrowser. Admin seeded via `global-setup.ts` → `POST /api/auth/register`.
+
+**Fixture modes** (`plugins/fixture/`):
+
+| Title | Fixture behaviour |
+|---|---|
+| "Fixture Manga" | Returns 3 chapters, 3 pages (tiny JPEG at `/image.jpg`) |
+| "Fixture No Match" | `/search` returns `[]` → triggers Sync Warning |
+| "Fixture 502" | `/manga/:id/chapters` returns HTTP 502 |
+| "Fixture Empty Pages" | `/chapter/:id/pages` returns `[]` |
+
+**Scenarios**:
+
+| Scenario | Spec | Fixture mode | Status |
+|---|---|---|---|
+| Unauthenticated → redirected to login | `auth.spec.ts` | none | ✅ |
+| Login → navigate → logout → redirected to login | `auth.spec.ts` | none | ✅ |
+| Wrong password → error shown | `auth.spec.ts` | none | ✅ |
+| Add title via API → appears in library | `library.spec.ts` | Fixture Manga | ✅ |
+| Add title → sync progress overlay visible | `library.spec.ts` | Fixture Manga | ✅ |
+| Source match fails → Sync Warning badge shown | `library.spec.ts` | Fixture No Match | ✅ |
+| Queue chapter → download reaches `done` | `download.spec.ts` | Fixture Manga | ✅ |
+| Source 502 on chapter sync → sync warning shown, status `ready` | `download.spec.ts` | Fixture 502 | ✅ |
+| Empty pages → queue item shows error state | `download.spec.ts` | Fixture Empty Pages | ✅ |
+| Navigate to bad title URL → error state, no crash | `discover.spec.ts` | none | ✅ |
+| Discover page loads with search input | `discover.spec.ts` | none | ✅ |
 
 ---
 

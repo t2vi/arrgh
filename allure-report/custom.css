@@ -1,0 +1,70 @@
+/* *ARRgh — Obsidian Immersive theme for Allure 2 */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
+
+/* ── Palette overrides ─────────────────────────────────────────────────────── */
+/* Map Allure's neutral-gray ladder onto our design tokens.                     */
+:root {
+  /* Background layers */
+  --palette-gray-neutral-1000: #0a0c0d;
+  --palette-gray-neutral-950:  #0d0f10;
+  --palette-gray-neutral-900:  #121415;   /* --background */
+  --palette-gray-neutral-850:  #191b1c;
+  --palette-gray-neutral-800:  #1e2021;   /* --card */
+  --palette-gray-neutral-750:  #1a1c1d;   /* --muted */
+  --palette-gray-neutral-700:  #252729;
+  --palette-gray-neutral-650:  #2e3032;
+  --palette-gray-neutral-600:  #333536;   /* --border */
+  --palette-gray-neutral-550:  #3d3f41;
+
+  /* Violet accent → our primary #8b5cf6 */
+  --palette-violet-day-base:       #8b5cf6;
+  --palette-violet-day-darken-1:   #8b5cf6;
+  --palette-violet-day-darken-2:   #7c3aed;
+  --palette-violet-day-darken-3:   #6d28d9;
+  --palette-violet-day-darken-4:   #5b21b6;
+  --palette-violet-day-darken-5:   #4c1d95;
+  --palette-violet-night-base:     #a78bfa;
+  --palette-violet-night-darken-1: #8b5cf6;
+  --palette-violet-night-darken-2: #7c3aed;
+  --palette-violet-night-darken-3: #6d28d9;
+  --palette-violet-night-darken-4: #5b21b6;
+  --palette-violet-night-darken-5: #4c1d95;
+
+  /* Violet alpha variants */
+  --palette-violet-day-darken-1-8:  #8b5cf614;
+  --palette-violet-day-darken-1-16: #8b5cf629;
+  --palette-violet-day-darken-1-24: #8b5cf63d;
+}
+
+/* ── Typography ────────────────────────────────────────────────────────────── */
+body,
+.typography_body__BqKRJ,
+.typography_supportText__7RjlX,
+[class*="typography_"] {
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* ── Nav branding ──────────────────────────────────────────────────────────── */
+.side-nav {
+  border-right: 1px solid #333536 !important;
+}
+
+/* Active nav item — violet glow */
+.side-nav__link_active,
+.side-nav__collapse_active {
+  background: rgba(139, 92, 246, 0.15) !important;
+  color: #8b5cf6 !important;
+  border-inline-end: 2px solid #8b5cf6 !important;
+}
+
+/* ── Focus rings → violet ──────────────────────────────────────────────────── */
+:focus-visible {
+  outline-color: #8b5cf6 !important;
+}
+
+/* ── Scrollbars ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #121415; }
+::-webkit-scrollbar-thumb { background: #333536; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }

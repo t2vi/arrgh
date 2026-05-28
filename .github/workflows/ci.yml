@@ -161,10 +161,34 @@ jobs:
         with:
           node-version: 22
 
-      - name: Generate Allure report
-        run: npx allure-commandline@2 generate allure-results --clean -o allure-report
+      - name: Generate combined Allure report
+        run: |
+          mkdir -p combined-raw
+          # Start with whatever e2e layer was cached last
+          if [ -d gh-pages/allure-raw/e2e ]; then
+            cp -r gh-pages/allure-raw/e2e/. combined-raw/
+          fi
+          # Fresh server + web results override
+          cp -r allure-results/. combined-raw/
+          if [ -d gh-pages/test-reports/history ]; then
+            cp -r gh-pages/test-reports/history combined-raw/history
+          fi
+          cp allure-categories.json combined-raw/categories.json
+          npx allure-commandline@2 generate combined-raw --clean -o allure-report
 
-      - name: Deploy to GitHub Pages
+      - name: Apply custom theme
+        run: |
+          cp .allure/custom.css allure-report/custom.css
+          sed -i 's|</head>|<script>document.documentElement.setAttribute("data-theme","dark")</script><link rel="stylesheet" href="custom.css"></head>|' allure-report/index.html
+
+      - name: Push raw server+web results to gh-pages cache
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: allure-results
+          target-folder: allure-raw/server-web
+          clean: true
+
+      - name: Deploy combined Allure report
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: allure-report

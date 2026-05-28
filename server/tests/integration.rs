@@ -359,8 +359,7 @@ async fn admin_can_set_log_level() {
 #[tokio::test]
 async fn version_returns_current_without_latest_when_check_disabled() {
     let app = build_app().await;
-    let token = admin_token();
-    let (status, body) = req_get(&app, "/api/version", Some(&token)).await;
+    let (status, body) = req_get(&app, "/api/version", None).await;
     assert_eq!(status, StatusCode::OK);
     assert!(body.get("current").is_some());
     // Update check is disabled by default → latest is null

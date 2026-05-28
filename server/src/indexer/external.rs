@@ -151,8 +151,7 @@ impl Source for ExternalSource {
         let path = format!("/manga/{}/chapters", urlencoding::encode(source_id));
         let resp = self.get(&path).send().await?;
         if resp.status() == reqwest::StatusCode::BAD_GATEWAY {
-            tracing::warn!("{}: chapters endpoint returned 502, source temporarily unavailable", self.source_id);
-            return Ok(0);
+            return Err(anyhow!("{}: source temporarily unavailable (502)", self.source_id));
         }
         let chapters: Vec<ChapterItem> = resp.error_for_status()?.json().await?;
 
@@ -452,9 +451,9 @@ mod tests {
         assert_eq!(row_count, 1, "no duplicate rows after update");
     }
 
-    // 502 from plugin-host → Ok(0), not Err — source temporarily unavailable
+    // 502 from plugin-host → Err (source temporarily unavailable)
     #[tokio::test]
-    async fn sync_chapters_returns_zero_on_502() {
+    async fn sync_chapters_returns_err_on_502() {
         let pool = make_pool().await;
         seed_manga(&pool, "m-502").await;
 
@@ -465,8 +464,8 @@ mod tests {
         );
 
         let result = src.sync_chapters(&pool, "m-502", "mid").await;
-        assert!(result.is_ok(), "502 should not propagate as Err: {:?}", result.err());
-        assert_eq!(result.unwrap(), 0);
+        assert!(result.is_err(), "502 should propagate as Err");
+        assert!(result.unwrap_err().to_string().contains("502"));
     }
 
     // Existing chapters are preserved when source returns 502 on a subsequent sync
@@ -490,8 +489,9 @@ mod tests {
             base_502, None, vec!["manga".into()], false,
         );
         let result = src_502.sync_chapters(&pool, "m-502-preserve", "mid").await;
-        assert!(result.is_ok());
+        assert!(result.is_err(), "502 should propagate as Err");
 
+        // Existing chapters from previous successful sync must survive
         let count: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM chapters WHERE title_id = 'm-502-preserve'"
         ).fetch_one(&pool).await.unwrap();
