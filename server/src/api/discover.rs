@@ -481,8 +481,13 @@ async fn add_manga(
         .unwrap_or(false);
 
     tokio::spawn(async move {
+        // Clear any previous sync log for this title
+        let _ = sqlx::query!("DELETE FROM sync_log WHERE title_id = ?", mid)
+            .execute(&db).await;
+
         // 1. Download cover
         if let Some(cdn_url) = cover_cdn {
+            super::append_sync_log(&db, &mid, "Downloading cover…").await;
             let ext = cdn_url.split('?').next().unwrap_or("cover")
                 .rsplit('.').next().unwrap_or("jpg");
             let cover_path = Path::new(&download_dir)
@@ -516,10 +521,12 @@ async fn add_manga(
         }
 
         // 2. Fetch and store associated names from MangaUpdates
+        super::append_sync_log(&db, &mid, "Fetching metadata from MangaUpdates…").await;
         if let Ok(mu_id) = mu_id_str.parse::<u64>() {
             let mu = MangaUpdatesClient::new(&http);
             match mu.series_detail(mu_id).await {
                 Ok(Some(series)) => {
+                    let alias_count = series.associated_names.len();
                     let _ = sqlx::query!("DELETE FROM title_aliases WHERE title_id = ?", mid)
                         .execute(&db).await;
                     for alias in &series.associated_names {
@@ -529,6 +536,9 @@ async fn add_manga(
                             alias_id, mid, alias
                         )
                         .execute(&db).await;
+                    }
+                    if alias_count > 0 {
+                        super::append_sync_log(&db, &mid, &format!("Loaded {} alternate title(s)", alias_count)).await;
                     }
                 }
                 Ok(None) => {}
@@ -577,8 +587,15 @@ async fn add_manga(
             .execute(&db).await;
         }
 
+        if source_snapshot.is_empty() {
+            super::append_sync_log(&db, &mid, "No sources available for this title type").await;
+        } else {
+            super::append_sync_log(&db, &mid, &format!("Searching {} source(s)…", source_snapshot.len())).await;
+        }
+
         let mut any_ok = false;
         for (src_key, src) in &source_snapshot {
+            super::append_sync_log(&db, &mid, &format!("Searching {}…", src_key)).await;
             let mut matched_hit: Option<crate::indexer::source::MangaResult> = None;
 
             'candidates: for candidate in &candidates {
@@ -598,6 +615,7 @@ async fn add_manga(
             }
 
             let Some(hit) = matched_hit else {
+                super::append_sync_log(&db, &mid, &format!("No match in {}", src_key)).await;
                 let warn_id = Uuid::new_v4().to_string();
                 let now_w = Utc::now().to_rfc3339();
                 let msg = format!("no matching source found for '{}' or any alias", title);
@@ -610,6 +628,8 @@ async fn add_manga(
                 .execute(&db).await;
                 continue;
             };
+
+            super::append_sync_log(&db, &mid, &format!("Matched in {}: {}", src_key, hit.title)).await;
 
             // Clear warning for this source — match succeeded
             let _ = sqlx::query!(
@@ -631,9 +651,16 @@ async fn add_manga(
                 continue;
             }
 
+            super::append_sync_log(&db, &mid, &format!("Syncing chapters from {}…", src_key)).await;
             match src.sync_chapters(&db, &mid, &hit.id).await {
-                Ok(_) => { any_ok = true; }
-                Err(e) => tracing::error!("chapter sync failed for {} ({}): {}", mid, src_key, e),
+                Ok(n) => {
+                    super::append_sync_log(&db, &mid, &format!("Synced {} chapters from {}", n, src_key)).await;
+                    any_ok = true;
+                }
+                Err(e) => {
+                    tracing::error!("chapter sync failed for {} ({}): {}", mid, src_key, e);
+                    super::append_sync_log(&db, &mid, &format!("Chapter sync failed for {}: {}", src_key, e)).await;
+                }
             }
         }
 
@@ -647,6 +674,11 @@ async fn add_manga(
         }
 
         let status = if source_snapshot.is_empty() || any_ok { "ready" } else { "error" };
+        if any_ok {
+            super::append_sync_log(&db, &mid, "Sync complete").await;
+        } else if !source_snapshot.is_empty() {
+            super::append_sync_log(&db, &mid, "Sync complete — no sources matched").await;
+        }
         let _ = sqlx::query!("UPDATE titles SET sync_status = ? WHERE id = ?", status, mid)
             .execute(&db)
             .await;

@@ -55,6 +55,12 @@ export interface AppSettings {
   check_for_updates: boolean
 }
 
+export interface SyncLogEntry {
+  id: string
+  message: string
+  created_at: string
+}
+
 export interface ReadProgress {
   id: string
   chapter_id: string

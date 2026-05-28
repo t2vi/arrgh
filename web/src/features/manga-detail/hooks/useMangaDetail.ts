@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, type QueueItem } from '@/api'
-import type { Chapter, ReadProgress } from '@/types'
+import type { Chapter, ReadProgress, SyncLogEntry } from '@/types'
 import { ROUTES } from '@/lib/routes'
 
 export type FilterMode = 'all' | 'downloaded' | 'not_downloaded'
@@ -49,6 +49,7 @@ export interface MangaDetailHandle {
   setShowRemoveMenu: (fn: (v: boolean) => boolean) => void
   removeMenuRef: React.RefObject<HTMLDivElement | null>
   pendingReadId: string | null
+  syncLog: SyncLogEntry[]
   // Actions
   openOrQueue: (ch: Chapter) => void
   sync: SimpleMutation<void>
@@ -77,6 +78,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
   const [loadingChapters, setLoadingChapters] = useState(true)
   const [allProgress, setAllProgress] = useState<ReadProgress[]>([])
   const [queueItems, setQueueItems] = useState<QueueItem[]>([])
+  const [syncLog, setSyncLog] = useState<SyncLogEntry[]>([])
 
   // Mutation states
   const [syncPending, setSyncPending] = useState(false)
@@ -118,6 +120,11 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     api.getTitleQueue(id).then(setQueueItems).catch(() => {})
   }, [id])
 
+  const fetchSyncLog = useCallback(() => {
+    if (!id) return
+    api.getSyncLog(id).then(setSyncLog).catch(() => {})
+  }, [id])
+
   // Initial fetches
   useEffect(() => {
     if (!id) return
@@ -150,6 +157,18 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     if (!id) return
     fetchQueue()
   }, [id, fetchQueue])
+
+  // Fetch sync log on mount and poll every 2s while syncing
+  useEffect(() => {
+    if (!id) return
+    fetchSyncLog()
+  }, [id, fetchSyncLog])
+
+  useEffect(() => {
+    if (manga?.sync_status !== 'syncing') return
+    const tid = setInterval(fetchSyncLog, 2000)
+    return () => clearInterval(tid)
+  }, [manga?.sync_status, fetchSyncLog])
 
   // Poll every 2s only while there are active items; stops automatically when idle
   useEffect(() => {
@@ -336,6 +355,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
     setShowRemoveMenu,
     removeMenuRef,
     pendingReadId,
+    syncLog,
     openOrQueue,
     sync,
     refreshMetadata,

@@ -41,12 +41,21 @@ async fn main() -> Result<()> {
 
     sqlx::migrate!("./migrations").run(&pool).await?;
 
-    // DB download_dir overrides env var if set
+    // DB download_dir overrides env var if set — only honour absolute paths;
+    // a relative path stored here causes covers to land in the container layer
+    // (not the volume) and disappear on every image rebuild.
     if let Ok(Some(dir)) = sqlx::query_scalar::<_, String>("SELECT value FROM server_settings WHERE key = 'download_dir'")
         .fetch_optional(&pool)
         .await
     {
-        config.download_dir = dir;
+        if std::path::Path::new(&dir).is_absolute() {
+            config.download_dir = dir;
+        } else {
+            tracing::warn!(
+                "server_settings.download_dir='{}' is relative — ignored, using env default '{}'",
+                dir, config.download_dir
+            );
+        }
     }
     let config = Arc::new(config);
 

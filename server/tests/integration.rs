@@ -758,6 +758,145 @@ async fn admin_can_cancel_any_queue_item() {
     assert_eq!(status, StatusCode::NO_CONTENT, "admin can cancel any queue item");
 }
 
+// ── sync_log ──────────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn sync_log_empty_when_no_entries() {
+    let (app, state) = build_state().await;
+    seed_manga(&state.db, "m-sl-1").await;
+    seed_user_manga(&state.db, "m-sl-1").await;
+
+    let token = admin_token();
+    let (status, body) = req_get(&app, "/api/titles/m-sl-1/sync-log", Some(&token)).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body.as_array().unwrap().len(), 0, "no log entries yet");
+}
+
+#[tokio::test]
+async fn sync_log_returns_entries_in_insertion_order() {
+    let (app, state) = build_state().await;
+    seed_manga(&state.db, "m-sl-2").await;
+    seed_user_manga(&state.db, "m-sl-2").await;
+
+    let now = chrono::Utc::now();
+    for (i, msg) in ["First", "Second", "Third"].iter().enumerate() {
+        let id = format!("sl-{}", i);
+        let ts = (now + chrono::Duration::seconds(i as i64)).to_rfc3339();
+        sqlx::query(
+            "INSERT INTO sync_log (id, title_id, message, created_at) VALUES (?, ?, ?, ?)"
+        )
+        .bind(&id).bind("m-sl-2").bind(msg).bind(&ts)
+        .execute(&state.db).await.unwrap();
+    }
+
+    let token = admin_token();
+    let (status, body) = req_get(&app, "/api/titles/m-sl-2/sync-log", Some(&token)).await;
+    assert_eq!(status, StatusCode::OK);
+    let entries = body.as_array().unwrap();
+    assert_eq!(entries.len(), 3);
+    assert_eq!(entries[0]["message"], "First");
+    assert_eq!(entries[2]["message"], "Third");
+}
+
+#[tokio::test]
+async fn sync_log_returns_404_for_unowned_title() {
+    let (app, state) = build_state().await;
+    seed_manga(&state.db, "m-sl-3").await;
+    // no user_titles row — user does not own this title
+
+    let token = admin_token();
+    let (status, _) = req_get(&app, "/api/titles/m-sl-3/sync-log", Some(&token)).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+// ── serve_cover CDN fallback ──────────────────────────────────────────────────
+
+async fn req_raw(app: &Router, path: &str) -> (StatusCode, axum::http::HeaderMap) {
+    let req = Request::builder()
+        .method("GET")
+        .uri(path)
+        .body(Body::empty())
+        .unwrap();
+    let resp = app.clone().oneshot(req).await.unwrap();
+    let status = resp.status();
+    let headers = resp.headers().clone();
+    (status, headers)
+}
+
+async fn seed_title_meta(pool: &sqlx::SqlitePool, title_key: &str, cdn_url: &str) {
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "INSERT INTO title_meta (title_key, cover_cdn_url, source, source_id, fetched_at) \
+         VALUES (?, ?, 'mangaupdates', '0', ?)"
+    )
+    .bind(title_key).bind(cdn_url).bind(&now)
+    .execute(pool).await.unwrap();
+}
+
+#[tokio::test]
+async fn serve_cover_redirects_to_cdn_when_cover_url_null() {
+    let (app, state) = build_state().await;
+
+    // Title with cover_url = NULL
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+         VALUES ('m-cov-1', 'Cover Test One', 'unknown', 'ready', 'manga', 0, ?, ?)"
+    )
+    .bind(&now).bind(&now)
+    .execute(&state.db).await.unwrap();
+
+    // normalize_title("Cover Test One") = "cover test one"
+    seed_title_meta(&state.db, "cover test one", "https://cdn.example.com/cover1.jpg").await;
+
+    let (status, headers) = req_raw(&app, "/api/media/cover/m-cov-1").await;
+    assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);
+    assert_eq!(
+        headers.get("location").and_then(|v| v.to_str().ok()),
+        Some("https://cdn.example.com/cover1.jpg")
+    );
+}
+
+#[tokio::test]
+async fn serve_cover_redirects_to_cdn_when_local_file_missing() {
+    let (app, state) = build_state().await;
+
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "INSERT INTO titles (id, title, cover_url, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+         VALUES ('m-cov-2', 'Cover Test Two', '/nonexistent/path/cover.jpg', 'unknown', 'ready', 'manga', 0, ?, ?)"
+    )
+    .bind(&now).bind(&now)
+    .execute(&state.db).await.unwrap();
+
+    // normalize_title("Cover Test Two") = "cover test two"
+    seed_title_meta(&state.db, "cover test two", "https://cdn.example.com/cover2.jpg").await;
+
+    let (status, headers) = req_raw(&app, "/api/media/cover/m-cov-2").await;
+    assert_eq!(status, StatusCode::TEMPORARY_REDIRECT);
+    assert_eq!(
+        headers.get("location").and_then(|v| v.to_str().ok()),
+        Some("https://cdn.example.com/cover2.jpg")
+    );
+}
+
+#[tokio::test]
+async fn serve_cover_returns_404_when_no_cdn_fallback() {
+    let (app, state) = build_state().await;
+
+    let now = chrono::Utc::now().to_rfc3339();
+    sqlx::query(
+        "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+         VALUES ('m-cov-3', 'Cover No Meta', 'unknown', 'ready', 'manga', 0, ?, ?)"
+    )
+    .bind(&now).bind(&now)
+    .execute(&state.db).await.unwrap();
+    // no title_meta row
+
+    let (status, _) = req_raw(&app, "/api/media/cover/m-cov-3").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
 // ── remove_manga: delete_files admin-only ─────────────────────────────────────
 
 #[tokio::test]

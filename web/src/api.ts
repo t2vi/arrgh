@@ -1,4 +1,4 @@
-import type { AppSettings, Chapter, Title, PaginatedTitle, ReadProgress } from './types'
+import type { AppSettings, Chapter, Title, PaginatedTitle, ReadProgress, SyncLogEntry } from './types'
 
 export interface SearchResult {
   mangaupdates_id: string
@@ -248,6 +248,7 @@ export const api = {
 
   getTitle: (id: string) => get<Title>(`/api/titles/${id}`),
   syncTitle: (id: string) => post<void>(`/api/titles/${id}/sync`),
+  getSyncLog: (id: string) => get<SyncLogEntry[]>(`/api/titles/${id}/sync-log`),
   refreshMetadata: (id: string) => post<void>(`/api/titles/${id}/refresh-metadata`),
 
   listChapters: (titleId: string) => get<Chapter[]>(`/api/chapters/title/${titleId}`),

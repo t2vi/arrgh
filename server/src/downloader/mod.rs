@@ -179,6 +179,9 @@ async fn download_cbz(
     queue_id: &str,
 ) -> Result<usize> {
     let pages = src.get_page_urls(chapter_source_id).await?;
+    if pages.is_empty() {
+        anyhow::bail!("source returned 0 pages for chapter {chapter_source_id}");
+    }
     let page_count = pages.len();
     let total = page_count as i64;
 
@@ -228,6 +231,65 @@ async fn download_cbz(
     let cursor = zip.finish()?;
     tokio::fs::write(dest, cursor.into_inner()).await?;
     Ok(page_count)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::indexer::source::{MangaResult, PageUrl, Source};
+    use anyhow::Result;
+    use sqlx::SqlitePool;
+
+    struct EmptyPagesSource;
+
+    #[async_trait::async_trait]
+    impl Source for EmptyPagesSource {
+        fn id(&self) -> &str { "empty" }
+        fn name(&self) -> &str { "Empty" }
+        async fn search(&self, _: &str) -> Result<Vec<MangaResult>> { Ok(vec![]) }
+        async fn sync_chapters(&self, _: &SqlitePool, _: &str, _: &str) -> Result<usize> { Ok(0) }
+        async fn get_page_urls(&self, _: &str) -> Result<Vec<PageUrl>> { Ok(vec![]) }
+        async fn fetch_cover(&self, _: &str) -> Result<Vec<u8>> { Ok(vec![]) }
+    }
+
+    #[tokio::test]
+    async fn download_cbz_errors_on_empty_pages() {
+        let opts = sqlx::sqlite::SqliteConnectOptions::new()
+            .filename(":memory:")
+            .create_if_missing(true);
+        let pool = sqlx::sqlite::SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(opts)
+            .await
+            .unwrap();
+        sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
+        // FK chain: titles → chapters → download_queue
+        sqlx::query(
+            "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+             VALUES ('t1', 'Test', 'unknown', 'ready', 'manga', 0, datetime('now'), datetime('now'))"
+        ).execute(&pool).await.unwrap();
+        sqlx::query(
+            "INSERT INTO chapters (id, title_id, number, page_count, downloaded, chapter_format, created_at) \
+             VALUES ('ch1', 't1', 1.0, 0, 0, 'pages', datetime('now'))"
+        ).execute(&pool).await.unwrap();
+
+        let queue_id = uuid::Uuid::new_v4().to_string();
+        sqlx::query(
+            "INSERT INTO download_queue (id, chapter_id, manga_title, chapter_num, status, created_at, updated_at) \
+             VALUES (?, 'ch1', 'Test', 1.0, 'pending', datetime('now'), datetime('now'))"
+        )
+        .bind(&queue_id)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        let dest = std::path::Path::new("/tmp/test_empty_pages.cbz");
+        let src = EmptyPagesSource;
+        let result = download_cbz(&src, "src-ch1", dest, &pool, &queue_id).await;
+        assert!(result.is_err(), "empty pages should return Err");
+        assert!(result.unwrap_err().to_string().contains("0 pages"));
+    }
 }
 
 async fn fail(state: &AppState, queue_id: &str, error: &str) -> Result<()> {

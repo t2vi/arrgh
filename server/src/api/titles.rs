@@ -81,6 +81,7 @@ pub fn router() -> Router<AppState> {
         .route("/titles/new-releases", get(new_releases))
         .route("/titles/{id}", get(get_title).delete(remove_title).patch(patch_title))
         .route("/titles/{id}/sync", post(sync_title))
+        .route("/titles/{id}/sync-log", get(get_sync_log))
         .route("/titles/{id}/refresh-metadata", post(refresh_metadata))
 }
 
@@ -534,9 +535,13 @@ async fn patch_title(
 
                 let _ = sqlx::query!("UPDATE titles SET sync_status = 'syncing' WHERE id = ?", id2)
                     .execute(&db2).await;
+                let _ = sqlx::query!("DELETE FROM sync_log WHERE title_id = ?", id2)
+                    .execute(&db2).await;
+                super::append_sync_log(&db2, &id2, "Re-matching sources for new content type…").await;
 
                 let mut any_ok = false;
                 for (src_key, src) in &source_snapshot {
+                    super::append_sync_log(&db2, &id2, &format!("Searching {}…", src_key)).await;
                     let mut matched_hit: Option<crate::indexer::source::MangaResult> = None;
 
                     'cands: for candidate in &candidates {
@@ -553,6 +558,7 @@ async fn patch_title(
                     }
 
                     let Some(hit) = matched_hit else {
+                        super::append_sync_log(&db2, &id2, &format!("No match in {}", src_key)).await;
                         let warn_id = uuid::Uuid::new_v4().to_string();
                         let now_w = chrono::Utc::now().to_rfc3339();
                         let msg = format!("no matching source found for '{}' or any alias", row.title);
@@ -565,6 +571,7 @@ async fn patch_title(
                         continue;
                     };
 
+                    super::append_sync_log(&db2, &id2, &format!("Matched in {}: {}", src_key, hit.title)).await;
                     let _ = sqlx::query!(
                         "DELETE FROM sync_warnings WHERE title_id = ? AND plugin_id = ?",
                         id2, src_key
@@ -577,8 +584,15 @@ async fn patch_title(
                         ms_id, id2, src_key, hit.id, disc
                     ).execute(&db2).await;
 
-                    if src.sync_chapters(&db2, &id2, &hit.id).await.is_ok() {
-                        any_ok = true;
+                    super::append_sync_log(&db2, &id2, &format!("Syncing chapters from {}…", src_key)).await;
+                    match src.sync_chapters(&db2, &id2, &hit.id).await {
+                        Ok(n) => {
+                            super::append_sync_log(&db2, &id2, &format!("Synced {} chapters from {}", n, src_key)).await;
+                            any_ok = true;
+                        }
+                        Err(e) => {
+                            super::append_sync_log(&db2, &id2, &format!("Chapter sync failed for {}: {}", src_key, e)).await;
+                        }
                     }
                 }
 
@@ -591,6 +605,41 @@ async fn patch_title(
         }
     }
     Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Debug, Serialize, sqlx::FromRow)]
+struct SyncLogEntry {
+    id: String,
+    message: String,
+    created_at: DateTime<Utc>,
+}
+
+async fn get_sync_log(
+    State(state): State<AppState>,
+    axum::Extension(claims): axum::Extension<auth::Claims>,
+    Path(id): Path<String>,
+) -> ApiResult<Response> {
+    let owns: i64 = sqlx::query_scalar!(
+        "SELECT COUNT(*) FROM user_titles WHERE user_id = ? AND title_id = ?",
+        claims.sub, id
+    )
+    .fetch_one(&state.db)
+    .await?;
+
+    if owns == 0 {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+
+    let entries = sqlx::query_as!(
+        SyncLogEntry,
+        r#"SELECT id as "id!", message as "message!", created_at as "created_at: _"
+           FROM sync_log WHERE title_id = ? ORDER BY created_at ASC"#,
+        id
+    )
+    .fetch_all(&state.db)
+    .await?;
+
+    Ok(Json(entries).into_response())
 }
 
 async fn sync_title(
@@ -624,15 +673,36 @@ async fn sync_title(
         .execute(&state.db)
         .await?;
 
+    sqlx::query!("DELETE FROM sync_log WHERE title_id = ?", id)
+        .execute(&state.db)
+        .await?;
+
     let db = state.db.clone();
     let state_sources = state.sources.clone();
     tokio::spawn(async move {
+        // Title may have been deleted while we were waiting to run
+        let still_exists: bool = sqlx::query_scalar!(
+            r#"SELECT COUNT(*) as "c!: i64" FROM titles WHERE id = ?"#, id
+        )
+        .fetch_one(&db)
+        .await
+        .map(|c| c > 0)
+        .unwrap_or(false);
+        if !still_exists { return; }
+
         let mut any_ok = false;
         for link in &source_links {
             if let Some(s) = state_sources.read().await.get(&link.source).cloned() {
+                super::append_sync_log(&db, &id, &format!("Syncing chapters from {}…", link.source)).await;
                 match s.sync_chapters(&db, &id, &link.source_id).await {
-                    Ok(_) => { any_ok = true; }
-                    Err(e) => tracing::error!("sync error for title {} ({}): {}", id, link.source, e),
+                    Ok(n) => {
+                        super::append_sync_log(&db, &id, &format!("Synced {} chapters from {}", n, link.source)).await;
+                        any_ok = true;
+                    }
+                    Err(e) => {
+                        tracing::error!("sync error for title {} ({}): {}", id, link.source, e);
+                        super::append_sync_log(&db, &id, &format!("Chapter sync failed for {}: {}", link.source, e)).await;
+                    }
                 }
             }
         }
@@ -702,6 +772,10 @@ async fn refresh_metadata(
     }
 
     // Re-run source matching async for sources with existing warnings
+    sqlx::query!("DELETE FROM sync_log WHERE title_id = ?", id)
+        .execute(&state.db)
+        .await?;
+
     let db = state.db.clone();
     let sources = state.sources.clone();
     let http = state.http.clone();
@@ -771,7 +845,9 @@ async fn refresh_metadata(
             }
         };
 
+        super::append_sync_log(&db, &mid, "Searching for sources…").await;
         for (src_key, src) in &source_snapshot {
+            super::append_sync_log(&db, &mid, &format!("Searching {}…", src_key)).await;
             let mut matched = None;
             'cands: for candidate in &candidates {
                 let results = match src.search(candidate).await {
@@ -789,6 +865,8 @@ async fn refresh_metadata(
             }
 
             if let Some(hit) = matched {
+                super::append_sync_log(&db, &mid, &format!("Matched in {}: {}", src_key, hit.title)).await;
+
                 // Clear per-source warning and sentinel
                 let _ = sqlx::query!(
                     "DELETE FROM sync_warnings WHERE title_id = ? AND plugin_id = ?",
@@ -806,8 +884,17 @@ async fn refresh_metadata(
                     ms_id, mid, src_key, hit.id, disc
                 ).execute(&db).await;
 
-                let _ = src.sync_chapters(&db, &mid, &hit.id).await;
+                super::append_sync_log(&db, &mid, &format!("Syncing chapters from {}…", src_key)).await;
+                match src.sync_chapters(&db, &mid, &hit.id).await {
+                    Ok(n) => super::append_sync_log(&db, &mid, &format!("Synced {} chapters from {}", n, src_key)).await,
+                    Err(e) => super::append_sync_log(&db, &mid, &format!("Chapter sync failed for {}: {}", src_key, e)).await,
+                }
+            } else {
+                super::append_sync_log(&db, &mid, &format!("No match in {}", src_key)).await;
             }
+        }
+        if source_snapshot.is_empty() {
+            super::append_sync_log(&db, &mid, "No sources to retry").await;
         }
         let _ = http; // keep http in scope for future use
     });

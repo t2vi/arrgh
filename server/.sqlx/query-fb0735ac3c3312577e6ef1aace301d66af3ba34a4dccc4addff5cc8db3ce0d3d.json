@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT cover_url, title FROM titles WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "cover_url",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "fb0735ac3c3312577e6ef1aace301d66af3ba34a4dccc4addff5cc8db3ce0d3d"
+}

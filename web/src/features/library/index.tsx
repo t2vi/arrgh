@@ -68,6 +68,7 @@ export default function Library() {
                     onClick={() => navigate(ROUTES.title(m.id))}
                     onRemove={(deleteFiles) => h.handleRemove(m.id, deleteFiles)}
                     isRemoving={h.removingId === m.id}
+                    syncMessage={h.syncMessages[m.id]}
                   />
                 ))}
               </div>

@@ -100,8 +100,18 @@ struct ReleaseMetadata {
 
 #[derive(Deserialize)]
 struct ReleaseSeries {
-    #[serde(deserialize_with = "deserialize_u64_flexible")]
-    series_id: u64,
+    #[serde(deserialize_with = "deserialize_opt_u64_flexible", default)]
+    series_id: Option<u64>,
+}
+
+fn deserialize_opt_u64_flexible<'de, D: Deserializer<'de>>(d: D) -> std::result::Result<Option<u64>, D::Error> {
+    let v = serde_json::Value::deserialize(d)?;
+    match &v {
+        serde_json::Value::Null => Ok(None),
+        serde_json::Value::Number(n) => n.as_u64().map(Some).ok_or_else(|| serde::de::Error::custom("expected u64")),
+        serde_json::Value::String(s) => s.parse::<u64>().map(Some).map_err(serde::de::Error::custom),
+        _ => Err(serde::de::Error::custom(format!("expected number, string, or null, got {v}"))),
+    }
 }
 
 // ── Mapping ───────────────────────────────────────────────────────────────────
@@ -267,7 +277,7 @@ impl MangaUpdatesClient {
         let series_ids: Vec<u64> = resp
             .results
             .into_iter()
-            .filter_map(|h| h.metadata?.series.map(|s| s.series_id))
+            .filter_map(|h| h.metadata?.series?.series_id)
             .filter(|id| seen.insert(*id))
             .take(20)
             .collect();
@@ -315,14 +325,21 @@ mod tests {
     fn releases_response_numeric_series_id() {
         let json = r#"{"results":[{"metadata":{"series":{"series_id":12345}}}]}"#;
         let r: ReleasesResponse = serde_json::from_str(json).unwrap();
-        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 12345);
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, Some(12345));
     }
 
     #[test]
     fn releases_response_string_series_id() {
         let json = r#"{"results":[{"metadata":{"series":{"series_id":"67890"}}}]}"#;
         let r: ReleasesResponse = serde_json::from_str(json).unwrap();
-        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 67890);
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, Some(67890));
+    }
+
+    #[test]
+    fn releases_response_null_series_id() {
+        let json = r#"{"results":[{"metadata":{"series":{"series_id":null}}}]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, None);
     }
 
     #[test]
@@ -330,7 +347,7 @@ mod tests {
         let json = r#"{"results":[{"metadata":null},{"metadata":{"series":{"series_id":1}}}]}"#;
         let r: ReleasesResponse = serde_json::from_str(json).unwrap();
         assert!(r.results[0].metadata.is_none());
-        assert_eq!(r.results[1].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 1);
+        assert_eq!(r.results[1].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, Some(1));
     }
 
     #[test]

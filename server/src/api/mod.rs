@@ -36,6 +36,17 @@ pub mod settings;
 mod sources;
 pub mod version;
 
+pub(super) async fn append_sync_log(db: &sqlx::SqlitePool, title_id: &str, message: &str) {
+    let id = uuid::Uuid::new_v4().to_string();
+    let now = chrono::Utc::now().to_rfc3339();
+    let _ = sqlx::query!(
+        "INSERT INTO sync_log (id, title_id, message, created_at) VALUES (?, ?, ?, ?)",
+        id, title_id, message, now
+    )
+    .execute(db)
+    .await;
+}
+
 pub fn router(state: AppState) -> Router<AppState> {
     let protected = Router::new()
         .merge(titles::router())
