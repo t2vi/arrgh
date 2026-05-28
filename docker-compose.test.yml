@@ -1,6 +1,8 @@
 services:
   arrgh:
-    image: ghcr.io/t2vi/arrgh:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
