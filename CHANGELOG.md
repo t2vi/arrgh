@@ -4,7 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| [v0.1.1](docs/releases/v0.1.1.md) | 2026-05-28 | Sync progress log, cover CDN fallback, downloader empty-pages guard, rebuild thumbnail fix |
+| [v0.1.1](docs/releases/v0.1.1.md) | 2026-05-28 | nhentai plugin, E-Hentai metadata, title aliases, sync warnings, sync progress log, cover resilience fixes |
 | [v0.1.0](docs/releases/v0.1.0.md) | 2026-05-27 | UI text consistency (closes #24), MangaUpdates latest_releases decode fix |
 | [v0.0.12](docs/releases/v0.0.12.md) | 2026-05-26 | Manga→Title rename (breaking), reader controls, toggle fix |
 | [v0.0.11](docs/releases/v0.0.11.md) | 2026-05-25 | MangaUpdates as metadata authority, Discover rewrite, queue ownership, manga detail dropdown fixes |
