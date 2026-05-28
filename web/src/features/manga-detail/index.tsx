@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  Download, RefreshCw, Loader2, X, ArrowUp, ArrowDown, Trash2, ChevronDown,
+  Download, RefreshCw, Loader2, X, ArrowUp, ArrowDown, Trash2, ChevronDown, AlertTriangle, Terminal,
 } from 'lucide-react'
 import { api, isAdmin } from '@/api'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ import { useMangaDetail, CHAPTERS_PREVIEW, type FilterMode } from './hooks/useMa
 import { ChapterRow } from './components/ChapterRow'
 import {
   SectionHeading, CoverImg, ChapterListSkeleton,
-  ReaderModeCard, AutoDownloadCard, ExplicitCard, DownloadDirCard, CoverUrlCard,
+  ReaderModeCard, AutoDownloadCard, ExplicitCard, DownloadDirCard, CoverUrlCard, ContentTypeCard,
 } from './components/SidebarCards'
 
 export default function MangaDetail() {
@@ -20,6 +20,8 @@ export default function MangaDetail() {
   const navigate = useNavigate()
   const h = useMangaDetail(id)
   const { manga, loadingManga, isSyncing, isRemoteSource } = h
+  const [synopsisOpen, setSynopsisOpen] = useState(false)
+  const [syncLogOpen, setSyncLogOpen] = useState(false)
 
   return (
     <div className="flex flex-col h-full overflow-auto">
@@ -107,9 +109,22 @@ export default function MangaDetail() {
                     size="icon"
                     onClick={() => h.sync.mutate()}
                     disabled={h.sync.isPending || isSyncing}
-                    title="Sync"
+                    title="Sync chapters"
                   >
                     <RefreshCw className={cn('w-4 h-4', (h.sync.isPending || isSyncing) && 'animate-spin')} />
+                  </Button>
+                )}
+                {manga.has_sync_warnings && (
+                  <Button
+                    size="icon"
+                    onClick={() => h.refreshMetadata.mutate()}
+                    disabled={h.refreshMetadata.isPending}
+                    title="Source match failed — click to refresh metadata and retry"
+                    className="bg-amber-500 hover:bg-amber-600 text-white border-0"
+                  >
+                    {h.refreshMetadata.isPending
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <AlertTriangle className="w-4 h-4" />}
                   </Button>
                 )}
                 <div className="relative" ref={h.removeMenuRef as React.RefObject<HTMLDivElement>}>
@@ -158,10 +173,48 @@ export default function MangaDetail() {
           <div className="space-y-6 min-w-0">
             {manga?.description && (
               <section>
-                <SectionHeading>Synopsis</SectionHeading>
-                <div className="rounded-lg bg-card border border-border p-4 mt-3">
-                  <p className="text-sm text-muted-foreground leading-relaxed">{manga.description}</p>
-                </div>
+                <button
+                  className="flex items-center gap-1.5 w-full text-left group"
+                  onClick={() => setSynopsisOpen((v) => !v)}
+                >
+                  <SectionHeading>Synopsis</SectionHeading>
+                  <ChevronDown className={cn('w-3.5 h-3.5 text-muted-foreground transition-transform shrink-0', synopsisOpen && 'rotate-180')} />
+                </button>
+                {synopsisOpen && (
+                  <div className="rounded-lg bg-card border border-border p-4 mt-3">
+                    <p className="text-sm text-muted-foreground leading-relaxed">{manga.description}</p>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {h.syncLog.length > 0 && (
+              <section>
+                <button
+                  className="flex items-center gap-1.5 w-full text-left"
+                  onClick={() => setSyncLogOpen((v) => !v)}
+                >
+                  <SectionHeading>
+                    <Terminal className="w-3.5 h-3.5 inline-block mr-1.5 opacity-60" />
+                    Last Sync
+                    {isSyncing && <Loader2 className="w-3 h-3 animate-spin inline-block ml-2 text-primary" />}
+                  </SectionHeading>
+                  <ChevronDown className={cn('w-3.5 h-3.5 text-muted-foreground transition-transform shrink-0', syncLogOpen && 'rotate-180')} />
+                </button>
+                {syncLogOpen && (
+                  <div className="mt-3 rounded-lg bg-[#0d0f10] border border-border overflow-hidden">
+                    <div className="max-h-52 overflow-y-auto px-3 py-2.5 space-y-1">
+                      {h.syncLog.map((entry) => (
+                        <div key={entry.id} className="flex items-start gap-2 text-xs font-mono">
+                          <span className="text-muted-foreground/40 shrink-0 text-[10px] mt-px">
+                            {new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </span>
+                          <span className="text-foreground/80 break-all">{entry.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </section>
             )}
 
@@ -326,6 +379,9 @@ export default function MangaDetail() {
             {manga && <DownloadDirCard mangaId={manga.id} value={manga.download_dir ?? null} />}
             {manga && isAdmin() && (
               <ExplicitCard mangaId={manga.id} value={manga.is_explicit ?? false} />
+            )}
+            {manga && isAdmin() && (
+              <ContentTypeCard mangaId={manga.id} value={manga.content_type} />
             )}
             {manga && isAdmin() && (
               <CoverUrlCard

@@ -1,4 +1,4 @@
-import type { AppSettings, Chapter, Title, PaginatedTitle, ReadProgress } from './types'
+import type { AppSettings, Chapter, Title, PaginatedTitle, ReadProgress, SyncLogEntry } from './types'
 
 export interface SearchResult {
   mangaupdates_id: string
@@ -12,6 +12,7 @@ export interface SearchResult {
   content_type: string
   in_library: boolean
   library_id: string | null
+  source: string
 }
 
 export interface QueueItem {
@@ -247,6 +248,8 @@ export const api = {
 
   getTitle: (id: string) => get<Title>(`/api/titles/${id}`),
   syncTitle: (id: string) => post<void>(`/api/titles/${id}/sync`),
+  getSyncLog: (id: string) => get<SyncLogEntry[]>(`/api/titles/${id}/sync-log`),
+  refreshMetadata: (id: string) => post<void>(`/api/titles/${id}/refresh-metadata`),
 
   listChapters: (titleId: string) => get<Chapter[]>(`/api/chapters/title/${titleId}`),
   getChapter: (id: string) => get<Chapter>(`/api/chapters/${id}`),
@@ -296,6 +299,9 @@ export const api = {
 
   setTitleExplicit: (id: string, value: boolean) =>
     patch<void>(`/api/titles/${id}`, { is_explicit: value }),
+
+  setTitleContentType: (id: string, value: string) =>
+    patch<void>(`/api/titles/${id}`, { content_type: value }),
 
   setTitleCoverUrl: (id: string, url: string) =>
     patch<void>(`/api/titles/${id}`, { cover_url: url }),

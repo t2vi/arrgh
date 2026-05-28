@@ -6,33 +6,32 @@ import { cn } from '@/lib/utils'
 import { ContentTypePill } from '@/components/ContentTypePill'
 
 export function MangaCard({
-  manga, onClick, onRemove, isRemoving,
+  manga, onClick, onRemove, isRemoving, syncMessage,
 }: {
   manga: Title
   onClick: () => void
   onRemove: (deleteFiles: boolean) => void
   isRemoving: boolean
+  syncMessage?: string
 }) {
   const [imgFailed, setImgFailed] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const src = !imgFailed && (manga.cover_url?.startsWith('http') || manga.cover_url?.startsWith('/api/'))
     ? manga.cover_url
     : api.coverUrl(manga.id)
-  const isSyncing    = manga.sync_status === 'syncing'
-  const hasDownloads = (manga.downloaded_chapters ?? 0) > 0
+  const isSyncing     = manga.sync_status === 'syncing'
+  const hasWarnings   = manga.has_sync_warnings
+  const hasDownloads  = (manga.downloaded_chapters ?? 0) > 0
 
   return (
     <div
       data-nav
-      tabIndex={isSyncing ? undefined : 0}
-      className={cn('group relative', !isSyncing && 'cursor-pointer')}
-      onClick={isSyncing ? undefined : onClick}
-      onKeyDown={(e) => { if (!isSyncing && (e.key === 'Enter' || e.key === ' ')) onClick() }}
+      tabIndex={0}
+      className="group relative cursor-pointer"
+      onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick() }}
     >
-      <div className={cn(
-        'relative rounded-xl overflow-hidden transition-all duration-300 ease-out',
-        !isSyncing && 'group-hover:scale-[1.04] group-hover:shadow-[0_0_20px_rgba(139,92,246,0.35)]',
-      )}>
+      <div className="relative rounded-xl overflow-hidden transition-all duration-300 ease-out group-hover:scale-[1.04] group-hover:shadow-[0_0_20px_rgba(139,92,246,0.35)]">
         {imgFailed ? (
           <div className="w-full aspect-[2/3] bg-muted flex items-center justify-center text-4xl rounded-xl">📖</div>
         ) : (
@@ -43,13 +42,21 @@ export function MangaCard({
             onError={() => setImgFailed(true)}
           />
         )}
-        {!isSyncing && (
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-        )}
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         {isSyncing && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 pointer-events-none">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span className="text-[10px] font-medium text-primary">Building…</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-2 pointer-events-none">
+            <Loader2 className="w-5 h-5 animate-spin text-primary shrink-0" />
+            <span className="text-[10px] font-medium text-primary text-center line-clamp-3 leading-tight">
+              {syncMessage ?? 'Building…'}
+            </span>
+          </div>
+        )}
+        {hasWarnings && !isSyncing && (
+          <div
+            className="absolute top-2 left-2 w-5 h-5 rounded-full bg-amber-500/90 flex items-center justify-center"
+            title="Some sources could not be matched — click title to refresh metadata"
+          >
+            <span className="text-[9px] font-bold text-white leading-none">!</span>
           </div>
         )}
         {!confirming ? (

@@ -15,6 +15,7 @@ export interface Title {
   reader_mode: string | null
   download_dir: string | null
   is_explicit: boolean
+  has_sync_warnings: boolean
   created_at: string
   updated_at: string
   // Present on list endpoint only
@@ -52,6 +53,12 @@ export interface AppSettings {
   download_dir: string
   trending_per_source: number
   check_for_updates: boolean
+}
+
+export interface SyncLogEntry {
+  id: string
+  message: string
+  created_at: string
 }
 
 export interface ReadProgress {

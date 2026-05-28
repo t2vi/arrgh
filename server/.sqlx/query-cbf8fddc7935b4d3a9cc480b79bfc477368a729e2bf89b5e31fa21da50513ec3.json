@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM title_sources WHERE title_id = ? AND source = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "cbf8fddc7935b4d3a9cc480b79bfc477368a729e2bf89b5e31fa21da50513ec3"
+}

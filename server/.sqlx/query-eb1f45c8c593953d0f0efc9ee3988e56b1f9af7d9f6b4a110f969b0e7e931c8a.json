@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT plugin_id FROM sync_warnings WHERE title_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "plugin_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "eb1f45c8c593953d0f0efc9ee3988e56b1f9af7d9f6b4a110f969b0e7e931c8a"
+}

@@ -325,42 +325,63 @@ async fn serve_cover(
     State(state): State<AppState>,
     Path(title_id): Path<String>,
 ) -> ApiResult<Response> {
-    let manga = sqlx::query!("SELECT cover_url FROM titles WHERE id = ?", title_id)
+    let manga = sqlx::query!("SELECT cover_url, title FROM titles WHERE id = ?", title_id)
         .fetch_optional(&state.db)
         .await?;
 
     let Some(manga) = manga else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
-    let Some(cover_path) = manga.cover_url else {
-        return Ok(StatusCode::NOT_FOUND.into_response());
-    };
 
-    if cover_path.starts_with("http") {
-        return Ok(axum::response::Redirect::temporary(&cover_path).into_response());
-    }
-
-    // Bad DB entry — internal meta-cover path stored instead of CDN URL; redirect to it directly.
-    if cover_path.starts_with("/api/") {
-        return Ok(axum::response::Redirect::temporary(&cover_path).into_response());
-    }
-
-    let data = match fs::read(&cover_path).await {
-        Ok(d) => d,
-        Err(_) => {
-            let _ = sqlx::query!(
-                "UPDATE titles SET cover_url = NULL WHERE id = ?",
-                title_id
-            )
-            .execute(&state.db)
-            .await;
-            return Ok(StatusCode::NOT_FOUND.into_response());
+    if let Some(ref cover_path) = manga.cover_url {
+        if cover_path.starts_with("http") {
+            return Ok(axum::response::Redirect::temporary(cover_path).into_response());
         }
-    };
+        // Bad DB entry — internal meta-cover path stored instead of CDN URL; redirect.
+        if cover_path.starts_with("/api/") {
+            return Ok(axum::response::Redirect::temporary(cover_path).into_response());
+        }
 
-    let ct = if cover_path.ends_with(".webp") { "image/webp" }
-             else if cover_path.ends_with(".png") { "image/png" }
-             else { "image/jpeg" };
+        match fs::read(cover_path).await {
+            Ok(d) => {
+                let ct = if cover_path.ends_with(".webp") { "image/webp" }
+                         else if cover_path.ends_with(".png") { "image/png" }
+                         else { "image/jpeg" };
+                return Ok(([(header::CONTENT_TYPE, ct)], d).into_response());
+            }
+            Err(_) => {
+                // Local file missing (e.g. container rebuilt without persisting the path).
+                // Null it out and fall through to CDN fallback.
+                let _ = sqlx::query!(
+                    "UPDATE titles SET cover_url = NULL WHERE id = ?",
+                    title_id
+                )
+                .execute(&state.db)
+                .await;
+            }
+        }
+    }
 
-    Ok(([(header::CONTENT_TYPE, ct)], data).into_response())
+    // CDN fallback: look up cached URL in title_meta and redirect there.
+    // This recovers thumbnails after a rebuild wipes non-volume paths.
+    let key = crate::api::discover::normalize_title(&manga.title);
+    let cdn = sqlx::query_scalar!(
+        "SELECT cover_cdn_url FROM title_meta WHERE title_key = ?", key
+    )
+    .fetch_optional(&state.db)
+    .await?
+    .flatten();
+
+    if let Some(cdn_url) = cdn {
+        // Restore so the next request skips this lookup entirely.
+        let _ = sqlx::query!(
+            "UPDATE titles SET cover_url = ? WHERE id = ?",
+            cdn_url, title_id
+        )
+        .execute(&state.db)
+        .await;
+        return Ok(axum::response::Redirect::temporary(&cdn_url).into_response());
+    }
+
+    Ok(StatusCode::NOT_FOUND.into_response())
 }

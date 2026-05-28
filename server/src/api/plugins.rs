@@ -143,10 +143,11 @@ async fn install_plugin(
     let db_id = Uuid::new_v4().to_string();
     let now = Utc::now();
     let content_types = entry.content_types.join(",");
+    let default_explicit = entry.default_explicit as i64;
     sqlx::query!(
-        "INSERT INTO external_sources (id, name, base_url, api_key, content_types, enabled, is_community, created_at)
-         VALUES (?, ?, ?, NULL, ?, 1, 1, ?)",
-        db_id, entry.name, effective_url, content_types, now
+        "INSERT INTO external_sources (id, name, base_url, api_key, content_types, enabled, default_explicit, is_community, created_at)
+         VALUES (?, ?, ?, NULL, ?, 1, ?, 1, ?)",
+        db_id, entry.name, effective_url, content_types, default_explicit, now
     )
     .execute(&state.db)
     .await?;

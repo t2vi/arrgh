@@ -144,6 +144,34 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | `root_domain_referer` — invalid URL returns empty | ✅ |
 | `root_domain_referer` — scheme preserved | ✅ |
 
+### MangaUpdates client (`src/mangaupdates.rs`) ✅
+
+| Case | Status |
+|---|---|
+| `releases/search` — numeric `series_id` deserialises | ✅ |
+| `releases/search` — string `series_id` deserialises | ✅ |
+| `releases/search` — null `series_id` → `None` (no error) | ✅ |
+| `releases/search` — null `metadata` field ignored | ✅ |
+| `releases/search` — null `series` field ignored | ✅ |
+| `releases/search` — missing `metadata` field (omitted key) | ✅ |
+| `releases/search` — empty results array | ✅ |
+| `SeriesRecord` — numeric `series_id` | ✅ |
+| `SeriesRecord` — string `series_id` | ✅ |
+| `map_series` — strips HTML tags from description | ✅ |
+| `map_series` — content type mapping (Manhwa/Manhua/Novel/Manga/null) | ✅ |
+| `map_series` — year as string parses to i64 | ✅ |
+| `map_series` — prefers `"Author"` type over first in list | ✅ |
+| `map_series` — explicit genre tags normalised (Hentai→`hentai`, Smut→`adult`) | ✅ |
+| `strip_html` — removes tags | ✅ |
+| `strip_html` — plain text unchanged | ✅ |
+| `strip_html` — trims surrounding whitespace | ✅ |
+
+### Downloader (`src/downloader/mod.rs`) ✅
+
+| Case | Status |
+|---|---|
+| `download_cbz` returns `Err` when source returns 0 pages | ✅ |
+
 ---
 
 ## Server — Integration (HTTP-level, in-memory SQLite)
@@ -185,6 +213,12 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Queue: cancel ownership | Admin can cancel any item → 204 | ✅ |
 | Queue: delete_files | Member remove with `?delete_files=true` returns 204 (param silently ignored) | ✅ |
 | ExternalSource | `sync_chapters` deduplicates chapters by `(title_id, number)` across two sources | ✅ |
+| Sync log | `GET /api/titles/:id/sync-log` — empty array when no entries | ✅ |
+| Sync log | `GET /api/titles/:id/sync-log` — returns entries in ASC order | ✅ |
+| Sync log | `GET /api/titles/:id/sync-log` — 404 for title not in user's library | ✅ |
+| Cover CDN fallback | `GET /api/media/cover/:id` — 307 to CDN when `cover_url = NULL` | ✅ |
+| Cover CDN fallback | `GET /api/media/cover/:id` — 307 to CDN when local file missing | ✅ |
+| Cover CDN fallback | `GET /api/media/cover/:id` — 404 when no `title_meta` CDN URL | ✅ |
 
 ---
 

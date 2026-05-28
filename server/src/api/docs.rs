@@ -71,6 +71,14 @@ async fn openapi_spec() -> Json<Value> {
             "responses": { "202": { "description": "Sync started" } }
           }
         },
+        "/api/titles/{id}/sync-log": {
+          "get": {
+            "tags": ["Library"],
+            "summary": "Get sync log entries for a title",
+            "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+            "responses": { "200": { "description": "Array of sync log entries in chronological order" }, "404": { "description": "Not found" } }
+          }
+        },
         "/api/chapters/title/{title_id}": {
           "get": {
             "tags": ["Chapters"],

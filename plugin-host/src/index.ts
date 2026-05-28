@@ -119,6 +119,12 @@ app.get('/plugins', (_req, res) => {
   })))
 })
 
+app.get('/:plugin/info', (req, res) => {
+  const p = plugins.get(req.params.plugin)
+  if (!p) return void res.status(404).json({ error: `plugin not found: ${req.params.plugin}` })
+  res.json({ ...p.info, is_community: communityIds.has(p.info.id) })
+})
+
 app.post('/plugins/install', async (req, res) => {
   const url = String(req.body?.url ?? '').trim()
   if (!url) return void res.status(400).json({ error: 'url required' })

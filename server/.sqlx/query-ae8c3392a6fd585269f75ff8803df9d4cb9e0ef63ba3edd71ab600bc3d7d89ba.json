@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE titles SET content_type = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "ae8c3392a6fd585269f75ff8803df9d4cb9e0ef63ba3edd71ab600bc3d7d89ba"
+}

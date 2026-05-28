@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM sync_log WHERE title_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "dce201eeee5f6db935a893bcace8f6f627aab91d5a603a7ec5ecf4293e3e8bba"
+}

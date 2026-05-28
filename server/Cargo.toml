@@ -1,6 +1,6 @@
 [package]
 name = "arrgh-server"
-version = "0.0.13"
+version = "0.1.1"
 edition = "2021"
 
 [lib]

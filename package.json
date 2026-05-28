@@ -8,9 +8,10 @@
     "plugins/comick",
     "plugins/novelfull",
     "plugins/mangapill",
-    "plugins/royalroad"
+    "plugins/royalroad",
+    "plugins/nhentai"
   ],
   "scripts": {
-    "build:plugins": "npm run build -w plugins/mangadex -w plugins/toonily -w plugins/comick -w plugins/novelfull -w plugins/mangapill -w plugins/royalroad"
+    "build:plugins": "npm run build -w plugins/mangadex -w plugins/toonily -w plugins/comick -w plugins/novelfull -w plugins/mangapill -w plugins/royalroad -w plugins/nhentai"
   }
 }

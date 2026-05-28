@@ -15,6 +15,7 @@ pub struct Title {
     pub sync_status: String,
     pub content_type: String,
     pub is_explicit: bool,
+    pub has_sync_warnings: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

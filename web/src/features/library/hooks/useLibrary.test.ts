@@ -5,6 +5,7 @@ vi.mock('@/api', () => ({
   api: {
     listTitles: vi.fn(),
     removeTitle: vi.fn(),
+    getSyncLog: vi.fn().mockResolvedValue([]),
   },
 }))
 

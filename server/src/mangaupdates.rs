@@ -24,6 +24,7 @@ pub struct MuSeries {
     pub author: Option<String>,
     pub year: Option<i64>,
     pub tags: Option<String>,
+    pub associated_names: Vec<String>,
 }
 
 // ── Wire types ────────────────────────────────────────────────────────────────
@@ -51,6 +52,12 @@ struct SeriesRecord {
     status: Option<String>,
     authors: Option<Vec<MuAuthor>>,
     genres: Option<Vec<MuGenre>>,
+    associated: Option<Vec<AssociatedName>>,
+}
+
+#[derive(Deserialize)]
+struct AssociatedName {
+    title: String,
 }
 
 #[derive(Deserialize)]
@@ -93,8 +100,18 @@ struct ReleaseMetadata {
 
 #[derive(Deserialize)]
 struct ReleaseSeries {
-    #[serde(deserialize_with = "deserialize_u64_flexible")]
-    series_id: u64,
+    #[serde(deserialize_with = "deserialize_opt_u64_flexible", default)]
+    series_id: Option<u64>,
+}
+
+fn deserialize_opt_u64_flexible<'de, D: Deserializer<'de>>(d: D) -> std::result::Result<Option<u64>, D::Error> {
+    let v = serde_json::Value::deserialize(d)?;
+    match &v {
+        serde_json::Value::Null => Ok(None),
+        serde_json::Value::Number(n) => n.as_u64().map(Some).ok_or_else(|| serde::de::Error::custom("expected u64")),
+        serde_json::Value::String(s) => s.parse::<u64>().map(Some).map_err(serde::de::Error::custom),
+        _ => Err(serde::de::Error::custom(format!("expected number, string, or null, got {v}"))),
+    }
 }
 
 // ── Mapping ───────────────────────────────────────────────────────────────────
@@ -135,7 +152,9 @@ fn map_series(rec: SeriesRecord) -> MuSeries {
                 .iter()
                 .map(|g| {
                     let lower = g.genre.to_lowercase();
-                    if ["adult", "hentai", "smut", "18+", "erotic"]
+                    if lower == "hentai" {
+                        "hentai".to_string()
+                    } else if ["adult", "smut", "18+", "erotic"]
                         .iter()
                         .any(|&e| lower == e)
                     {
@@ -157,6 +176,12 @@ fn map_series(rec: SeriesRecord) -> MuSeries {
     // Strip basic HTML tags from description
     let description = rec.description.map(|d| strip_html(&d)).filter(|s| !s.is_empty());
 
+    let associated_names = rec.associated
+        .unwrap_or_default()
+        .into_iter()
+        .map(|a| a.title)
+        .collect();
+
     MuSeries {
         series_id: rec.series_id,
         title: rec.title,
@@ -167,6 +192,7 @@ fn map_series(rec: SeriesRecord) -> MuSeries {
         author,
         year,
         tags,
+        associated_names,
     }
 }
 
@@ -251,7 +277,7 @@ impl MangaUpdatesClient {
         let series_ids: Vec<u64> = resp
             .results
             .into_iter()
-            .filter_map(|h| h.metadata?.series.map(|s| s.series_id))
+            .filter_map(|h| h.metadata?.series?.series_id)
             .filter(|id| seen.insert(*id))
             .take(20)
             .collect();
@@ -299,14 +325,21 @@ mod tests {
     fn releases_response_numeric_series_id() {
         let json = r#"{"results":[{"metadata":{"series":{"series_id":12345}}}]}"#;
         let r: ReleasesResponse = serde_json::from_str(json).unwrap();
-        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 12345);
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, Some(12345));
     }
 
     #[test]
     fn releases_response_string_series_id() {
         let json = r#"{"results":[{"metadata":{"series":{"series_id":"67890"}}}]}"#;
         let r: ReleasesResponse = serde_json::from_str(json).unwrap();
-        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 67890);
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, Some(67890));
+    }
+
+    #[test]
+    fn releases_response_null_series_id() {
+        let json = r#"{"results":[{"metadata":{"series":{"series_id":null}}}]}"#;
+        let r: ReleasesResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(r.results[0].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, None);
     }
 
     #[test]
@@ -314,7 +347,7 @@ mod tests {
         let json = r#"{"results":[{"metadata":null},{"metadata":{"series":{"series_id":1}}}]}"#;
         let r: ReleasesResponse = serde_json::from_str(json).unwrap();
         assert!(r.results[0].metadata.is_none());
-        assert_eq!(r.results[1].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, 1);
+        assert_eq!(r.results[1].metadata.as_ref().unwrap().series.as_ref().unwrap().series_id, Some(1));
     }
 
     #[test]
@@ -393,10 +426,12 @@ mod tests {
 
     #[test]
     fn map_series_explicit_genre_normalised() {
-        let json = r#"{"series_id":1,"title":"T","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":[{"genre":"Action"},{"genre":"Hentai"}]}"#;
+        let json = r#"{"series_id":1,"title":"T","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":[{"genre":"Action"},{"genre":"Hentai"},{"genre":"Smut"}]}"#;
         let rec: SeriesRecord = serde_json::from_str(json).unwrap();
         let tags = map_series(rec).tags.unwrap();
-        assert!(tags.contains("adult"), "expected 'adult' in tags, got: {tags}");
+        // "Hentai" stays as "hentai" (used for source routing); other explicit tags → "adult"
+        assert!(tags.contains("hentai"), "expected 'hentai' in tags, got: {tags}");
+        assert!(tags.contains("adult"), "expected 'adult' (from Smut) in tags, got: {tags}");
         assert!(tags.contains("Action"));
     }
 

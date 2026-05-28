@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at)\n                             VALUES (?, ?, ?, ?, ?)\n                             ON CONFLICT(title_id, plugin_id) DO UPDATE SET message = excluded.message, created_at = excluded.created_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "aa2d26bccd1cb0070bef8849fd21d72176cbe8cfb9405545c3db39fb2d238de4"
+}
