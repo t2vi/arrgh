@@ -26,7 +26,7 @@ Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim 
 🔳 Keyboard and remote shortcuts in web reader<br />
 🔳 Reading statistics (time spent, chapters per week)<br />
 
-## **Library**<br
+## **Library**
 🔳 Metadata editing (title, cover, tags)<br />
 🔳 CBZ / CBR local import<br />
 🔳 Backup and export (library + reading progress)<br />
@@ -40,5 +40,5 @@ Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim 
 🔳 Push notifications for new chapters<br />
 🔳 Webhook on new chapter download<br />
 
-**Infrastructure**
-🔳 PostgreSQL support alongside SQLite
+## **Infrastructure**<br />
+🔳 PostgreSQL support alongside SQLite<br />

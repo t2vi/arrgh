@@ -38,6 +38,7 @@ services:
 
   cloakbrowser:
     image: ghcr.io/t2vi/cloakbrowser-server:latest
+    platform: linux/amd64   # no arm64 build — runs via Rosetta on Apple Silicon
     restart: unless-stopped
     environment:
       CDP_PORT: "3000"
