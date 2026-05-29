@@ -1,0 +1,639 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using ArrghServer.Api;
+using ArrghServer.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
+
+namespace ArrghServer.Tests;
+
+// TDD: These tests define the fan-out contract (ADR 0031).
+// All tests in this file FAIL until the fan-out implementation is complete.
+// Implementation checklist:
+//   - Title.MetadataSource + Title.MetadataSourceId columns (EF migration)
+//   - AddMangaBody.Source + AddMangaBody.SourceId properties
+//   - Discover.DesignatedAuthority(contentType) static helper
+//   - Discover.Deduplicate(results) static helper
+//   - AniListService (manhwa/manhua from AniList GraphQL)
+//   - MangaDexMetaService (manhua from MangaDex REST)
+//   - NovelUpdatesService (novel from NovelUpdates HTML)
+//   - EHentaiService (.NET port of Rust ehentai.rs)
+//   - Search handler: fan-out, dedup, ordered merge, E-Hentai gate
+//   - CheckInLibraryAsync: check by normalized (title, content_type), not only mangaupdates_id
+
+[Trait("Category", TestCategories.Integration)]
+public class DiscoverFanOutTests
+{
+    // ── Setup ─────────────────────────────────────────────────────────────────
+
+    static FanOutDiscoverFactory NewFactory(
+        string muSearchJson           = """{"results":[]}""",
+        string anilistJson            = EmptyAniListJson,
+        string mangadexJson           = EmptyMangaDexJson,
+        string novelupdatesHtml       = EmptyNovelUpdatesHtml,
+        string ehentaiSearchHtml      = EmptyEhHtml,
+        string ehentaiGdataJson       = EmptyEhGdataJson,
+        bool muSearchThrows           = false,
+        bool anilistThrows            = false,
+        bool mangadexThrows           = false,
+        bool novelupdatesThrows       = false) =>
+        new(muSearchJson, anilistJson, mangadexJson, novelupdatesHtml,
+            ehentaiSearchHtml, ehentaiGdataJson,
+            muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows);
+
+    void Authorize(HttpClient client, ArrghServer.Data.Models.User user, bool allowExplicit = false)
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["JwtSecret"] = AppFactory.JwtSecret })
+            .Build();
+        var token = Auth.CreateToken(user.Id, user.Username, user.Role, allowExplicit, config);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
+    // ── MU fixture helpers ────────────────────────────────────────────────────
+
+    static string MuSearchResponse(params object[] records)
+    {
+        var hits = records.Select(r => new { record = r });
+        return JsonSerializer.Serialize(new { results = hits });
+    }
+
+    static object MuRecord(ulong id, string title, string type = "Manga") => new
+    {
+        series_id = id, title, description = (string?)null, image = (object?)null,
+        type, year = (string?)null, status = "ongoing",
+        authors = (object?)null, genres = (object?)null, associated = (object?)null,
+    };
+
+    // ── AniList fixture helpers ───────────────────────────────────────────────
+
+    const string EmptyAniListJson = """{"data":{"Page":{"media":[]}}}""";
+
+    static string AniListResponse(params AniListMedia[] items) =>
+        JsonSerializer.Serialize(new
+        {
+            data = new { Page = new { media = items } }
+        });
+
+    record AniListMedia(
+        int id,
+        AniListTitle title,
+        string format,
+        string countryOfOrigin,
+        string status = "FINISHED",
+        string? description = null,
+        AniListCover? coverImage = null,
+        AniListStartDate? startDate = null,
+        AniListStaff? staff = null,
+        string[]? synonyms = null);
+
+    record AniListTitle(string romaji, string? english = null);
+    record AniListCover(string? large = null);
+    record AniListStartDate(int? year = null);
+    record AniListStaff(AniListNode[]? nodes = null);
+    record AniListNode(AniListName name);
+    record AniListName(string full);
+
+    // ── MangaDex fixture helpers ──────────────────────────────────────────────
+
+    const string EmptyMangaDexJson = """{"data":[]}""";
+
+    static string MangaDexResponse(params MangaDexEntry[] entries) =>
+        JsonSerializer.Serialize(new { data = entries });
+
+    record MangaDexEntry(
+        string id,
+        MangaDexAttributes attributes,
+        MangaDexRelationship[]? relationships = null);
+
+    record MangaDexAttributes(
+        Dictionary<string, string> title,
+        string originalLanguage = "zh",
+        string status = "completed",
+        int? year = null,
+        Dictionary<string, string>? description = null);
+
+    record MangaDexRelationship(string type, MangaDexRelAttr? attributes = null);
+    record MangaDexRelAttr(string? name = null);
+
+    // ── NovelUpdates fixture helpers ──────────────────────────────────────────
+
+    const string EmptyNovelUpdatesHtml = """<html><body><div class="w-blog-content"></div></body></html>""";
+
+    static string NovelUpdatesHtml(string seriesSlug, string title, string status = "Completed") =>
+        $"""
+        <html><body>
+        <div class="search_main_box_nu">
+          <div class="search_body_nu">
+            <div class="search_title"><a href="/series/{seriesSlug}/">{title}</a></div>
+            <div class="search_img_nu"><img src="https://cdn.novelupdates.com/{seriesSlug}.jpg"></div>
+            <div class="seriestypelist">Web Novel</div>
+            <div class="series_latest_status">{status}</div>
+          </div>
+        </div>
+        </body></html>
+        """;
+
+    // ── E-Hentai fixture helpers ──────────────────────────────────────────────
+
+    const string EmptyEhHtml = """<html><body><div class="itg gltm"></div></body></html>""";
+    const string EmptyEhGdataJson = """{"gmetadata":[]}""";
+
+    static string EhSearchHtml(ulong gid, string token) =>
+        $"""
+        <html><body>
+        <div class="itg gltm">
+          <td class="gl3c gltm"><a href="https://e-hentai.org/g/{gid}/{token}/"></a></td>
+        </div>
+        </body></html>
+        """;
+
+    static string EhGdataResponse(ulong gid, string title, string parodyTag) =>
+        JsonSerializer.Serialize(new
+        {
+            gmetadata = new[]
+            {
+                new { gid, title, thumb = (string?)null, tags = new[] { $"parody:{parodyTag}", "hentai", "english" } }
+            }
+        });
+
+    // ── GET /api/discover — fan-out ───────────────────────────────────────────
+
+    [Fact]
+    public async Task Search_MuMangaResult_HasSourceMangaupdates()
+    {
+        var searchJson = MuSearchResponse(MuRecord(1, "Naruto", "Manga"));
+        var (client, db) = NewFactory(muSearchJson: searchJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=naruto");
+
+        Assert.NotNull(res);
+        var naruto = res.FirstOrDefault(r => r.GetProperty("title").GetString() == "Naruto");
+        Assert.NotNull(naruto);
+        Assert.Equal("mangaupdates", naruto.GetProperty("source").GetString());
+        Assert.Equal("manga", naruto.GetProperty("content_type").GetString());
+    }
+
+    [Fact]
+    public async Task Search_AniListManhwa_HasSourceAnilist()
+    {
+        var anilistJson = AniListResponse(new AniListMedia(
+            id: 101517,
+            title: new AniListTitle("Solo Leveling"),
+            format: "MANHWA",
+            countryOfOrigin: "KR",
+            status: "FINISHED"));
+
+        var (client, db) = NewFactory(anilistJson: anilistJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=solo+leveling");
+
+        Assert.NotNull(res);
+        var solo = res.FirstOrDefault(r => r.GetProperty("title").GetString() == "Solo Leveling");
+        Assert.NotNull(solo);
+        Assert.Equal("anilist", solo.GetProperty("source").GetString());
+        Assert.Equal("manhwa", solo.GetProperty("content_type").GetString());
+    }
+
+    [Fact]
+    public async Task Search_MangaDexManhua_HasSourceMangadex()
+    {
+        var mdJson = MangaDexResponse(new MangaDexEntry(
+            id: "a1c7c817-0000-0000-0000-000000000000",
+            attributes: new MangaDexAttributes(
+                title: new Dictionary<string, string> { ["en"] = "Battle Through the Heavens" },
+                originalLanguage: "zh",
+                status: "completed",
+                year: 2013)));
+
+        var (client, db) = NewFactory(mangadexJson: mdJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=battle+through");
+
+        Assert.NotNull(res);
+        var btth = res.FirstOrDefault(r => r.GetProperty("title").GetString() == "Battle Through the Heavens");
+        Assert.NotNull(btth);
+        Assert.Equal("mangadex", btth.GetProperty("source").GetString());
+        Assert.Equal("manhua", btth.GetProperty("content_type").GetString());
+    }
+
+    [Fact]
+    public async Task Search_NovelUpdatesNovel_HasSourceNovelupdates()
+    {
+        var nuHtml = NovelUpdatesHtml("a-will-eternal", "A Will Eternal");
+
+        var (client, db) = NewFactory(novelupdatesHtml: nuHtml).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=a+will+eternal");
+
+        Assert.NotNull(res);
+        var awe = res.FirstOrDefault(r => r.GetProperty("title").GetString() == "A Will Eternal");
+        Assert.NotNull(awe);
+        Assert.Equal("novelupdates", awe.GetProperty("source").GetString());
+        Assert.Equal("novel", awe.GetProperty("content_type").GetString());
+    }
+
+    [Fact]
+    public async Task Search_EHentai_NotIncluded_ForNonExplicitUser()
+    {
+        // E-Hentai would return results, but user doesn't have allow_explicit
+        var ehHtml = EhSearchHtml(12345, "abc123");
+        var ehGdata = EhGdataResponse(12345, "Test Doujin", "naruto");
+
+        var (client, db) = NewFactory(ehentaiSearchHtml: ehHtml, ehentaiGdataJson: ehGdata).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: false); // explicit = false
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=naruto");
+
+        Assert.NotNull(res);
+        Assert.DoesNotContain(res, r => r.GetProperty("source").GetString() == "ehentai");
+    }
+
+    [Fact]
+    public async Task Search_EHentai_Included_ForExplicitUser()
+    {
+        var ehHtml = EhSearchHtml(12345, "abc123");
+        var ehGdata = EhGdataResponse(12345, "Naruto Doujin", "naruto");
+
+        var (client, db) = NewFactory(ehentaiSearchHtml: ehHtml, ehentaiGdataJson: ehGdata).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: true);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=naruto");
+
+        Assert.NotNull(res);
+        var ehResult = res.FirstOrDefault(r => r.GetProperty("source").GetString() == "ehentai");
+        Assert.NotNull(ehResult);
+    }
+
+    [Fact]
+    public async Task Search_Dedup_AniListWins_ForManhwa()
+    {
+        // MU returns "Solo Leveling" as manhwa, AniList also returns "Solo Leveling" as manhwa
+        // AniList is designated authority for manhwa → AniList result should be kept, MU deduplicated
+        var muJson = MuSearchResponse(MuRecord(1, "Solo Leveling", "Manhwa"));
+        var alJson = AniListResponse(new AniListMedia(
+            id: 101517,
+            title: new AniListTitle("Solo Leveling"),
+            format: "MANHWA",
+            countryOfOrigin: "KR"));
+
+        var (client, db) = NewFactory(muSearchJson: muJson, anilistJson: alJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=solo+leveling");
+
+        Assert.NotNull(res);
+        var soloResults = res.Where(r => r.GetProperty("title").GetString() == "Solo Leveling").ToArray();
+        Assert.Single(soloResults); // deduplicated to exactly 1
+        Assert.Equal("anilist", soloResults[0].GetProperty("source").GetString()); // AniList wins
+    }
+
+    [Fact]
+    public async Task Search_ResultOrder_MuBeforeAniList()
+    {
+        // MU returns manga, AniList returns manhwa — manga (MU) should appear first
+        var muJson = MuSearchResponse(MuRecord(1, "Naruto", "Manga"));
+        var alJson = AniListResponse(new AniListMedia(
+            id: 101517,
+            title: new AniListTitle("Solo Leveling"),
+            format: "MANHWA",
+            countryOfOrigin: "KR"));
+
+        var (client, db) = NewFactory(muSearchJson: muJson, anilistJson: alJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=test");
+
+        Assert.NotNull(res);
+        Assert.True(res.Length >= 2);
+        // First result must be the MU manga result
+        Assert.Equal("mangaupdates", res[0].GetProperty("source").GetString());
+        // AniList result comes after
+        var alIndex = Array.FindIndex(res, r => r.GetProperty("source").GetString() == "anilist");
+        Assert.True(alIndex > 0, "AniList result must come after MU result");
+    }
+
+    [Fact]
+    public async Task Search_PartialFailure_ReturnsOtherResults()
+    {
+        // AniList fails but MU returns results — should get 200 with MU results, not 502
+        var muJson = MuSearchResponse(MuRecord(1, "Naruto", "Manga"));
+
+        var (client, db) = NewFactory(muSearchJson: muJson, anilistThrows: true).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var response = await client.GetAsync("/api/discover?q=naruto");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var res = await response.Content.ReadFromJsonAsync<JsonElement[]>();
+        Assert.NotNull(res);
+        Assert.Contains(res, r => r.GetProperty("source").GetString() == "mangaupdates");
+    }
+
+    [Fact]
+    public async Task Search_AllAuthoritiesFail_Returns502()
+    {
+        var (client, db) = NewFactory(muSearchThrows: true, anilistThrows: true,
+            mangadexThrows: true, novelupdatesThrows: true).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var response = await client.GetAsync("/api/discover?q=test");
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Search_InLibrary_ByNormalizedTitleAndContentType()
+    {
+        // Title was added from AniList (no mangaupdates_id), but search now returns it via AniList
+        // in_library must be true even though the result has no mangaupdates_id match
+        var alJson = AniListResponse(new AniListMedia(
+            id: 101517,
+            title: new AniListTitle("Solo Leveling"),
+            format: "MANHWA",
+            countryOfOrigin: "KR"));
+
+        var (client, db) = NewFactory(anilistJson: alJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        // Seed a title with no mangaupdates_id — sourced from AniList
+        var title = Fake.Title();
+        title.TitleName = "Solo Leveling";
+        title.ContentType = "manhwa";
+        title.MangaupdatesId = null;
+        // title.MetadataSource = "anilist";  // uncomment once property exists
+        // title.MetadataSourceId = "101517"; // uncomment once property exists
+        await Seed.TitleAsync(db, user.Id, title);
+        db.ChangeTracker.Clear();
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=solo+leveling");
+
+        Assert.NotNull(res);
+        var solo = res.FirstOrDefault(r => r.GetProperty("title").GetString() == "Solo Leveling");
+        Assert.NotNull(solo);
+        Assert.True(solo.GetProperty("in_library").GetBoolean(), "in_library by normalized title+content_type");
+        Assert.Equal(title.Id, solo.GetProperty("library_id").GetString());
+    }
+
+    // ── POST /api/discover/add — metadata_source ──────────────────────────────
+
+    [Fact]
+    public async Task AddManga_WithSourceAnilist_StoresMetadataSource()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "anilist",
+            source_id = "101517",
+            title = "Solo Leveling",
+            content_type = "manhwa",
+            status = "complete",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+
+        db.ChangeTracker.Clear();
+        var stored = await db.Titles.FindAsync(titleId);
+        Assert.NotNull(stored);
+        Assert.Equal("anilist", stored.MetadataSource);
+        Assert.Equal("101517", stored.MetadataSourceId);
+        Assert.Null(stored.MangaupdatesId); // not a MU title
+    }
+
+    [Fact]
+    public async Task AddManga_BackwardCompat_MuIdOnly_StoresMetadataSource()
+    {
+        // Old clients pass only mangaupdates_id — must still work and auto-set metadata_source
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            mangaupdates_id = "42",
+            title = "Naruto",
+            content_type = "manga",
+            status = "ongoing",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+
+        db.ChangeTracker.Clear();
+        var stored = await db.Titles.FindAsync(titleId);
+        Assert.NotNull(stored);
+        Assert.Equal("42", stored.MangaupdatesId);
+        Assert.Equal("mangaupdates", stored.MetadataSource);
+        Assert.Equal("42", stored.MetadataSourceId);
+    }
+
+    [Fact]
+    public async Task AddManga_Dedup_BySameSourceAndSourceId()
+    {
+        // Two adds with same source+source_id produce one title row
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var payload = new
+        {
+            source = "anilist",
+            source_id = "101517",
+            title = "Solo Leveling",
+            content_type = "manhwa",
+            status = "complete",
+        };
+
+        var res1 = await client.PostAsJsonAsync("/api/discover/add", payload);
+        var res2 = await client.PostAsJsonAsync("/api/discover/add", payload);
+
+        Assert.Equal(HttpStatusCode.OK, res1.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, res2.StatusCode);
+
+        var body1 = await res1.Content.ReadFromJsonAsync<JsonElement>();
+        var body2 = await res2.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(body1.GetProperty("id").GetString(), body2.GetProperty("id").GetString());
+
+        db.ChangeTracker.Clear();
+        Assert.Equal(1, await db.Titles.CountAsync(t => t.MetadataSource == "anilist" && t.MetadataSourceId == "101517"));
+    }
+}
+
+// ── Fan-out test factory ──────────────────────────────────────────────────────
+
+public class FanOutDiscoverFactory : AppFactory
+{
+    readonly string _muSearchJson;
+    readonly string _anilistJson;
+    readonly string _mangadexJson;
+    readonly string _novelupdatesHtml;
+    readonly string _ehentaiSearchHtml;
+    readonly string _ehentaiGdataJson;
+    readonly bool _muSearchThrows;
+    readonly bool _anilistThrows;
+    readonly bool _mangadexThrows;
+    readonly bool _novelupdatesThrows;
+
+    public FanOutDiscoverFactory(
+        string muSearchJson = """{"results":[]}""",
+        string anilistJson = """{"data":{"Page":{"media":[]}}}""",
+        string mangadexJson = """{"data":[]}""",
+        string novelupdatesHtml = """<html><body></body></html>""",
+        string ehentaiSearchHtml = """<html><body></body></html>""",
+        string ehentaiGdataJson = """{"gmetadata":[]}""",
+        bool muSearchThrows = false,
+        bool anilistThrows = false,
+        bool mangadexThrows = false,
+        bool novelupdatesThrows = false)
+    {
+        _muSearchJson = muSearchJson;
+        _anilistJson = anilistJson;
+        _mangadexJson = mangadexJson;
+        _novelupdatesHtml = novelupdatesHtml;
+        _ehentaiSearchHtml = ehentaiSearchHtml;
+        _ehentaiGdataJson = ehentaiGdataJson;
+        _muSearchThrows = muSearchThrows;
+        _anilistThrows = anilistThrows;
+        _mangadexThrows = mangadexThrows;
+        _novelupdatesThrows = novelupdatesThrows;
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var muSearch = _muSearchJson;
+        var anilist = _anilistJson;
+        var mangadex = _mangadexJson;
+        var nu = _novelupdatesHtml;
+        var ehHtml = _ehentaiSearchHtml;
+        var ehGdata = _ehentaiGdataJson;
+        var muThrows = _muSearchThrows;
+        var alThrows = _anilistThrows;
+        var mdThrows = _mangadexThrows;
+        var nuThrows = _novelupdatesThrows;
+
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<IHttpClientFactory>();
+            services.AddSingleton<IHttpClientFactory>(
+                new FanOutFakeHttpClientFactory(
+                    muSearch, anilist, mangadex, nu, ehHtml, ehGdata,
+                    muThrows, alThrows, mdThrows, nuThrows));
+        });
+        return base.CreateHost(builder);
+    }
+}
+
+file class FanOutFakeHttpClientFactory(
+    string muSearchJson, string anilistJson, string mangadexJson,
+    string novelupdatesHtml, string ehentaiSearchHtml, string ehentaiGdataJson,
+    bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows)
+    : IHttpClientFactory
+{
+    public HttpClient CreateClient(string name) =>
+        new(new FanOutFakeHandler(
+            muSearchJson, anilistJson, mangadexJson, novelupdatesHtml,
+            ehentaiSearchHtml, ehentaiGdataJson,
+            muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows));
+}
+
+file class FanOutFakeHandler(
+    string muSearchJson, string anilistJson, string mangadexJson,
+    string novelupdatesHtml, string ehentaiSearchHtml, string ehentaiGdataJson,
+    bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows)
+    : HttpMessageHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage req, CancellationToken ct)
+    {
+        var host = req.RequestUri?.Host ?? "";
+        var path = req.RequestUri?.PathAndQuery ?? "";
+
+        // ── MangaUpdates ────────────────────────────────────────────────────
+        if (host.Contains("mangaupdates"))
+        {
+            if (path.Contains("/series/search"))
+            {
+                if (muSearchThrows) throw new HttpRequestException("MU unavailable");
+                return Task.FromResult(Json(muSearchJson));
+            }
+            if (path.Contains("/releases/search"))
+                return Task.FromResult(Json("""{"results":[]}"""));
+            if (path.Contains("/series/"))
+                return Task.FromResult(Json("""{"series_id":1,"title":"Detail","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":null}"""));
+        }
+
+        // ── AniList ─────────────────────────────────────────────────────────
+        if (host.Contains("anilist"))
+        {
+            if (anilistThrows) throw new HttpRequestException("AniList unavailable");
+            return Task.FromResult(Json(anilistJson));
+        }
+
+        // ── MangaDex Metadata ───────────────────────────────────────────────
+        if (host.Contains("mangadex"))
+        {
+            if (mangadexThrows) throw new HttpRequestException("MangaDex unavailable");
+            return Task.FromResult(Json(mangadexJson));
+        }
+
+        // ── NovelUpdates ────────────────────────────────────────────────────
+        if (host.Contains("novelupdates"))
+        {
+            if (novelupdatesThrows) throw new HttpRequestException("NovelUpdates unavailable");
+            return Task.FromResult(Html(novelupdatesHtml));
+        }
+
+        // ── E-Hentai ────────────────────────────────────────────────────────
+        if (host.Contains("e-hentai"))
+        {
+            // api.e-hentai.org/api.php → gdata JSON
+            if (path.Contains("api.php"))
+                return Task.FromResult(Json(ehentaiGdataJson));
+            // e-hentai.org search → HTML gallery listing
+            return Task.FromResult(Html(ehentaiSearchHtml));
+        }
+
+        // catch-all: covers, plugin-host, etc. — 200 empty
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent([]),
+        });
+    }
+
+    static HttpResponseMessage Json(string json) => new(HttpStatusCode.OK)
+    {
+        Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+    };
+
+    static HttpResponseMessage Html(string html) => new(HttpStatusCode.OK)
+    {
+        Content = new StringContent(html, System.Text.Encoding.UTF8, "text/html"),
+    };
+}

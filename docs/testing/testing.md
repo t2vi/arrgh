@@ -568,6 +568,107 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `POST /discover/add` → duplicate MU ID subscribes user and returns existing title | ✅ |
 | `POST /discover/add` → explicit tags → `is_explicit=true` | ✅ |
 
+### Discover Fan-Out — Integration (`DiscoverFanOutTests.cs`) ⬜ ADR 0031
+
+`FanOutDiscoverFactory` routes HTTP by hostname to all 5 metadata authority fakes.
+
+| Case | Status |
+|---|---|
+| `GET /discover` → MU manga result has `source="mangaupdates"` | ⬜ |
+| `GET /discover` → AniList manhwa result has `source="anilist"` | ⬜ |
+| `GET /discover` → MangaDex manhua result has `source="mangadex"` | ⬜ |
+| `GET /discover` → NovelUpdates novel result has `source="novelupdates"` | ⬜ |
+| `GET /discover` → E-Hentai result excluded for non-explicit user | ⬜ |
+| `GET /discover` → E-Hentai result included for explicit user | ⬜ |
+| `GET /discover` → dedup: AniList wins for manhwa when MU also returns it | ⬜ |
+| `GET /discover` → result order: MU before AniList | ⬜ |
+| `GET /discover` → partial failure (AniList 500) → 200 with other results | ⬜ |
+| `GET /discover` → all authorities fail → 502 | ⬜ |
+| `GET /discover` → `in_library=true` by normalized title + content_type (no `mangaupdates_id`) | ⬜ |
+| `POST /discover/add` → `source="anilist"` stores `metadata_source="anilist"` | ⬜ |
+| `POST /discover/add` → `mangaupdates_id` only (backward compat) → stores `metadata_source="mangaupdates"` | ⬜ |
+| `POST /discover/add` → same `source+source_id` twice → deduplicated to one title row | ⬜ |
+
+### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ⬜ ADR 0031
+
+| Case | Status |
+|---|---|
+| `DesignatedAuthority("manga")` → `"mangaupdates"` | ⬜ |
+| `DesignatedAuthority("manhwa")` → `"anilist"` | ⬜ |
+| `DesignatedAuthority("manhua")` → `"mangadex"` | ⬜ |
+| `DesignatedAuthority("novel")` → `"novelupdates"` | ⬜ |
+| `DesignatedAuthority("hentai")` → `"ehentai"` | ⬜ |
+| `DesignatedAuthority("unknown")` → `"mangaupdates"` (fallback) | ⬜ |
+| `Deduplicate` no conflict → returns all | ⬜ |
+| `Deduplicate` AniList wins for manhwa | ⬜ |
+| `Deduplicate` MangaDex wins for manhua | ⬜ |
+| `Deduplicate` same title, different content_type → not deduped | ⬜ |
+| `Deduplicate` normalized title comparison (extra whitespace) | ⬜ |
+| `AuthorityOrder` MU before AniList | ⬜ |
+| `AuthorityOrder` AniList before MangaDex | ⬜ |
+| `AuthorityOrder` MangaDex before NovelUpdates | ⬜ |
+| `AuthorityOrder` NovelUpdates before E-Hentai | ⬜ |
+| `MergeFanOut` ordered by authority | ⬜ |
+| `MergeFanOut` deduplicates before sorting | ⬜ |
+
+---
+
+## Plugin Host — Routing (`plugin-host/src/routing.test.ts`) ⬜
+
+Vitest + supertest. Requires `createApp(plugins, communityIds?)` export from `index.ts`.
+
+| Case | Status |
+|---|---|
+| `GET /plugins` → returns all loaded plugins | ⬜ |
+| `GET /plugins` → empty array when no plugins loaded | ⬜ |
+| `GET /:plugin/info` → returns info for known plugin | ⬜ |
+| `GET /:plugin/info` → 404 for unknown plugin | ⬜ |
+| `GET /:plugin/search?q=` → calls plugin.search, returns results | ⬜ |
+| `GET /:plugin/search` (no q) → returns `[]` | ⬜ |
+| `GET /:plugin/search?q=` → 502 on plugin error | ⬜ |
+| `GET /:plugin/search?q=` → 404 for unknown plugin | ⬜ |
+| `GET /:plugin/manga/:id/chapters` → calls plugin.chapters | ⬜ |
+| `GET /:plugin/manga/:id/chapters` → URL-decodes source id | ⬜ |
+| `GET /:plugin/manga/:id/chapters` → 502 on plugin error | ⬜ |
+| `GET /:plugin/chapter/:id/pages` → calls plugin.pages, returns URLs | ⬜ |
+| `GET /:plugin/chapter/:id/pages` → 404 when plugin has no pages fn (novel) | ⬜ |
+| `GET /:plugin/chapter/:id/pages` → 404 for unknown plugin | ⬜ |
+| `GET /:plugin/chapter/:id/text` → calls plugin.chapterText, returns markdown | ⬜ |
+| `GET /:plugin/chapter/:id/text` → 404 when plugin has no chapterText fn (manga) | ⬜ |
+| `POST /plugins/install` → 400 when url missing | ⬜ |
+| `DELETE /plugins/:id` → 403 for bundled plugin | ⬜ |
+| `DELETE /plugins/:id` → 204 removes community plugin | ⬜ |
+
+## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) 🟡
+
+Tests `info` shape and exported fn signatures for all bundled default plugins. No HTTP calls.
+
+| Plugin | Cases | Status |
+|---|---|---|
+| mangadex | id, default_explicit=false, content_types (manga+manhwa+manhua), fn exports | 🟡 (index.json mismatch) |
+| mangapill | id, default_explicit=false, content_types (manga), fn exports | ✅ |
+| nhentai | id, default_explicit=true, fn exports | ✅ |
+| novelfull | id, default_explicit=false, content_types (novel), chapterText export | ✅ |
+| royalroad | id, default_explicit=false, content_types (novel), chapterText export | ✅ |
+| toonily | id, default_explicit=false, content_types (manhwa), fn exports | ✅ |
+| plugin-index consistency | mangadex index.json must include manhwa+manhua+one-shot | 🔴 (known gap) |
+
+> **Known failure**: `plugin-index/index.json` lists MangaDex `content_types: ['manga']` but live plugin exports `['manga','manhwa','manhua','one-shot']`. Fix: update index.json entry.
+
+## Plugin Contract — New Plugins (`plugin-host/src/contract.new-plugins.test.ts`) ⬜ ADR 0031
+
+TDD contract tests for all 5 new source plugins. All fail until plugin dirs are created.
+
+| Plugin | content_types | Novel? | Status |
+|---|---|---|---|
+| mangafire | `['manga','manhwa','manhua']` | no (pages) | ⬜ |
+| asurascans | `['manhwa']` | no (pages) | ⬜ |
+| manhuafast | `['manhua']` | no (pages) | ⬜ |
+| wuxiaworld | `['novel']` | yes (chapterText, no pages) | ⬜ |
+| boxnovel | `['novel']` | yes (chapterText, no pages) | ⬜ |
+
+Each plugin tested for: id, name, default_explicit=false, correct content_types, required fn exports.
+
 ---
 
 ## E2e — Playwright (Docker Compose + Fixture Plugin)
@@ -637,6 +738,9 @@ cd server && cargo nextest run    # via nextest (used in CI)
 cd server-dotnet-tests && dotnet test --filter "Category=Unit"
 cd server-dotnet-tests && dotnet test --filter "Category=Integration"
 cd server-dotnet-tests && dotnet test              # all at once (local dev only)
+
+# Plugin host (routing + plugin contract)
+cd plugin-host && npm test
 
 # E2e (requires Docker)
 docker compose -f docker-compose.test.yml up -d --build
