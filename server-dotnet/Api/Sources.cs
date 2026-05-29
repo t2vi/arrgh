@@ -10,10 +10,10 @@ public static class Sources
 {
     public static RouteGroupBuilder MapSourcesRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/", ListSources).RequireAuthorization();
-        group.MapPost("/", AddSource).RequireAuthorization();
-        group.MapPatch("/{id}", PatchSource).RequireAuthorization();
-        group.MapDelete("/{id}", DeleteSource).RequireAuthorization();
+        group.MapGet("/", ListSources).RequireAuthorization().WithSummary("List configured plugin sources");
+        group.MapPost("/", AddSource).RequireAuthorization().WithSummary("Add a plugin source");
+        group.MapPatch("/{id}", PatchSource).RequireAuthorization().WithSummary("Update source (enabled, priority, api_key…)");
+        group.MapDelete("/{id}", DeleteSource).RequireAuthorization().WithSummary("Remove a source");
         return group;
     }
 

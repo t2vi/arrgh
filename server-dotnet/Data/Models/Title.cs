@@ -22,6 +22,8 @@ public class Title
     public string? DownloadDir { get; set; }
     public bool IsExplicit { get; set; } = false;
     public string? MangaupdatesId { get; set; }
+    public string? MetadataSource { get; set; }
+    public string? MetadataSourceId { get; set; }
     public string? LocalPath { get; set; }
 
     public ICollection<Chapter> Chapters { get; set; } = [];

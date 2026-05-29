@@ -44,6 +44,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(t => t.DownloadDir).HasColumnName("download_dir");
             e.Property(t => t.IsExplicit).HasColumnName("is_explicit");
             e.Property(t => t.MangaupdatesId).HasColumnName("mangaupdates_id");
+            e.Property(t => t.MetadataSource).HasColumnName("metadata_source");
+            e.Property(t => t.MetadataSourceId).HasColumnName("metadata_source_id");
             e.Property(t => t.LocalPath).HasColumnName("local_path");
             // partial unique index: WHERE mangaupdates_id IS NOT NULL
             e.HasIndex(t => t.MangaupdatesId)

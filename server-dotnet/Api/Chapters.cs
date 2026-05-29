@@ -10,10 +10,10 @@ public static class Chapters
 {
     public static RouteGroupBuilder MapChaptersRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/title/{titleId}", ListChapters).RequireAuthorization();
-        group.MapGet("/{id}", GetChapter).RequireAuthorization();
-        group.MapGet("/{id}/text", GetChapterText).RequireAuthorization();
-        group.MapPost("/{id}/download", QueueDownload).RequireAuthorization();
+        group.MapGet("/title/{titleId}", ListChapters).RequireAuthorization().WithSummary("List chapters for a title");
+        group.MapGet("/{id}", GetChapter).RequireAuthorization().WithSummary("Get a single chapter with page list");
+        group.MapGet("/{id}/text", GetChapterText).RequireAuthorization().WithSummary("Get chapter text content (novels)");
+        group.MapPost("/{id}/download", QueueDownload).RequireAuthorization().WithSummary("Queue a chapter for download");
         return group;
     }
 

@@ -10,9 +10,9 @@ public static class Plugins
 {
     public static RouteGroupBuilder MapPluginsRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/index", GetIndex).RequireAuthorization();
-        group.MapPost("/install", InstallPlugin).RequireAuthorization();
-        group.MapDelete("/{id}", DeletePlugin).RequireAuthorization();
+        group.MapGet("/index", GetIndex).RequireAuthorization().WithSummary("List all available plugins from the index");
+        group.MapPost("/install", InstallPlugin).RequireAuthorization().WithSummary("Install a community plugin from URL");
+        group.MapDelete("/{id}", DeletePlugin).RequireAuthorization().WithSummary("Remove a community plugin (bundled plugins cannot be removed)");
         return group;
     }
 

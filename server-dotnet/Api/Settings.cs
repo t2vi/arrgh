@@ -9,8 +9,8 @@ public static class Settings
 {
     public static RouteGroupBuilder MapSettingsRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/", GetSettings);
-        group.MapPost("/", SaveSettings);
+        group.MapGet("/", GetSettings).WithSummary("Get all server settings");
+        group.MapPost("/", SaveSettings).WithSummary("Save server settings");
         return group;
     }
 

@@ -11,10 +11,10 @@ public static class Media
 {
     public static RouteGroupBuilder MapMediaRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/page/{chapterId}/{page:int}", ServePage);
-        group.MapGet("/cover/{titleId}", ServeCover);
-        group.MapGet("/meta-cover", ServeMetaCover);
-        group.MapGet("/proxy", ProxyImage);
+        group.MapGet("/page/{chapterId}/{page:int}", ServePage).WithSummary("Serve a chapter page image by index");
+        group.MapGet("/cover/{titleId}", ServeCover).WithSummary("Serve the cover image for a title");
+        group.MapGet("/meta-cover", ServeMetaCover).WithSummary("Serve a cached metadata cover image by title key");
+        group.MapGet("/proxy", ProxyImage).WithSummary("Proxy an external image URL (avoids CORS/hotlink blocks)");
         return group;
     }
 

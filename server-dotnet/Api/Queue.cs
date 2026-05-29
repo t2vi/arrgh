@@ -10,10 +10,10 @@ public static class Queue
 {
     public static RouteGroupBuilder MapQueueRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/", ListQueue).RequireAuthorization();
-        group.MapGet("/title/{titleId}", ListTitleQueue).RequireAuthorization();
-        group.MapDelete("/completed", ClearCompleted).RequireAuthorization();
-        group.MapDelete("/{id}", RemoveFromQueue).RequireAuthorization();
+        group.MapGet("/", ListQueue).RequireAuthorization().WithSummary("List all download queue items");
+        group.MapGet("/title/{titleId}", ListTitleQueue).RequireAuthorization().WithSummary("List queue items for a title");
+        group.MapDelete("/completed", ClearCompleted).RequireAuthorization().WithSummary("Remove all completed/failed queue items");
+        group.MapDelete("/{id}", RemoveFromQueue).RequireAuthorization().WithSummary("Remove a specific queue item");
         return group;
     }
 

@@ -11,9 +11,9 @@ public static class Logs
 {
     public static RouteGroupBuilder MapLogsRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/", GetLogs).RequireAuthorization();
-        group.MapGet("/level", GetLevel).RequireAuthorization();
-        group.MapPatch("/level", SetLevel).RequireAuthorization();
+        group.MapGet("/", GetLogs).RequireAuthorization().WithSummary("Get recent log entries from the ring buffer");
+        group.MapGet("/level", GetLevel).RequireAuthorization().WithSummary("Get current log level gate");
+        group.MapPatch("/level", SetLevel).RequireAuthorization().WithSummary("Set log level gate (trace/debug/info/warn/error)");
         return group;
     }
 

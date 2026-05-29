@@ -12,10 +12,10 @@ public static class Progress
     public static RouteGroupBuilder MapProgressRoutes(this RouteGroupBuilder group)
     {
         // /progress/continue must be registered before /progress/{chapterId}
-        group.MapGet("/continue", ContinueReading).RequireAuthorization();
-        group.MapGet("/title/{titleId}", ListTitleProgress).RequireAuthorization();
-        group.MapGet("/{chapterId}", GetProgress).RequireAuthorization();
-        group.MapPut("/{chapterId}", UpdateProgress).RequireAuthorization();
+        group.MapGet("/continue", ContinueReading).RequireAuthorization().WithSummary("Get continue-reading suggestions across all library titles");
+        group.MapGet("/title/{titleId}", ListTitleProgress).RequireAuthorization().WithSummary("Get read progress for all chapters of a title");
+        group.MapGet("/{chapterId}", GetProgress).RequireAuthorization().WithSummary("Get read progress for a chapter");
+        group.MapPut("/{chapterId}", UpdateProgress).RequireAuthorization().WithSummary("Update read progress (current page, completed flag)");
         return group;
     }
 

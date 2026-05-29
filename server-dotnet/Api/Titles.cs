@@ -14,14 +14,14 @@ public static class Titles
 {
     public static RouteGroupBuilder MapTitlesRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/", ListTitles).RequireAuthorization();
-        group.MapGet("/new-releases", NewReleases).RequireAuthorization();
-        group.MapGet("/{id}", GetTitle).RequireAuthorization();
-        group.MapDelete("/{id}", RemoveTitle).RequireAuthorization();
-        group.MapPatch("/{id}", PatchTitle).RequireAuthorization();
-        group.MapPost("/{id}/sync", SyncTitle).RequireAuthorization();
-        group.MapGet("/{id}/sync-log", GetSyncLog).RequireAuthorization();
-        group.MapPost("/{id}/refresh-metadata", RefreshMetadata).RequireAuthorization();
+        group.MapGet("/", ListTitles).RequireAuthorization().WithSummary("List library titles (paginated, searchable)");
+        group.MapGet("/new-releases", NewReleases).RequireAuthorization().WithSummary("Titles with new unread chapters");
+        group.MapGet("/{id}", GetTitle).RequireAuthorization().WithSummary("Get a single title with chapters");
+        group.MapDelete("/{id}", RemoveTitle).RequireAuthorization().WithSummary("Remove title from library");
+        group.MapPatch("/{id}", PatchTitle).RequireAuthorization().WithSummary("Update title settings (content_type, reader_mode, auto_download…)");
+        group.MapPost("/{id}/sync", SyncTitle).RequireAuthorization().WithSummary("Trigger chapter sync for a title");
+        group.MapGet("/{id}/sync-log", GetSyncLog).RequireAuthorization().WithSummary("Get sync log entries for a title");
+        group.MapPost("/{id}/refresh-metadata", RefreshMetadata).RequireAuthorization().WithSummary("Re-fetch metadata from the title's metadata authority");
         return group;
     }
 

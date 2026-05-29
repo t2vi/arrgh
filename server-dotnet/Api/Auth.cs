@@ -14,23 +14,23 @@ public static class Auth
     public static RouteGroupBuilder MapAuthRoutes(this RouteGroupBuilder group, IConfiguration config)
     {
         // Public
-        group.MapGet("/status", Status).AllowAnonymous();
-        group.MapPost("/register", Register).AllowAnonymous();
-        group.MapPost("/login", Login).AllowAnonymous();
+        group.MapGet("/status", Status).AllowAnonymous().WithSummary("Server status — returns registered/unregistered");
+        group.MapPost("/register", Register).AllowAnonymous().WithSummary("Register first user (auto-admin) or additional users (admin-only after first)");
+        group.MapPost("/login", Login).AllowAnonymous().WithSummary("Login and receive JWT");
 
         // Protected — current user
-        group.MapGet("/me", Me).RequireAuthorization();
-        group.MapPatch("/me", PatchMe).RequireAuthorization();
+        group.MapGet("/me", Me).RequireAuthorization().WithSummary("Get current user profile");
+        group.MapPatch("/me", PatchMe).RequireAuthorization().WithSummary("Update current user profile");
 
         return group;
     }
 
     public static RouteGroupBuilder MapUserRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/", ListUsers).RequireAuthorization();
-        group.MapPost("/", CreateUser).RequireAuthorization();
-        group.MapPatch("/{id}", PatchUser).RequireAuthorization();
-        group.MapDelete("/{id}", DeleteUser).RequireAuthorization();
+        group.MapGet("/", ListUsers).RequireAuthorization().WithSummary("List all users (admin only)");
+        group.MapPost("/", CreateUser).RequireAuthorization().WithSummary("Create a new user (admin only)");
+        group.MapPatch("/{id}", PatchUser).RequireAuthorization().WithSummary("Update user (admin only)");
+        group.MapDelete("/{id}", DeleteUser).RequireAuthorization().WithSummary("Delete user (admin only)");
         return group;
     }
 

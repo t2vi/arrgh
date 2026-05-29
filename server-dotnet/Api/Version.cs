@@ -14,7 +14,7 @@ public static class Version
 
     public static RouteGroupBuilder MapVersionRoutes(this RouteGroupBuilder group)
     {
-        group.MapGet("/", GetVersion);
+        group.MapGet("/", GetVersion).WithSummary("Get server version and update availability");
         return group;
     }
 
