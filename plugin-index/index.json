@@ -20,16 +20,6 @@
     "content_types": ["manhwa"]
   },
   {
-    "id": "comick",
-    "name": "Comick",
-    "description": "Multi-language manga and manhwa aggregator. Cloudflare-protected — requires CloakBrowser.",
-    "version": "1.0.0",
-    "download_url": null,
-    "bundled": true,
-    "default_explicit": false,
-    "content_types": ["manga"]
-  },
-  {
     "id": "novelfull",
     "name": "NovelFull",
     "description": "Web novel translations. Returns chapter text (no page images). Cloudflare-protected — requires CloakBrowser.",
@@ -48,16 +38,6 @@
     "bundled": true,
     "default_explicit": false,
     "content_types": ["manga"]
-  },
-  {
-    "id": "royalroad",
-    "name": "Royal Road",
-    "description": "English web fiction and light novels. Returns chapter text (no page images).",
-    "version": "1.0.0",
-    "download_url": null,
-    "bundled": true,
-    "default_explicit": false,
-    "content_types": ["novel"]
   },
   {
     "id": "nhentai",

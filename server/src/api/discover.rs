@@ -88,6 +88,67 @@ pub fn title_matches(a: &str, b: &str) -> bool {
     levenshtein(a, b) * 5 <= max_len
 }
 
+/// Strip a trailing parenthetical type qualifier from a search candidate so
+/// that a title like "I Shall Seal the Heavens (Novel)" becomes
+/// "I Shall Seal the Heavens" when sent to plugin search endpoints.
+/// Matching still uses the original (full) normalized title.
+pub fn strip_search_qualifier(s: &str) -> Option<String> {
+    let s = s.trim();
+    if let Some(open) = s.rfind('(') {
+        let suffix = &s[open..];
+        // Only strip short parentheticals that look like type/format tags
+        if suffix.ends_with(')') && suffix.len() >= 3 && suffix.len() <= 20 {
+            let stripped = s[..open].trim().to_string();
+            if !stripped.is_empty() && stripped != s {
+                return Some(stripped);
+            }
+        }
+    }
+    None
+}
+
+/// Build the ordered list of strings to try as search queries.
+/// When a name has a type qualifier (e.g. "(Novel)"), the stripped form is
+/// tried first because plugin search engines rarely index those suffixes and
+/// will return zero results when they appear in the query.
+pub fn search_candidates(names: &[String]) -> Vec<String> {
+    let mut seen = std::collections::HashSet::new();
+    let mut out = Vec::new();
+    for name in names {
+        // Stripped form first — avoids wasting a CloakBrowser round-trip on
+        // a "(Novel)"-suffixed query that will likely return 0 results.
+        if let Some(stripped) = strip_search_qualifier(name) {
+            if seen.insert(stripped.clone()) {
+                out.push(stripped);
+            }
+        }
+        if seen.insert(name.clone()) {
+            out.push(name.clone());
+        }
+    }
+    out
+}
+
+/// Build the set of normalized title strings used for result matching.
+/// Includes both the original normalized forms AND their qualifier-stripped
+/// variants so that a site returning "A Will Eternal" matches a stored title
+/// of "A Will Eternal (Novel)" even for short titles where the levenshtein
+/// 20% threshold would otherwise reject it.
+pub fn known_norms(names: &[String]) -> Vec<String> {
+    let mut seen = std::collections::HashSet::new();
+    let mut out = Vec::new();
+    let mut push = |s: String| {
+        if seen.insert(s.clone()) { out.push(s); }
+    };
+    for name in names {
+        push(normalize_title(name));
+        if let Some(stripped) = strip_search_qualifier(name) {
+            push(normalize_title(&stripped));
+        }
+    }
+    out
+}
+
 fn levenshtein(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();
@@ -274,7 +335,14 @@ async fn search(
         return Ok(Json(results).into_response());
     }
 
-    // MU returned nothing — fall back to E-Hentai
+    // MU returned nothing — fall back to E-Hentai only when the user has
+    // explicit content enabled. Without this gate an adult-manhwa search that
+    // temporarily misses in MU would pull in E-Hentai results, tag the title
+    // as "hentai", and permanently misroute it to nhentai for downloading.
+    if !claims.allow_explicit {
+        return Ok(Json(Vec::<SearchResult>::new()).into_response());
+    }
+
     tracing::debug!("MU returned no results for '{}', trying E-Hentai", q.q);
     let eh = EHentaiClient::new(&state.http);
     let eh_series = match eh.search(&q.q).await {
@@ -444,12 +512,14 @@ async fn add_manga(
             .unwrap_or(false);
         let is_explicit: i64 = if tag_explicit { 1 } else { 0 };
 
+        let clean_title = strip_search_qualifier(&body.title)
+            .unwrap_or_else(|| body.title.clone());
         sqlx::query!(
             r#"INSERT INTO titles
                (id, mangaupdates_id, title, description, cover_url, status,
                 author, year, tags, sync_status, content_type, is_explicit, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)"#,
-            id, body.mangaupdates_id, body.title, body.description, resolved_cover_url,
+            id, body.mangaupdates_id, clean_title, body.description, resolved_cover_url,
             body.status, body.author, body.year, body.tags,
             body.content_type, is_explicit, now, now
         )
@@ -552,13 +622,11 @@ async fn add_manga(
         )
         .fetch_all(&db).await.unwrap_or_default();
 
-        let known_norms: Vec<String> = std::iter::once(normalize_title(&title))
-            .chain(aliases.iter().map(|a| normalize_title(a)))
-            .collect();
-
-        let candidates: Vec<String> = std::iter::once(title.clone())
+        let raw_names: Vec<String> = std::iter::once(title.clone())
             .chain(aliases.iter().cloned())
             .collect();
+        let known_norms: Vec<String> = known_norms(&raw_names);
+        let candidates: Vec<String> = search_candidates(&raw_names);
 
         let source_snapshot: Vec<(String, Arc<dyn crate::indexer::Source>)> = {
             let reg = sources.read().await;
@@ -684,6 +752,17 @@ async fn add_manga(
             .execute(&db).await;
         }
 
+        // If at least one source matched, clear stale "no match" warnings from
+        // sources that didn't find the title. A title found on Toonily+Comick
+        // should not stay amber just because MangaDex didn't have it.
+        if any_ok {
+            let _ = sqlx::query!(
+                "DELETE FROM sync_warnings WHERE title_id = ? AND message LIKE 'no matching source found%'",
+                mid
+            )
+            .execute(&db).await;
+        }
+
         let status = if source_snapshot.is_empty() || any_ok { "ready" } else { "error" };
         if any_ok {
             super::append_sync_log(&db, &mid, "Sync complete").await;
@@ -747,5 +826,177 @@ mod tests {
     #[test]
     fn normalize_empty() {
         assert_eq!(normalize_title(""), "");
+    }
+
+    // title_matches tests
+
+    #[test]
+    fn title_matches_exact() {
+        assert!(title_matches("solo leveling", "solo leveling"));
+    }
+
+    #[test]
+    fn title_matches_novel_suffix_stripped_site_result() {
+        // Site returns "I Shall Seal the Heavens"; stored title has "(Novel)" suffix.
+        // After normalize: a="i shall seal the heavens novel", b="i shall seal the heavens"
+        // levenshtein=6, max_len=30, 6*5=30 ≤ 30 → should match
+        let a = normalize_title("I Shall Seal the Heavens (Novel)");
+        let b = normalize_title("I Shall Seal the Heavens");
+        assert!(title_matches(&a, &b), "novel-suffix title should match bare site result");
+    }
+
+    #[test]
+    fn title_matches_rejects_unrelated() {
+        let a = normalize_title("Solo Leveling");
+        let b = normalize_title("Tower of God");
+        assert!(!title_matches(&a, &b));
+    }
+
+    #[test]
+    fn title_matches_small_typo() {
+        let a = normalize_title("Overlord");
+        let b = normalize_title("0verlord");
+        assert!(title_matches(&a, &b));
+    }
+
+    // strip_search_qualifier tests
+
+    #[test]
+    fn strip_qualifier_novel() {
+        assert_eq!(
+            strip_search_qualifier("I Shall Seal the Heavens (Novel)"),
+            Some("I Shall Seal the Heavens".to_string())
+        );
+    }
+
+    #[test]
+    fn strip_qualifier_manga() {
+        assert_eq!(
+            strip_search_qualifier("Berserk (Manga)"),
+            Some("Berserk".to_string())
+        );
+    }
+
+    #[test]
+    fn strip_qualifier_no_suffix() {
+        assert_eq!(strip_search_qualifier("Solo Leveling"), None);
+    }
+
+    #[test]
+    fn strip_qualifier_mid_paren() {
+        // Parenthetical in the middle should not be stripped
+        assert_eq!(strip_search_qualifier("The World (Is Mine) Forever"), None);
+    }
+
+    #[test]
+    fn strip_qualifier_empty_after_strip() {
+        assert_eq!(strip_search_qualifier("(Novel)"), None);
+    }
+
+    // search_candidates tests
+
+    #[test]
+    fn search_candidates_stripped_first() {
+        // Stripped form must come before the original so CloakBrowser-backed sources
+        // don't waste a round-trip on a "(Novel)"-suffixed query that returns 0 results.
+        let names = vec!["I Shall Seal the Heavens (Novel)".to_string()];
+        let cands = search_candidates(&names);
+        assert_eq!(cands, vec![
+            "I Shall Seal the Heavens",
+            "I Shall Seal the Heavens (Novel)",
+        ]);
+    }
+
+    #[test]
+    fn search_candidates_no_duplicates() {
+        let names = vec!["Solo Leveling".to_string(), "Solo Leveling".to_string()];
+        let cands = search_candidates(&names);
+        assert_eq!(cands, vec!["Solo Leveling"]);
+    }
+
+    #[test]
+    fn search_candidates_alias_also_stripped() {
+        let names = vec![
+            "A Will Eternal (Novel)".to_string(),
+            "Yi Nian Yong Heng".to_string(),
+        ];
+        let cands = search_candidates(&names);
+        assert_eq!(cands, vec![
+            "A Will Eternal",
+            "A Will Eternal (Novel)",
+            "Yi Nian Yong Heng",
+        ]);
+    }
+
+    // known_norms tests
+
+    #[test]
+    fn known_norms_includes_stripped() {
+        // Short title — levenshtein from "(Novel)" suffix exceeds 20% threshold without stripped norm.
+        // "a will eternal novel" (20) vs "a will eternal" (14): distance 6, 6*5=30 > 20 → fails.
+        // known_norms must include "a will eternal" so the site result matches exactly.
+        let names = vec!["A Will Eternal (Novel)".to_string()];
+        let norms = known_norms(&names);
+        assert!(norms.contains(&"a will eternal novel".to_string()));
+        assert!(norms.contains(&"a will eternal".to_string()));
+    }
+
+    #[test]
+    fn known_norms_no_duplicates() {
+        // If an alias is the bare title, no duplicate should appear
+        let names = vec![
+            "A Will Eternal (Novel)".to_string(),
+            "A Will Eternal".to_string(),
+        ];
+        let norms = known_norms(&names);
+        let count = norms.iter().filter(|n| n.as_str() == "a will eternal").count();
+        assert_eq!(count, 1, "dedup failed: got {:?}", norms);
+    }
+
+    #[test]
+    fn known_norms_short_title_matches_site_result() {
+        // End-to-end: stripped norm in known_norms enables exact match against site result
+        let names = vec!["A Will Eternal (Novel)".to_string()];
+        let norms = known_norms(&names);
+        let site_result = normalize_title("A Will Eternal");
+        assert!(
+            norms.iter().any(|kn| title_matches(kn, &site_result)),
+            "site result should match via known_norms; norms={:?}",
+            norms
+        );
+    }
+
+    // ── Source routing helpers ─────────────────────────────────────────────────
+
+    /// Simulate the has_hentai_tag computation used in add_manga / sync paths.
+    fn has_hentai_tag(tags: &str) -> bool {
+        tags.split(',').any(|t| t.trim().eq_ignore_ascii_case("hentai"))
+    }
+
+    #[test]
+    fn hentai_tag_matches_hentai() {
+        assert!(has_hentai_tag("Action,hentai,Romance"));
+    }
+
+    #[test]
+    fn adult_tag_does_not_route_to_explicit_pool() {
+        // "adult" is NOT "hentai" — adult manhwa must not be routed to nhentai.
+        assert!(!has_hentai_tag("adult,Drama,Harem,Seinen"));
+    }
+
+    #[test]
+    fn mixed_adult_hentai_routes_explicit() {
+        assert!(has_hentai_tag("adult,hentai,Ecchi"));
+    }
+
+    #[test]
+    fn empty_tags_non_explicit() {
+        assert!(!has_hentai_tag(""));
+    }
+
+    #[test]
+    fn hentai_tag_case_insensitive() {
+        assert!(has_hentai_tag("HENTAI,Action"));
+        assert!(has_hentai_tag("Hentai"));
     }
 }

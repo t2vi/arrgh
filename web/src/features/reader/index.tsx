@@ -9,11 +9,13 @@ import { NovelReader } from './components/NovelReader'
 import { ReaderFooter } from './components/ReaderFooter'
 import { ProgressBar } from './components/ProgressBar'
 import { FontSizeControl, useNovelFontSize } from './components/FontSizeControl'
+import { ZoomControl, useImageZoom } from './components/ZoomControl'
 
 export default function Reader() {
   const h = useReader()
   const [imgLoading, setImgLoading] = useState(true)
   const { size: fontSize, apply: applyFontSize } = useNovelFontSize()
+  const { zoom, apply: applyZoom } = useImageZoom()
 
   useEffect(() => { setImgLoading(true) }, [h.page])
 
@@ -44,6 +46,7 @@ export default function Reader() {
                 ? `${h.page + 1} / ${h.totalLabel}`
                 : h.totalLabel !== '?' ? `${h.totalLabel} pages` : ''}
             </span>
+            <ZoomControl zoom={zoom} onApply={applyZoom} />
             <Button
               variant="ghost"
               size="icon"
@@ -91,6 +94,7 @@ export default function Reader() {
             key={h.page}
             src={api.pageUrl(h.chapterId!, h.page)}
             alt={`Page ${h.page + 1}`}
+            style={{ maxWidth: `${zoom * 8}px` }}
             onClick={(e) => { e.stopPropagation(); h.goTo(h.page + 1) }}
             onLoad={() => setImgLoading(false)}
             onError={() => { setImgLoading(false); if (h.page > 0) h.setLastPage(h.page) }}
@@ -103,6 +107,7 @@ export default function Reader() {
           onPageSeen={(p) => h.goTo(p)}
           onLastPageFailed={(p) => h.setLastPage(p)}
           initialPage={h.page}
+          zoom={zoom}
         />
       )}
 

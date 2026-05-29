@@ -5,10 +5,8 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 COPY plugins/mangadex/package.json  ./plugins/mangadex/
 COPY plugins/toonily/package.json   ./plugins/toonily/
-COPY plugins/comick/package.json    ./plugins/comick/
 COPY plugins/novelfull/package.json ./plugins/novelfull/
 COPY plugins/mangapill/package.json ./plugins/mangapill/
-COPY plugins/royalroad/package.json ./plugins/royalroad/
 COPY plugins/nhentai/package.json   ./plugins/nhentai/
 COPY plugin-host/package.json       ./plugin-host/
 RUN npm ci
@@ -37,10 +35,8 @@ COPY --from=host-build /build/plugin-host/dist ./dist
 RUN mkdir -p bundles
 COPY --from=bundles /build/plugins/mangadex/bundles/mangadex.js   ./bundles/
 COPY --from=bundles /build/plugins/toonily/bundles/toonily.js     ./bundles/
-COPY --from=bundles /build/plugins/comick/bundles/comick.js       ./bundles/
 COPY --from=bundles /build/plugins/novelfull/bundles/novelfull.js ./bundles/
 COPY --from=bundles /build/plugins/mangapill/bundles/mangapill.js ./bundles/
-COPY --from=bundles /build/plugins/royalroad/bundles/royalroad.js ./bundles/
 COPY --from=bundles /build/plugins/nhentai/bundles/nhentai.js     ./bundles/
 ENV PORT=4000 LANGUAGES=en CLOAKBROWSER_WS_URL=
 EXPOSE 4000

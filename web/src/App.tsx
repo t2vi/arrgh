@@ -37,7 +37,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       .then(() => setState('authenticated'))
       .catch(() => {
         clearToken()
-        setState('needs_login')
+        // Token invalid — re-check setup status so a wiped server sends to
+        // setup instead of a login form that can never succeed.
+        api.authStatus()
+          .then((s) => setState(s.needs_setup ? 'needs_setup' : 'needs_login'))
+          .catch(() => setState('needs_login'))
       })
   }, [])
 

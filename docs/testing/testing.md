@@ -52,6 +52,19 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Manga Detail | `ChapterRow` | error state — AlertCircle shown | ✅ |
 | Manga Detail | `ChapterRow` | completed — read bar at 100%, opacity-50 | ✅ |
 | Manga Detail | `ChapterRow` | has_sources=false + not downloaded — no action button | ✅ |
+| Reader | `ZoomControl` | renders zoom button | ✅ |
+| Reader | `ZoomControl` | popover hidden initially | ✅ |
+| Reader | `ZoomControl` | opens popover showing all levels (50–150%) | ✅ |
+| Reader | `ZoomControl` | calls onApply with selected level and closes popover | ✅ |
+| Reader | `useImageZoom` | defaults to 100 | ✅ |
+| Reader | `useImageZoom` | reads stored value from localStorage | ✅ |
+| Reader | `useImageZoom` | falls back to 100 for invalid stored value | ✅ |
+| Reader | `useImageZoom` | apply updates state and persists to localStorage | ✅ |
+| Setup | `useSetup` | starts on step 1 | ✅ |
+| Setup | `useSetup` | goToStep2 advances to step 2 | ✅ |
+| Setup | `useSetup` | valid token → redirects to home (setup already complete) | ✅ |
+| Setup | `useSetup` | invalid/stale token → stays on setup (server wiped) | ✅ |
+| Setup | `useSetup` | no token → `api.me()` never called | ✅ |
 | Settings | `SourcesSection` | browse modal open/close | ✅ |
 | Settings | `SourcesSection` | install plugin success → sources refetch | ✅ |
 | Settings | `SourcesSection` | add source 502 error → error message shown | ✅ |
@@ -103,10 +116,31 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | `normalize_title` lowercases | ✅ |
 | `normalize_title` strips punctuation | ✅ |
 | `normalize_title` collapses whitespace | ✅ |
+| `normalize_title` empty string | ✅ |
 | `merge_hits` deduplicates same title | ✅ |
 | `merge_hits` preserves insertion order | ✅ |
 | `merge_hits` keeps distinct titles separate | ✅ |
 | `merge_hits` normalizes before dedup (`One-Piece` == `One Piece`) | ✅ |
+| `title_matches` exact | ✅ |
+| `title_matches` `(Novel)` suffix vs bare site result (short title, levenshtein threshold) | ✅ |
+| `title_matches` rejects unrelated titles | ✅ |
+| `title_matches` tolerates small typo | ✅ |
+| `strip_search_qualifier` strips `(Novel)` | ✅ |
+| `strip_search_qualifier` strips `(Manga)` | ✅ |
+| `strip_search_qualifier` returns `None` when no qualifier | ✅ |
+| `strip_search_qualifier` mid-string paren not stripped | ✅ |
+| `strip_search_qualifier` returns `None` when only qualifier remains | ✅ |
+| `search_candidates` stripped form first (avoids wasted CloakBrowser call) | ✅ |
+| `search_candidates` no duplicates | ✅ |
+| `search_candidates` aliases also stripped | ✅ |
+| `known_norms` includes stripped form so short titles match | ✅ |
+| `known_norms` deduplicates | ✅ |
+| `known_norms` end-to-end: short novel title matches site result | ✅ |
+| Source routing: `"hentai"` tag routes to explicit pool | ✅ |
+| Source routing: `"adult"` tag does NOT route to explicit pool | ✅ |
+| Source routing: mixed `"adult"+"hentai"` → explicit pool | ✅ |
+| Source routing: empty tags → non-explicit pool | ✅ |
+| Source routing: `"HENTAI"` case-insensitive | ✅ |
 
 ### Media helpers (`src/media/mod.rs`) ✅
 
@@ -202,6 +236,12 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | add_title (MU) | Creates `user_titles` subscription for the requesting user | ✅ |
 | add_title (MU) | Sets `is_explicit = 1` when tags contain `"adult"` | ✅ |
 | add_title (MU) | Deduplicates — same `mangaupdates_id` returns same title | ✅ |
+| add_title: qualifier stripping | `"My Title (Novel)"` stored as `"My Title"` | ✅ |
+| add_title: qualifier stripping | `"Berserk (Manga)"` stored as `"Berserk"` | ✅ |
+| add_title: qualifier stripping | Plain title without qualifier stored unchanged | ✅ |
+| add_title: explicit routing | `"adult"` tag → `is_explicit=1` but tags contain no `"hentai"` (routing stays non-explicit) | ✅ |
+| Stale sync warning | `"no matching source found"` warning deleted when title has a matched source | ✅ |
+| Stale sync warning | Chapter-sync-failure warning preserved — not cleared by no-match cleanup | ✅ |
 | Trending | Returns pre-seeded cache results without hitting MangaUpdates network | ✅ |
 | Trending | Marks `in_library=true` when series already added to library | ✅ |
 | Queue: explicit filter | Member without `allow_explicit` cannot see explicit queue items | ✅ |
@@ -220,6 +260,313 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Cover CDN fallback | `GET /api/media/cover/:id` — 307 to CDN when `cover_url = NULL` | ✅ |
 | Cover CDN fallback | `GET /api/media/cover/:id` — 307 to CDN when local file missing | ✅ |
 | Cover CDN fallback | `GET /api/media/cover/:id` — 404 when no `title_meta` CDN URL | ✅ |
+
+---
+
+## .NET Server — Unit (xUnit, `server-dotnet-tests/`)
+
+Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). Run with `dotnet test --filter "Category=Unit"`.
+
+### Auth tokens (`AuthTokenTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| Admin claims preserved through `CreateToken` → `ValidateToken` roundtrip | ✅ |
+| Member role + `allow_explicit=false` preserved through roundtrip | ✅ |
+| Wrong secret → validation rejected | ✅ |
+| Token expires in 30 days | ✅ |
+| Different users produce different tokens | ✅ |
+| Same inputs produce different tokens (timestamp-based) | ✅ |
+
+### UpdateCache (`UpdateCacheTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GetIfNewer` empty cache → both fields null | ✅ |
+| `GetIfNewer` same version as current → both null (suppresses false "update available") | ✅ |
+| `GetIfNewer` newer version → returns version + URL | ✅ |
+| `Clear` after set → both null | ✅ |
+
+### LogService (`LogServiceTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `ParseLevel` valid levels (trace/debug/info/warn/error, case-insensitive) | ✅ |
+| `ParseLevel` unknown level → null | ✅ |
+| `LevelToString` all four levels produce expected strings | ✅ |
+| `SetLevel` valid level → true + updates `CurrentLevel` | ✅ |
+| `SetLevel` invalid level → false | ✅ |
+| `SetLevel` normalises to uppercase | ✅ |
+| `GetRecent` empty buffer → empty list | ✅ |
+| `GetRecent` returns last N entries | ✅ |
+| `Append` evicts oldest entry when capacity exceeded | ✅ |
+
+### PatchTitleBody (`PatchTitleBodyTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `auto_download: true` / `false` parsed | ✅ |
+| `auto_download` absent → null (no-op) | ✅ |
+| `reader_mode` string → `HasValue=true` | ✅ |
+| `reader_mode` absent → null | ✅ |
+| `reader_mode: null` JSON null — known limitation documented (indistinguishable from absent) | ✅ |
+| `is_explicit: true` parsed | ✅ |
+| `content_type: "manga"` parsed | ✅ |
+| `content_type` absent → null | ✅ |
+| Multiple fields all parsed together | ✅ |
+| Empty object → all fields null | ✅ |
+
+### Queue logic (`QueueLogicTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `IsAllowedExplicit` — `allow_explicit=true` → true | ✅ |
+| `IsAllowedExplicit` — member without flag → false | ✅ |
+| `IsAllowedExplicit` — admin with flag=false → true | ✅ |
+| `IsAllowedExplicit` — admin with flag=true → true | ✅ |
+| `IsAllowedExplicit` — null role + flag=false → false | ✅ |
+| `IsAllowedExplicit` — null role + flag=true → true | ✅ |
+
+### Settings logic (`SettingsLogicTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `ParseLong` valid string, null, invalid string | ✅ |
+| `ParseBool` "true", "false", null, other string | ✅ |
+| `ClampTrending` below 1 → 1; above 50 → 50; within range passes; boundary values | ✅ |
+| `ValidReaderMode` "paged" / "scroll" valid; other / empty invalid | ✅ |
+
+### Media helpers (`MediaLogicTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `DetectContentType` — JPEG / PNG / WebP / GIF / AVIF magic bytes | ✅ |
+| `DetectContentType` — too short / empty / unknown bytes → null | ✅ |
+| `StripJpegIcc` — non-JPEG passed through unchanged | ✅ |
+| `StripJpegIcc` — too-short data passed through unchanged | ✅ |
+| `StripJpegIcc` — JPEG without ICC passes through | ✅ |
+| `StripJpegIcc` — APP2 ICC_PROFILE segment stripped | ✅ |
+| `IsImage` — known extensions (jpg, jpeg, PNG, webp, avif) → true | ✅ |
+| `IsImage` — non-image (txt, cbz, no-ext, html) → false | ✅ |
+| `RootDomainReferer` — subdomain extracts root; apex unchanged; invalid → empty; scheme preserved; empty → empty | ✅ |
+| `NormalizeTitle` — replaces non-alphanumeric with spaces; collapses spaces; lowercase; strips punctuation | ✅ |
+| `GetChapterPage` — missing path → null; directory reads correct file; directory out of range → null | ✅ |
+| `GetChapterPage` — CBZ extracts correct entry; CBZ out of range → null | ✅ |
+| `PageCacheService` — miss on empty; hit after set | ✅ |
+
+### Discover helpers (`DiscoverLogicTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `TitleMatches` — exact; both empty; small typo; novel-suffix vs bare site result | ✅ |
+| `TitleMatches` — unrelated titles → false | ✅ |
+| `Levenshtein` — same string = 0; empty vs non-empty = length; one substitution | ✅ |
+| `StripSearchQualifier` — strips `(Novel)` / `(Manga)`; no suffix → null; mid-string paren → null; only paren → null; long suffix → null | ✅ |
+| `SearchCandidates` — stripped form first; no duplicates; aliases also stripped | ✅ |
+| `KnownNorms` — includes stripped variant; no duplicates; end-to-end novel title matches site result | ✅ |
+| `IsHentaiTag` — "hentai" → true; "adult" alone → false; case-insensitive; null/empty → false | ✅ |
+| `MangaUpdatesService.MapContentType` — Manhwa/manhua/Novel/Light Novel/Web Novel/Manga/null | ✅ |
+| `MangaUpdatesService.StripHtml` — removes tags; plain text unchanged; trims whitespace | ✅ |
+| `MangaUpdatesService.ParseFlexULong` — number; string; null → null | ✅ |
+| `MangaUpdatesService.MapSeries` — full record (SeriesId, Title, Description, CoverUrl, ContentType, Status, Year, Author, Tags) | ✅ |
+| `MangaUpdatesService.MapSeries` — string `series_id` parsed to ulong | ✅ |
+
+---
+
+## .NET Server — Integration (HTTP stack, `server-dotnet-tests/`)
+
+`WebApplicationFactory` + isolated file-based SQLite per test. Run with `dotnet test --filter "Category=Integration"`.
+
+### Auth (`AuthTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /status` → `needs_setup=true` when no users | ✅ |
+| `GET /status` → `needs_setup=false` after first register | ✅ |
+| `POST /register` → creates admin + returns token | ✅ |
+| `POST /register` → 403 when users already exist | ✅ |
+| `POST /register` → 422 short password / empty username | ✅ |
+| `POST /login` → token for valid credentials | ✅ |
+| `POST /login` → 401 wrong password / unknown user | ✅ |
+| `GET /me` → current user | ✅ |
+| `GET /me` → 401 no token | ✅ |
+| `GET /users` → 403 for member | ✅ |
+| `GET /users` → returns all users for admin | ✅ |
+| `POST /users` → 201 valid member; 403 for member; 409 duplicate username | ✅ |
+| `PATCH /me` → changes password; 422 short password | ✅ |
+| `PATCH /users/:id` → updates role / allow_explicit; 422 invalid role; 404 nonexistent | ✅ |
+| `DELETE /users/:id` → 204 success; 404 nonexistent; 403 cannot delete self; 403 for member | ✅ |
+
+### Titles (`TitlesTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /titles` → empty page for empty library | ✅ |
+| `GET /titles` → returns only owned titles | ✅ |
+| `GET /titles` → excludes other users' library | ✅ |
+| `GET /titles` → hides explicit from non-explicit user | ✅ |
+| `GET /titles` → shows explicit to explicit user | ✅ |
+| `GET /titles` → search filters by title name | ✅ |
+| `GET /titles` → 401 no token | ✅ |
+| `GET /titles` → pagination limit and page offset | ✅ |
+| `GET /titles` → multi-user each sees only own library | ✅ |
+| `GET /titles/:id` → returns owned title with chapter stats | ✅ |
+| `GET /titles/:id` → 404 not owned / nonexistent | ✅ |
+| `GET /titles/:id` → `chapters_read` isolated per user | ✅ |
+| `GET /titles/:id` → `is_local=true` when no title_sources; `is_local=false` when sources exist | ✅ |
+| `GET /titles/:id` → `has_sync_warnings=true` when warning exists | ✅ |
+| `GET /titles/new-releases` → returns new chapters for owned titles only | ✅ |
+| `GET /titles/new-releases` → excludes explicit from non-explicit user | ✅ |
+| `DELETE /titles/:id` → 204; does not delete when other user still has it; deletes when last user | ✅ |
+| `DELETE /titles/:id` → 404 not owned | ✅ |
+| `PATCH /titles/:id` → updates auto_download; sets reader mode (paged/scroll) | ✅ |
+| `PATCH /titles/:id` → 403 is_explicit for member; 422 invalid reader mode / content type | ✅ |
+| `PATCH /titles/:id` → admin can set is_explicit | ✅ |
+| `PATCH /titles/:id` → 404 not owned | ✅ |
+| `GET /titles/:id/sync-log` → returns entries in ASC order; 404 not owned | ✅ |
+| `POST /titles/:id/sync` → 202 when source links exist; 404 no source links; 404 not owned | ✅ |
+
+### Chapters (`ChaptersTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /chapters/:titleId` → ordered by number | ✅ |
+| `GET /chapters/:titleId` → empty when no chapters | ✅ |
+| `GET /chapters/:titleId` → `has_sources=true` when chapter_source exists | ✅ |
+| `GET /chapters/:titleId` → `has_sources=false` when no chapter_source | ✅ |
+| `GET /chapters/:titleId` → hides explicit title from non-allowed user | ✅ |
+| `GET /chapters/:titleId` → shows explicit title to allowed user | ✅ |
+| `GET /chapters/:titleId` → 401 no token | ✅ |
+| `GET /chapters/:chapterId` → returns chapter | ✅ |
+| `GET /chapters/:chapterId` → 404 nonexistent / explicit hidden from user | ✅ |
+| `GET /chapters/:chapterId/text` → 400 when not text format | ✅ |
+| `GET /chapters/:chapterId/text` → 404 when not downloaded | ✅ |
+
+### Progress (`ProgressTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /progress/:titleId` → returns progress for user | ✅ |
+| `GET /progress/:titleId` → empty when no progress | ✅ |
+| `GET /progress/:titleId` → isolated per user | ✅ |
+| `GET /progress/:chapterId/chapter` → returns progress | ✅ |
+| `GET /progress/:chapterId/chapter` → 404 when no progress | ✅ |
+| `GET /progress/:chapterId/chapter` → 401 no token | ✅ |
+| `PUT /progress/:chapterId` → creates when not exists | ✅ |
+| `PUT /progress/:chapterId` → updates when already exists | ✅ |
+| `PUT /progress/:chapterId` → isolated per user | ✅ |
+| `GET /progress/continue-reading` → returns titles with unread chapters | ✅ |
+| `GET /progress/continue-reading` → empty when nothing started | ✅ |
+| `GET /progress/continue-reading` → empty when all chapters read | ✅ |
+
+### Queue (`QueueTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /queue` → items ordered by created_at DESC | ✅ |
+| `GET /queue` → empty when no items | ✅ |
+| `GET /queue` → hides explicit items from non-explicit member | ✅ |
+| `GET /queue` → shows explicit items to admin | ✅ |
+| `GET /queue` → 401 no token | ✅ |
+| `GET /queue/:titleId` → items for title ordered by chapter number | ✅ |
+| `GET /queue/:titleId` → empty when no items for title | ✅ |
+| `DELETE /queue/completed` → deletes done + cancelled + error items | ✅ |
+| `DELETE /queue/completed` → 403 for member | ✅ |
+| `DELETE /queue/:id` → 204 deletes pending item | ✅ |
+| `DELETE /queue/:id` → cancels in-progress item instead of deleting | ✅ |
+| `DELETE /queue/:id` → 404 nonexistent | ✅ |
+
+### Settings (`SettingsTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /settings` → defaults when nothing saved | ✅ |
+| `GET /settings` → no auth required | ✅ |
+| `POST /settings` → updates and returns new values | ✅ |
+| `POST /settings` → partial update changes only specified fields | ✅ |
+| `POST /settings` → idempotent (overwrites same key) | ✅ |
+| `POST /settings` → 422 invalid reader_mode | ✅ |
+| `POST /settings` → clamps `trending_per_source` to [1, 50] | ✅ |
+| `POST /settings` → ignores empty download_dir | ✅ |
+| `POST /settings` → trims download_dir whitespace | ✅ |
+| `POST /settings` → no auth required | ✅ |
+
+### Sources (`SourcesTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /sources` → empty when none | ✅ |
+| `GET /sources` → returns sources with content_types array | ✅ |
+| `GET /sources` → `has_api_key=true` when API key set | ✅ |
+| `GET /sources` → 401 no token | ✅ |
+| `POST /sources` → 403 for member | ✅ |
+| `POST /sources` → 502 (plugin host not ported yet) | ✅ |
+| `PATCH /sources/:id` → toggles enabled | ✅ |
+| `PATCH /sources/:id` → 404 nonexistent | ✅ |
+| `PATCH /sources/:id` → 403 for member | ✅ |
+| `DELETE /sources/:id` → 204 when exists | ✅ |
+| `DELETE /sources/:id` → 404 nonexistent | ✅ |
+| `DELETE /sources/:id` → 403 for member | ✅ |
+
+### Plugins (`PluginsTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /plugins/index` → returns entries from index | ✅ |
+| `GET /plugins/index` → 401 without token | ✅ |
+| `GET /plugins/index` → member can access | ✅ |
+| `POST /plugins/install` → 401 without token; 403 for member | ✅ |
+| `POST /plugins/install` → 404 unknown plugin | ✅ |
+| `POST /plugins/install` → 422 no download URL | ✅ |
+| `POST /plugins/install` → 409 when already installed | ✅ |
+| `POST /plugins/install` → 502 when plugin-host fails | ✅ |
+| `POST /plugins/install` → 201 on success | ✅ |
+| `DELETE /plugins/:id` → 401 without token; 403 for member | ✅ |
+| `DELETE /plugins/:id` → 404 unknown | ✅ |
+| `DELETE /plugins/:id` → 403 non-community source | ✅ |
+| `DELETE /plugins/:id` → 204 removes source | ✅ |
+| `FetchIndex` → reads file:// URL | ✅ |
+| `FetchIndex` → missing file → null | ✅ |
+
+### Logs (`LogsTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /logs` → empty array on fresh buffer | ✅ |
+| `GET /logs` → 401 without token | ✅ |
+| `GET /logs` → member can access | ✅ |
+| `GET /logs/level` → returns default INFO level | ✅ |
+| `GET /logs/level` → 401 without token | ✅ |
+| `PATCH /logs/level` → admin updates level | ✅ |
+| `PATCH /logs/level` → level persists across requests | ✅ |
+| `PATCH /logs/level` → 403 for member | ✅ |
+| `PATCH /logs/level` → 401 without token | ✅ |
+| `PATCH /logs/level` → 422 invalid level | ✅ |
+
+### Version (`VersionTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /version` → returns current version | ✅ |
+| `GET /version` → no auth required | ✅ |
+| `GET /version` → no update available → latest + url are null | ✅ |
+| `GET /version` → update available → returns latest version + URL | ✅ |
+
+### Discover (`DiscoverTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| `GET /discover` → 401 without token | ✅ |
+| `GET /discover` → 502 when MangaUpdates fails | ✅ |
+| `GET /discover` → returns mapped results with `in_library=false` | ✅ |
+| `GET /discover` → `in_library=true` when title already in library | ✅ |
+| `GET /discover/trending` → 401 without token | ✅ |
+| `GET /discover/trending` → 502 when MU fails and no cached data | ✅ |
+| `GET /discover/trending` → serves stale cache when MU fails | ✅ |
+| `POST /discover/add` → 401 without token | ✅ |
+| `POST /discover/add` → creates title with qualifier stripped + returns `sync_status=syncing` | ✅ |
+| `POST /discover/add` → duplicate MU ID subscribes user and returns existing title | ✅ |
+| `POST /discover/add` → explicit tags → `is_explicit=true` | ✅ |
 
 ---
 
@@ -282,7 +629,17 @@ Server tests appear under their Rust module paths in the Suites view (from JUnit
 cd web && npm test
 cd web && npm run test:coverage   # with coverage
 
-# Server
+# Rust server
 cd server && cargo test
 cd server && cargo nextest run    # via nextest (used in CI)
+
+# .NET server — unit first (faster, fail-fast), then integration
+cd server-dotnet-tests && dotnet test --filter "Category=Unit"
+cd server-dotnet-tests && dotnet test --filter "Category=Integration"
+cd server-dotnet-tests && dotnet test              # all at once (local dev only)
+
+# E2e (requires Docker)
+docker compose -f docker-compose.test.yml up -d --build
+cd e2e && npm ci && npx playwright install chromium --with-deps && npm test
+docker compose -f docker-compose.test.yml down -v
 ```

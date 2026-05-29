@@ -10,8 +10,6 @@ Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim 
 ✅ MangaDex (manga / manhwa / manhua / one-shot)<br />
 ✅ Mangapill (manga)<br />
 ✅ Toonily (manhwa)<br />
-✅ Comick (manga / manhwa / manhua) — migrated to `api.comick.dev`<br />
-✅ Royal Road (web fiction / novels)<br />
 ✅ NovelFull (xianxia / wuxia novels)<br />
 ✅ Multi-source fan-out — parallel search + trending, merged by title<br />
 ✅ Title metadata cache — covers eagerly downloaded locally, CDN-gating transparent to client<br />

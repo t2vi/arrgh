@@ -57,8 +57,6 @@ All default sources compile into a single **plugin-host** container — no per-p
 | **Mangapill** | Manga | `plugins/mangapill/` | |
 | **MangaDex** | Manga, Manhwa, Manhua, One-shot | `plugins/mangadex/` | |
 | **Toonily** | Manhwa | `plugins/toonily/` | CF-protected — uses CloakBrowser |
-| **Comick** | Manga, Manhwa, Manhua | `plugins/comick/` | CF-protected — uses CloakBrowser |
-| **Royal Road** | Novel | `plugins/royalroad/` | |
 | **NovelFull** | Novel | `plugins/novelfull/` | CF-protected — uses CloakBrowser |
 | **nhentai** | Hentai doujinshi | `plugins/nhentai/` | CF-protected — uses CloakBrowser; explicit-only source |
 
@@ -105,8 +103,6 @@ arrgh/
     ├── mangadex/
     ├── mangapill/
     ├── toonily/
-    ├── comick/
-    ├── royalroad/
     ├── novelfull/
     └── nhentai/
 ```

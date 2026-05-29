@@ -514,13 +514,11 @@ async fn patch_title(
                 )
                 .fetch_all(&db2).await.unwrap_or_default();
 
-                let known_norms: Vec<String> = std::iter::once(normalize_title(&row.title))
-                    .chain(aliases.iter().map(|a| normalize_title(a)))
-                    .collect();
-
-                let candidates: Vec<String> = std::iter::once(row.title.clone())
+                let raw_names2: Vec<String> = std::iter::once(row.title.clone())
                     .chain(aliases.iter().cloned())
                     .collect();
+                let known_norms: Vec<String> = crate::api::discover::known_norms(&raw_names2);
+                let candidates: Vec<String> = crate::api::discover::search_candidates(&raw_names2);
 
                 let source_snapshot: Vec<(String, Arc<dyn crate::indexer::Source>)> = {
                     let reg = sources2.read().await;
@@ -821,8 +819,8 @@ async fn refresh_metadata(
             .chain(aliases.iter().cloned())
             .collect();
 
-        let known_norms: Vec<String> = all_names.iter().map(|n| normalize_title(n)).collect();
-        let candidates: Vec<String> = all_names;
+        let known_norms: Vec<String> = crate::api::discover::known_norms(&all_names);
+        let candidates: Vec<String> = crate::api::discover::search_candidates(&all_names);
 
         // Only retry sources that have warnings (no point re-running sources that already matched)
         let warned_plugins: Vec<String> = sqlx::query_scalar!(
@@ -867,13 +865,17 @@ async fn refresh_metadata(
         };
 
         super::append_sync_log(&db, &mid, "Searching for sources…").await;
+        let mut any_matched = false;
         for (src_key, src) in &source_snapshot {
             super::append_sync_log(&db, &mid, &format!("Searching {}…", src_key)).await;
             let mut matched = None;
             'cands: for candidate in &candidates {
                 let results = match src.search(candidate).await {
                     Ok(r) => r,
-                    Err(_) => continue,
+                    Err(e) => {
+                        tracing::debug!("source search '{}' on {}: {}", candidate, src_key, e);
+                        continue;
+                    }
                 };
                 for r in &results {
                     if known_norms.iter().any(|kn| {
@@ -905,6 +907,7 @@ async fn refresh_metadata(
                     ms_id, mid, src_key, hit.id, disc
                 ).execute(&db).await;
 
+                any_matched = true;
                 super::append_sync_log(&db, &mid, &format!("Syncing chapters from {}…", src_key)).await;
                 match src.sync_chapters(&db, &mid, &hit.id).await {
                     Ok(n) => super::append_sync_log(&db, &mid, &format!("Synced {} chapters from {}", n, src_key)).await,
@@ -916,6 +919,14 @@ async fn refresh_metadata(
         }
         if source_snapshot.is_empty() {
             super::append_sync_log(&db, &mid, "No sources to retry").await;
+        }
+        // Title found on at least one source → clear stale "no match" warnings
+        // from sources that didn't have it (e.g. MangaDex for manhwa).
+        if any_matched {
+            let _ = sqlx::query!(
+                "DELETE FROM sync_warnings WHERE title_id = ? AND message LIKE 'no matching source found%'",
+                mid
+            ).execute(&db).await;
         }
         let _ = http; // keep http in scope for future use
     });

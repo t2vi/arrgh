@@ -915,3 +915,165 @@ async fn member_cannot_delete_files_on_remove() {
     let status = req_delete(&app, "/api/titles/m-rmfiles-1?delete_files=true", Some(&token)).await;
     assert_eq!(status, StatusCode::NO_CONTENT, "member remove returns 204 (delete_files silently ignored)");
 }
+
+// ── title qualifier stripping ─────────────────────────────────────────────────
+
+#[tokio::test]
+async fn add_manga_strips_novel_qualifier_from_title() {
+    let (app, state) = build_state().await;
+    let token = admin_token();
+
+    let (status, body) = req_post(&app, "/api/discover/add", Some(&token), json!({
+        "mangaupdates_id": "80001",
+        "title": "I Shall Seal the Heavens (Novel)",
+        "status": "ongoing",
+        "content_type": "novel",
+    })).await;
+    assert_eq!(status, StatusCode::OK);
+
+    let id = body["id"].as_str().unwrap();
+    let stored_title: String = sqlx::query_scalar("SELECT title FROM titles WHERE id = ?")
+        .bind(id).fetch_one(&state.db).await.unwrap();
+    assert_eq!(stored_title, "I Shall Seal the Heavens",
+        "stored title must not include the (Novel) type qualifier");
+}
+
+#[tokio::test]
+async fn add_manga_strips_manga_qualifier_from_title() {
+    let (app, state) = build_state().await;
+    let token = admin_token();
+
+    let (status, body) = req_post(&app, "/api/discover/add", Some(&token), json!({
+        "mangaupdates_id": "80002",
+        "title": "Berserk (Manga)",
+        "status": "ongoing",
+        "content_type": "manga",
+    })).await;
+    assert_eq!(status, StatusCode::OK);
+
+    let id = body["id"].as_str().unwrap();
+    let stored_title: String = sqlx::query_scalar("SELECT title FROM titles WHERE id = ?")
+        .bind(id).fetch_one(&state.db).await.unwrap();
+    assert_eq!(stored_title, "Berserk");
+}
+
+#[tokio::test]
+async fn add_manga_preserves_title_without_qualifier() {
+    let (app, state) = build_state().await;
+    let token = admin_token();
+
+    let (status, body) = req_post(&app, "/api/discover/add", Some(&token), json!({
+        "mangaupdates_id": "80003",
+        "title": "Solo Leveling",
+        "status": "ongoing",
+        "content_type": "manhwa",
+    })).await;
+    assert_eq!(status, StatusCode::OK);
+
+    let id = body["id"].as_str().unwrap();
+    let stored_title: String = sqlx::query_scalar("SELECT title FROM titles WHERE id = ?")
+        .bind(id).fetch_one(&state.db).await.unwrap();
+    assert_eq!(stored_title, "Solo Leveling");
+}
+
+// ── stale sync-warning cleanup ────────────────────────────────────────────────
+
+#[tokio::test]
+async fn stale_no_match_warning_cleared_when_title_has_chapters() {
+    // Verify the SQL invariant: after cleanup, a title that is found on at
+    // least one source (has chapter_sources rows) should have no
+    // "no matching source found" warnings.
+    let (_, state) = build_state().await;
+
+    let now = chrono::Utc::now().to_rfc3339();
+
+    // Seed a manhwa found on toonily but NOT on mangadex
+    sqlx::query(
+        "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+         VALUES ('sw-title-1', 'Secret Class', 'ongoing', 'ready', 'manhwa', 1, ?, ?)"
+    ).bind(&now).bind(&now).execute(&state.db).await.unwrap();
+
+    // toonily found it
+    sqlx::query(
+        "INSERT INTO title_sources (id, title_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)"
+    ).bind("ts-1").bind("sw-title-1").bind("toonily").bind("secret-class").bind(&now)
+    .execute(&state.db).await.unwrap();
+
+    // mangadex left a stale warning
+    sqlx::query(
+        "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at) VALUES (?, ?, ?, ?, ?)"
+    ).bind("sw-1").bind("sw-title-1").bind("mangadex")
+    .bind("no matching source found for 'Secret Class' or any alias").bind(&now)
+    .execute(&state.db).await.unwrap();
+
+    // Simulate the cleanup that runs after any_ok=true
+    sqlx::query(
+        "DELETE FROM sync_warnings WHERE title_id = ? AND message LIKE 'no matching source found%'"
+    ).bind("sw-title-1").execute(&state.db).await.unwrap();
+
+    let remaining: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM sync_warnings WHERE title_id = ?"
+    ).bind("sw-title-1").fetch_one(&state.db).await.unwrap();
+    assert_eq!(remaining, 0, "stale no-match warning must be cleared when any source matched");
+}
+
+#[tokio::test]
+async fn chapter_sync_failure_warning_not_cleared_by_no_match_cleanup() {
+    // Verify that chapter-sync-failure warnings are preserved — only
+    // "no matching source found" warnings are removed by the any_ok cleanup.
+    let (_, state) = build_state().await;
+    let now = chrono::Utc::now().to_rfc3339();
+
+    sqlx::query(
+        "INSERT INTO titles (id, title, status, sync_status, content_type, is_explicit, created_at, updated_at) \
+         VALUES ('sw-title-2', 'Test Title', 'ongoing', 'ready', 'manga', 0, ?, ?)"
+    ).bind(&now).bind(&now).execute(&state.db).await.unwrap();
+
+    // chapter sync failure warning — should survive
+    sqlx::query(
+        "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at) VALUES (?, ?, ?, ?, ?)"
+    ).bind("sw-2").bind("sw-title-2").bind("mangadex")
+    .bind("chapter sync failed for 'mangadex': 502 Bad Gateway").bind(&now)
+    .execute(&state.db).await.unwrap();
+
+    // Run no-match cleanup
+    sqlx::query(
+        "DELETE FROM sync_warnings WHERE title_id = ? AND message LIKE 'no matching source found%'"
+    ).bind("sw-title-2").execute(&state.db).await.unwrap();
+
+    let remaining: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM sync_warnings WHERE title_id = ?"
+    ).bind("sw-title-2").fetch_one(&state.db).await.unwrap();
+    assert_eq!(remaining, 1, "chapter sync failure warning must not be cleared by no-match cleanup");
+}
+
+// ── source routing: adult vs hentai ──────────────────────────────────────────
+
+#[tokio::test]
+async fn add_manga_adult_tag_sets_explicit_but_not_hentai_route() {
+    // "adult" tag → is_explicit=1 (content filter) but tags must NOT contain
+    // "hentai" → source routing stays non-explicit (Toonily, not nhentai).
+    let (app, state) = build_state().await;
+    let token = admin_token();
+
+    let (status, body) = req_post(&app, "/api/discover/add", Some(&token), json!({
+        "mangaupdates_id": "80010",
+        "title": "Adult Manhwa",
+        "status": "ongoing",
+        "content_type": "manhwa",
+        "tags": "adult,Drama,Harem,Seinen",
+    })).await;
+    assert_eq!(status, StatusCode::OK);
+
+    let id = body["id"].as_str().unwrap();
+    let (is_explicit, tags): (i64, String) = sqlx::query_as(
+        "SELECT is_explicit, tags FROM titles WHERE id = ?"
+    ).bind(id).fetch_one(&state.db).await.unwrap();
+
+    assert_eq!(is_explicit, 1, "is_explicit=1 for adult tag (content visibility filter)");
+
+    // Source routing uses `has_hentai_tag` — check the stored tags don't
+    // have "hentai" in them (the routing is computed from tags at sync time).
+    let has_hentai = tags.split(',').any(|t| t.trim().eq_ignore_ascii_case("hentai"));
+    assert!(!has_hentai, "adult-only manhwa must not be tagged 'hentai' — would misroute to nhentai");
+}
