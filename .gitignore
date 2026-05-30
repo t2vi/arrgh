@@ -5,6 +5,7 @@ server/*.db
 server/*.db-shm
 server/*.db-wal
 server/.env
+server/downloads/
 server-tests/bin/
 server-tests/obj/
 server-tests/*.db
