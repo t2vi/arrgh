@@ -139,7 +139,7 @@ test.describe('Library', () => {
     })).json() as { id: string; number: number }[]
     const ch1 = chapters.find(c => c.number === 1)!
 
-    await page.goto(`${BASE}/titles/${id}`)
+    await page.goto(`${BASE}/title/${id}`)
 
     // Expand all chapters so ch1 row is visible
     const showAll = page.getByRole('button', { name: /view all/i })
