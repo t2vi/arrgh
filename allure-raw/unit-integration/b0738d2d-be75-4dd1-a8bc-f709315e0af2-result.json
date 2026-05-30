@@ -1,0 +1,36 @@
+{
+  "uuid": "b0738d2d-be75-4dd1-a8bc-f709315e0af2",
+  "historyId": "ArrghServer.Tests.LogServiceTests#RingBufferLogger_AtInfoGate_CapturesInfoEntry",
+  "name": "RingBufferLogger_AtInfoGate_CapturesInfoEntry",
+  "fullName": "ArrghServer.Tests.LogServiceTests.RingBufferLogger_AtInfoGate_CapturesInfoEntry",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149229095,
+  "stop": 1780149229095,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "RingBufferLogger_AtInfoGate_CapturesInfoEntry"
+    }
+  ]
+}

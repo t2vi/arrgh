@@ -1,0 +1,36 @@
+{
+  "uuid": "ec7283ac-e35b-4c81-b9b2-6a3592d8bb4a",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#GetChapterPage_DirPage_ReadsCorrectFile",
+  "name": "GetChapterPage_DirPage_ReadsCorrectFile",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.GetChapterPage_DirPage_ReadsCorrectFile",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149229025,
+  "stop": 1780149229065,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterPage_DirPage_ReadsCorrectFile"
+    }
+  ]
+}
