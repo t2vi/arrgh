@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json.Serialization;
 using System.Security.Claims;
 using System.Text;
 using ArrghServer.Data;
@@ -92,15 +93,20 @@ public static class Auth
 
     static async Task<IResult> PatchMe(PatchMeBody body, ClaimsPrincipal principal, AppDbContext db)
     {
-        if (body.Password.Length < 6) return Results.UnprocessableEntity();
-
         var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await db.Users.FindAsync(userId);
         if (user is null) return Results.NotFound();
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(body.Password);
+        if (body.Password is not null)
+        {
+            if (body.Password.Length < 6) return Results.UnprocessableEntity();
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(body.Password);
+        }
+        if (body.AllowExplicit is not null)
+            user.AllowExplicit = body.AllowExplicit.Value;
+
         await db.SaveChangesAsync();
-        return Results.NoContent();
+        return Results.Ok(new MeResponse(user.Id, user.Username, user.Role, user.AllowExplicit));
     }
 
     static async Task<IResult> ListUsers(ClaimsPrincipal principal, AppDbContext db)
@@ -213,7 +219,9 @@ public static class Auth
 record RegisterBody(string Username, string Password);
 record LoginBody(string Username, string Password);
 record CreateUserBody(string Username, string Password);
-record PatchMeBody(string Password);
+record PatchMeBody(
+    [property: JsonPropertyName("password")]       string? Password,
+    [property: JsonPropertyName("allow_explicit")] bool?   AllowExplicit);
 record PatchUserBody(string? Role, bool? AllowExplicit, string? Password);
 
 record AuthResponse(string Token, string Username, string UserId, string Role, bool AllowExplicit);
