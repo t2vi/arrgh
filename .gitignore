@@ -1,21 +1,13 @@
-# ── Rust / Server ────────────────────────────────────────────
-server/target/
+# ── Server (.NET) ─────────────────────────────────────────────
+server/bin/
+server/obj/
+server/*.db
+server/*.db-shm
+server/*.db-wal
 server/.env
-server/arrgh.db
-server/downloads/
-server/static/
-server/arrgh.db
-
-# ── .NET Server ───────────────────────────────────────────────
-server-dotnet/bin/
-server-dotnet/obj/
-server-dotnet/*.db
-server-dotnet/*.db-shm
-server-dotnet/*.db-wal
-server-dotnet/.env
-server-dotnet-tests/bin/
-server-dotnet-tests/obj/
-server-dotnet-tests/*.db
+server-tests/bin/
+server-tests/obj/
+server-tests/*.db
 
 # ── Web (React + Vite) ───────────────────────────────────────
 web/node_modules/
