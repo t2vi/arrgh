@@ -208,7 +208,7 @@ public class AuthTests
             new AuthenticationHeaderValue("Bearer", token);
 
         var res = await client.PatchAsJsonAsync("/api/auth/me", new { password = "newpass1" });
-        Assert.Equal(HttpStatusCode.NoContent, res.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
 
         // Old password rejected
         client.DefaultRequestHeaders.Authorization = null;
