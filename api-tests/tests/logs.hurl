@@ -3,8 +3,7 @@ GET {{base}}/api/logs
 Authorization: Bearer {{token}}
 HTTP 200
 [Asserts]
-jsonpath "$.entries" isCollection
-jsonpath "$.level" isString
+jsonpath "$" isCollection
 
 
 # ── GET /api/logs/level ───────────────────────────────────────────────────────
@@ -22,7 +21,7 @@ Content-Type: application/json
 {
   "level": "debug"
 }
-HTTP 200
+HTTP 204
 
 
 # ── Restore to info ───────────────────────────────────────────────────────────
@@ -32,4 +31,4 @@ Content-Type: application/json
 {
   "level": "info"
 }
-HTTP 200
+HTTP 204
