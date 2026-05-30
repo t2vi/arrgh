@@ -103,8 +103,14 @@ export async function pages(chapterId: string): Promise<string[]> {
   const $ = cheerio.load(html)
   const urls: string[] = []
 
-  $('img[src*="manga18fx.com/uploads"], img[src*="img01.manga18fx.com"]').each((_, el) => {
-    const src = $(el).attr('src') || $(el).attr('data-src')
+  // Sites often lazy-load via data-src (src holds a placeholder); match both attributes
+  $([
+    'img[src*="manga18fx.com/uploads"]',
+    'img[src*="img01.manga18fx.com"]',
+    'img[data-src*="manga18fx.com/uploads"]',
+    'img[data-src*="img01.manga18fx.com"]',
+  ].join(', ')).each((_, el) => {
+    const src = $(el).attr('data-src') || $(el).attr('src')
     if (src?.startsWith('http')) urls.push(src)
   })
 

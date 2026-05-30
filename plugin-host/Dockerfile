@@ -8,7 +8,6 @@ COPY plugins/toonily/package.json    ./plugins/toonily/
 COPY plugins/novelfull/package.json  ./plugins/novelfull/
 COPY plugins/mangapill/package.json  ./plugins/mangapill/
 COPY plugins/nhentai/package.json    ./plugins/nhentai/
-COPY plugins/mangafire/package.json  ./plugins/mangafire/
 COPY plugins/asurascans/package.json ./plugins/asurascans/
 COPY plugins/manhuafast/package.json ./plugins/manhuafast/
 COPY plugins/wuxiaworld/package.json ./plugins/wuxiaworld/
@@ -45,7 +44,6 @@ COPY --from=bundles /build/plugins/toonily/bundles/toonily.js       ./bundles/
 COPY --from=bundles /build/plugins/novelfull/bundles/novelfull.js   ./bundles/
 COPY --from=bundles /build/plugins/mangapill/bundles/mangapill.js   ./bundles/
 COPY --from=bundles /build/plugins/nhentai/bundles/nhentai.js       ./bundles/
-COPY --from=bundles /build/plugins/mangafire/bundles/mangafire.js   ./bundles/
 COPY --from=bundles /build/plugins/asurascans/bundles/asurascans.js ./bundles/
 COPY --from=bundles /build/plugins/manhuafast/bundles/manhuafast.js ./bundles/
 COPY --from=bundles /build/plugins/wuxiaworld/bundles/wuxiaworld.js ./bundles/

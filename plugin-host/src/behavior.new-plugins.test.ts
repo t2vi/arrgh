@@ -7,7 +7,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 // ── Imports (fail until plugin dirs exist) ────────────────────────────────────
 
-import * as mangafire    from '../../plugins/mangafire/src/index'
 import * as asurascans   from '../../plugins/asurascans/src/index'
 import * as manhuafast   from '../../plugins/manhuafast/src/index'
 import * as wuxiaworld   from '../../plugins/wuxiaworld/src/index'
@@ -31,157 +30,6 @@ function mockFetch(responses: Record<string, { ok?: boolean; text?: string; json
 
 beforeEach(() => { vi.clearAllMocks() })
 afterEach(() => { vi.unstubAllGlobals() })
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MangaFire
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const MANGAFIRE_SEARCH_HTML = `
-<div class="original card-list">
-  <div class="unit">
-    <a href="/manga/one-piece-mSME" class="poster">
-      <figure><img src="https://cdn.mangafire.to/covers/one-piece.jpg" alt="One Piece"></figure>
-    </a>
-    <div class="info">
-      <a href="/manga/one-piece-mSME" class="name">One Piece</a>
-      <span class="type">Manga</span>
-      <span class="status">Publishing</span>
-    </div>
-  </div>
-  <div class="unit">
-    <a href="/manhwa/solo-leveling-mABC" class="poster">
-      <figure><img src="https://cdn.mangafire.to/covers/solo-leveling.jpg" alt="Solo Leveling"></figure>
-    </a>
-    <div class="info">
-      <a href="/manhwa/solo-leveling-mABC" class="name">Solo Leveling</a>
-      <span class="type">Manhwa</span>
-      <span class="status">Completed</span>
-    </div>
-  </div>
-</div>
-`
-
-const MANGAFIRE_CHAPTERS_JSON = {
-  html: `
-    <ul id="chapter-list">
-      <li class="item" data-number="1050">
-        <a href="/manga/one-piece-mSME/en/chapter-1050">Chapter 1050</a>
-      </li>
-      <li class="item" data-number="1049">
-        <a href="/manga/one-piece-mSME/en/chapter-1049">Chapter 1049</a>
-      </li>
-    </ul>
-  `,
-}
-
-const MANGAFIRE_PAGES_HTML = `
-<div class="page-select">
-  <select name="pages">
-    <option value="1">Page 1</option>
-    <option value="2">Page 2</option>
-  </select>
-</div>
-<div id="viewer">
-  <img src="https://img.mangafire.to/ch1050/001.jpg" data-index="0">
-  <img src="https://img.mangafire.to/ch1050/002.jpg" data-index="1">
-</div>
-`
-
-describe('mangafire — search', () => {
-  it('returns array with required fields', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'mangafire': { text: MANGAFIRE_SEARCH_HTML } }))
-    const results = await mangafire.search('one piece')
-    expect(Array.isArray(results)).toBe(true)
-    expect(results.length).toBeGreaterThan(0)
-    for (const r of results) {
-      expect(r, 'id required').toHaveProperty('id')
-      expect(typeof r.id).toBe('string')
-      expect(r.id.length).toBeGreaterThan(0)
-      expect(r, 'title required').toHaveProperty('title')
-      expect(typeof r.title).toBe('string')
-      expect(r.title.length).toBeGreaterThan(0)
-      expect(r, 'cover_url required').toHaveProperty('cover_url')
-      expect(r, 'status required').toHaveProperty('status')
-      expect(r, 'content_type required').toHaveProperty('content_type')
-    }
-  })
-
-  it('first result has id derived from URL slug', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'mangafire': { text: MANGAFIRE_SEARCH_HTML } }))
-    const [first] = await mangafire.search('one piece')
-    expect(first.id).toBe('one-piece-mSME')
-    expect(first.title).toBe('One Piece')
-    expect(first.status).toBe('ongoing')
-    expect(first.content_type).toBe('manga')
-  })
-
-  it('second result is manhwa type', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'mangafire': { text: MANGAFIRE_SEARCH_HTML } }))
-    const results = await mangafire.search('solo leveling')
-    const solo = results.find((r) => r.title === 'Solo Leveling')
-    expect(solo).toBeDefined()
-    expect(solo!.content_type).toBe('manhwa')
-  })
-
-  it('returns empty array when no results', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'mangafire': { text: '<div class="original card-list"></div>' } }))
-    const results = await mangafire.search('xyzzy-nonexistent')
-    expect(results).toEqual([])
-  })
-
-  it('throws on non-ok response', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'mangafire': { ok: false } }))
-    await expect(mangafire.search('test')).rejects.toThrow()
-  })
-})
-
-describe('mangafire — chapters', () => {
-  it('returns array with source_id and number', async () => {
-    vi.stubGlobal('fetch', mockFetch({
-      'mangafire': { json: MANGAFIRE_CHAPTERS_JSON },
-    }))
-    const chapters = await mangafire.chapters('one-piece-mSME')
-    expect(Array.isArray(chapters)).toBe(true)
-    expect(chapters.length).toBeGreaterThan(0)
-    for (const ch of chapters) {
-      expect(ch, 'source_id required').toHaveProperty('source_id')
-      expect(typeof ch.source_id).toBe('string')
-      expect(ch, 'number required').toHaveProperty('number')
-      expect(typeof ch.number).toBe('number')
-      expect(isNaN(ch.number)).toBe(false)
-    }
-  })
-
-  it('parses chapter numbers correctly', async () => {
-    vi.stubGlobal('fetch', mockFetch({
-      'mangafire': { json: MANGAFIRE_CHAPTERS_JSON },
-    }))
-    const chapters = await mangafire.chapters('one-piece-mSME')
-    const nums = chapters.map((c) => c.number).sort((a, b) => a - b)
-    expect(nums).toContain(1049)
-    expect(nums).toContain(1050)
-  })
-})
-
-describe('mangafire — pages', () => {
-  it('returns array of URL strings', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'mangafire': { text: MANGAFIRE_PAGES_HTML } }))
-    const pages = await mangafire.pages('one-piece-mSME/en/chapter-1050')
-    expect(Array.isArray(pages)).toBe(true)
-    expect(pages.length).toBeGreaterThan(0)
-    for (const p of pages) {
-      expect(typeof p).toBe('string')
-      expect(p.startsWith('http')).toBe(true)
-    }
-  })
-
-  it('returns all page image URLs from viewer', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'mangafire': { text: MANGAFIRE_PAGES_HTML } }))
-    const pages = await mangafire.pages('one-piece-mSME/en/chapter-1050')
-    expect(pages).toContain('https://img.mangafire.to/ch1050/001.jpg')
-    expect(pages).toContain('https://img.mangafire.to/ch1050/002.jpg')
-  })
-})
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AsuraScans
@@ -875,6 +723,30 @@ const MANGA18FX_CHAPTER_HTML = `
 </body></html>
 `
 
+// Mixed lazy+eager: first 2 imgs have only src (eager), last 3 have placeholder src + data-src (lazy)
+const MANGA18FX_CHAPTER_MIXED_HTML = `
+<html><body>
+<div class="reading-content">
+  <img src="https://img01.manga18fx.com/uploads/4337/200/1-abc.jpg">
+  <img src="https://img01.manga18fx.com/uploads/4337/200/2-abc.jpg">
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://img01.manga18fx.com/uploads/4337/200/3-abc.jpg">
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://img01.manga18fx.com/uploads/4337/200/4-abc.jpg">
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://img01.manga18fx.com/uploads/4337/200/5-abc.jpg">
+</div>
+</body></html>
+`
+
+// Lazy-load variant: src is a placeholder, real URL is in data-src
+const MANGA18FX_CHAPTER_LAZY_HTML = `
+<html><body>
+<div class="reading-content">
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://img01.manga18fx.com/uploads/4337/161/1-abc.jpg">
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://img01.manga18fx.com/uploads/4337/161/2-abc.jpg">
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://img01.manga18fx.com/uploads/4337/161/3-abc.jpg">
+</div>
+</body></html>
+`
+
 describe('manga18fx', () => {
   beforeEach(() => { vi.clearAllMocks() })
   afterEach(() => { vi.unstubAllGlobals() })
@@ -986,6 +858,27 @@ describe('manga18fx', () => {
       vi.stubGlobal('fetch', mockFetch({ '/manga/tower-of-god/chapter-1': { text: MANGA18FX_CHAPTER_HTML } }))
       const pages = await manga18fx.pages('/manga/tower-of-god/chapter-1')
       for (const p of pages) expect(p).toMatch(/^https:\/\//)
+    })
+
+    it('extracts URLs from data-src when site uses lazy loading (src is placeholder)', async () => {
+      vi.stubGlobal('fetch', mockFetch({ '/manga/everything-is-agreed-01/chapter-161': { text: MANGA18FX_CHAPTER_LAZY_HTML } }))
+      const pages = await manga18fx.pages('/manga/everything-is-agreed-01/chapter-161')
+      expect(pages.length).toBe(3)
+      expect(pages[0]).toContain('img01.manga18fx.com')
+      expect(pages[0]).not.toContain('data:image')
+    })
+
+    it('returns data-src value, not placeholder src, for lazy-loaded images', async () => {
+      vi.stubGlobal('fetch', mockFetch({ '/manga/everything-is-agreed-01/chapter-161': { text: MANGA18FX_CHAPTER_LAZY_HTML } }))
+      const pages = await manga18fx.pages('/manga/everything-is-agreed-01/chapter-161')
+      for (const p of pages) expect(p).toMatch(/^https:\/\/img01\.manga18fx\.com\/uploads\//)
+    })
+
+    it('returns all CDN URLs from mixed lazy+eager document (some data-src, some src-only)', async () => {
+      vi.stubGlobal('fetch', mockFetch({ '/manga/test/chapter-200': { text: MANGA18FX_CHAPTER_MIXED_HTML } }))
+      const pages = await manga18fx.pages('/manga/test/chapter-200')
+      expect(pages.length).toBe(5)
+      for (const p of pages) expect(p).toMatch(/^https:\/\/img01\.manga18fx\.com\/uploads\//)
     })
   })
 })

@@ -8,6 +8,7 @@ import { describe, it, expect } from 'vitest'
 
 import * as mangadex      from '../../plugins/mangadex/src/index'
 import * as mangapill     from '../../plugins/mangapill/src/index'
+import { parseChapterNumber } from '../../plugins/mangapill/src/mangapill'
 import * as nhentai       from '../../plugins/nhentai/src/index'
 import * as novelfull     from '../../plugins/novelfull/src/index'
 import * as royalroad     from '../../plugins/royalroad/src/index'
@@ -32,6 +33,23 @@ describe('mangapill', () => {
   it('exports search fn', () => expect(typeof mangapill.search).toBe('function'))
   it('exports chapters fn', () => expect(typeof mangapill.chapters).toBe('function'))
   it('exports pages fn', () => expect(typeof mangapill.pages).toBe('function'))
+})
+
+describe('mangapill — parseChapterNumber', () => {
+  it('parses integer chapter from slug', () =>
+    expect(parseChapterNumber('4926-10063000/yu-yu-hakusho-chapter-63')).toBe(63))
+
+  it('parses decimal chapter from slug (e.g. 63.5)', () =>
+    expect(parseChapterNumber('4926-10063500/yu-yu-hakusho-chapter-63.5')).toBe(63.5))
+
+  it('decimal and integer chapters produce distinct numbers', () => {
+    const n63  = parseChapterNumber('4926-10063000/yu-yu-hakusho-chapter-63')
+    const n635 = parseChapterNumber('4926-10063500/yu-yu-hakusho-chapter-63.5')
+    expect(n63).not.toBe(n635)
+  })
+
+  it('falls back to encoded id when slug has no chapter token', () =>
+    expect(parseChapterNumber('2-11182000/one-piece-chapter-1182')).toBe(1182))
 })
 
 describe('nhentai', () => {

@@ -242,7 +242,7 @@ public class DefaultSeedingTests
     [Fact]
     public async Task Seeded_MangaDex_ContentTypes_DoesNotInclude_Manhwa()
     {
-        // Manhwa chapters must only come from dedicated sources (toonily, asurascans, mangafire).
+        // Manhwa chapters must only come from dedicated sources (toonily, asurascans).
         // MangaDex uses different title formats for manhwa — including it causes false "no match" errors.
         var (_, db) = new SeededFactory().CreateClientWithDb();
         var mangadex = await db.ExternalSources.FirstOrDefaultAsync(s => s.SourceKey == "mangadex");
@@ -266,15 +266,6 @@ public class DefaultSeedingTests
         var asura = await db.ExternalSources.FirstOrDefaultAsync(s => s.SourceKey == "asurascans");
         Assert.NotNull(asura);
         Assert.Contains("manhwa", asura!.ContentTypes, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task Seeded_MangaFire_ContentTypes_IncludesManhwa()
-    {
-        var (_, db) = new SeededFactory().CreateClientWithDb();
-        var mf = await db.ExternalSources.FirstOrDefaultAsync(s => s.SourceKey == "mangafire");
-        Assert.NotNull(mf);
-        Assert.Contains("manhwa", mf!.ContentTypes, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

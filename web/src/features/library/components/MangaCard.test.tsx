@@ -25,6 +25,7 @@ function makeManga(overrides: Partial<Title> = {}): Title {
     reader_mode: null,
     download_dir: null,
     is_explicit: false,
+    has_sync_warnings: false,
     total_chapters: 10,
     downloaded_chapters: 5,
     chapters_read: 3,
@@ -108,6 +109,23 @@ describe('MangaCard', () => {
     container.querySelector('img')!.dispatchEvent(new Event('error', { bubbles: true }))
     await vi.waitFor(() => {
       expect(container.querySelector('.text-4xl')).toBeTruthy()
+    })
+  })
+
+  describe('amber warning badge', () => {
+    it('shows badge when has_sync_warnings=true and total_chapters=0', () => {
+      render(<MangaCard manga={makeManga({ has_sync_warnings: true, total_chapters: 0 })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+      expect(screen.getByTitle('Some sources could not be matched — click title to refresh metadata')).toBeInTheDocument()
+    })
+
+    it('hides badge when has_sync_warnings=true but total_chapters>0', () => {
+      render(<MangaCard manga={makeManga({ has_sync_warnings: true, total_chapters: 5 })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+      expect(screen.queryByTitle('Some sources could not be matched — click title to refresh metadata')).toBeNull()
+    })
+
+    it('hides badge when has_sync_warnings=false even with total_chapters=0', () => {
+      render(<MangaCard manga={makeManga({ has_sync_warnings: false, total_chapters: 0 })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+      expect(screen.queryByTitle('Some sources could not be matched — click title to refresh metadata')).toBeNull()
     })
   })
 })

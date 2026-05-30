@@ -285,7 +285,6 @@ public class DiscoverTests
     [InlineData("boxnovel")]
     [InlineData("asurascans")]
     [InlineData("manhuafast")]
-    [InlineData("mangafire")]
     public async Task AddManga_AllPluginSources_SyncLogShowsSourceName(string source)
     {
         var (client, db) = NewFactory().CreateClientWithDb();

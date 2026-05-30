@@ -36,21 +36,24 @@ public class DiscoverFanOutTests
     const string EmptyWuxiaWorldJson = """{"items":[]}""";
 
     static FanOutDiscoverFactory NewFactory(
-        string muSearchJson           = """{"results":[]}""",
-        string anilistJson            = EmptyAniListJson,
-        string mangadexJson           = EmptyMangaDexJson,
-        string novelupdatesHtml       = EmptyNovelUpdatesHtml,
-        string wuxiaworldJson         = EmptyWuxiaWorldJson,
-        string ehentaiSearchHtml      = EmptyEhHtml,
-        string ehentaiGdataJson       = EmptyEhGdataJson,
-        bool muSearchThrows           = false,
-        bool anilistThrows            = false,
-        bool mangadexThrows           = false,
-        bool novelupdatesThrows       = false,
-        bool wuxiaworldThrows         = false) =>
+        string muSearchJson                   = """{"results":[]}""",
+        string anilistJson                    = EmptyAniListJson,
+        string mangadexJson                   = EmptyMangaDexJson,
+        string novelupdatesHtml               = EmptyNovelUpdatesHtml,
+        string wuxiaworldJson                 = EmptyWuxiaWorldJson,
+        string ehentaiSearchHtml              = EmptyEhHtml,
+        string ehentaiGdataJson               = EmptyEhGdataJson,
+        bool muSearchThrows                   = false,
+        bool anilistThrows                    = false,
+        bool mangadexThrows                   = false,
+        bool novelupdatesThrows               = false,
+        bool wuxiaworldThrows                 = false,
+        string? anilistSynonymsJson           = null,
+        Dictionary<string, string>? pluginSearchTitleMap = null) =>
         new(muSearchJson, anilistJson, mangadexJson, novelupdatesHtml, wuxiaworldJson,
             ehentaiSearchHtml, ehentaiGdataJson,
-            muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows, wuxiaworldThrows);
+            muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows, wuxiaworldThrows,
+            anilistSynonymsJson, pluginSearchTitleMap);
 
     void Authorize(HttpClient client, ArrghServer.Data.Models.User user, bool allowExplicit = false)
     {
@@ -789,6 +792,190 @@ public class DiscoverFanOutTests
         Assert.Equal(0, count);
     }
 
+    // ── AniList synonym alias storage + fuzzy source matching ────────────────
+
+    [Fact]
+    public async Task AddManhwa_AniListSource_StoresSynonymsAsAliases()
+    {
+        // AniList synonyms call returns known alternate titles
+        var synonymsJson = """{"data":{"Media":{"synonyms":["Everything Is Agreed Upon","다 합의됐어"]}}}""";
+        var (client, db) = NewFactory(anilistSynonymsJson: synonymsJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: true);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "anilist",
+            source_id = "128789",
+            title = "Only With Consent",
+            content_type = "manhwa",
+            status = "ongoing",
+            is_explicit = true,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+        await WaitForSyncReadyAsync(db, titleId);
+
+        db.ChangeTracker.Clear();
+        var aliases = await db.TitleAliases.Where(a => a.TitleId == titleId).Select(a => a.Alias).ToListAsync();
+        Assert.Contains(aliases, a => a.Contains("Everything Is Agreed Upon"));
+
+        var logs = await db.SyncLogs.Where(l => l.TitleId == titleId).Select(l => l.Message).ToListAsync();
+        Assert.Contains(logs, m => m.Contains("synonym"));
+    }
+
+    [Fact]
+    public async Task AddManhwa_AniListSource_EmptySynonyms_SyncStillCompletes()
+    {
+        // GetSynonymsAsync returns [] — sync should reach "ready" with zero aliases stored
+        var synonymsJson = """{"data":{"Media":{"synonyms":[]}}}""";
+        var (client, db) = NewFactory(anilistSynonymsJson: synonymsJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "anilist",
+            source_id = "999",
+            title = "Some Manhwa",
+            content_type = "manhwa",
+            status = "ongoing",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+        await WaitForSyncReadyAsync(db, titleId);
+
+        db.ChangeTracker.Clear();
+        var aliasCount = await db.TitleAliases.CountAsync(a => a.TitleId == titleId);
+        Assert.Equal(0, aliasCount);
+
+        var title = await db.Titles.FindAsync(titleId);
+        Assert.Equal("ready", title!.SyncStatus);
+    }
+
+    [Fact]
+    public async Task SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant()
+    {
+        // Plugin search echoes "Soeun" (no hyphen) for query "So-Eun" (hyphenated)
+        var pluginOverrides = new Dictionary<string, string> { ["manga18fx"] = "Soeun" };
+        var synonymsJson = """{"data":{"Media":{"synonyms":[]}}}""";
+        var (client, db) = NewFactory(anilistSynonymsJson: synonymsJson, pluginSearchTitleMap: pluginOverrides).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: true);
+
+        db.ExternalSources.Add(new ArrghServer.Data.Models.ExternalSource
+        {
+            Id = Guid.NewGuid().ToString(), SourceKey = "manga18fx", Name = "Manga18fx",
+            BaseUrl = "http://plugin-host:4000", ContentTypes = "manhwa",
+            Enabled = true, DefaultExplicit = true, Priority = 75, CreatedAt = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "anilist",
+            source_id = "99999",
+            title = "So-Eun",
+            content_type = "manhwa",
+            status = "ongoing",
+            is_explicit = true,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+        await WaitForSyncReadyAsync(db, titleId);
+
+        db.ChangeTracker.Clear();
+        var sources = await db.TitleSources.Where(ts => ts.TitleId == titleId).ToListAsync();
+        Assert.NotEmpty(sources);
+    }
+
+    [Fact]
+    public async Task SourceMatching_AliasMatch_LinksSourceWhenTranslationDiffers()
+    {
+        // Plugin search returns "Everything Is Agreed" for query "Only With Consent"
+        // AniList synonym "Everything Is Agreed Upon" bridges the gap via TitleMatches
+        var pluginOverrides = new Dictionary<string, string> { ["manga18fx"] = "Everything Is Agreed" };
+        var synonymsJson = """{"data":{"Media":{"synonyms":["Everything Is Agreed Upon"]}}}""";
+        var (client, db) = NewFactory(anilistSynonymsJson: synonymsJson, pluginSearchTitleMap: pluginOverrides).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: true);
+
+        db.ExternalSources.Add(new ArrghServer.Data.Models.ExternalSource
+        {
+            Id = Guid.NewGuid().ToString(), SourceKey = "manga18fx", Name = "Manga18fx",
+            BaseUrl = "http://plugin-host:4000", ContentTypes = "manhwa",
+            Enabled = true, DefaultExplicit = true, Priority = 75, CreatedAt = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "anilist",
+            source_id = "128789",
+            title = "Only With Consent",
+            content_type = "manhwa",
+            status = "ongoing",
+            is_explicit = true,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+        await WaitForSyncReadyAsync(db, titleId);
+
+        db.ChangeTracker.Clear();
+        var sources = await db.TitleSources.Where(ts => ts.TitleId == titleId).ToListAsync();
+        Assert.NotEmpty(sources);
+    }
+
+    [Fact]
+    public async Task SourceMatching_NoAliasMatch_NoSourceLink()
+    {
+        // Source exists, plugin returns a result, but the title is completely unrelated —
+        // no match via fuzzy on main title or any alias → warning logged, no title_source row
+        var pluginOverrides = new Dictionary<string, string> { ["manga18fx"] = "Tower of God" };
+        var synonymsJson = """{"data":{"Media":{"synonyms":["소의 탑"]}}}""";
+        var (client, db) = NewFactory(anilistSynonymsJson: synonymsJson, pluginSearchTitleMap: pluginOverrides).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: true);
+
+        db.ExternalSources.Add(new ArrghServer.Data.Models.ExternalSource
+        {
+            Id = Guid.NewGuid().ToString(), SourceKey = "manga18fx", Name = "Manga18fx",
+            BaseUrl = "http://plugin-host:4000", ContentTypes = "manhwa",
+            Enabled = true, DefaultExplicit = true, Priority = 75, CreatedAt = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "anilist",
+            source_id = "99",
+            title = "Only With Consent",
+            content_type = "manhwa",
+            status = "ongoing",
+            is_explicit = true,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+        await WaitForSyncReadyAsync(db, titleId);
+
+        db.ChangeTracker.Clear();
+        var sourceCount = await db.TitleSources.CountAsync(ts => ts.TitleId == titleId);
+        Assert.Equal(0, sourceCount);
+
+        var warnings = await db.SyncWarnings.Where(w => w.TitleId == titleId).ToListAsync();
+        Assert.NotEmpty(warnings);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     static async Task WaitForSyncReadyAsync(ArrghServer.Data.AppDbContext db, string titleId, int maxMs = 3000)
@@ -823,6 +1010,8 @@ public class FanOutDiscoverFactory : AppFactory
     readonly bool _mangadexThrows;
     readonly bool _novelupdatesThrows;
     readonly bool _wuxiaworldThrows;
+    readonly string? _anilistSynonymsJson;
+    readonly Dictionary<string, string>? _pluginSearchTitleMap;
 
     public FanOutDiscoverFactory(
         string muSearchJson = """{"results":[]}""",
@@ -836,7 +1025,9 @@ public class FanOutDiscoverFactory : AppFactory
         bool anilistThrows = false,
         bool mangadexThrows = false,
         bool novelupdatesThrows = false,
-        bool wuxiaworldThrows = false)
+        bool wuxiaworldThrows = false,
+        string? anilistSynonymsJson = null,
+        Dictionary<string, string>? pluginSearchTitleMap = null)
     {
         _muSearchJson = muSearchJson;
         _anilistJson = anilistJson;
@@ -850,6 +1041,8 @@ public class FanOutDiscoverFactory : AppFactory
         _mangadexThrows = mangadexThrows;
         _novelupdatesThrows = novelupdatesThrows;
         _wuxiaworldThrows = wuxiaworldThrows;
+        _anilistSynonymsJson = anilistSynonymsJson;
+        _pluginSearchTitleMap = pluginSearchTitleMap;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -866,6 +1059,8 @@ public class FanOutDiscoverFactory : AppFactory
         var mdThrows = _mangadexThrows;
         var nuThrows = _novelupdatesThrows;
         var wwThrows = _wuxiaworldThrows;
+        var alSynonyms = _anilistSynonymsJson;
+        var pluginTitleMap = _pluginSearchTitleMap;
 
         builder.ConfigureServices(services =>
         {
@@ -873,7 +1068,8 @@ public class FanOutDiscoverFactory : AppFactory
             services.AddSingleton<IHttpClientFactory>(
                 new FanOutFakeHttpClientFactory(
                     muSearch, anilist, mangadex, nu, ww, ehHtml, ehGdata,
-                    muThrows, alThrows, mdThrows, nuThrows, wwThrows));
+                    muThrows, alThrows, mdThrows, nuThrows, wwThrows,
+                    alSynonyms, pluginTitleMap));
         });
         return base.CreateHost(builder);
     }
@@ -882,23 +1078,26 @@ public class FanOutDiscoverFactory : AppFactory
 file class FanOutFakeHttpClientFactory(
     string muSearchJson, string anilistJson, string mangadexJson,
     string novelupdatesHtml, string wuxiaworldJson, string ehentaiSearchHtml, string ehentaiGdataJson,
-    bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows, bool wuxiaworldThrows)
+    bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows, bool wuxiaworldThrows,
+    string? anilistSynonymsJson = null, Dictionary<string, string>? pluginSearchTitleMap = null)
     : IHttpClientFactory
 {
     public HttpClient CreateClient(string name) =>
         new(new FanOutFakeHandler(
             muSearchJson, anilistJson, mangadexJson, novelupdatesHtml, wuxiaworldJson,
             ehentaiSearchHtml, ehentaiGdataJson,
-            muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows, wuxiaworldThrows));
+            muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows, wuxiaworldThrows,
+            anilistSynonymsJson, pluginSearchTitleMap));
 }
 
 file class FanOutFakeHandler(
     string muSearchJson, string anilistJson, string mangadexJson,
     string novelupdatesHtml, string wuxiaworldJson, string ehentaiSearchHtml, string ehentaiGdataJson,
-    bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows, bool wuxiaworldThrows)
+    bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows, bool wuxiaworldThrows,
+    string? anilistSynonymsJson = null, Dictionary<string, string>? pluginSearchTitleMap = null)
     : HttpMessageHandler
 {
-    protected override Task<HttpResponseMessage> SendAsync(
+    protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage req, CancellationToken ct)
     {
         var host = req.RequestUri?.Host ?? "";
@@ -910,33 +1109,40 @@ file class FanOutFakeHandler(
             if (path.Contains("/series/search"))
             {
                 if (muSearchThrows) throw new HttpRequestException("MU unavailable");
-                return Task.FromResult(Json(muSearchJson));
+                return Json(muSearchJson);
             }
             if (path.Contains("/releases/search"))
-                return Task.FromResult(Json("""{"results":[]}"""));
+                return Json("""{"results":[]}""");
             if (path.Contains("/series/"))
-                return Task.FromResult(Json("""{"series_id":1,"title":"Detail","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":null}"""));
+                return Json("""{"series_id":1,"title":"Detail","description":null,"image":null,"type":null,"year":null,"status":null,"authors":null,"genres":null}""");
         }
 
         // ── AniList ─────────────────────────────────────────────────────────
         if (host.Contains("anilist"))
         {
             if (anilistThrows) throw new HttpRequestException("AniList unavailable");
-            return Task.FromResult(Json(anilistJson));
+            // Differentiate search (contains "isAdult") from synonyms detail call
+            if (anilistSynonymsJson is not null && req.Content is not null)
+            {
+                var bodyStr = await req.Content.ReadAsStringAsync(ct);
+                if (!bodyStr.Contains("isAdult"))
+                    return Json(anilistSynonymsJson);
+            }
+            return Json(anilistJson);
         }
 
         // ── MangaDex Metadata ───────────────────────────────────────────────
         if (host.Contains("mangadex"))
         {
             if (mangadexThrows) throw new HttpRequestException("MangaDex unavailable");
-            return Task.FromResult(Json(mangadexJson));
+            return Json(mangadexJson);
         }
 
         // ── WuxiaWorld Metadata ─────────────────────────────────────────────
         if (host.Contains("wuxiaworld"))
         {
             if (wuxiaworldThrows) throw new HttpRequestException("WuxiaWorld unavailable");
-            return Task.FromResult(Json(wuxiaworldJson));
+            return Json(wuxiaworldJson);
         }
 
         // ── NovelUpdates — proxied through plugin-host (CF-protected, needs CloakBrowser)
@@ -949,7 +1155,7 @@ file class FanOutFakeHandler(
             var parsed = NovelUpdatesService.ParseHtml(novelupdatesHtml);
             var json = System.Text.Json.JsonSerializer.Serialize(
                 parsed.Select(s => new { id = s.SourceId, title = s.Title, cover_url = s.CoverUrl, status = s.Status, content_type = "novel" }));
-            return Task.FromResult(Json(json));
+            return Json(json);
         }
 
         // ── E-Hentai ────────────────────────────────────────────────────────
@@ -957,9 +1163,9 @@ file class FanOutFakeHandler(
         {
             // api.e-hentai.org/api.php → gdata JSON
             if (path.Contains("api.php"))
-                return Task.FromResult(Json(ehentaiGdataJson));
+                return Json(ehentaiGdataJson);
             // e-hentai.org search → HTML gallery listing
-            return Task.FromResult(Html(ehentaiSearchHtml));
+            return Html(ehentaiSearchHtml);
         }
 
         // ── Source matching calls (MatchSourcesAsync) ────────────────────────
@@ -972,11 +1178,14 @@ file class FanOutFakeHandler(
             var rawQ = qIdx >= 0 ? query[(qIdx + 2)..].Split('&')[0] : "";
             var qParam = Uri.UnescapeDataString(rawQ.Replace('+', ' '));
             var sourceKey = path.TrimStart('/').Split('/')[0];
+            // Allow test to override what title the plugin returns
+            var returnTitle = pluginSearchTitleMap is not null && pluginSearchTitleMap.TryGetValue(sourceKey, out var mapped)
+                ? mapped : qParam;
             var json = System.Text.Json.JsonSerializer.Serialize(new[]
             {
-                new { id = $"{sourceKey}-source-id", title = qParam }
+                new { id = $"{sourceKey}-source-id", title = returnTitle }
             });
-            return Task.FromResult(Json(json));
+            return Json(json);
         }
 
         // plugin-host /{sourceKey}/manga/{id}/chapters → returns [{source_id,number}]
@@ -987,14 +1196,11 @@ file class FanOutFakeHandler(
                 new { source_id = "ch-source-1", number = 1.0 },
                 new { source_id = "ch-source-2", number = 2.0 },
             });
-            return Task.FromResult(Json(json));
+            return Json(json);
         }
 
         // catch-all: covers, etc. — 200 empty
-        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new ByteArrayContent([]),
-        });
+        return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent([]) };
     }
 
     static HttpResponseMessage Json(string json) => new(HttpStatusCode.OK)

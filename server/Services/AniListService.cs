@@ -11,7 +11,8 @@ public record AniListSeries(
     string Status,
     string ContentType,
     string? Author,
-    int? Year
+    int? Year,
+    bool IsAdult = false
 );
 
 public class AniListService(IHttpClientFactory httpFactory)
@@ -19,11 +20,12 @@ public class AniListService(IHttpClientFactory httpFactory)
     const string Endpoint = "https://graphql.anilist.co";
 
     const string Query = """
-        query ($search: String) {
+        query ($search: String, $isAdult: Boolean) {
           Page(perPage: 25) {
-            media(search: $search, type: MANGA) {
+            media(search: $search, type: MANGA, isAdult: $isAdult) {
               id
               title { romaji english }
+              isAdult
               format
               countryOfOrigin
               status
@@ -37,10 +39,64 @@ public class AniListService(IHttpClientFactory httpFactory)
         }
         """;
 
-    public async Task<List<AniListSeries>> SearchAsync(string q)
+    public async Task<List<string>> GetSynonymsAsync(string mediaId)
+    {
+        if (!int.TryParse(mediaId, out var id)) return [];
+        var http = httpFactory.CreateClient();
+        const string SynonymsQuery = """
+            query ($id: Int) {
+              Media(id: $id, type: MANGA) {
+                synonyms
+                title { romaji english }
+              }
+            }
+            """;
+        try
+        {
+            var resp = await http.PostAsJsonAsync(Endpoint, new { query = SynonymsQuery, variables = new { id } });
+            if (!resp.IsSuccessStatusCode) return [];
+            var body = await resp.Content.ReadAsStringAsync();
+            var json = JsonSerializer.Deserialize<JsonElement>(body);
+            var result = new List<string>();
+            if (!json.TryGetProperty("data", out var data)) return result;
+            if (!data.TryGetProperty("Media", out var media) || media.ValueKind == JsonValueKind.Null) return result;
+            if (media.TryGetProperty("synonyms", out var syns) && syns.ValueKind == JsonValueKind.Array)
+                foreach (var s in syns.EnumerateArray())
+                    if (s.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(s.GetString()))
+                        result.Add(s.GetString()!.Trim());
+            if (media.TryGetProperty("title", out var titleEl))
+            {
+                if (titleEl.TryGetProperty("english", out var en) && en.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(en.GetString()))
+                    result.Add(en.GetString()!);
+                if (titleEl.TryGetProperty("romaji", out var ro) && ro.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(ro.GetString()))
+                    result.Add(ro.GetString()!);
+            }
+            return result.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+        }
+        catch { return []; }
+    }
+
+    public async Task<List<AniListSeries>> SearchAsync(string q, bool allowExplicit = false)
     {
         var http = httpFactory.CreateClient();
-        var resp = await http.PostAsJsonAsync(Endpoint, new { query = Query, variables = new { search = q } });
+
+        // Always run a non-adult query. When explicit allowed, also run adult-only and merge.
+        var nonAdultTask = FetchPage(http, q, isAdult: false);
+        var adultTask = allowExplicit ? FetchPage(http, q, isAdult: true) : Task.FromResult(new List<AniListSeries>());
+        await Task.WhenAll(nonAdultTask, adultTask);
+
+        var seen = new HashSet<string>();
+        var merged = new List<AniListSeries>();
+        foreach (var item in nonAdultTask.Result.Concat(adultTask.Result))
+        {
+            if (seen.Add(item.SourceId)) merged.Add(item);
+        }
+        return merged;
+    }
+
+    async Task<List<AniListSeries>> FetchPage(HttpClient http, string q, bool isAdult)
+    {
+        var resp = await http.PostAsJsonAsync(Endpoint, new { query = Query, variables = new { search = q, isAdult } });
         resp.EnsureSuccessStatusCode();
         var body = await resp.Content.ReadAsStringAsync();
         if (string.IsNullOrWhiteSpace(body))
@@ -118,7 +174,9 @@ public class AniListService(IHttpClientFactory httpFactory)
                             author = fullEl.GetString();
             }
 
-        return new AniListSeries(id, title, description, coverUrl, status, contentType, author, year);
+        var isAdult = item.TryGetProperty("isAdult", out var iaEl) && iaEl.ValueKind == JsonValueKind.True;
+
+        return new AniListSeries(id, title, description, coverUrl, status, contentType, author, year, isAdult);
     }
 
     internal static string MapContentType(string? format, string? country) => format?.ToUpperInvariant() switch

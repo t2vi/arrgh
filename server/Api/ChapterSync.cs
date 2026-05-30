@@ -80,6 +80,7 @@ internal static class ChapterSync
                 .ToListAsync();
 
         var existingPairs = existingSources.Select(id => (id, source)).ToHashSet();
+        var pendingChapterIds = new HashSet<string>();
 
         foreach (var pc in pluginChapters)
         {
@@ -88,6 +89,7 @@ internal static class ChapterSync
             var srcId = pc.SourceId ?? pc.Id ?? "";
             if (string.IsNullOrEmpty(srcId)) continue;
             if (existingPairs.Contains((ch.Id, source))) continue;
+            if (!pendingChapterIds.Add(ch.Id)) continue; // skip duplicate chapter_id within this batch
 
             db.ChapterSources.Add(new ChapterSource
             {

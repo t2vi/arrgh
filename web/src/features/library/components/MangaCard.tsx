@@ -20,7 +20,7 @@ export function MangaCard({
     ? manga.cover_url
     : api.coverUrl(manga.id)
   const isSyncing     = manga.sync_status === 'syncing'
-  const hasWarnings   = manga.has_sync_warnings
+  const hasWarnings   = manga.has_sync_warnings && (manga.total_chapters ?? 0) === 0
   const hasDownloads  = (manga.downloaded_chapters ?? 0) > 0
 
   return (
