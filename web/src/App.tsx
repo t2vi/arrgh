@@ -20,6 +20,27 @@ function MangaLegacyRedirect() {
 
 type AuthState = 'checking' | 'needs_setup' | 'needs_login' | 'authenticated'
 
+function SetupGuard({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    api.authStatus()
+      .then((s) => {
+        if (s.needs_setup) navigate(ROUTES.setup, { replace: true })
+        else setReady(true)
+      })
+      .catch(() => setReady(true))
+  }, [navigate])
+
+  if (!ready) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    </div>
+  )
+  return <>{children}</>
+}
+
 function AuthGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>('checking')
   const navigate = useNavigate()
@@ -75,7 +96,7 @@ export default function App() {
   return (
     <Routes>
       {/* Public */}
-      <Route path={ROUTES.login} element={<Login />} />
+      <Route path={ROUTES.login} element={<SetupGuard><Login /></SetupGuard>} />
       <Route path={ROUTES.setup} element={<Setup />} />
 
       {/* Protected */}

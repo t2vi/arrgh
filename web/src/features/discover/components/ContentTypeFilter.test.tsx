@@ -42,4 +42,35 @@ describe('ContentTypeFilter', () => {
     await userEvent.click(screen.getByText('Manhwa'))
     expect(onChange).toHaveBeenCalledWith('manhwa')
   })
+
+  // hentai appears in fan-out results when allow_explicit=true
+  it('shows Hentai pill when hentai is in availableTypes', () => {
+    render(
+      <ContentTypeFilter value={undefined} onChange={() => {}} availableTypes={new Set(['manga', 'hentai'])} />
+    )
+    expect(screen.getByText('Hentai')).toBeInTheDocument()
+  })
+
+  it('calls onChange("hentai") when Hentai pill is clicked', async () => {
+    const onChange = vi.fn()
+    render(
+      <ContentTypeFilter value={undefined} onChange={onChange} availableTypes={new Set(['manga', 'hentai'])} />
+    )
+    await userEvent.click(screen.getByText('Hentai'))
+    expect(onChange).toHaveBeenCalledWith('hentai')
+  })
+
+  it('does not show Hentai pill when hentai not in availableTypes', () => {
+    render(
+      <ContentTypeFilter value={undefined} onChange={() => {}} availableTypes={new Set(['manga', 'manhwa'])} />
+    )
+    expect(screen.queryByText('Hentai')).toBeNull()
+  })
+
+  it('shows Novel pill when novel is in availableTypes', () => {
+    render(
+      <ContentTypeFilter value={undefined} onChange={() => {}} availableTypes={new Set(['manga', 'novel'])} />
+    )
+    expect(screen.getByText('Novel')).toBeInTheDocument()
+  })
 })

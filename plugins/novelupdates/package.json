@@ -1,0 +1,16 @@
+{
+  "name": "arrgh-plugin-novelupdates",
+  "version": "1.0.0",
+  "description": "NovelUpdates metadata plugin — novel search via CloakBrowser (CF-protected)",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=bundles/novelupdates.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.5.0"
+  }
+}

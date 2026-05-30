@@ -6,12 +6,13 @@ import { describe, it, expect } from 'vitest'
 
 // ── Existing plugins ──────────────────────────────────────────────────────────
 
-import * as mangadex  from '../../plugins/mangadex/src/index'
-import * as mangapill from '../../plugins/mangapill/src/index'
-import * as nhentai   from '../../plugins/nhentai/src/index'
-import * as novelfull from '../../plugins/novelfull/src/index'
-import * as royalroad from '../../plugins/royalroad/src/index'
-import * as toonily   from '../../plugins/toonily/src/index'
+import * as mangadex      from '../../plugins/mangadex/src/index'
+import * as mangapill     from '../../plugins/mangapill/src/index'
+import * as nhentai       from '../../plugins/nhentai/src/index'
+import * as novelfull     from '../../plugins/novelfull/src/index'
+import * as royalroad     from '../../plugins/royalroad/src/index'
+import * as toonily       from '../../plugins/toonily/src/index'
+import * as novelupdates  from '../../plugins/novelupdates/src/index'
 
 describe('mangadex', () => {
   it('info.id matches plugin-index id', () => expect(mangadex.info.id).toBe('mangadex'))
@@ -68,6 +69,15 @@ describe('toonily', () => {
   it('exports pages fn', () => expect(typeof toonily.pages).toBe('function'))
 })
 
+describe('novelupdates', () => {
+  it('info.id is novelupdates', () => expect(novelupdates.info.id).toBe('novelupdates'))
+  it('default_explicit is false', () => expect(novelupdates.info.default_explicit).toBe(false))
+  it('content_types includes novel', () => expect(novelupdates.info.content_types).toContain('novel'))
+  it('exports search fn', () => expect(typeof novelupdates.search).toBe('function'))
+  it('exports chapters fn', () => expect(typeof novelupdates.chapters).toBe('function'))
+  it('no pages fn (metadata-only plugin)', () => expect((novelupdates as Record<string, unknown>).pages).toBeUndefined())
+})
+
 // ── plugin-index.json consistency check ──────────────────────────────────────
 // Catches discrepancies between live plugin content_types and what plugin-index advertises.
 // Failing test = plugin-index/index.json needs updating.
@@ -94,7 +104,11 @@ describe('plugin-index.json consistency', () => {
   })
 
   it('nhentai: default_explicit true', () => {
-    // nhentai is an explicit-only source — plugin-index must reflect this
     expect(nhentai.info.default_explicit).toBe(true)
+  })
+
+  it('novelupdates: index.json content_types includes novel', () => {
+    const indexed = indexMap.get('novelupdates') ?? []
+    expect(indexed).toContain('novel')
   })
 })

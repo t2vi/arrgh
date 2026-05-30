@@ -36,8 +36,7 @@ Open `http://<your-server-ip>:8080`. The setup wizard runs on first launch.
 | `PLUGIN_URLS` | `http://plugin-host:4000` | Comma-separated plugin URLs to auto-register on first boot |
 | `PLUGIN_HOST_URL` | `http://plugin-host:4000` | Plugin host base URL (used by install/delete endpoints) |
 | `PLUGIN_INDEX_URL` | `file:///app/plugin-index.json` | Plugin index for the Browse UI — bundled in image, override to use a remote index |
-| `RUST_LOG` | `arrgh_server=info` | Log level |
-| `BIND_ADDR` | `0.0.0.0:3000` | Internal listen address (nginx proxies to this) |
+| `LOG_LEVEL` | `info` | Console + in-app log verbosity (`debug`/`info`/`warn`/`error`) |
 
 ### `plugin-host`
 

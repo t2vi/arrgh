@@ -6,6 +6,7 @@ const CONTENT_TYPES = [
   { value: 'manhua',   label: 'Manhua'   },
   { value: 'one-shot', label: 'One-shot' },
   { value: 'novel',    label: 'Novel'    },
+  { value: 'hentai',   label: 'Hentai'   },
 ] as const
 
 export function ContentTypeFilter({

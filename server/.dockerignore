@@ -1,7 +1,0 @@
-target/
-manga/
-static/
-*.db
-*.db-shm
-*.db-wal
-.env

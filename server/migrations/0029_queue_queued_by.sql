@@ -1,1 +1,0 @@
-ALTER TABLE download_queue ADD COLUMN queued_by TEXT REFERENCES users(id) ON DELETE SET NULL;

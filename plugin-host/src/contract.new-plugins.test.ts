@@ -15,6 +15,7 @@ import * as asurascans from '../../plugins/asurascans/src/index'
 import * as manhuafast from '../../plugins/manhuafast/src/index'
 import * as wuxiaworld from '../../plugins/wuxiaworld/src/index'
 import * as boxnovel   from '../../plugins/boxnovel/src/index'
+import * as manga18fx  from '../../plugins/manga18fx/src/index'
 
 // ── MangaFire (manga + manhwa + manhua) ───────────────────────────────────────
 
@@ -112,4 +113,21 @@ describe('boxnovel', () => {
   it('exports chapters fn',    () => expect(typeof boxnovel.chapters).toBe('function'))
   it('exports chapterText fn', () => expect(typeof boxnovel.chapterText).toBe('function'))
   it('no pages fn',            () => expect(boxnovel.pages).toBeUndefined())
+})
+
+// ── Manga18fx (manhwa, explicit) ──────────────────────────────────────────────
+
+describe('manga18fx', () => {
+  it('info.id is manga18fx',    () => expect(manga18fx.info.id).toBe('manga18fx'))
+  it('name is non-empty',       () => expect(manga18fx.info.name.length).toBeGreaterThan(0))
+  it('default_explicit true',   () => expect(manga18fx.info.default_explicit).toBe(true))
+
+  it('content_types covers manhwa', () => expect(manga18fx.info.content_types).toContain('manhwa'))
+  it('no manga in content_types',   () => expect(manga18fx.info.content_types).not.toContain('manga'))
+  it('no manhua in content_types',  () => expect(manga18fx.info.content_types).not.toContain('manhua'))
+
+  it('exports search fn',   () => expect(typeof manga18fx.search).toBe('function'))
+  it('exports chapters fn', () => expect(typeof manga18fx.chapters).toBe('function'))
+  it('exports pages fn',    () => expect(typeof manga18fx.pages).toBe('function'))
+  it('no chapterText fn',   () => expect((manga18fx as any).chapterText).toBeUndefined())
 })

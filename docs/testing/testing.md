@@ -1,15 +1,16 @@
 # Test Coverage Plan
 
-Strategy: ADR 0012 — three-layer pyramid (Unit → Integration → E2e), sequential in CI, all reporting to Allure at `/test-reports/`. See `docs/adr/0012-testing-strategy.md`.
+Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential in CI, all reporting to Allure at `/test-reports/`. See `docs/adr/0012-testing-strategy.md`.
 
 **Frameworks**
 - Web unit: Vitest + @testing-library/react + `allure-vitest@^2.x` (must stay v2 — v3 incompatible with vitest v2)
-- Server unit + integration: cargo nextest + cargo-llvm-cov
+- Server unit + integration: .NET xUnit (`Category=Unit` / `Category=Integration`)
+- API: Hurl — `.hurl` files, JUnit XML → `junit-to-allure.mjs` → Allure JSON with `layer=api`
 - E2e: Playwright + allure-playwright (Docker Compose test stack + Fixture Plugin)
 
 **TDD**: write failing test first, then implement. Red → Green → Refactor.
 
-Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
+Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known failing · ❌ gap (needed, not planned yet)
 
 ---
 
@@ -32,7 +33,9 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 | Login | `useLogin` | initial state, submit success/fail, loading cleared | ✅ |
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
 | Library | `MangaCard` | render, remove button | ✅ |
-| Discover | `useDiscover` | submit, blank guard, navigate, 502, added tracking | ✅ |
+| Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
+| Discover | `SearchRow` | render, is_explicit→18+ badge, tag-based badge removed, loading state, In Library, cover/skeleton (3 TDD ⬜) | 🟡 |
+| Discover | `ContentTypeFilter` | render, hentai pill, novel pill, onChange (2 TDD ⬜) | 🟡 |
 | Home | `useHome` | — | ✅ |
 | Home | `Cards` | render variants, title+author below cover, error→emoji | ✅ |
 | Settings | `useSettings` | load, tab defaults, save, logout | ✅ |
@@ -72,198 +75,25 @@ Legend: ✅ exists · 🔳 planned · ❌ gap (needed, not planned yet)
 
 ---
 
-## Server — Unit (cargo nextest)
-
-### Auth (`src/auth.rs`) ✅
+## .NET Server — Downloader Unit (`DownloaderTests.cs`)
 
 | Case | Status |
 |---|---|
-| `create_token` → `validate_token` roundtrip — claims preserved | ✅ |
-| Wrong secret rejected | ✅ |
-| Member role + allow_explicit=false preserved | ✅ |
-
-### Config (`src/config.rs`) ✅
-
-| Case | Status |
-|---|---|
-| Defaults when no env vars set | ✅ |
-| Unparseable `INDEX_INTERVAL_HOURS` falls back to 6 | ✅ |
-| `BIND_ADDR` present when set | ✅ |
-
-### Logging (`src/logging.rs`) ✅
-
-| Case | Status |
-|---|---|
-| Level roundtrip (all 4 levels) | ✅ |
-| `level_from_str` case-insensitive | ✅ |
-| Unknown level string → None | ✅ |
-| Unknown u8 → "INFO" default | ✅ |
-| Ring buffer evicts oldest at capacity | ✅ |
-
-### Source (`src/indexer/source.rs`) ✅
-
-| Case | Status |
-|---|---|
-| Safe title unchanged | ✅ |
-| Unsafe chars (`/\:*?"<>|`) replaced with `_` | ✅ |
-| Whitespace trimmed | ✅ |
-| Empty string | ✅ |
-
-### Discover (`src/api/discover.rs`) ✅
-
-| Case | Status |
-|---|---|
-| `normalize_title` lowercases | ✅ |
-| `normalize_title` strips punctuation | ✅ |
-| `normalize_title` collapses whitespace | ✅ |
-| `normalize_title` empty string | ✅ |
-| `merge_hits` deduplicates same title | ✅ |
-| `merge_hits` preserves insertion order | ✅ |
-| `merge_hits` keeps distinct titles separate | ✅ |
-| `merge_hits` normalizes before dedup (`One-Piece` == `One Piece`) | ✅ |
-| `title_matches` exact | ✅ |
-| `title_matches` `(Novel)` suffix vs bare site result (short title, levenshtein threshold) | ✅ |
-| `title_matches` rejects unrelated titles | ✅ |
-| `title_matches` tolerates small typo | ✅ |
-| `strip_search_qualifier` strips `(Novel)` | ✅ |
-| `strip_search_qualifier` strips `(Manga)` | ✅ |
-| `strip_search_qualifier` returns `None` when no qualifier | ✅ |
-| `strip_search_qualifier` mid-string paren not stripped | ✅ |
-| `strip_search_qualifier` returns `None` when only qualifier remains | ✅ |
-| `search_candidates` stripped form first (avoids wasted CloakBrowser call) | ✅ |
-| `search_candidates` no duplicates | ✅ |
-| `search_candidates` aliases also stripped | ✅ |
-| `known_norms` includes stripped form so short titles match | ✅ |
-| `known_norms` deduplicates | ✅ |
-| `known_norms` end-to-end: short novel title matches site result | ✅ |
-| Source routing: `"hentai"` tag routes to explicit pool | ✅ |
-| Source routing: `"adult"` tag does NOT route to explicit pool | ✅ |
-| Source routing: mixed `"adult"+"hentai"` → explicit pool | ✅ |
-| Source routing: empty tags → non-explicit pool | ✅ |
-| Source routing: `"HENTAI"` case-insensitive | ✅ |
-
-### Media helpers (`src/media/mod.rs`) ✅
-
-| Case | Status |
-|---|---|
-| `is_image` accepts known extensions (jpg, jpeg, PNG, WEBP, avif) | ✅ |
-| `is_image` rejects non-image (txt, cbz, no ext, html) | ✅ |
-| `strip_jpeg_icc` — non-JPEG passed through unchanged | ✅ |
-| `strip_jpeg_icc` — too-short data passed through | ✅ |
-| `strip_jpeg_icc` — JPEG without ICC passes through | ✅ |
-| `strip_jpeg_icc` — APP2 ICC_PROFILE segment stripped | ✅ |
-
-### ExternalSource (`src/indexer/external.rs`) ✅
-
-| Case | Status |
-|---|---|
-| `sync_chapters` deduplicates chapters by `(title_id, number)` across two sources | ✅ |
-| `sync_chapters` is idempotent — syncing same source twice produces no duplicate rows | ✅ |
-| `sync_chapters` ON CONFLICT updates `source_id` when plugin returns a new identifier | ✅ |
-| `sync_chapters` returns `Err` on 502 (source temporarily unavailable) | ✅ |
-| `sync_chapters` preserves existing chapters when source returns 502 | ✅ |
-| `sync_chapters` preserves existing chapters when source returns 502 | ✅ |
-
-### Media API (`src/api/media.rs`) ✅
-
-| Case | Status |
-|---|---|
-| JPEG magic bytes → `"image/jpeg"` | ✅ |
-| PNG magic bytes → `"image/png"` | ✅ |
-| WEBP magic bytes → `"image/webp"` | ✅ |
-| GIF magic bytes → `"image/gif"` | ✅ |
-| Too short → None | ✅ |
-| Unknown bytes → None | ✅ |
-| `root_domain_referer` — extracts root from subdomain | ✅ |
-| `root_domain_referer` — apex domain unchanged | ✅ |
-| `root_domain_referer` — invalid URL returns empty | ✅ |
-| `root_domain_referer` — scheme preserved | ✅ |
-
-### MangaUpdates client (`src/mangaupdates.rs`) ✅
-
-| Case | Status |
-|---|---|
-| `releases/search` — numeric `series_id` deserialises | ✅ |
-| `releases/search` — string `series_id` deserialises | ✅ |
-| `releases/search` — null `series_id` → `None` (no error) | ✅ |
-| `releases/search` — null `metadata` field ignored | ✅ |
-| `releases/search` — null `series` field ignored | ✅ |
-| `releases/search` — missing `metadata` field (omitted key) | ✅ |
-| `releases/search` — empty results array | ✅ |
-| `SeriesRecord` — numeric `series_id` | ✅ |
-| `SeriesRecord` — string `series_id` | ✅ |
-| `map_series` — strips HTML tags from description | ✅ |
-| `map_series` — content type mapping (Manhwa/Manhua/Novel/Manga/null) | ✅ |
-| `map_series` — year as string parses to i64 | ✅ |
-| `map_series` — prefers `"Author"` type over first in list | ✅ |
-| `map_series` — explicit genre tags normalised (Hentai→`hentai`, Smut→`adult`) | ✅ |
-| `strip_html` — removes tags | ✅ |
-| `strip_html` — plain text unchanged | ✅ |
-| `strip_html` — trims surrounding whitespace | ✅ |
-
-### Downloader (`src/downloader/mod.rs`) ✅
-
-| Case | Status |
-|---|---|
-| `download_cbz` returns `Err` when source returns 0 pages | ✅ |
+| Queue item status set to `"downloading"` (not `"in_progress"`) when tick claims it | ✅ |
+| Successful download → queue item `status="done"`, chapter `downloaded=true` | ✅ |
+| Source returns 502 on pages endpoint → queue item `status="error"` | ✅ |
+| Source returns 400 on single image → queue item `status="error"` with URL in message | ✅ |
+| Empty pages list → queue item `status="error"` | ✅ |
+| Text chapter → `.md` file written, queue item `status="done"` | ✅ |
+| Text chapter source 502 → queue item `status="error"` with URL in message | ✅ |
+| User-Agent header sent on all HTTP requests | ✅ |
+| Multiple sources — first fails, second succeeds → `status="done"` | ✅ |
+| No chapter_sources → queue item `status="error"` ("no chapter sources") | ✅ |
 
 ---
 
-## Server — Integration (HTTP-level, in-memory SQLite)
 
-| Area | Case | Status |
-|---|---|---|
-| Auth | No token → 401 | ✅ |
-| Auth | Valid token → handler runs | ✅ |
-| Auth | Media routes bypass auth | ✅ |
-| Settings | `GET /api/settings` returns 200 JSON object | ✅ |
-| Settings | `POST /api/settings` persists + returns updated | ✅ |
-| Settings | `POST /api/settings` invalid reader_mode → 422 | ✅ |
-| Logs | `GET /api/logs` returns empty array on fresh buffer | ✅ |
-| Logs | `PATCH /api/logs/level` requires admin (member → 403) | ✅ |
-| Logs | `PATCH /api/logs/level` admin → 204 | ✅ |
-| Version | `GET /api/version` returns current without latest (check disabled) | ✅ |
-| Sources | Add + reload registry | ✅ |
-| Multi-source: title schema | `is_local=true` when no `title_sources` rows | ✅ |
-| Multi-source: title schema | `is_local=false` when `title_sources` row exists | ✅ |
-| Multi-source: chapter schema | `has_sources=false` when no `chapter_sources` rows | ✅ |
-| Multi-source: chapter schema | `has_sources=true` when `chapter_sources` row exists | ✅ |
-| Multi-source: download guard | `POST /chapters/:id/download` → 404 without `chapter_sources` | ✅ |
-| Multi-source: download guard | `POST /chapters/:id/download` → 202 with `chapter_sources` | ✅ |
-| Multi-source: sync | `POST /titles/:id/sync` → 404 when no `title_sources` | ✅ |
-| Multi-source: sync | `POST /titles/:id/sync` → 202 when `title_sources` exist | ✅ |
-| add_title (MU) | Creates titles row with `mangaupdates_id` | ✅ |
-| add_title (MU) | Creates `user_titles` subscription for the requesting user | ✅ |
-| add_title (MU) | Sets `is_explicit = 1` when tags contain `"adult"` | ✅ |
-| add_title (MU) | Deduplicates — same `mangaupdates_id` returns same title | ✅ |
-| add_title: qualifier stripping | `"My Title (Novel)"` stored as `"My Title"` | ✅ |
-| add_title: qualifier stripping | `"Berserk (Manga)"` stored as `"Berserk"` | ✅ |
-| add_title: qualifier stripping | Plain title without qualifier stored unchanged | ✅ |
-| add_title: explicit routing | `"adult"` tag → `is_explicit=1` but tags contain no `"hentai"` (routing stays non-explicit) | ✅ |
-| Stale sync warning | `"no matching source found"` warning deleted when title has a matched source | ✅ |
-| Stale sync warning | Chapter-sync-failure warning preserved — not cleared by no-match cleanup | ✅ |
-| Trending | Returns pre-seeded cache results without hitting MangaUpdates network | ✅ |
-| Trending | Marks `in_library=true` when series already added to library | ✅ |
-| Queue: explicit filter | Member without `allow_explicit` cannot see explicit queue items | ✅ |
-| Queue: explicit filter | Member with `allow_explicit` sees explicit queue items | ✅ |
-| Queue: explicit filter | Admin sees explicit queue items regardless of `allow_explicit` flag | ✅ |
-| Queue: clear_completed | Member → 403 | ✅ |
-| Queue: clear_completed | Admin → 204 | ✅ |
-| Queue: cancel ownership | Member cannot cancel another user's item → 403 | ✅ |
-| Queue: cancel ownership | Member can cancel their own item → 204 | ✅ |
-| Queue: cancel ownership | Admin can cancel any item → 204 | ✅ |
-| Queue: delete_files | Member remove with `?delete_files=true` returns 204 (param silently ignored) | ✅ |
-| ExternalSource | `sync_chapters` deduplicates chapters by `(title_id, number)` across two sources | ✅ |
-| Sync log | `GET /api/titles/:id/sync-log` — empty array when no entries | ✅ |
-| Sync log | `GET /api/titles/:id/sync-log` — returns entries in ASC order | ✅ |
-| Sync log | `GET /api/titles/:id/sync-log` — 404 for title not in user's library | ✅ |
-| Cover CDN fallback | `GET /api/media/cover/:id` — 307 to CDN when `cover_url = NULL` | ✅ |
-| Cover CDN fallback | `GET /api/media/cover/:id` — 307 to CDN when local file missing | ✅ |
-| Cover CDN fallback | `GET /api/media/cover/:id` — 404 when no `title_meta` CDN URL | ✅ |
-
----
-
-## .NET Server — Unit (xUnit, `server-dotnet-tests/`)
+## .NET Server — Unit (xUnit, `server-tests/`)
 
 Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). Run with `dotnet test --filter "Category=Unit"`.
 
@@ -370,10 +200,14 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `MangaUpdatesService.ParseFlexULong` — number; string; null → null | ✅ |
 | `MangaUpdatesService.MapSeries` — full record (SeriesId, Title, Description, CoverUrl, ContentType, Status, Year, Author, Tags) | ✅ |
 | `MangaUpdatesService.MapSeries` — string `series_id` parsed to ulong | ✅ |
+| `NovelUpdatesService.ParseHtml` — single result extracts title, slug, status, cover | ✅ |
+| `NovelUpdatesService.ParseHtml` — empty HTML → empty list | ✅ |
+| `NovelUpdatesService.ParseHtml` — multiple results parsed | ✅ |
+| `NovelUpdatesService.ParseHtml` — Ongoing status maps correctly | ✅ |
 
 ---
 
-## .NET Server — Integration (HTTP stack, `server-dotnet-tests/`)
+## .NET Server — Integration (HTTP stack, `server-tests/`)
 
 `WebApplicationFactory` + isolated file-based SQLite per test. Run with `dotnet test --filter "Category=Integration"`.
 
@@ -425,6 +259,8 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `PATCH /titles/:id` → 404 not owned | ✅ |
 | `GET /titles/:id/sync-log` → returns entries in ASC order; 404 not owned | ✅ |
 | `POST /titles/:id/sync` → 202 when source links exist; 404 no source links; 404 not owned | ✅ |
+| `POST /titles/:id/sync` → sync log contains `"Synced N chapter(s) from {source}"` | ✅ |
+| `POST /titles/:id/sync` → sync log contains `"Synced 0 chapter(s)"` when plugin returns empty | ✅ |
 
 ### Chapters (`ChaptersTests.cs`) ✅
 
@@ -473,7 +309,11 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `DELETE /queue/completed` → deletes done + cancelled + error items | ✅ |
 | `DELETE /queue/completed` → 403 for member | ✅ |
 | `DELETE /queue/:id` → 204 deletes pending item | ✅ |
-| `DELETE /queue/:id` → cancels in-progress item instead of deleting | ✅ |
+| `DELETE /queue/:id` → cancels `"downloading"` item instead of deleting (renamed from "in_progress") | ✅ |
+| Seeded mangadex `ContentTypes` does NOT include `"manhwa"` (dedicated sources only) | ✅ |
+| Seeded toonily/asurascans have `"manhwa"` in `ContentTypes` | ✅ |
+| Seeded mangafire has `"manhwa"` in `ContentTypes` | ✅ |
+| Seeded manga18fx has `"manhwa"` content type, `default_explicit=true`, enabled | ✅ |
 | `DELETE /queue/:id` → 404 nonexistent | ✅ |
 
 ### Settings (`SettingsTests.cs`) ✅
@@ -497,16 +337,19 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 |---|---|
 | `GET /sources` → empty when none | ✅ |
 | `GET /sources` → returns sources with content_types array | ✅ |
+| `GET /sources` → returns `priority` field | ✅ |
 | `GET /sources` → `has_api_key=true` when API key set | ✅ |
 | `GET /sources` → 401 no token | ✅ |
 | `POST /sources` → 403 for member | ✅ |
 | `POST /sources` → 502 (plugin host not ported yet) | ✅ |
 | `PATCH /sources/:id` → toggles enabled | ✅ |
+| `PATCH /sources/:id` → updates priority | ✅ |
 | `PATCH /sources/:id` → 404 nonexistent | ✅ |
 | `PATCH /sources/:id` → 403 for member | ✅ |
 | `DELETE /sources/:id` → 204 when exists | ✅ |
 | `DELETE /sources/:id` → 404 nonexistent | ✅ |
 | `DELETE /sources/:id` → 403 for member | ✅ |
+| Seeded asurascans priority is last (highest number) among all manhwa sources | ✅ |
 
 ### Plugins (`PluginsTests.cs`) ✅
 
@@ -568,106 +411,169 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `POST /discover/add` → duplicate MU ID subscribes user and returns existing title | ✅ |
 | `POST /discover/add` → explicit tags → `is_explicit=true` | ✅ |
 
-### Discover Fan-Out — Integration (`DiscoverFanOutTests.cs`) ⬜ ADR 0031
+### Discover Fan-Out — Integration (`DiscoverFanOutTests.cs`) ✅ ADR 0031
 
 `FanOutDiscoverFactory` routes HTTP by hostname to all 5 metadata authority fakes.
 
 | Case | Status |
 |---|---|
-| `GET /discover` → MU manga result has `source="mangaupdates"` | ⬜ |
-| `GET /discover` → AniList manhwa result has `source="anilist"` | ⬜ |
-| `GET /discover` → MangaDex manhua result has `source="mangadex"` | ⬜ |
-| `GET /discover` → NovelUpdates novel result has `source="novelupdates"` | ⬜ |
-| `GET /discover` → E-Hentai result excluded for non-explicit user | ⬜ |
-| `GET /discover` → E-Hentai result included for explicit user | ⬜ |
-| `GET /discover` → dedup: AniList wins for manhwa when MU also returns it | ⬜ |
-| `GET /discover` → result order: MU before AniList | ⬜ |
-| `GET /discover` → partial failure (AniList 500) → 200 with other results | ⬜ |
-| `GET /discover` → all authorities fail → 502 | ⬜ |
-| `GET /discover` → `in_library=true` by normalized title + content_type (no `mangaupdates_id`) | ⬜ |
-| `POST /discover/add` → `source="anilist"` stores `metadata_source="anilist"` | ⬜ |
-| `POST /discover/add` → `mangaupdates_id` only (backward compat) → stores `metadata_source="mangaupdates"` | ⬜ |
-| `POST /discover/add` → same `source+source_id` twice → deduplicated to one title row | ⬜ |
+| `GET /discover` → MU manga result has `source="mangaupdates"` | ✅ |
+| `GET /discover` → AniList manhwa result has `source="anilist"` | ✅ |
+| `GET /discover` → MangaDex manhua result has `source="mangadex"` | ✅ |
+| `GET /discover` → NovelUpdates novel result has `source="novelupdates"` | ✅ |
+| `GET /discover` → E-Hentai result excluded for non-explicit user | ✅ |
+| `GET /discover` → E-Hentai result included for explicit user | ✅ |
+| `GET /discover` → dedup: AniList wins for manhwa when MU also returns it | ✅ |
+| `GET /discover` → result order: MU before AniList | ✅ |
+| `GET /discover` → partial failure (AniList 500) → 200 with other results | ✅ |
+| `GET /discover` → all authorities fail → 502 | ✅ |
+| `GET /discover` → `in_library=true` by normalized title + content_type (no `mangaupdates_id`) | ✅ |
+| `POST /discover/add` → `source="anilist"` stores `metadata_source="anilist"` | ✅ |
+| `POST /discover/add` → `mangaupdates_id` only (backward compat) → stores `metadata_source="mangaupdates"` | ✅ |
+| `POST /discover/add` → same `source+source_id` twice → deduplicated to one title row | ✅ |
+| `GET /discover` → MU novel result excluded even when NovelUpdates returns nothing | ✅ |
+| `GET /discover` → MU manhwa result excluded (MU is manga-authority only; ADR 0031) | ✅ |
+| `GET /discover` → WuxiaWorld novel result appears with `source="wuxiaworld"` | ✅ |
+| `GET /discover` → WuxiaWorld deduped: NovelUpdates wins when both return same novel | ✅ |
+| `GET /discover` → WuxiaWorld novels appear even when NovelUpdates fails (CF blocked) | ✅ |
+| `POST /discover/add` → novel (`source="novelupdates"`) → sync log does NOT say "Fetching metadata from MangaUpdates" | ✅ |
+| `POST /discover/add` → manga (`source="mangaupdates"`) → sync log says "Fetching metadata from MangaUpdates" | ✅ |
+| `POST /discover/add` → manga with matching `external_sources` → creates `title_sources` rows | ✅ |
+| `POST /discover/add` → no matching `external_sources` → no `title_sources` rows | ✅ |
 
-### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ⬜ ADR 0031
+### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ✅ ADR 0031
 
 | Case | Status |
 |---|---|
-| `DesignatedAuthority("manga")` → `"mangaupdates"` | ⬜ |
-| `DesignatedAuthority("manhwa")` → `"anilist"` | ⬜ |
-| `DesignatedAuthority("manhua")` → `"mangadex"` | ⬜ |
-| `DesignatedAuthority("novel")` → `"novelupdates"` | ⬜ |
-| `DesignatedAuthority("hentai")` → `"ehentai"` | ⬜ |
-| `DesignatedAuthority("unknown")` → `"mangaupdates"` (fallback) | ⬜ |
-| `Deduplicate` no conflict → returns all | ⬜ |
-| `Deduplicate` AniList wins for manhwa | ⬜ |
-| `Deduplicate` MangaDex wins for manhua | ⬜ |
-| `Deduplicate` same title, different content_type → not deduped | ⬜ |
-| `Deduplicate` normalized title comparison (extra whitespace) | ⬜ |
-| `AuthorityOrder` MU before AniList | ⬜ |
-| `AuthorityOrder` AniList before MangaDex | ⬜ |
-| `AuthorityOrder` MangaDex before NovelUpdates | ⬜ |
-| `AuthorityOrder` NovelUpdates before E-Hentai | ⬜ |
-| `MergeFanOut` ordered by authority | ⬜ |
-| `MergeFanOut` deduplicates before sorting | ⬜ |
+| `DesignatedAuthority("manga")` → `"mangaupdates"` | ✅ |
+| `DesignatedAuthority("manhwa")` → `"anilist"` | ✅ |
+| `DesignatedAuthority("manhua")` → `"mangadex"` | ✅ |
+| `DesignatedAuthority("novel")` → `"novelupdates"` | ✅ |
+| `DesignatedAuthority("hentai")` → `"ehentai"` | ✅ |
+| `DesignatedAuthority("unknown")` → `"mangaupdates"` (fallback) | ✅ |
+| `Deduplicate` no conflict → returns all | ✅ |
+| `Deduplicate` AniList wins for manhwa | ✅ |
+| `Deduplicate` MangaDex wins for manhua | ✅ |
+| `Deduplicate` same title, different content_type → not deduped | ✅ |
+| `Deduplicate` normalized title comparison (extra whitespace) | ✅ |
+| `AuthorityOrder` MU before AniList | ✅ |
+| `AuthorityOrder` AniList before MangaDex | ✅ |
+| `AuthorityOrder` MangaDex before NovelUpdates | ✅ |
+| `AuthorityOrder` NovelUpdates before WuxiaWorld | ✅ |
+| `AuthorityOrder` WuxiaWorld before E-Hentai | ✅ |
+| `MergeFanOut` ordered by authority | ✅ |
+| `MergeFanOut` deduplicates before sorting | ✅ |
+| `FilterMuScope` excludes novel results | ✅ |
+| `FilterMuScope` excludes manhwa results | ✅ |
+| `FilterMuScope` excludes manhua results | ✅ |
+| `FilterMuScope` excludes hentai results | ✅ |
+| `FilterMuScope` keeps manga results | ✅ |
+| `FilterMuScope` keeps one-shot results | ✅ |
+| `FilterMuScope` mixed input → only manga/one-shot survive | ✅ |
 
 ---
 
-## Plugin Host — Routing (`plugin-host/src/routing.test.ts`) ⬜
+## Plugin Host — Routing (`plugin-host/src/routing.test.ts`) ✅
 
-Vitest + supertest. Requires `createApp(plugins, communityIds?)` export from `index.ts`.
+Vitest + supertest. `createApp(plugins, communityIds?)` exported from `index.ts`.
 
 | Case | Status |
 |---|---|
-| `GET /plugins` → returns all loaded plugins | ⬜ |
-| `GET /plugins` → empty array when no plugins loaded | ⬜ |
-| `GET /:plugin/info` → returns info for known plugin | ⬜ |
-| `GET /:plugin/info` → 404 for unknown plugin | ⬜ |
-| `GET /:plugin/search?q=` → calls plugin.search, returns results | ⬜ |
-| `GET /:plugin/search` (no q) → returns `[]` | ⬜ |
-| `GET /:plugin/search?q=` → 502 on plugin error | ⬜ |
-| `GET /:plugin/search?q=` → 404 for unknown plugin | ⬜ |
-| `GET /:plugin/manga/:id/chapters` → calls plugin.chapters | ⬜ |
-| `GET /:plugin/manga/:id/chapters` → URL-decodes source id | ⬜ |
-| `GET /:plugin/manga/:id/chapters` → 502 on plugin error | ⬜ |
-| `GET /:plugin/chapter/:id/pages` → calls plugin.pages, returns URLs | ⬜ |
-| `GET /:plugin/chapter/:id/pages` → 404 when plugin has no pages fn (novel) | ⬜ |
-| `GET /:plugin/chapter/:id/pages` → 404 for unknown plugin | ⬜ |
-| `GET /:plugin/chapter/:id/text` → calls plugin.chapterText, returns markdown | ⬜ |
-| `GET /:plugin/chapter/:id/text` → 404 when plugin has no chapterText fn (manga) | ⬜ |
-| `POST /plugins/install` → 400 when url missing | ⬜ |
-| `DELETE /plugins/:id` → 403 for bundled plugin | ⬜ |
-| `DELETE /plugins/:id` → 204 removes community plugin | ⬜ |
+| `GET /plugins` → returns all loaded plugins | ✅ |
+| `GET /plugins` → empty array when no plugins loaded | ✅ |
+| `GET /:plugin/info` → returns info for known plugin | ✅ |
+| `GET /:plugin/info` → 404 for unknown plugin | ✅ |
+| `GET /:plugin/search?q=` → calls plugin.search, returns results | ✅ |
+| `GET /:plugin/search` (no q) → returns `[]` | ✅ |
+| `GET /:plugin/search?q=` → 502 on plugin error | ✅ |
+| `GET /:plugin/search?q=` → 404 for unknown plugin | ✅ |
+| `GET /:plugin/manga/:id/chapters` → calls plugin.chapters | ✅ |
+| `GET /:plugin/manga/:id/chapters` → URL-decodes source id | ✅ |
+| `GET /:plugin/manga/:id/chapters` → 502 on plugin error | ✅ |
+| `GET /:plugin/chapter/:id/pages` → calls plugin.pages, returns URLs | ✅ |
+| `GET /:plugin/chapter/:id/pages` → 404 when plugin has no pages fn (novel) | ✅ |
+| `GET /:plugin/chapter/:id/pages` → 404 for unknown plugin | ✅ |
+| `GET /:plugin/chapter/:id/text` → calls plugin.chapterText, returns markdown | ✅ |
+| `GET /:plugin/chapter/:id/text` → 404 when plugin has no chapterText fn (manga) | ✅ |
+| `POST /plugins/install` → 400 when url missing | ✅ |
+| `DELETE /plugins/:id` → 403 for bundled plugin | ✅ |
+| `DELETE /plugins/:id` → 204 removes community plugin | ✅ |
 
-## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) 🟡
+## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) ✅
 
 Tests `info` shape and exported fn signatures for all bundled default plugins. No HTTP calls.
 
 | Plugin | Cases | Status |
 |---|---|---|
-| mangadex | id, default_explicit=false, content_types (manga+manhwa+manhua), fn exports | 🟡 (index.json mismatch) |
+| mangadex | id, default_explicit=false, content_types (manga+manhwa+manhua+one-shot), fn exports | ✅ |
 | mangapill | id, default_explicit=false, content_types (manga), fn exports | ✅ |
 | nhentai | id, default_explicit=true, fn exports | ✅ |
 | novelfull | id, default_explicit=false, content_types (novel), chapterText export | ✅ |
 | royalroad | id, default_explicit=false, content_types (novel), chapterText export | ✅ |
 | toonily | id, default_explicit=false, content_types (manhwa), fn exports | ✅ |
-| plugin-index consistency | mangadex index.json must include manhwa+manhua+one-shot | 🔴 (known gap) |
+| plugin-index consistency | mangadex index.json includes manga+manhwa+manhua+one-shot | ✅ |
 
-> **Known failure**: `plugin-index/index.json` lists MangaDex `content_types: ['manga']` but live plugin exports `['manga','manhwa','manhua','one-shot']`. Fix: update index.json entry.
-
-## Plugin Contract — New Plugins (`plugin-host/src/contract.new-plugins.test.ts`) ⬜ ADR 0031
-
-TDD contract tests for all 5 new source plugins. All fail until plugin dirs are created.
+## Plugin Contract — New Plugins (`plugin-host/src/contract.new-plugins.test.ts`) ✅ ADR 0031
 
 | Plugin | content_types | Novel? | Status |
 |---|---|---|---|
-| mangafire | `['manga','manhwa','manhua']` | no (pages) | ⬜ |
-| asurascans | `['manhwa']` | no (pages) | ⬜ |
-| manhuafast | `['manhua']` | no (pages) | ⬜ |
-| wuxiaworld | `['novel']` | yes (chapterText, no pages) | ⬜ |
-| boxnovel | `['novel']` | yes (chapterText, no pages) | ⬜ |
+| mangafire | `['manga','manhwa','manhua','one-shot']` | no (pages) | ✅ |
+| asurascans | `['manhwa']` | no (pages) | ✅ |
+| manhuafast | `['manhua']` | no (pages) | ✅ |
+| wuxiaworld | `['novel']` | yes (chapterText, no pages) | ✅ |
+| boxnovel | `['novel']` | yes (chapterText, no pages) | ✅ |
+| manga18fx | `['manhwa']` | no (pages) | ✅ |
 
-Each plugin tested for: id, name, default_explicit=false, correct content_types, required fn exports.
+## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) — `novelupdates` added ✅
+
+| Plugin | Cases | Status |
+|---|---|---|
+| novelupdates | id, default_explicit=false, content_types (novel), search+chapters exports, no pages | ✅ |
+| plugin-index consistency | novelupdates index.json includes novel | ✅ |
+
+## Plugin Behavior — New Plugins (`plugin-host/src/behavior.new-plugins.test.ts`) ✅ ADR 0031
+
+HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked responses.
+
+| Plugin | Cases | Status |
+|---|---|---|
+| mangafire | search shape + field values, manhwa type, chapters w/ numbers, pages URLs | ✅ |
+| asurascans | search shape + slug extraction, status normalization, chapters, pages | ✅ |
+| manhuafast | search shape + slug, status normalization, cover_url, chapters, pages | ✅ |
+| wuxiaworld | search shape + API mapping, chapters + source_id, chapterText extraction | ✅ |
+| boxnovel | search shape + slug + author, chapters + numbers, chapterText extraction | ✅ |
+| manga18fx | search shape + slug extraction, chapters with numbers, pages URLs | ✅ |
+| manga18fx | chapters — sidebar/popular chapter links from other series NOT included (contamination regression) | ✅ |
+| manga18fx | search URL is `/search?q=` not `/?s=` (WordPress fallback regression) | ✅ |
+| novelupdates | `parseSearchHtml` — id/title/status/cover, multiple results, empty HTML, status mapping | ✅ |
+
+---
+
+## API — Hurl (live server, Docker Compose stack)
+
+Out-of-process HTTP tests against the running server. Catches: middleware ordering, JWT config, startup failures, response shapes.
+
+**Runner**: `api-tests/run.sh` — registers admin, logs in → captures token → runs all `.hurl` files in order → converts JUnit XML to Allure JSON (`layer=api`).
+
+| File | Scenarios | Status |
+|---|---|---|
+| `tests/version.hurl` | GET /api/version — shape + semver format | ✅ |
+| `tests/auth.hurl` | status, login fail/success, /me unauth/badtoken/valid, PATCH /me | ✅ |
+| `tests/settings.hurl` | GET settings, POST save, confirm saved | ✅ |
+| `tests/titles.hurl` | list empty, pagination params, 404 on unknown, DELETE 404 | ✅ |
+| `tests/sources.hurl` | add, list, patch (disable), delete, list empty again | ✅ |
+| `tests/plugins.hurl` | index list, install no-url → 400, delete bundled → 403 | ✅ |
+| `tests/queue.hurl` | list empty, clear completed idempotent, remove unknown → 404 | ✅ |
+| `tests/logs.hurl` | GET logs, GET level, PATCH level → debug → restore info | ✅ |
+
+**Note**: Discover endpoints excluded from API layer — calls real external APIs. Covered by .NET integration tests with mocked HTTP.
+
+**Local run** (requires docker-compose.test.yml stack running):
+```bash
+docker compose -f docker-compose.test.yml up -d --build
+cd api-tests && bash run.sh
+docker compose -f docker-compose.test.yml down -v
+```
 
 ---
 
@@ -679,9 +585,12 @@ See ADR 0023 for full architecture decisions (fixture server, isolation, CI, sha
 
 **Fixture modes** (`plugins/fixture/`):
 
+The fixture responds to `/:source/search`, `/:source/manga/:id/chapters`, `/:source/chapter/:id/pages` for **any source key** (not just `fixture`). This means `external_sources` for mangadex, toonily, asurascans etc. all resolve through the fixture in e2e.
+
 | Title | Fixture behaviour |
 |---|---|
 | "Fixture Manga" | Returns 3 chapters, 3 pages (tiny JPEG at `/image.jpg`) |
+| "Fixture Manhwa" | Same as Fixture Manga but searched with `content_type=manhwa` — tests non-manga chapter sync |
 | "Fixture No Match" | `/search` returns `[]` → triggers Sync Warning |
 | "Fixture 502" | `/manga/:id/chapters` returns HTTP 502 |
 | "Fixture Empty Pages" | `/chapter/:id/pages` returns `[]` |
@@ -696,11 +605,26 @@ See ADR 0023 for full architecture decisions (fixture server, isolation, CI, sha
 | Add title via API → appears in library | `library.spec.ts` | Fixture Manga | ✅ |
 | Add title → sync progress overlay visible | `library.spec.ts` | Fixture Manga | ✅ |
 | Source match fails → Sync Warning badge shown | `library.spec.ts` | Fixture No Match | ✅ |
+| Chapters have `has_sources=true` after sync | `library.spec.ts` | Fixture Manga | ✅ |
+| Manual re-sync idempotent — chapter count unchanged | `library.spec.ts` | Fixture Manga | ✅ |
 | Queue chapter → download reaches `done` | `download.spec.ts` | Fixture Manga | ✅ |
 | Source 502 on chapter sync → sync warning shown, status `ready` | `download.spec.ts` | Fixture 502 | ✅ |
 | Empty pages → queue item shows error state | `download.spec.ts` | Fixture Empty Pages | ✅ |
 | Navigate to bad title URL → error state, no crash | `discover.spec.ts` | none | ✅ |
 | Discover page loads with search input | `discover.spec.ts` | none | ✅ |
+| ContentTypeFilter pills appear after search | `discover.spec.ts` | Fixture Manga | ✅ |
+| ContentTypeFilter pill toggles active on click | `discover.spec.ts` | Fixture Manga | ✅ |
+| Add from discover search → button shows "In Library" | `discover.spec.ts` | Fixture Manga | ✅ |
+| ZoomControl button visible in manga reader | `reader.spec.ts` | Fixture Manga | ✅ |
+| ZoomControl dropdown shows all 5 levels (50–150%) | `reader.spec.ts` | Fixture Manga | ✅ |
+| Selecting 150% sets image `max-width: 1200px` | `reader.spec.ts` | Fixture Manga | ✅ |
+| Selecting 50% sets image `max-width: 400px` | `reader.spec.ts` | Fixture Manga | ✅ |
+| Zoom persists via localStorage after reload | `reader.spec.ts` | Fixture Manga | ✅ |
+| Zoom applies `max-width` in scroll reader | `reader.spec.ts` | Fixture Manga | ✅ |
+| Manhwa title → chapters rendered after sync (fixture serves any source key) | `library.spec.ts` | Fixture Manhwa | ⬜ |
+| Chapter row shows spinner + progress bar while downloading (no navigation needed) | `library.spec.ts` | Fixture Manga | ⬜ |
+| Chapter row flips to "Downloaded" after download completes (no navigation needed) | `library.spec.ts` | Fixture Manga | ⬜ |
+| Queue row shows `"downloading"` badge + spinner (not `"in_progress"` / clock) | `library.spec.ts` | Fixture Manga | ⬜ |
 
 ---
 
@@ -719,30 +643,31 @@ await allure.owner('vinny')
 
 Failure categories: `allure-categories.json` at repo root — Product defects (failed), Test defects (broken), Skipped.
 
-Server tests appear under their Rust module paths in the Suites view (from JUnit XML classnames).
+Server tests (xUnit) appear under their class paths in the Suites view.
 
 ---
 
 ## Running tests
 
 ```bash
+# .NET server — unit first (faster, fail-fast), then integration
+cd server-tests && dotnet test --filter "Category=Unit"
+cd server-tests && dotnet test --filter "Category=Integration"
+cd server-tests && dotnet test              # all at once (local dev only)
+
 # Web
 cd web && npm test
 cd web && npm run test:coverage   # with coverage
 
-# Rust server
-cd server && cargo test
-cd server && cargo nextest run    # via nextest (used in CI)
-
-# .NET server — unit first (faster, fail-fast), then integration
-cd server-dotnet-tests && dotnet test --filter "Category=Unit"
-cd server-dotnet-tests && dotnet test --filter "Category=Integration"
-cd server-dotnet-tests && dotnet test              # all at once (local dev only)
-
 # Plugin host (routing + plugin contract)
 cd plugin-host && npm test
 
-# E2e (requires Docker)
+# API tests — layer 3 (requires Docker stack)
+docker compose -f docker-compose.test.yml up -d --build
+cd api-tests && bash run.sh
+docker compose -f docker-compose.test.yml down -v
+
+# E2e — layer 4 (requires Docker stack, run after API tests)
 docker compose -f docker-compose.test.yml up -d --build
 cd e2e && npm ci && npx playwright install chromium --with-deps && npm test
 docker compose -f docker-compose.test.yml down -v

@@ -1,16 +1,15 @@
 services:
   arrgh:
-    image: ghcr.io/t2vi/arrgh:latest
+    build: .
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: sqlite:///data/arrgh.db
+      DATABASE_URL: sqlite:///data/arrgh.db   # maps to DatabasePath=/data/arrgh.db
       DOWNLOAD_DIR: /data/downloads
-      # JWT_SECRET: change-me-in-production
-      # INDEX_INTERVAL_HOURS: 6
-      # RUST_LOG: arrgh_server=info,tower_http=warn   # default; set arrgh_server=debug for verbose stdout
+      # JWT_SECRET: your-secret-here   # optional — auto-generated if omitted (tokens reset on restart)
       PLUGIN_URLS: "http://plugin-host:4000"
+      # LOG_LEVEL: warn   # debug|info|warn|error — default info
     volumes:
       - arrgh_data:/data
     depends_on:

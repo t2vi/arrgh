@@ -16,11 +16,7 @@ export function SearchRow({
 }) {
   const coverSrc = result.cover_url ? api.proxyImageUrl(result.cover_url) : null
   const isAdding = addingId === result.mangaupdates_id
-
-  const isExplicit = result.tags?.split(',').some((t) => {
-    const v = t.trim().toLowerCase()
-    return v === 'adult' || v === 'hentai'
-  }) ?? false
+  const isExplicit = result.is_explicit
 
   return (
     <div className="flex gap-3 rounded-lg border border-border bg-card p-3">

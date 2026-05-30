@@ -1,14 +1,14 @@
-import { Search, ChevronRight, AlertCircle, ExternalLink } from 'lucide-react'
+import { Search, ChevronRight, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useDiscover } from './hooks/useDiscover'
 import { SearchRow } from './components/SearchRow'
 import { SearchSkeleton } from './components/SearchSkeleton'
+import { ContentTypeFilter } from './components/ContentTypeFilter'
 
 export default function Discover() {
   const h = useDiscover()
-  const isEhentai = h.data != null && h.data.length > 0 && h.data[0].source === 'ehentai'
 
   return (
     <div className="flex flex-col h-full">
@@ -49,24 +49,23 @@ export default function Discover() {
 
           {h.data && !h.isFetching && (
             <div className="space-y-3">
-              {h.data.length === 0 && (
+              <ContentTypeFilter
+                value={h.contentTypeFilter}
+                onChange={h.setContentTypeFilter}
+                availableTypes={h.availableTypes}
+              />
+
+              {(h.filteredData?.length ?? 0) === 0 && (
                 <p className="text-muted-foreground text-sm">No results.</p>
               )}
 
-              {isEhentai && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground rounded-lg border border-border bg-muted/40 px-3 py-2">
-                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  No results from MangaUpdates — showing results from E-Hentai
-                </div>
-              )}
-
-              {h.data.map((r) => {
+              {h.filteredData?.map((r) => {
                 const inLibraryNow = r.in_library || h.added.has(r.mangaupdates_id)
                 const libraryId = r.library_id ?? h.added.get(r.mangaupdates_id)
 
                 return (
                   <SearchRow
-                    key={r.mangaupdates_id}
+                    key={`${r.source}:${r.mangaupdates_id}`}
                     result={r}
                     inLibrary={inLibraryNow}
                     addingId={h.addingId}
