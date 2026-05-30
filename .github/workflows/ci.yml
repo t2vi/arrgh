@@ -32,10 +32,10 @@ jobs:
           node-version: 22
 
       - name: Unit tests
-        run: dotnet test --filter "Category=Unit" --logger "trx;LogFileName=unit-results.trx"
+        run: dotnet test --filter "Category=Unit" --logger "trx;LogFileName=unit-results.trx" --results-directory .
 
       - name: Integration tests
-        run: dotnet test --filter "Category=Integration" --logger "trx;LogFileName=integration-results.trx"
+        run: dotnet test --filter "Category=Integration" --logger "trx;LogFileName=integration-results.trx" --results-directory .
 
       - name: Convert TRX → Allure
         if: always()
