@@ -13,6 +13,7 @@ export interface SearchResult {
   in_library: boolean
   library_id: string | null
   source: string
+  is_explicit: boolean
 }
 
 export interface QueueItem {
@@ -269,6 +270,7 @@ export const api = {
   addTitle: (result: SearchResult) =>
     post<Title>('/api/discover/add', {
       mangaupdates_id: result.mangaupdates_id,
+      source: result.source,
       title: result.title,
       description: result.description,
       cover_url: result.cover_url,

@@ -1,0 +1,16 @@
+{
+  "name": "arrgh-plugin-manga18fx",
+  "version": "1.0.0",
+  "description": "Manga18fx source plugin for *ARRgh — manhwa (explicit)",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=bundles/manga18fx.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.5.0"
+  }
+}

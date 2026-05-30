@@ -1,1 +1,0 @@
-ALTER TABLE external_sources ADD COLUMN is_community INTEGER NOT NULL DEFAULT 0;

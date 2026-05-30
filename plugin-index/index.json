@@ -7,7 +7,7 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["manga"]
+    "content_types": ["manga", "manhwa", "manhua", "one-shot"]
   },
   {
     "id": "toonily",
@@ -18,16 +18,6 @@
     "bundled": true,
     "default_explicit": false,
     "content_types": ["manhwa"]
-  },
-  {
-    "id": "comick",
-    "name": "Comick",
-    "description": "Multi-language manga and manhwa aggregator. Cloudflare-protected — requires CloakBrowser.",
-    "version": "1.0.0",
-    "download_url": null,
-    "bundled": true,
-    "default_explicit": false,
-    "content_types": ["manga"]
   },
   {
     "id": "novelfull",
@@ -50,16 +40,6 @@
     "content_types": ["manga"]
   },
   {
-    "id": "royalroad",
-    "name": "Royal Road",
-    "description": "English web fiction and light novels. Returns chapter text (no page images).",
-    "version": "1.0.0",
-    "download_url": null,
-    "bundled": true,
-    "default_explicit": false,
-    "content_types": ["novel"]
-  },
-  {
     "id": "nhentai",
     "name": "nhentai",
     "description": "Hentai doujin galleries (English only). Cloudflare-protected — requires CloakBrowser.",
@@ -68,5 +48,75 @@
     "bundled": true,
     "default_explicit": true,
     "content_types": ["manga"]
+  },
+  {
+    "id": "mangafire",
+    "name": "MangaFire",
+    "description": "Multi-type reader covering manga, manhwa, and manhua. Cloudflare-protected — requires CloakBrowser.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": false,
+    "content_types": ["manga", "manhwa", "manhua", "one-shot"]
+  },
+  {
+    "id": "asurascans",
+    "name": "AsuraScans",
+    "description": "Popular manhwa scanlation site (AsuraComic). No CF protection.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": false,
+    "content_types": ["manhwa"]
+  },
+  {
+    "id": "manhuafast",
+    "name": "ManhuaFast",
+    "description": "Manhua reader with a large Chinese comics catalog. No CF protection.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": false,
+    "content_types": ["manhua"]
+  },
+  {
+    "id": "wuxiaworld",
+    "name": "WuxiaWorld",
+    "description": "Premier English translation site for Chinese web novels. Has official API.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": false,
+    "content_types": ["novel"]
+  },
+  {
+    "id": "boxnovel",
+    "name": "BoxNovel",
+    "description": "Large web novel aggregator (WordPress-based). No CF protection.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": false,
+    "content_types": ["novel"]
+  },
+  {
+    "id": "manga18fx",
+    "name": "Manga18fx",
+    "description": "Manhwa aggregator with both explicit and non-explicit titles. No CF protection.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": true,
+    "content_types": ["manhwa"]
+  },
+  {
+    "id": "novelupdates",
+    "name": "NovelUpdates",
+    "description": "Metadata authority for all novel types. Cloudflare-protected — requires CloakBrowser.",
+    "version": "1.0.0",
+    "download_url": null,
+    "bundled": true,
+    "default_explicit": false,
+    "content_types": ["novel"]
   }
 ]

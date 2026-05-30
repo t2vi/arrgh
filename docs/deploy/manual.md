@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Rust (latest stable) — `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+- .NET 10 SDK — https://dotnet.microsoft.com/download
 - Node.js 22+
 - nginx (or any static file server)
 
@@ -11,8 +11,7 @@
 ```bash
 # API server
 cd server
-cargo build --release
-# binary at server/target/release/arrgh-server
+dotnet publish -c Release -o /opt/arrgh/server
 
 # Web UI
 cd ../web
@@ -26,10 +25,13 @@ npm run build
 Create `/etc/arrgh/env`:
 
 ```
-DATABASE_URL=sqlite:///var/lib/arrgh/arrgh.db
-DOWNLOAD_DIR=/var/lib/arrgh/downloads
-BIND_ADDR=127.0.0.1:3000
-INDEX_INTERVAL_HOURS=6
+DatabasePath=/var/lib/arrgh/arrgh.db
+DownloadDir=/var/lib/arrgh/downloads
+PluginHostUrl=http://localhost:4000
+PluginIndexUrl=file:///opt/arrgh/plugin-index.json
+JwtSecret=<generate with: openssl rand -base64 48>
+ASPNETCORE_URLS=http://127.0.0.1:3000
+LOG_LEVEL=info
 ```
 
 Create a systemd unit `/etc/systemd/system/arrgh.service`:
@@ -42,7 +44,7 @@ After=network.target
 [Service]
 User=arrgh
 EnvironmentFile=/etc/arrgh/env
-ExecStart=/usr/local/bin/arrgh-server
+ExecStart=/usr/bin/dotnet /opt/arrgh/server/ArrghServer.dll
 Restart=on-failure
 StateDirectory=arrgh
 
@@ -52,13 +54,13 @@ WantedBy=multi-user.target
 
 ```bash
 useradd -r -s /sbin/nologin arrgh
-cp server/target/release/arrgh-server /usr/local/bin/
+cp plugin-index/index.json /opt/arrgh/plugin-index.json
 systemctl enable --now arrgh
 ```
 
 ## Source plugins
 
-*ARRgh ships with Mangapill as a built-in source. To add external sources (e.g. the MangaDex plugin), you need to register them either at startup or at runtime.
+*ARRgh ships with bundled sources (MangaDex, Mangapill, etc.) served by `plugin-host`. To register them, set `PLUGIN_URLS` to the plugin-host base URL.
 
 **Option A — auto-register at startup** (recommended)
 
@@ -72,11 +74,11 @@ Restart the server. Each URL in `PLUGIN_URLS` is probed on boot and inserted int
 
 **Option B — register at runtime via the UI**
 
-1. Start your plugin (e.g. `cd plugins/mangadex && npm start`)
+1. Start plugin-host: `cd plugin-host && npm start`
 2. Open *ARRgh → Settings → Sources → Add*
 3. Enter the plugin's base URL (e.g. `http://localhost:4000`)
 
-No server restart needed — the registry hot-reloads immediately.
+No server restart needed — the registry updates immediately.
 
 ---
 

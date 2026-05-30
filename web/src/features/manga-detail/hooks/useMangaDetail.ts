@@ -317,7 +317,7 @@ export function useMangaDetail(id: string | undefined): MangaDetailHandle {
 
   const displayed = showAll ? filteredChapters : filteredChapters.slice(0, CHAPTERS_PREVIEW)
 
-  const tags = manga?.tags ? manga.tags.split(', ').filter(Boolean) : []
+  const tags = manga?.tags ? manga.tags.split(',').map(t => t.trim()).filter(Boolean) : []
   const coverSrc = manga
     ? (!manga.cover_url?.startsWith('http') ? api.coverUrl(manga.id) : manga.cover_url)
     : ''

@@ -1,20 +1,9 @@
-# ── Stage 1: Build the Rust API server ───────────────────────────────────────
-FROM rust:1-slim AS server-builder
+# ── Stage 1: Build the .NET API server ───────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS server-builder
 
-RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /build/server
-
-ENV SQLX_OFFLINE=true
-
-# Cache dependencies (needs .sqlx/ for compile-time query verification)
-COPY server/Cargo.toml server/Cargo.lock ./
-COPY server/.sqlx ./.sqlx
-RUN mkdir src && echo "fn main() {}" > src/main.rs && echo "" > src/lib.rs && cargo build --release && rm -rf src
-
-COPY server/src ./src
-COPY server/migrations ./migrations
-RUN touch src/lib.rs src/main.rs && cargo build --release
+WORKDIR /build
+COPY server/ .
+RUN dotnet publish -c Release -o /publish --no-self-contained
 
 # ── Stage 2: Build the React web app ─────────────────────────────────────────
 FROM node:22-slim AS web-builder
@@ -25,24 +14,24 @@ RUN npm ci
 COPY web/ ./
 RUN npm run build
 
-# ── Stage 3: Final image — nginx + Rust binary ───────────────────────────────
-FROM debian:bookworm-slim
+# ── Stage 3: Final image — nginx + .NET runtime ───────────────────────────────
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 
-RUN apt-get update && apt-get install -y ca-certificates nginx && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
-# Nginx config: serve web on :80, proxy /api/* to Rust on :3000
+# nginx: serve web on :8080, proxy /api/* to .NET on :3000
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 
-# Rust binary
-COPY --from=server-builder /build/server/target/release/arrgh-server /usr/local/bin/arrgh-server
+# .NET server publish output
+COPY --from=server-builder /publish /app
 
-# Bundled plugin index (used when PLUGIN_INDEX_URL is not set)
+# Bundled plugin index (default when PluginIndexUrl not overridden)
 COPY plugin-index/index.json /app/plugin-index.json
 
 # Web assets
 COPY --from=web-builder /build/web/dist /var/www/arrgh
 
-# Startup script: launch Rust server + nginx
+# Startup: launch .NET server + nginx
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

@@ -10,52 +10,34 @@ jobs:
   # ── Layer 1: Unit tests ────────────────────────────────────────────────────
 
   unit-server:
-    name: Unit — Server (Rust)
+    name: Unit — Server (.NET)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: server
+        working-directory: server-tests
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          components: llvm-tools-preview
+          dotnet-version: '10.x'
 
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            server/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
+      - name: Restore
+        run: dotnet restore
 
-      - name: Install cargo-nextest
-        uses: taiki-e/install-action@cargo-nextest
+      - name: Unit tests
+        run: dotnet test --filter "Category=Unit" --logger "trx;LogFileName=unit-results.trx"
 
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Integration tests
+        run: dotnet test --filter "Category=Integration" --logger "trx;LogFileName=integration-results.trx"
 
-      - name: Run tests with coverage
-        run: cargo llvm-cov nextest --profile ci --lcov --output-path lcov.info
-        env:
-          SQLX_OFFLINE: true
-
-      - name: Upload Allure results
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-server
-          path: server/target/nextest/ci/nextest-results.xml
-
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-server
-          path: server/lcov.info
+          name: dotnet-test-results
+          path: server-tests/*.trx
 
   unit-web:
     name: Unit — Web (Node)

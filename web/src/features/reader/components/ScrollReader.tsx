@@ -9,12 +9,14 @@ export function ScrollReader({
   onPageSeen,
   onLastPageFailed,
   initialPage,
+  zoom = 100,
 }: {
   chapterId: string
   total: number | null
   onPageSeen: (page: number) => void
   onLastPageFailed: (lastGood: number) => void
   initialPage: number
+  zoom?: number
 }) {
   const knownMax = total != null ? total : 200
   const [rendered, setRendered] = useState(() => Math.min(knownMax, (total ?? 0) > 0 ? total! : 20))
@@ -59,7 +61,7 @@ export function ScrollReader({
       className="flex-1 overflow-y-auto bg-black"
       onScroll={onScroll}
     >
-      <div className="flex flex-col items-center gap-1 py-2 max-w-3xl mx-auto">
+      <div className="flex flex-col items-center gap-1 py-2 w-full mx-auto" style={{ maxWidth: `${zoom * 8}px` }}>
         {pages.map((p) => failed.has(p) ? null : (
           <div key={p} className="relative w-full">
             {!loaded.has(p) && (
