@@ -1,0 +1,36 @@
+{
+  "uuid": "8113fed4-2384-4d27-913c-fa91bf18057a",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#DetectContentType_Avif",
+  "name": "DetectContentType_Avif",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.DetectContentType_Avif",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093586,
+  "stop": 1780149093589,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "DetectContentType_Avif"
+    }
+  ]
+}

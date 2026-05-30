@@ -1,0 +1,36 @@
+{
+  "uuid": "936ba510-6d5a-4e6c-83da-6c7fc89b2090",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)",
+  "name": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093563,
+  "stop": 1780149093563,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "d941b9d3-621c-4edd-b4fb-d429e6180606",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#RootDomainReferer_Subdomain_ExtractsRoot",
+  "name": "RootDomainReferer_Subdomain_ExtractsRoot",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.RootDomainReferer_Subdomain_ExtractsRoot",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093613,
+  "stop": 1780149093613,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "RootDomainReferer_Subdomain_ExtractsRoot"
+    }
+  ]
+}

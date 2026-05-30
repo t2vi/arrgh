@@ -1,0 +1,36 @@
+{
+  "uuid": "9e226e34-6086-4eb4-b807-c2102fd4491b",
+  "historyId": "ArrghServer.Tests.SourcesTests#AddSource_Forbidden_ForMember",
+  "name": "AddSource_Forbidden_ForMember",
+  "fullName": "ArrghServer.Tests.SourcesTests.AddSource_Forbidden_ForMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149137517,
+  "stop": 1780149137978,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "story",
+      "value": "AddSource_Forbidden_ForMember"
+    }
+  ]
+}

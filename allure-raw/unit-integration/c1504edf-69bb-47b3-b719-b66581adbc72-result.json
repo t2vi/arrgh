@@ -1,0 +1,36 @@
+{
+  "uuid": "c1504edf-69bb-47b3-b719-b66581adbc72",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#AuthorityOrder_AniListBeforeMangaDex",
+  "name": "AuthorityOrder_AniListBeforeMangaDex",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.AuthorityOrder_AniListBeforeMangaDex",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093559,
+  "stop": 1780149093559,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "AuthorityOrder_AniListBeforeMangaDex"
+    }
+  ]
+}

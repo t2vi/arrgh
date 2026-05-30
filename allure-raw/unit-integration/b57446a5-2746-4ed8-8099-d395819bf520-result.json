@@ -1,0 +1,36 @@
+{
+  "uuid": "b57446a5-2746-4ed8-8099-d395819bf520",
+  "historyId": "ArrghServer.Tests.SourcesTests#DeleteSource_NotFound_NonexistentId",
+  "name": "DeleteSource_NotFound_NonexistentId",
+  "fullName": "ArrghServer.Tests.SourcesTests.DeleteSource_NotFound_NonexistentId",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149135498,
+  "stop": 1780149135950,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "story",
+      "value": "DeleteSource_NotFound_NonexistentId"
+    }
+  ]
+}

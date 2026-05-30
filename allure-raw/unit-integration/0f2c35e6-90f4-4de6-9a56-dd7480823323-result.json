@@ -1,0 +1,36 @@
+{
+  "uuid": "0f2c35e6-90f4-4de6-9a56-dd7480823323",
+  "historyId": "ArrghServer.Tests.AuthTests#CreateUser_Forbidden_ForMember",
+  "name": "CreateUser_Forbidden_ForMember",
+  "fullName": "ArrghServer.Tests.AuthTests.CreateUser_Forbidden_ForMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149136034,
+  "stop": 1780149136647,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "CreateUser_Forbidden_ForMember"
+    }
+  ]
+}

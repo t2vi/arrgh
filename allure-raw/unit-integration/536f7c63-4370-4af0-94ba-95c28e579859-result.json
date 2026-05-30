@@ -1,0 +1,36 @@
+{
+  "uuid": "536f7c63-4370-4af0-94ba-95c28e579859",
+  "historyId": "ArrghServer.Tests.LogsTests#GetLevel_ReturnsDefaultInfoLevel",
+  "name": "GetLevel_ReturnsDefaultInfoLevel",
+  "fullName": "ArrghServer.Tests.LogsTests.GetLevel_ReturnsDefaultInfoLevel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149112622,
+  "stop": 1780149113195,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogsTests"
+    },
+    {
+      "name": "story",
+      "value": "GetLevel_ReturnsDefaultInfoLevel"
+    }
+  ]
+}

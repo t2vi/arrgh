@@ -1,0 +1,36 @@
+{
+  "uuid": "bb027889-3723-4709-b321-d02221ed9983",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#txt&quot;)",
+  "name": "txt&quot;)",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.IsImage_NonImage_ReturnsFalse(name: &quot;page.txt&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093604,
+  "stop": 1780149093604,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "txt&quot;)"
+    }
+  ]
+}

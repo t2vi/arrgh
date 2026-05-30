@@ -1,0 +1,36 @@
+{
+  "uuid": "8b6177bc-8593-4890-bfcb-79dcbaa077cd",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapContentType_MapsNovel",
+  "name": "MapContentType_MapsNovel",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapContentType_MapsNovel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093436,
+  "stop": 1780149093438,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "MapContentType_MapsNovel"
+    }
+  ]
+}

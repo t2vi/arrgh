@@ -1,0 +1,36 @@
+{
+  "uuid": "fbc6cebe-3e4b-48bb-9a28-c52425a9f200",
+  "historyId": "ArrghServer.Tests.SourcesTests#PatchSource_TogglesEnabled",
+  "name": "PatchSource_TogglesEnabled",
+  "fullName": "ArrghServer.Tests.SourcesTests.PatchSource_TogglesEnabled",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149132633,
+  "stop": 1780149133271,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "story",
+      "value": "PatchSource_TogglesEnabled"
+    }
+  ]
+}

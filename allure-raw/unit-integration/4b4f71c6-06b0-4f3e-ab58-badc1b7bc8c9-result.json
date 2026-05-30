@@ -1,0 +1,36 @@
+{
+  "uuid": "4b4f71c6-06b0-4f3e-ab58-badc1b7bc8c9",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapEntry_ReturnsNullForNonMangaFormat",
+  "name": "MapEntry_ReturnsNullForNonMangaFormat",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapEntry_ReturnsNullForNonMangaFormat",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093517,
+  "stop": 1780149093518,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "MapEntry_ReturnsNullForNonMangaFormat"
+    }
+  ]
+}

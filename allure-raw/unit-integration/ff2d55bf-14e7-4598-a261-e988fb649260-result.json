@@ -1,0 +1,36 @@
+{
+  "uuid": "ff2d55bf-14e7-4598-a261-e988fb649260",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#Deduplicate_NormalizedTitleComparison",
+  "name": "Deduplicate_NormalizedTitleComparison",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.Deduplicate_NormalizedTitleComparison",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093564,
+  "stop": 1780149093564,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "Deduplicate_NormalizedTitleComparison"
+    }
+  ]
+}

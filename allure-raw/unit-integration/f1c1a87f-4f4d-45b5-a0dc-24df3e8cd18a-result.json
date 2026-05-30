@@ -1,0 +1,36 @@
+{
+  "uuid": "f1c1a87f-4f4d-45b5-a0dc-24df3e8cd18a",
+  "historyId": "ArrghServer.Tests.AuthTests#Login_Unauthorized_WrongPassword",
+  "name": "Login_Unauthorized_WrongPassword",
+  "fullName": "ArrghServer.Tests.AuthTests.Login_Unauthorized_WrongPassword",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149142856,
+  "stop": 1780149143380,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "Login_Unauthorized_WrongPassword"
+    }
+  ]
+}

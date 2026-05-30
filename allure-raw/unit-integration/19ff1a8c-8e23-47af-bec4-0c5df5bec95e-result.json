@@ -1,0 +1,36 @@
+{
+  "uuid": "19ff1a8c-8e23-47af-bec4-0c5df5bec95e",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_Roundtrip_MemberClaims",
+  "name": "CreateToken_Roundtrip_MemberClaims",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_Roundtrip_MemberClaims",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093649,
+  "stop": 1780149093649,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_Roundtrip_MemberClaims"
+    }
+  ]
+}

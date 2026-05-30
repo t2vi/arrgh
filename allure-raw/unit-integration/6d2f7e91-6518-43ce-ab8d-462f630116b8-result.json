@@ -1,0 +1,36 @@
+{
+  "uuid": "6d2f7e91-6518-43ce-ab8d-462f630116b8",
+  "historyId": "ArrghServer.Tests.LogServiceTests#SetLevel_ValidLevel_ReturnsTrueAndUpdates",
+  "name": "SetLevel_ValidLevel_ReturnsTrueAndUpdates",
+  "fullName": "ArrghServer.Tests.LogServiceTests.SetLevel_ValidLevel_ReturnsTrueAndUpdates",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093543,
+  "stop": 1780149093543,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_ValidLevel_ReturnsTrueAndUpdates"
+    }
+  ]
+}

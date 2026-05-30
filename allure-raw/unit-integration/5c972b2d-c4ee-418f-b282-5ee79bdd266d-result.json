@@ -1,0 +1,36 @@
+{
+  "uuid": "5c972b2d-c4ee-418f-b282-5ee79bdd266d",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddManga_WithMatchingExternalSource_CreatesChapters",
+  "name": "AddManga_WithMatchingExternalSource_CreatesChapters",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddManga_WithMatchingExternalSource_CreatesChapters",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149124660,
+  "stop": 1780149125356,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_WithMatchingExternalSource_CreatesChapters"
+    }
+  ]
+}

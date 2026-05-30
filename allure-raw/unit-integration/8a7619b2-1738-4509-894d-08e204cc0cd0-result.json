@@ -1,0 +1,36 @@
+{
+  "uuid": "8a7619b2-1738-4509-894d-08e204cc0cd0",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_UpdatesAndReturnsNewValues",
+  "name": "SaveSettings_UpdatesAndReturnsNewValues",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_UpdatesAndReturnsNewValues",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149115161,
+  "stop": 1780149115647,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_UpdatesAndReturnsNewValues"
+    }
+  ]
+}

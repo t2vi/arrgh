@@ -1,0 +1,36 @@
+{
+  "uuid": "d9097cef-be09-439e-ba29-afbc1503e503",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_AllSourcesFail_SetsError",
+  "name": "Download_AllSourcesFail_SetsError",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_AllSourcesFail_SetsError",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149120384,
+  "stop": 1780149123508,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "story",
+      "value": "Download_AllSourcesFail_SetsError"
+    }
+  ]
+}

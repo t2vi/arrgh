@@ -1,0 +1,36 @@
+{
+  "uuid": "026dedd4-4904-4f29-b407-4606c7a0f70d",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Trending_Unauthorized_WithoutToken",
+  "name": "Trending_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Trending_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149128200,
+  "stop": 1780149128567,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "Trending_Unauthorized_WithoutToken"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "a57015e0-9675-4f31-9b3a-a5237f387596",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Search_ReturnsMappedResults",
+  "name": "Search_ReturnsMappedResults",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Search_ReturnsMappedResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149131491,
+  "stop": 1780149132102,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "Search_ReturnsMappedResults"
+    }
+  ]
+}

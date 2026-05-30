@@ -1,0 +1,36 @@
+{
+  "uuid": "b3be0379-bba7-4ef7-af88-c57881120a70",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;novel&quot;)",
+  "name": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;novel&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;novel&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149093563,
+  "stop": 1780149093563,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;novel&quot;)"
+    }
+  ]
+}

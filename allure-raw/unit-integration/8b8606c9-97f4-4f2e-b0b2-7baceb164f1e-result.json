@@ -1,0 +1,36 @@
+{
+  "uuid": "8b8606c9-97f4-4f2e-b0b2-7baceb164f1e",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_ImageError_ErrorMessageContainsUrl",
+  "name": "Download_ImageError_ErrorMessageContainsUrl",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_ImageError_ErrorMessageContainsUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149129777,
+  "stop": 1780149132893,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "story",
+      "value": "Download_ImageError_ErrorMessageContainsUrl"
+    }
+  ]
+}

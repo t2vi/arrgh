@@ -1,0 +1,36 @@
+{
+  "uuid": "bf51ba70-1255-481a-a048-fc2f40921838",
+  "historyId": "ArrghServer.Tests.SettingsTests#GetSettings_NoAuthRequired",
+  "name": "GetSettings_NoAuthRequired",
+  "fullName": "ArrghServer.Tests.SettingsTests.GetSettings_NoAuthRequired",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149117178,
+  "stop": 1780149117651,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "story",
+      "value": "GetSettings_NoAuthRequired"
+    }
+  ]
+}

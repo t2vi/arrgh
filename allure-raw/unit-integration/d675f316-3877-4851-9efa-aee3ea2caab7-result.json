@@ -1,0 +1,36 @@
+{
+  "uuid": "d675f316-3877-4851-9efa-aee3ea2caab7",
+  "historyId": "ArrghServer.Tests.TitlesTests#NewReleases_OnlyOwnedTitles",
+  "name": "NewReleases_OnlyOwnedTitles",
+  "fullName": "ArrghServer.Tests.TitlesTests.NewReleases_OnlyOwnedTitles",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149096751,
+  "stop": 1780149100057,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "NewReleases_OnlyOwnedTitles"
+    }
+  ]
+}
