@@ -77,8 +77,10 @@ test.describe('Discover', () => {
   })
 
   test('adding from discover search lands in library', async ({ page }) => {
+    // "Fixture Manga" is used in other discover tests and confirmed to return
+    // MangaUpdates results in CI. Avoids "Fixture Add Test" which returned nothing.
     await page.goto(`${BASE}/discover`)
-    await page.getByPlaceholder(/search for manga/i).fill('Fixture Add Test')
+    await page.getByPlaceholder(/search for manga/i).fill('Fixture Manga')
     await page.getByRole('button', { name: /^search$/i }).click()
 
     // Wait for result row with Add button
@@ -91,7 +93,7 @@ test.describe('Discover', () => {
 
     // Clean up — find the title id via API and delete
     const token = await getToken(page)
-    const list = await page.request.get(`${BASE}/api/titles?search=Fixture+Add+Test`, {
+    const list = await page.request.get(`${BASE}/api/titles?search=Fixture+Manga`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     const { items } = await list.json() as { items: { id: string }[] }

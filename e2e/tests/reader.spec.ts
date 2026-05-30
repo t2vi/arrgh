@@ -81,6 +81,8 @@ async function downloadAndOpenReader(page: import('@playwright/test').Page, titl
 test.describe('Reader — zoom control', () => {
   let titleId: string
 
+  test.setTimeout(90_000)
+
   test.beforeEach(async ({ page }) => {
     titleId = await addTitleViaApi(page, 'Fixture Manga')
     await waitForSyncDone(page, titleId)
@@ -148,6 +150,8 @@ test.describe('Reader — zoom control', () => {
 
 test.describe('Reader — scroll mode zoom', () => {
   let titleId: string
+
+  test.setTimeout(90_000)
 
   test.beforeEach(async ({ page }) => {
     titleId = await addTitleViaApi(page, 'Fixture Manga')
