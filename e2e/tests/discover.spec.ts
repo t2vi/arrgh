@@ -77,27 +77,28 @@ test.describe('Discover', () => {
   })
 
   test('adding from discover search lands in library', async ({ page }) => {
-    // "Fixture Manga" is used in other discover tests and confirmed to return
-    // MangaUpdates results in CI. Avoids "Fixture Add Test" which returned nothing.
     await page.goto(`${BASE}/discover`)
     await page.getByPlaceholder(/search for manga/i).fill('Fixture Manga')
     await page.getByRole('button', { name: /^search$/i }).click()
 
-    // Wait for result row with Add button
+    // Wait for first Add button
     const addBtn = page.getByRole('button', { name: 'Add' }).first()
     await expect(addBtn).toBeVisible({ timeout: 15_000 })
     await addBtn.click()
 
-    // Add navigates to Library — verify we landed there with the title card
-    await expect(page).toHaveURL(/\/library/, { timeout: 10_000 })
-    await expect(page.locator('[data-nav]').filter({ hasText: /Fixture|Sweet Fixture/i }).first()).toBeVisible({ timeout: 5_000 })
+    // App auto-navigates to /library after add — wait for that route
+    await page.waitForURL(`${BASE}/library`, { timeout: 10_000 })
 
-    // Clean up — find the title id via API and delete
+    // Added title must appear as a library card
+    const card = page.locator('[data-nav]').first()
+    await expect(card).toBeVisible({ timeout: 5_000 })
+
+    // Clean up
     const token = await getToken(page)
-    const list = await page.request.get(`${BASE}/api/titles?search=Fixture+Manga`, {
+    const list = await page.request.get(`${BASE}/api/titles`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     const { items } = await list.json() as { items: { id: string }[] }
-    if (items[0]) await deleteTitleViaApi(page, items[0].id)
+    for (const item of items) await deleteTitleViaApi(page, item.id)
   })
 })

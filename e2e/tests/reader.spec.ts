@@ -134,7 +134,7 @@ test.describe('Reader — zoom control', () => {
   test('zoom level persists via localStorage after reload', async ({ page }) => {
     await downloadAndOpenReader(page, titleId)
     await page.getByTitle('Zoom').click()
-    await page.getByRole('button', { name: '125%' }).click()
+    await page.getByRole('button', { name: '125%', exact: true }).click()
 
     // Reload — zoom should be restored from localStorage
     await page.reload()
@@ -142,7 +142,7 @@ test.describe('Reader — zoom control', () => {
 
     // Open zoom picker and verify 125% is highlighted (active)
     await page.getByTitle('Zoom').click()
-    const btn125 = page.getByRole('button', { name: '125%' })
+    const btn125 = page.getByRole('button', { name: '125%', exact: true })
     await expect(btn125).toHaveClass(/bg-primary/)
   })
 
@@ -170,7 +170,7 @@ test.describe('Reader — scroll mode zoom', () => {
 
     // Apply 75% zoom
     await page.getByTitle('Zoom').click()
-    await page.getByRole('button', { name: '75%' }).click()
+    await page.getByRole('button', { name: '75%', exact: true }).click()
 
     // Scroll reader renders a column container with maxWidth = 75 * 8 = 600px
     // Locate it by its inline style (ScrollReader inner flex div)
