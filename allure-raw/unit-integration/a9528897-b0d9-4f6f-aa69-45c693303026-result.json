@@ -1,0 +1,36 @@
+{
+  "uuid": "a9528897-b0d9-4f6f-aa69-45c693303026",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_Dedup_AniListWins_ForManhwa",
+  "name": "Search_Dedup_AniListWins_ForManhwa",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_Dedup_AniListWins_ForManhwa",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149631322,
+  "stop": 1780149631770,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "Search_Dedup_AniListWins_ForManhwa"
+    }
+  ]
+}

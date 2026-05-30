@@ -1,0 +1,36 @@
+{
+  "uuid": "244e87ed-20a4-481b-be9b-d1092116bc01",
+  "historyId": "ArrghServer.Tests.AuthTests#Me_Unauthorized_NoToken",
+  "name": "Me_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.AuthTests.Me_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149668954,
+  "stop": 1780149669205,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "Me_Unauthorized_NoToken"
+    }
+  ]
+}

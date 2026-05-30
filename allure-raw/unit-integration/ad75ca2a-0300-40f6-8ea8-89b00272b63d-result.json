@@ -1,0 +1,36 @@
+{
+  "uuid": "ad75ca2a-0300-40f6-8ea8-89b00272b63d",
+  "historyId": "ArrghServer.Tests.VersionTests#GetVersion_UpdateAvailable_ReturnsLatestAndUrl",
+  "name": "GetVersion_UpdateAvailable_ReturnsLatestAndUrl",
+  "fullName": "ArrghServer.Tests.VersionTests.GetVersion_UpdateAvailable_ReturnsLatestAndUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149625261,
+  "stop": 1780149628504,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "VersionTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "VersionTests"
+    },
+    {
+      "name": "story",
+      "value": "GetVersion_UpdateAvailable_ReturnsLatestAndUrl"
+    }
+  ]
+}

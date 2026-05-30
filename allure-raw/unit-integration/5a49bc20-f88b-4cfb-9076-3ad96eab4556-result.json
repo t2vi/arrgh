@@ -1,0 +1,36 @@
+{
+  "uuid": "5a49bc20-f88b-4cfb-9076-3ad96eab4556",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#SourceMatching_AliasMatch_LinksSourceWhenTranslationDiffers",
+  "name": "SourceMatching_AliasMatch_LinksSourceWhenTranslationDiffers",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.SourceMatching_AliasMatch_LinksSourceWhenTranslationDiffers",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149634496,
+  "stop": 1780149635026,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "SourceMatching_AliasMatch_LinksSourceWhenTranslationDiffers"
+    }
+  ]
+}

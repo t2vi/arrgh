@@ -1,0 +1,36 @@
+{
+  "uuid": "d215fd81-d95b-4a0d-9716-4a7da2a45a44",
+  "historyId": "ArrghServer.Tests.AuthTests#PatchUser_UpdatesRole",
+  "name": "PatchUser_UpdatesRole",
+  "fullName": "ArrghServer.Tests.AuthTests.PatchUser_UpdatesRole",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149671438,
+  "stop": 1780149672037,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "PatchUser_UpdatesRole"
+    }
+  ]
+}

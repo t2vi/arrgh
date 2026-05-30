@@ -1,0 +1,36 @@
+{
+  "uuid": "1728c41f-402e-40b3-95a9-1b3926c32610",
+  "historyId": "ArrghServer.Tests.QueueTests#ClearCompleted_NoContent_DeletesDoneAndCancelledAndError",
+  "name": "ClearCompleted_NoContent_DeletesDoneAndCancelledAndError",
+  "fullName": "ArrghServer.Tests.QueueTests.ClearCompleted_NoContent_DeletesDoneAndCancelledAndError",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149663483,
+  "stop": 1780149664059,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "QueueTests"
+    },
+    {
+      "name": "story",
+      "value": "ClearCompleted_NoContent_DeletesDoneAndCancelledAndError"
+    }
+  ]
+}

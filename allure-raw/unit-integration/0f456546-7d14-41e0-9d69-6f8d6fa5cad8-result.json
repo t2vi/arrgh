@@ -1,0 +1,36 @@
+{
+  "uuid": "0f456546-7d14-41e0-9d69-6f8d6fa5cad8",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_RequestHasUserAgent",
+  "name": "Download_RequestHasUserAgent",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_RequestHasUserAgent",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149645246,
+  "stop": 1780149648362,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "story",
+      "value": "Download_RequestHasUserAgent"
+    }
+  ]
+}

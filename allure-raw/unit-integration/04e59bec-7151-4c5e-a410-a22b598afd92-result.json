@@ -1,0 +1,36 @@
+{
+  "uuid": "04e59bec-7151-4c5e-a410-a22b598afd92",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_UnprocessableEntity_EmptyUsername",
+  "name": "Register_UnprocessableEntity_EmptyUsername",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_UnprocessableEntity_EmptyUsername",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149678132,
+  "stop": 1780149678335,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "Register_UnprocessableEntity_EmptyUsername"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "548777ad-e3e7-489c-91b7-e819a7911c4e",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_IgnoresEmptyDownloadDir",
+  "name": "SaveSettings_IgnoresEmptyDownloadDir",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_IgnoresEmptyDownloadDir",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149640249,
+  "stop": 1780149640830,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_IgnoresEmptyDownloadDir"
+    }
+  ]
+}

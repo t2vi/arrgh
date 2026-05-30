@@ -1,0 +1,36 @@
+{
+  "uuid": "e3bbdd06-43ed-443d-9937-e45dd7197c0a",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ClampTrending_Above50_ClampsTo50",
+  "name": "ClampTrending_Above50_ClampsTo50",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ClampTrending_Above50_ClampsTo50",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622224,
+  "stop": 1780149622224,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ClampTrending_Above50_ClampsTo50"
+    }
+  ]
+}

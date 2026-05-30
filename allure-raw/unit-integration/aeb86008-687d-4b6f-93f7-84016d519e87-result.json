@@ -1,0 +1,36 @@
+{
+  "uuid": "aeb86008-687d-4b6f-93f7-84016d519e87",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;unknown&quot;, expected: &quot;mangaupdates&quot;)",
+  "name": "DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;unknown&quot;, expected: &quot;mangaupdates&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;unknown&quot;, expected: &quot;mangaupdates&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622170,
+  "stop": 1780149622170,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;unknown&quot;, expected: &quot;mangaupdates&quot;)"
+    }
+  ]
+}

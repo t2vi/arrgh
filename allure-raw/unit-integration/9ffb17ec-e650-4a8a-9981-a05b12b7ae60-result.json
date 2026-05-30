@@ -1,0 +1,36 @@
+{
+  "uuid": "9ffb17ec-e650-4a8a-9981-a05b12b7ae60",
+  "historyId": "ArrghServer.Tests.UpdateCacheTests#GetIfNewer_Empty_ReturnsNulls",
+  "name": "GetIfNewer_Empty_ReturnsNulls",
+  "fullName": "ArrghServer.Tests.UpdateCacheTests.GetIfNewer_Empty_ReturnsNulls",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622216,
+  "stop": 1780149622218,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "UpdateCacheTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "UpdateCacheTests"
+    },
+    {
+      "name": "story",
+      "value": "GetIfNewer_Empty_ReturnsNulls"
+    }
+  ]
+}

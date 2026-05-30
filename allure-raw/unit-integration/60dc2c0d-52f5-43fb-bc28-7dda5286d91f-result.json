@@ -1,0 +1,36 @@
+{
+  "uuid": "60dc2c0d-52f5-43fb-bc28-7dda5286d91f",
+  "historyId": "ArrghServer.Tests.TitlesTests#RemoveTitle_NoContent_WhenOwned",
+  "name": "RemoveTitle_NoContent_WhenOwned",
+  "fullName": "ArrghServer.Tests.TitlesTests.RemoveTitle_NoContent_WhenOwned",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149643145,
+  "stop": 1780149643749,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "RemoveTitle_NoContent_WhenOwned"
+    }
+  ]
+}

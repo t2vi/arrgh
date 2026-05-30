@@ -1,0 +1,36 @@
+{
+  "uuid": "1129b008-3d0f-44ce-924f-fbf5519c03a0",
+  "historyId": "ArrghServer.Tests.UpdateCacheTests#Clear_AfterSet_ReturnsNulls",
+  "name": "Clear_AfterSet_ReturnsNulls",
+  "fullName": "ArrghServer.Tests.UpdateCacheTests.Clear_AfterSet_ReturnsNulls",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622218,
+  "stop": 1780149622219,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "UpdateCacheTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "UpdateCacheTests"
+    },
+    {
+      "name": "story",
+      "value": "Clear_AfterSet_ReturnsNulls"
+    }
+  ]
+}

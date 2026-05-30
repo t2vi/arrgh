@@ -1,0 +1,36 @@
+{
+  "uuid": "9a8c68a6-fce4-49bd-92be-51732d1cd8ea",
+  "historyId": "ArrghServer.Tests.ChaptersTests#GetChapterText_BadRequest_WhenNotTextFormat",
+  "name": "GetChapterText_BadRequest_WhenNotTextFormat",
+  "fullName": "ArrghServer.Tests.ChaptersTests.GetChapterText_BadRequest_WhenNotTextFormat",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149653934,
+  "stop": 1780149654461,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterText_BadRequest_WhenNotTextFormat"
+    }
+  ]
+}

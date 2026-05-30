@@ -1,0 +1,36 @@
+{
+  "uuid": "b9dfc1e5-de42-4dd2-a4b7-6a05261b86bd",
+  "historyId": "ArrghServer.Tests.AuthTests#DeleteUser_NotFound_NonexistentUser",
+  "name": "DeleteUser_NotFound_NonexistentUser",
+  "fullName": "ArrghServer.Tests.AuthTests.DeleteUser_NotFound_NonexistentUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149670116,
+  "stop": 1780149670556,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "DeleteUser_NotFound_NonexistentUser"
+    }
+  ]
+}

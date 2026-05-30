@@ -1,0 +1,36 @@
+{
+  "uuid": "f34fed60-bff3-4c1b-a456-0f36c0e3011c",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData",
+  "name": "Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149661204,
+  "stop": 1780149661757,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData"
+    }
+  ]
+}

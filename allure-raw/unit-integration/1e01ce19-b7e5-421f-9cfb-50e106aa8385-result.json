@@ -1,0 +1,36 @@
+{
+  "uuid": "1e01ce19-b7e5-421f-9cfb-50e106aa8385",
+  "historyId": "ArrghServer.Tests.LogsTests#GetLogs_MemberCanAccess",
+  "name": "GetLogs_MemberCanAccess",
+  "fullName": "ArrghServer.Tests.LogsTests.GetLogs_MemberCanAccess",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149653746,
+  "stop": 1780149654213,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogsTests"
+    },
+    {
+      "name": "story",
+      "value": "GetLogs_MemberCanAccess"
+    }
+  ]
+}

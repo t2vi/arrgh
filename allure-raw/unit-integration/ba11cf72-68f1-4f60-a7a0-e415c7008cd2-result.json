@@ -1,0 +1,36 @@
+{
+  "uuid": "ba11cf72-68f1-4f60-a7a0-e415c7008cd2",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#StripQualifier_Manga",
+  "name": "StripQualifier_Manga",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.StripQualifier_Manga",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622167,
+  "stop": 1780149622167,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "StripQualifier_Manga"
+    }
+  ]
+}

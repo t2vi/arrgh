@@ -1,0 +1,36 @@
+{
+  "uuid": "e2ec304a-6543-47b5-8350-76b1db100deb",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_AdminCanSetExplicit",
+  "name": "PatchTitle_AdminCanSetExplicit",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_AdminCanSetExplicit",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149646311,
+  "stop": 1780149646884,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_AdminCanSetExplicit"
+    }
+  ]
+}

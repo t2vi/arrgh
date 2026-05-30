@@ -1,0 +1,36 @@
+{
+  "uuid": "9b7ac15b-9a62-421a-831c-7b7cb8f943a5",
+  "historyId": "ArrghServer.Tests.SourcesPatchTests#ListSources_ReturnsPriority_InResponse",
+  "name": "ListSources_ReturnsPriority_InResponse",
+  "fullName": "ArrghServer.Tests.SourcesPatchTests.ListSources_ReturnsPriority_InResponse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149625334,
+  "stop": 1780149628573,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesPatchTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesPatchTests"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_ReturnsPriority_InResponse"
+    }
+  ]
+}

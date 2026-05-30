@@ -1,0 +1,36 @@
+{
+  "uuid": "99849e48-bcbd-42c4-b7ac-8f0deb49e192",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#DetectContentType_Webp",
+  "name": "DetectContentType_Webp",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.DetectContentType_Webp",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622201,
+  "stop": 1780149622201,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "DetectContentType_Webp"
+    }
+  ]
+}

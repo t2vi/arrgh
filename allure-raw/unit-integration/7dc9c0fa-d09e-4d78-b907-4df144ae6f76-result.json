@@ -1,0 +1,36 @@
+{
+  "uuid": "7dc9c0fa-d09e-4d78-b907-4df144ae6f76",
+  "historyId": "ArrghServer.Tests.ChaptersTests#ListChapters_ShowsExplicitTitle_WhenUserAllowed",
+  "name": "ListChapters_ShowsExplicitTitle_WhenUserAllowed",
+  "fullName": "ArrghServer.Tests.ChaptersTests.ListChapters_ShowsExplicitTitle_WhenUserAllowed",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149646717,
+  "stop": 1780149647225,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "story",
+      "value": "ListChapters_ShowsExplicitTitle_WhenUserAllowed"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "0b1e762f-0b08-48c9-a656-622c60414d52",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_CreatesTitleAndReturnsIt",
+  "name": "AddManga_CreatesTitleAndReturnsIt",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_CreatesTitleAndReturnsIt",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149659632,
+  "stop": 1780149660192,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_CreatesTitleAndReturnsIt"
+    }
+  ]
+}

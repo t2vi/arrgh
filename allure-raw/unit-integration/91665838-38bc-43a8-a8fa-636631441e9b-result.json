@@ -1,0 +1,36 @@
+{
+  "uuid": "91665838-38bc-43a8-a8fa-636631441e9b",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ParseBool_OtherString_ReturnsFalse",
+  "name": "ParseBool_OtherString_ReturnsFalse",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ParseBool_OtherString_ReturnsFalse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622223,
+  "stop": 1780149622223,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ParseBool_OtherString_ReturnsFalse"
+    }
+  ]
+}

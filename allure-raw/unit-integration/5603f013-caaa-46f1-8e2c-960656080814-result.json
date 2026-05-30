@@ -1,0 +1,36 @@
+{
+  "uuid": "5603f013-caaa-46f1-8e2c-960656080814",
+  "historyId": "ArrghServer.Tests.SourcesTests#ListSources_HasApiKey_True_WhenApiKeySet",
+  "name": "ListSources_HasApiKey_True_WhenApiKeySet",
+  "fullName": "ArrghServer.Tests.SourcesTests.ListSources_HasApiKey_True_WhenApiKeySet",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149631206,
+  "stop": 1780149631630,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_HasApiKey_True_WhenApiKeySet"
+    }
+  ]
+}

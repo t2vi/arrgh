@@ -1,0 +1,36 @@
+{
+  "uuid": "aca63058-d9b8-4735-bf5e-4f9437c7736b",
+  "historyId": "ArrghServer.Tests.SourcesTests#AddSource_BadGateway_WhenPluginNotPortedYet",
+  "name": "AddSource_BadGateway_WhenPluginNotPortedYet",
+  "fullName": "ArrghServer.Tests.SourcesTests.AddSource_BadGateway_WhenPluginNotPortedYet",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149632861,
+  "stop": 1780149633425,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "story",
+      "value": "AddSource_BadGateway_WhenPluginNotPortedYet"
+    }
+  ]
+}

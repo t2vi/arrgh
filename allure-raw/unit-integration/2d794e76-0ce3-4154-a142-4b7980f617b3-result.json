@@ -1,0 +1,36 @@
+{
+  "uuid": "2d794e76-0ce3-4154-a142-4b7980f617b3",
+  "historyId": "ArrghServer.Tests.ChaptersTests#QueueDownload_Accepted_WhenEligible",
+  "name": "QueueDownload_Accepted_WhenEligible",
+  "fullName": "ArrghServer.Tests.ChaptersTests.QueueDownload_Accepted_WhenEligible",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149651953,
+  "stop": 1780149652478,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "story",
+      "value": "QueueDownload_Accepted_WhenEligible"
+    }
+  ]
+}

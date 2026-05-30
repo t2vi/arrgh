@@ -1,0 +1,36 @@
+{
+  "uuid": "adefab6d-ee3e-4e5c-a08b-dc03cc3d71e2",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_ReturnsOwnedTitles",
+  "name": "ListTitles_ReturnsOwnedTitles",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_ReturnsOwnedTitles",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149645656,
+  "stop": 1780149646308,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_ReturnsOwnedTitles"
+    }
+  ]
+}

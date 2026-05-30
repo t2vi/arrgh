@@ -1,0 +1,36 @@
+{
+  "uuid": "b8f88efd-4186-4d80-ae43-7d7ac0115f2d",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapEntry_IsAdult_True_WhenFlagSet",
+  "name": "MapEntry_IsAdult_True_WhenFlagSet",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapEntry_IsAdult_True_WhenFlagSet",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622163,
+  "stop": 1780149622163,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "MapEntry_IsAdult_True_WhenFlagSet"
+    }
+  ]
+}

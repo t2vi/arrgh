@@ -1,0 +1,36 @@
+{
+  "uuid": "0994c91f-53e5-461a-b925-0a3c6b4b2508",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TitleMatches_HyphenatedVsCompact_Matches",
+  "name": "TitleMatches_HyphenatedVsCompact_Matches",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TitleMatches_HyphenatedVsCompact_Matches",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622026,
+  "stop": 1780149622039,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "TitleMatches_HyphenatedVsCompact_Matches"
+    }
+  ]
+}

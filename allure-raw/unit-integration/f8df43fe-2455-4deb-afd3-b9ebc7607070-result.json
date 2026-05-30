@@ -1,0 +1,36 @@
+{
+  "uuid": "f8df43fe-2455-4deb-afd3-b9ebc7607070",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Search_ReturnsEmptyList_WhenMuFails",
+  "name": "Search_ReturnsEmptyList_WhenMuFails",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Search_ReturnsEmptyList_WhenMuFails",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149659105,
+  "stop": 1780149659632,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "Search_ReturnsEmptyList_WhenMuFails"
+    }
+  ]
+}

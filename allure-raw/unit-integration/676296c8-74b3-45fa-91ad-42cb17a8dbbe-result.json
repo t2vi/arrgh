@@ -1,0 +1,36 @@
+{
+  "uuid": "676296c8-74b3-45fa-91ad-42cb17a8dbbe",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#ContentType_Manga_Parsed",
+  "name": "ContentType_Manga_Parsed",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.ContentType_Manga_Parsed",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780149622180,
+  "stop": 1780149622181,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "story",
+      "value": "ContentType_Manga_Parsed"
+    }
+  ]
+}
