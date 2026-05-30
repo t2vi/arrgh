@@ -9,7 +9,7 @@ services:
       DATABASE_URL: sqlite:///data/arrgh.db
       DOWNLOAD_DIR: /data/downloads
       PLUGIN_URLS: "http://fixture:4001"
-      JWT_SECRET: "e2e-test-secret"
+      JWT_SECRET: "e2e-test-secret-long-enough-for-hs256"
       INDEX_INTERVAL_HOURS: "9999"
     volumes:
       - arrgh_test_data:/data
