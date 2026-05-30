@@ -3,7 +3,7 @@
 GET {{base}}/api/auth/status
 HTTP 200
 [Asserts]
-jsonpath "$.registered" == true
+jsonpath "$.needs_setup" == false
 
 
 # ── Login with bad password → 401 ────────────────────────────────────────────
