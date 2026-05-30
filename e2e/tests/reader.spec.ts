@@ -102,17 +102,17 @@ test.describe('Reader — zoom control', () => {
     await page.getByTitle('Zoom').click()
 
     for (const level of ['50%', '75%', '100%', '125%', '150%']) {
-      await expect(page.getByRole('button', { name: level })).toBeVisible()
+      await expect(page.getByRole('button', { name: level, exact: true })).toBeVisible()
     }
   })
 
   test('selecting 150% sets image max-width to 1200px', async ({ page }) => {
     await downloadAndOpenReader(page, titleId)
     await page.getByTitle('Zoom').click()
-    await page.getByRole('button', { name: '150%' }).click()
+    await page.getByRole('button', { name: '150%', exact: true }).click()
 
     // Dropdown closes and image/container gets maxWidth = 150 * 8 = 1200px
-    await expect(page.getByRole('button', { name: '50%' })).toBeHidden()
+    await expect(page.getByRole('button', { name: '50%', exact: true })).toBeHidden()
 
     const img = page.locator('img[src*="/api/media"]').first()
     await expect(img).toBeVisible({ timeout: 5_000 })
@@ -123,7 +123,7 @@ test.describe('Reader — zoom control', () => {
   test('selecting 50% sets image max-width to 400px', async ({ page }) => {
     await downloadAndOpenReader(page, titleId)
     await page.getByTitle('Zoom').click()
-    await page.getByRole('button', { name: '50%' }).click()
+    await page.getByRole('button', { name: '50%', exact: true }).click()
 
     const img = page.locator('img[src*="/api/media"]').first()
     await expect(img).toBeVisible({ timeout: 5_000 })

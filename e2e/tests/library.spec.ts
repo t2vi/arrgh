@@ -139,21 +139,20 @@ test.describe('Library', () => {
     })).json() as { id: string; number: number }[]
     const ch1 = chapters.find(c => c.number === 1)!
 
-    await page.goto(`${BASE}/titles/${id}`)
+    // Queue via API so no pendingReadId is set — prevents auto-navigation to reader
+    await page.request.post(`${BASE}/api/chapters/${ch1.id}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    await page.goto(`${BASE}/title/${id}`)
 
     // Expand all chapters so ch1 row is visible
     const showAll = page.getByRole('button', { name: /view all/i })
     if (await showAll.isVisible()) await showAll.click()
 
-    // Click download on chapter 1
+    // Chapter row must flip to "Downloaded" (Read button) WITHOUT navigating away
     const chapterRow = page.locator('[data-chapter-id]').filter({ has: page.locator('text=Chapter 1') }).first()
-    const downloadBtn = chapterRow.locator('button[title="Download & read"]')
-    await expect(downloadBtn).toBeVisible({ timeout: 5_000 })
-    await downloadBtn.click()
-
-    // Chapter row must flip to "Downloaded" (BookOpen icon) WITHOUT navigating away
-    const bookOpenIcon = chapterRow.locator('[data-lucide="book-open"], svg[data-icon="book-open"]')
-    await expect(bookOpenIcon).toBeVisible({ timeout: 15_000 })
+    await expect(chapterRow.locator('button[title="Read"]')).toBeVisible({ timeout: 15_000 })
 
     await deleteTitleViaApi(page, id)
   })

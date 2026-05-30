@@ -88,8 +88,9 @@ test.describe('Discover', () => {
     await expect(addBtn).toBeVisible({ timeout: 15_000 })
     await addBtn.click()
 
-    // Button changes to "In Library" after add
-    await expect(page.getByRole('button', { name: 'In Library' }).first()).toBeVisible({ timeout: 10_000 })
+    // Add navigates to Library — verify we landed there with the title card
+    await expect(page).toHaveURL(/\/library/, { timeout: 10_000 })
+    await expect(page.locator('[data-nav]').filter({ hasText: /Fixture|Sweet Fixture/i }).first()).toBeVisible({ timeout: 5_000 })
 
     // Clean up — find the title id via API and delete
     const token = await getToken(page)
