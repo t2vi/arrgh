@@ -10,6 +10,18 @@ Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential 
 
 **TDD**: write failing test first, then implement. Red → Green → Refactor.
 
+## Test counts (as of 2026-05-30)
+
+| Layer | Framework | Count | In Allure |
+|---|---|---|---|
+| Web unit | Vitest | 161 | ✓ |
+| E2e | Playwright | 25 | ✓ |
+| API | Hurl | 8 | ✓ |
+| Server .NET | xUnit | 447 | ✗ TRX only |
+| **Total** | | **616** | 194 visible |
+
+Update this table whenever tests are added or removed.
+
 Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known failing · ❌ gap (needed, not planned yet)
 
 ---
@@ -32,7 +44,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 |---|---|---|---|
 | Login | `useLogin` | initial state, submit success/fail, loading cleared | ✅ |
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
-| Library | `MangaCard` | render, remove button | ✅ |
+| Library | `MangaCard` | render, remove button, amber badge (warnings+0ch→show; warnings+ch→hide; no warnings→hide) | ✅ |
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
 | Discover | `SearchRow` | render, is_explicit→18+ badge, tag-based badge removed, loading state, In Library, cover/skeleton (3 TDD ⬜) | 🟡 |
 | Discover | `ContentTypeFilter` | render, hentai pill, novel pill, onChange (2 TDD ⬜) | 🟡 |
@@ -190,6 +202,8 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 |---|---|
 | `TitleMatches` — exact; both empty; small typo; novel-suffix vs bare site result | ✅ |
 | `TitleMatches` — unrelated titles → false | ✅ |
+| `TitleMatches` — hyphenated vs compact ("so eun" vs "soeun") → true | ✅ |
+| `TitleMatches` — AniList synonym close-enough ("everything is agreed upon" vs "everything is agreed") → true | ✅ |
 | `Levenshtein` — same string = 0; empty vs non-empty = length; one substitution | ✅ |
 | `StripSearchQualifier` — strips `(Novel)` / `(Manga)`; no suffix → null; mid-string paren → null; only paren → null; long suffix → null | ✅ |
 | `SearchCandidates` — stripped form first; no duplicates; aliases also stripped | ✅ |
@@ -204,6 +218,14 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `NovelUpdatesService.ParseHtml` — empty HTML → empty list | ✅ |
 | `NovelUpdatesService.ParseHtml` — multiple results parsed | ✅ |
 | `NovelUpdatesService.ParseHtml` — Ongoing status maps correctly | ✅ |
+| `AniListService.MapEntry` — non-manga format (ANIME) → null | ✅ |
+| `AniListService.MapEntry` — `isAdult=true` → `IsAdult=true` on result | ✅ |
+| `AniListService.MapEntry` — `isAdult=false` → `IsAdult=false` on result | ✅ |
+| `AniListService.MapEntry` — Korean MANGA → `manhwa` content type | ✅ |
+| `AniListService.MapEntry` — Chinese MANGA → `manhua` content type | ✅ |
+| `AniListService.MapContentType` — MANHWA + KR/MANGA → `manhwa` | ✅ |
+| `AniListService.MapContentType` — NOVEL / LIGHT_NOVEL → `novel` | ✅ |
+| `AniListService.MapContentType` — ANIME → `other` | ✅ |
 
 ---
 
@@ -312,7 +334,6 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `DELETE /queue/:id` → cancels `"downloading"` item instead of deleting (renamed from "in_progress") | ✅ |
 | Seeded mangadex `ContentTypes` does NOT include `"manhwa"` (dedicated sources only) | ✅ |
 | Seeded toonily/asurascans have `"manhwa"` in `ContentTypes` | ✅ |
-| Seeded mangafire has `"manhwa"` in `ContentTypes` | ✅ |
 | Seeded manga18fx has `"manhwa"` content type, `default_explicit=true`, enabled | ✅ |
 | `DELETE /queue/:id` → 404 nonexistent | ✅ |
 
@@ -440,6 +461,11 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `POST /discover/add` → manga (`source="mangaupdates"`) → sync log says "Fetching metadata from MangaUpdates" | ✅ |
 | `POST /discover/add` → manga with matching `external_sources` → creates `title_sources` rows | ✅ |
 | `POST /discover/add` → no matching `external_sources` → no `title_sources` rows | ✅ |
+| `POST /discover/add` → `source="anilist"` → AniList synonyms stored as `TitleAliases` + sync log contains "synonym" | ✅ |
+| `POST /discover/add` → `source="anilist"`, empty synonyms → sync reaches "ready", zero aliases stored | ✅ |
+| `MatchSourcesAsync` → plugin returns hyphen-variant title ("Soeun" for "So-Eun") → still links source via fuzzy match | ✅ |
+| `MatchSourcesAsync` → plugin returns alias-matching title ("Everything Is Agreed" for alias "Everything Is Agreed Upon") → links source | ✅ |
+| `MatchSourcesAsync` → plugin returns completely unrelated title → warning logged, no source link created | ✅ |
 
 ### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ✅ ADR 0031
 
@@ -517,7 +543,6 @@ Tests `info` shape and exported fn signatures for all bundled default plugins. N
 
 | Plugin | content_types | Novel? | Status |
 |---|---|---|---|
-| mangafire | `['manga','manhwa','manhua','one-shot']` | no (pages) | ✅ |
 | asurascans | `['manhwa']` | no (pages) | ✅ |
 | manhuafast | `['manhua']` | no (pages) | ✅ |
 | wuxiaworld | `['novel']` | yes (chapterText, no pages) | ✅ |
@@ -537,7 +562,6 @@ HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked respo
 
 | Plugin | Cases | Status |
 |---|---|---|
-| mangafire | search shape + field values, manhwa type, chapters w/ numbers, pages URLs | ✅ |
 | asurascans | search shape + slug extraction, status normalization, chapters, pages | ✅ |
 | manhuafast | search shape + slug, status normalization, cover_url, chapters, pages | ✅ |
 | wuxiaworld | search shape + API mapping, chapters + source_id, chapterText extraction | ✅ |
@@ -545,6 +569,9 @@ HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked respo
 | manga18fx | search shape + slug extraction, chapters with numbers, pages URLs | ✅ |
 | manga18fx | chapters — sidebar/popular chapter links from other series NOT included (contamination regression) | ✅ |
 | manga18fx | search URL is `/search?q=` not `/?s=` (WordPress fallback regression) | ✅ |
+| manga18fx | pages — lazy-load: `data-src` extracted when `src` is a placeholder GIF | ✅ |
+| manga18fx | pages — lazy-load URLs start with `https://img01.manga18fx.com/uploads/` | ✅ |
+| manga18fx | pages — mixed lazy+eager: some imgs have `data-src`, some have `src` only — all CDN URLs returned | ✅ |
 | novelupdates | `parseSearchHtml` — id/title/status/cover, multiple results, empty HTML, status mapping | ✅ |
 
 ---

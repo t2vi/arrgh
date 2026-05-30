@@ -7,27 +7,36 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["manga", "manhwa", "manhua", "one-shot"]
+    "content_types": [
+      "manga",
+      "manhwa",
+      "manhua",
+      "one-shot"
+    ]
   },
   {
     "id": "toonily",
     "name": "Toonily",
-    "description": "Korean webtoons (manhwa). Cloudflare-protected — requires CloakBrowser.",
+    "description": "Korean webtoons (manhwa). Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["manhwa"]
+    "content_types": [
+      "manhwa"
+    ]
   },
   {
     "id": "novelfull",
     "name": "NovelFull",
-    "description": "Web novel translations. Returns chapter text (no page images). Cloudflare-protected — requires CloakBrowser.",
+    "description": "Web novel translations. Returns chapter text (no page images). Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["novel"]
+    "content_types": [
+      "novel"
+    ]
   },
   {
     "id": "mangapill",
@@ -37,27 +46,21 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["manga"]
+    "content_types": [
+      "manga"
+    ]
   },
   {
     "id": "nhentai",
     "name": "nhentai",
-    "description": "Hentai doujin galleries (English only). Cloudflare-protected — requires CloakBrowser.",
+    "description": "Hentai doujin galleries (English only). Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
     "bundled": true,
     "default_explicit": true,
-    "content_types": ["manga"]
-  },
-  {
-    "id": "mangafire",
-    "name": "MangaFire",
-    "description": "Multi-type reader covering manga, manhwa, and manhua. Cloudflare-protected — requires CloakBrowser.",
-    "version": "1.0.0",
-    "download_url": null,
-    "bundled": true,
-    "default_explicit": false,
-    "content_types": ["manga", "manhwa", "manhua", "one-shot"]
+    "content_types": [
+      "manga"
+    ]
   },
   {
     "id": "asurascans",
@@ -67,7 +70,9 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["manhwa"]
+    "content_types": [
+      "manhwa"
+    ]
   },
   {
     "id": "manhuafast",
@@ -77,7 +82,9 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["manhua"]
+    "content_types": [
+      "manhua"
+    ]
   },
   {
     "id": "wuxiaworld",
@@ -87,7 +94,9 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["novel"]
+    "content_types": [
+      "novel"
+    ]
   },
   {
     "id": "boxnovel",
@@ -97,7 +106,9 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["novel"]
+    "content_types": [
+      "novel"
+    ]
   },
   {
     "id": "manga18fx",
@@ -107,16 +118,20 @@
     "download_url": null,
     "bundled": true,
     "default_explicit": true,
-    "content_types": ["manhwa"]
+    "content_types": [
+      "manhwa"
+    ]
   },
   {
     "id": "novelupdates",
     "name": "NovelUpdates",
-    "description": "Metadata authority for all novel types. Cloudflare-protected — requires CloakBrowser.",
+    "description": "Metadata authority for all novel types. Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
     "bundled": true,
     "default_explicit": false,
-    "content_types": ["novel"]
+    "content_types": [
+      "novel"
+    ]
   }
 ]

@@ -434,6 +434,44 @@ public class ChapterSyncTests
         Assert.All(chapters, c => Assert.Equal("pages", c.ChapterFormat));
     }
 
+    // ── Duplicate chapter numbers (Bug: chapter_sources silent constraint violation) ──
+
+    [Fact]
+    public async Task Sync_DuplicateChapterNumbers_DoesNotFailChapterSources()
+    {
+        // When plugin returns two chapters with the same number (e.g., "chapter-63" and
+        // "chapter-63.5" both parsed as 63 before the parseChapterNumber fix), the dedup
+        // in SyncFromSourceAsync must prevent a unique constraint violation on chapter_sources
+        // and the sync must complete as "ready" with chapter_sources written.
+        // Fixed by: pendingChapterIds HashSet in ChapterSync.SyncFromSourceAsync.
+        const string chaptersJson = """
+            [
+              {"source_id":"src-ch-63","number":63.0,"title":null},
+              {"source_id":"src-ch-63-dup","number":63.0,"title":null}
+            ]
+            """;
+        var (client, db) = new SyncFactory(chaptersJson, chaptersThrows: false).CreateClientWithDb();
+        var user = Fake.AdminUser();
+        await Seed.UserAsync(db, user);
+        var title = await Seed.TitleAsync(db, user.Id, Fake.Title());
+        await Seed.AddTitleSourceAsync(db, title.Id, "mangadex");
+        Authorize(client, user);
+
+        await client.PostAsync($"/api/titles/{title.Id}/sync", null);
+        await WaitForSyncReadyAsync(db, title.Id);
+        db.ChangeTracker.Clear();
+
+        var syncStatus = await db.Titles.Where(t => t.Id == title.Id).Select(t => t.SyncStatus).FirstAsync();
+        Assert.Equal("ready", syncStatus);
+
+        var chapters = await db.Chapters.Where(c => c.TitleId == title.Id).ToListAsync();
+        Assert.Single(chapters);
+
+        var sources = await db.ChapterSources.Where(cs => cs.ChapterId == chapters[0].Id).ToListAsync();
+        Assert.Single(sources);
+        Assert.Equal("src-ch-63", sources[0].SourceId);
+    }
+
     // ── Chapter count logging (Bug: "Syncing from X… Sync complete" with no count) ──
 
     [Fact]

@@ -10,43 +10,11 @@ import { describe, it, expect } from 'vitest'
 
 // ── Imports (will fail to resolve until plugin dirs are created) ──────────────
 
-import * as mangafire  from '../../plugins/mangafire/src/index'
 import * as asurascans from '../../plugins/asurascans/src/index'
 import * as manhuafast from '../../plugins/manhuafast/src/index'
 import * as wuxiaworld from '../../plugins/wuxiaworld/src/index'
 import * as boxnovel   from '../../plugins/boxnovel/src/index'
 import * as manga18fx  from '../../plugins/manga18fx/src/index'
-
-// ── MangaFire (manga + manhwa + manhua) ───────────────────────────────────────
-
-describe('mangafire', () => {
-  it('info.id is mangafire',   () => expect(mangafire.info.id).toBe('mangafire'))
-  it('name is non-empty',      () => expect(mangafire.info.name.length).toBeGreaterThan(0))
-  it('default_explicit false', () => expect(mangafire.info.default_explicit).toBe(false))
-
-  it('content_types covers manga',   () => expect(mangafire.info.content_types).toContain('manga'))
-  it('content_types covers manhwa',  () => expect(mangafire.info.content_types).toContain('manhwa'))
-  it('content_types covers manhua',  () => expect(mangafire.info.content_types).toContain('manhua'))
-
-  it('exports search fn',   () => expect(typeof mangafire.search).toBe('function'))
-  it('exports chapters fn', () => expect(typeof mangafire.chapters).toBe('function'))
-  it('exports pages fn',    () => expect(typeof mangafire.pages).toBe('function'))
-
-  // search must return items with required fields
-  it('search result shape', async () => {
-    // Mock fetch before calling search
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => '<html></html>',
-      json: async () => ({ results: [] }),
-    })
-    vi.stubGlobal('fetch', mockFetch)
-    const results = await mangafire.search('test').catch(() => [])
-    // Must return array (even if empty from mock)
-    expect(Array.isArray(results)).toBe(true)
-    vi.unstubAllGlobals()
-  })
-})
 
 // ── AsuraScans (manhwa) ───────────────────────────────────────────────────────
 

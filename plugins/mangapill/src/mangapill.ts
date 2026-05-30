@@ -168,9 +168,9 @@ export async function pages(chapterSourceId: string): Promise<{ url: string; ref
 }
 
 // source_id: "2-11182000/one-piece-chapter-1182" → 1182
-function parseChapterNumber(sourceId: string): number {
+export function parseChapterNumber(sourceId: string): number {
   const slug = sourceId.split('/')[1] ?? ''
-  const fromSlug = slug.match(/chapter-(\d+)/)
+  const fromSlug = slug.match(/chapter-(\d+(?:\.\d+)?)/)
   if (fromSlug) return parseFloat(fromSlug[1]!)
 
   const idPart = sourceId.split('/')[0] ?? ''

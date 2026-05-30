@@ -26,18 +26,36 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: Setup Node (for trx-to-allure)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Unit tests
         run: dotnet test --filter "Category=Unit" --logger "trx;LogFileName=unit-results.trx"
 
       - name: Integration tests
         run: dotnet test --filter "Category=Integration" --logger "trx;LogFileName=integration-results.trx"
 
-      - name: Upload test results
+      - name: Convert TRX → Allure
+        if: always()
+        run: |
+          node trx-to-allure.mjs unit-results.trx        allure-results unit
+          node trx-to-allure.mjs integration-results.trx allure-results integration
+
+      - name: Upload TRX results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dotnet-test-results
           path: server-tests/*.trx
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-dotnet
+          path: server-tests/allure-results
 
   unit-web:
     name: Unit — Web (Node)

@@ -9,8 +9,7 @@
     "plugins/mangapill",
     "plugins/royalroad",
     "plugins/nhentai",
-    "plugins/mangafire",
-    "plugins/asurascans",
+        "plugins/asurascans",
     "plugins/manhuafast",
     "plugins/wuxiaworld",
     "plugins/boxnovel",
@@ -18,6 +17,6 @@
     "plugins/manga18fx"
   ],
   "scripts": {
-    "build:plugins": "npm run build -w plugins/mangadex -w plugins/toonily -w plugins/novelfull -w plugins/mangapill -w plugins/royalroad -w plugins/nhentai -w plugins/mangafire -w plugins/asurascans -w plugins/manhuafast -w plugins/wuxiaworld -w plugins/boxnovel -w plugins/novelupdates -w plugins/manga18fx"
+    "build:plugins": "npm run build -w plugins/mangadex -w plugins/toonily -w plugins/novelfull -w plugins/mangapill -w plugins/royalroad -w plugins/nhentai -w plugins/asurascans -w plugins/manhuafast -w plugins/wuxiaworld -w plugins/boxnovel -w plugins/novelupdates -w plugins/manga18fx"
   }
 }

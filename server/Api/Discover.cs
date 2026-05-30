@@ -43,12 +43,13 @@ public static class Discover
             .ContinueWith(t => (IEnumerable<DiscoverResult>)FilterMuScope(
                 t.Result.Select(s => MuToDiscoverResult(s, false, null))).ToList(),
                 TaskContinuationOptions.OnlyOnRanToCompletion));
-        var alTask = SafeSearch(() => aniList.SearchAsync(q)
+        var alTask = SafeSearch(() => aniList.SearchAsync(q, allowExplicit)
             .ContinueWith(t => (IEnumerable<DiscoverResult>)t.Result.Select(s => new DiscoverResult
             {
                 MangaupdatesId = s.SourceId, Title = s.Title, Description = s.Description,
                 CoverUrl = s.CoverUrl, Status = s.Status, Author = s.Author, Year = s.Year,
                 ContentType = s.ContentType, Source = "anilist",
+                IsExplicit = s.IsAdult,
             }).ToList(), TaskContinuationOptions.OnlyOnRanToCompletion));
         var mdTask = SafeSearch(() => mdMeta.SearchAsync(q)
             .ContinueWith(t => (IEnumerable<DiscoverResult>)t.Result.Select(s => new DiscoverResult
@@ -140,6 +141,12 @@ public static class Discover
         var http = httpFactory.CreateClient();
         var normTarget = Media.NormalizeTitle(titleName);
 
+        var aliases = await db.TitleAliases
+            .Where(a => a.TitleId == titleId)
+            .Select(a => a.Alias)
+            .ToListAsync();
+        var normAliases = aliases.Select(Media.NormalizeTitle).ToList();
+
         foreach (var source in sources)
         {
             try
@@ -157,16 +164,17 @@ public static class Discover
                 if (results is null || results.Count == 0)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No results from {source.SourceKey}");
-                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No results from {source.SourceKey}");
                     continue;
                 }
 
-                var match = results.FirstOrDefault(r =>
-                    Media.NormalizeTitle(r.Title ?? "") == normTarget);
+                var match = results.FirstOrDefault(r => {
+                    var normResult = Media.NormalizeTitle(r.Title ?? "");
+                    return TitleMatches(normResult, normTarget) ||
+                           normAliases.Any(na => TitleMatches(normResult, na));
+                });
                 if (match is null)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No title match on {source.SourceKey} (searched \"{titleName}\")");
-                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No title match on {source.SourceKey}");
                     continue;
                 }
 
@@ -196,6 +204,9 @@ public static class Discover
                 await AppendSyncWarningAsync(db, titleId, source.SourceKey!, ex.Message);
             }
         }
+
+        if (!await db.TitleSources.AnyAsync(ts => ts.TitleId == titleId))
+            await AppendSyncWarningAsync(db, titleId, "source-matching", "No matching source found for this title");
     }
 
     record PluginSearchResult(
@@ -400,6 +411,32 @@ public static class Discover
                     break;
 
                 case "anilist":
+                    await AppendSyncLogAsync(bgDb, capturedTitleId, "Fetching synonyms from AniList…");
+                    if (!string.IsNullOrEmpty(capturedMetaSourceId))
+                    {
+                        try
+                        {
+                            var bgAniList = scope.ServiceProvider.GetRequiredService<AniListService>();
+                            var synonyms = await bgAniList.GetSynonymsAsync(capturedMetaSourceId);
+                            if (synonyms.Count > 0)
+                            {
+                                await bgDb.TitleAliases.Where(a => a.TitleId == capturedTitleId).ExecuteDeleteAsync();
+                                foreach (var syn in synonyms)
+                                    bgDb.TitleAliases.Add(new TitleAlias
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        TitleId = capturedTitleId,
+                                        Alias = syn,
+                                    });
+                                await bgDb.SaveChangesAsync();
+                                await AppendSyncLogAsync(bgDb, capturedTitleId,
+                                    $"Loaded {synonyms.Count} synonym(s)");
+                            }
+                        }
+                        catch { /* best-effort */ }
+                    }
+                    break;
+
                 case "mangadex":
                 case "novelupdates":
                 case "ehentai":
