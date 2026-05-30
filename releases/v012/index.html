@@ -9,6 +9,9 @@ ghcr.io/t2vi/plugin-host:0.1.2</code></pre> </div> <h1 id="arrgh-v012--net-migra
 <li><strong>E2e Playwright layer</strong> — full test suite against a real Docker Compose stack</li>
 <li><strong>LOG_LEVEL env var</strong> — quiet the docker console without rebuilding</li>
 <li><strong>Source priority PATCH</strong> — change source ordering via API</li>
+<li><strong>manga18fx lazy-load fix</strong> — chapter pages that use <code>data-src</code> placeholder pattern now return correct page URLs instead of 0 pages</li>
+<li><strong>MangaFire removed</strong> — plugin, seeded source, and all related tests/docs deleted; was CF-protected and unreliable without CloakBrowser</li>
+<li><strong>Sync warning cleanup</strong> — amber warning badge no longer fires per-miss; only fires when zero sources linked after full sync cycle</li>
 </ul>
 <hr>
 <h2 id="whats-new">What’s new</h2>
@@ -52,6 +55,32 @@ ghcr.io/t2vi/plugin-host:0.1.2</code></pre> </div> <h1 id="arrgh-v012--net-migra
 <li>Tags rendered as pills instead of plain text</li>
 <li>E-Hentai gate — explicit titles require <code>allow_explicit</code> flag</li>
 </ul>
+<h3 id="manga18fx-lazy-load-support">manga18fx lazy-load support</h3>
+<p>Some manga18fx chapters serve placeholder GIF images in <code>src</code> and put the real CDN URL in <code>data-src</code> (lazy-loading pattern). The pages scraper previously only checked <code>src</code>, returning 0 pages for these chapters.</p>
+<p>Fixed selectors now match both <code>src*=</code> and <code>data-src*=</code> attributes, with <code>data-src</code> taking precedence:</p>
+<pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="typescript"><code><span class="line"><span style="color:#61AFEF">$</span><span style="color:#ABB2BF">([</span></span>
+<span class="line"><span style="color:#98C379">  'img[src*="manga18fx.com/uploads"]'</span><span style="color:#ABB2BF">,</span></span>
+<span class="line"><span style="color:#98C379">  'img[src*="img01.manga18fx.com"]'</span><span style="color:#ABB2BF">,</span></span>
+<span class="line"><span style="color:#98C379">  'img[data-src*="manga18fx.com/uploads"]'</span><span style="color:#ABB2BF">,</span></span>
+<span class="line"><span style="color:#98C379">  'img[data-src*="img01.manga18fx.com"]'</span><span style="color:#ABB2BF">,</span></span>
+<span class="line"><span style="color:#ABB2BF">].</span><span style="color:#61AFEF">join</span><span style="color:#ABB2BF">(</span><span style="color:#98C379">', '</span><span style="color:#ABB2BF">)).</span><span style="color:#61AFEF">each</span><span style="color:#ABB2BF">((</span><span style="color:#E06C75;font-style:italic">_</span><span style="color:#ABB2BF">, </span><span style="color:#E06C75;font-style:italic">el</span><span style="color:#ABB2BF">) </span><span style="color:#C678DD">=></span><span style="color:#ABB2BF"> {</span></span>
+<span class="line"><span style="color:#C678DD">  const</span><span style="color:#E5C07B"> src</span><span style="color:#56B6C2"> =</span><span style="color:#61AFEF"> $</span><span style="color:#ABB2BF">(</span><span style="color:#E06C75">el</span><span style="color:#ABB2BF">).</span><span style="color:#61AFEF">attr</span><span style="color:#ABB2BF">(</span><span style="color:#98C379">'data-src'</span><span style="color:#ABB2BF">) </span><span style="color:#56B6C2">||</span><span style="color:#61AFEF"> $</span><span style="color:#ABB2BF">(</span><span style="color:#E06C75">el</span><span style="color:#ABB2BF">).</span><span style="color:#61AFEF">attr</span><span style="color:#ABB2BF">(</span><span style="color:#98C379">'src'</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"><span style="color:#C678DD">  if</span><span style="color:#ABB2BF"> (</span><span style="color:#E5C07B">src</span><span style="color:#ABB2BF">?.</span><span style="color:#61AFEF">startsWith</span><span style="color:#ABB2BF">(</span><span style="color:#98C379">'http'</span><span style="color:#ABB2BF">)) </span><span style="color:#E5C07B">urls</span><span style="color:#ABB2BF">.</span><span style="color:#61AFEF">push</span><span style="color:#ABB2BF">(</span><span style="color:#E06C75">src</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"><span style="color:#ABB2BF">})</span></span></code></pre>
+<h3 id="mangafire-plugin-removed">MangaFire plugin removed</h3>
+<p>MangaFire is Cloudflare-protected and requires CloakBrowser to return results. Without it, every sync attempt produces false “no results” warnings and never links chapters. Removed entirely:</p>
+<ul>
+<li><code>plugins/mangafire/</code> directory deleted</li>
+<li>Seeded <code>ExternalSource</code> row removed from <code>Program.cs</code></li>
+<li>Entry removed from <code>plugin-index/index.json</code></li>
+<li>All contract/behavior tests removed</li>
+<li>Docker build steps removed</li>
+</ul>
+<h3 id="sync-warning-accuracy">Sync warning accuracy</h3>
+<p><code>MatchSourcesAsync</code> previously appended a <code>SyncWarnings</code> row for every source that returned no results or no title match. This created spurious amber badges on titles that were successfully linked via other sources.</p>
+<p>New behaviour: warning only appended when <strong>zero</strong> <code>TitleSources</code> rows exist after the full source loop completes.</p>
+<h3 id="anilist-synonym-storage">AniList synonym storage</h3>
+<p>When adding a title via the AniList source, all synonyms returned by the AniList API (including <code>title.romaji</code> and <code>title.english</code>) are now stored as <code>TitleAliases</code> rows. These aliases are used during <code>MatchSourcesAsync</code> to improve fuzzy matching across plugins that use translated or romanized titles.</p>
 <hr>
 <h2 id="bug-fixes">Bug fixes</h2>
 <ul>
@@ -62,6 +91,9 @@ ghcr.io/t2vi/plugin-host:0.1.2</code></pre> </div> <h1 id="arrgh-v012--net-migra
 <li><strong>502 on chapter sync fails silently</strong> — <code>sync_chapters</code> now returns <code>Err</code> on 502 so a sync warning row is created instead of silently leaving 0 chapters.</li>
 <li><strong><code>GET /api/version</code> required auth</strong> — moved to public router; used as server-ready check in e2e <code>globalSetup</code>.</li>
 <li><strong>GHCR build cache SAS token expiry</strong> — Docker layer cache switched from <code>type=gha</code> to <code>type=registry</code> (no SAS token expiry).</li>
+<li><strong>0 pages on manga18fx chapters using lazy-load</strong> — <code>data-src</code> attribute was ignored; now preferred over <code>src</code> placeholder</li>
+<li><strong>Amber warning badge on clean syncs</strong> — per-source miss warnings fired even when another source succeeded; now only fires on total miss</li>
+<li><strong>MangaFire false misses</strong> — removed source eliminates all CF-related sync noise</li>
 </ul>
 <hr>
 <h2 id="removed">Removed</h2>
