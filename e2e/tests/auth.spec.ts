@@ -18,10 +18,12 @@ test.describe('Auth', () => {
     await page.getByRole('button', { name: /sign in/i }).click()
 
     await expect(page).not.toHaveURL(/login/, { timeout: 10_000 })
+    // Wait for the sidebar to confirm auth state is persisted to localStorage
+    await expect(page.getByRole('navigation')).toBeVisible({ timeout: 5_000 })
 
     // Logout is in settings
     await page.goto(`${BASE}/settings`)
-    await page.getByRole('button', { name: /logout|sign out/i }).click()
+    await page.getByRole('button', { name: /logout/i }).click()
     await expect(page).toHaveURL(/login/, { timeout: 5_000 })
   })
 
