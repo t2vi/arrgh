@@ -242,6 +242,7 @@ public class PluginsTests : IDisposable
         {
             Id = Guid.NewGuid().ToString(),
             Name = "MangaDex",
+            SourceKey = "mangadex",
             BaseUrl = $"{pluginHostUrl.TrimEnd('/')}/mangadex",
             ContentTypes = "manga",
             IsCommunity = false, // bundled, not deletable
@@ -268,6 +269,7 @@ public class PluginsTests : IDisposable
         {
             Id = sourceId,
             Name = "MangaDex",
+            SourceKey = "mangadex",
             BaseUrl = $"{pluginHostUrl.TrimEnd('/')}/mangadex",
             ContentTypes = "manga",
             IsCommunity = true,

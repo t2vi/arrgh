@@ -3,15 +3,13 @@ GET {{base}}/api/settings
 HTTP 200
 [Asserts]
 jsonpath "$.download_dir" isString
-jsonpath "$.plugin_host_url" isString
 
 
 # ── POST /api/settings — save and read back ───────────────────────────────────
 POST {{base}}/api/settings
 Content-Type: application/json
 {
-  "download_dir": "/data/downloads",
-  "plugin_host_url": "http://plugin-host:4000"
+  "download_dir": "/data/downloads"
 }
 HTTP 200
 

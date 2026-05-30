@@ -33,6 +33,7 @@ public static class Plugins
         AppDbContext db, IConfiguration config, IHttpClientFactory httpFactory)
     {
         if (!Sources.IsAdmin(principal)) return Results.Forbid();
+        if (string.IsNullOrWhiteSpace(body.PluginId)) return Results.BadRequest(new { error = "plugin_id required" });
 
         var pluginIndexUrl = config["PluginIndexUrl"] ?? "file:///app/plugin-index.json";
         var pluginHostUrl = config["PluginHostUrl"] ?? "http://localhost:4000";
@@ -94,7 +95,7 @@ public static class Plugins
         var pluginHostUrl = config["PluginHostUrl"] ?? "http://localhost:4000";
         var effectiveUrl = $"{pluginHostUrl.TrimEnd('/')}/{id}";
 
-        var source = await db.ExternalSources.FirstOrDefaultAsync(s => s.BaseUrl == effectiveUrl);
+        var source = await db.ExternalSources.FirstOrDefaultAsync(s => s.SourceKey == id);
         if (source is null) return Results.NotFound();
         if (!source.IsCommunity) return Results.Forbid();
 
