@@ -227,7 +227,7 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /users` → 403 for member | ✅ |
 | `GET /users` → returns all users for admin | ✅ |
 | `POST /users` → 201 valid member; 403 for member; 409 duplicate username | ✅ |
-| `PATCH /me` → changes password; 422 short password | ✅ |
+| `PATCH /me` → changes password or allow_explicit (both optional); returns 200 + updated user; 422 short password | ✅ |
 | `PATCH /users/:id` → updates role / allow_explicit; 422 invalid role; 404 nonexistent | ✅ |
 | `DELETE /users/:id` → 204 success; 404 nonexistent; 403 cannot delete self; 403 for member | ✅ |
 
