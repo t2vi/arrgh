@@ -157,6 +157,7 @@ public static class Discover
                 if (results is null || results.Count == 0)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No results from {source.SourceKey}");
+                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No results from {source.SourceKey}");
                     continue;
                 }
 
@@ -165,6 +166,7 @@ public static class Discover
                 if (match is null)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No title match on {source.SourceKey} (searched \"{titleName}\")");
+                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No title match on {source.SourceKey}");
                     continue;
                 }
 
@@ -191,6 +193,7 @@ public static class Discover
             catch (Exception ex)
             {
                 await AppendSyncLogAsync(db, titleId, $"Error from {source.SourceKey}: {ex.Message}");
+                await AppendSyncWarningAsync(db, titleId, source.SourceKey!, ex.Message);
             }
         }
     }
@@ -596,6 +599,23 @@ public static class Discover
             {
                 Id = Guid.NewGuid().ToString(),
                 TitleId = titleId,
+                Message = message,
+                CreatedAt = DateTime.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+        catch { }
+    }
+
+    static async Task AppendSyncWarningAsync(AppDbContext db, string titleId, string pluginId, string message)
+    {
+        try
+        {
+            db.SyncWarnings.Add(new Data.Models.SyncWarning
+            {
+                Id = Guid.NewGuid().ToString(),
+                TitleId = titleId,
+                PluginId = pluginId,
                 Message = message,
                 CreatedAt = DateTime.UtcNow,
             });
