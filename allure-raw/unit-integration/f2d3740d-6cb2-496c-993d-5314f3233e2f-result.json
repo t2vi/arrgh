@@ -1,0 +1,40 @@
+{
+  "uuid": "f2d3740d-6cb2-496c-993d-5314f3233e2f",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_Dedup_AniListWins_ForManhwa",
+  "name": "Search_Dedup_AniListWins_ForManhwa",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_Dedup_AniListWins_ForManhwa",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780228646753,
+  "stop": 1780228647331,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "Search_Dedup_AniListWins_ForManhwa"
+    }
+  ]
+}

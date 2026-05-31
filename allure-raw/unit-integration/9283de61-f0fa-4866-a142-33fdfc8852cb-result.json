@@ -1,0 +1,40 @@
+{
+  "uuid": "9283de61-f0fa-4866-a142-33fdfc8852cb",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#Levenshtein_EmptyVsNonEmpty_IsLength",
+  "name": "Levenshtein_EmptyVsNonEmpty_IsLength",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.Levenshtein_EmptyVsNonEmpty_IsLength",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780228635365,
+  "stop": 1780228635365,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "Levenshtein_EmptyVsNonEmpty_IsLength"
+    }
+  ]
+}

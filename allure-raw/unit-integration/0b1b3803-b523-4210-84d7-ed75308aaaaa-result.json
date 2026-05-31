@@ -1,0 +1,40 @@
+{
+  "uuid": "0b1b3803-b523-4210-84d7-ed75308aaaaa",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingManga_ReturnsAtMostSixResults",
+  "name": "TrendingManga_ReturnsAtMostSixResults",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingManga_ReturnsAtMostSixResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780228648861,
+  "stop": 1780228649549,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Trending Lanes"
+    },
+    {
+      "name": "story",
+      "value": "TrendingManga_ReturnsAtMostSixResults"
+    }
+  ]
+}

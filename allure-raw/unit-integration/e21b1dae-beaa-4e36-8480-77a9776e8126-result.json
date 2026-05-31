@@ -1,0 +1,40 @@
+{
+  "uuid": "e21b1dae-beaa-4e36-8480-77a9776e8126",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingAdultManhwa_ReturnsExplicitKrResults_WhenUserHasExplicitPermission",
+  "name": "TrendingAdultManhwa_ReturnsExplicitKrResults_WhenUserHasExplicitPermission",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingAdultManhwa_ReturnsExplicitKrResults_WhenUserHasExplicitPermission",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780228643298,
+  "stop": 1780228644178,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Trending Lanes"
+    },
+    {
+      "name": "story",
+      "value": "TrendingAdultManhwa_ReturnsExplicitKrResults_WhenUserHasExplicitPermission"
+    }
+  ]
+}

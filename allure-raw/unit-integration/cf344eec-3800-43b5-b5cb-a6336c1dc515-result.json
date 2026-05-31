@@ -1,0 +1,40 @@
+{
+  "uuid": "cf344eec-3800-43b5-b5cb-a6336c1dc515",
+  "historyId": "ArrghServer.Tests.LogServiceTests#SetLevel_NormalisesToUppercase",
+  "name": "SetLevel_NormalisesToUppercase",
+  "fullName": "ArrghServer.Tests.LogServiceTests.SetLevel_NormalisesToUppercase",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780228635358,
+  "stop": 1780228635358,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_NormalisesToUppercase"
+    }
+  ]
+}

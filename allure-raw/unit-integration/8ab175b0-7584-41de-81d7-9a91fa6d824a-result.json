@@ -1,0 +1,40 @@
+{
+  "uuid": "8ab175b0-7584-41de-81d7-9a91fa6d824a",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_UnprocessableEntity_InvalidReaderMode",
+  "name": "PatchTitle_UnprocessableEntity_InvalidReaderMode",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_UnprocessableEntity_InvalidReaderMode",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780228657130,
+  "stop": 1780228657838,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_UnprocessableEntity_InvalidReaderMode"
+    }
+  ]
+}

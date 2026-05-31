@@ -1,0 +1,40 @@
+{
+  "uuid": "9447a10f-e989-45fe-baf0-fb191af5743e",
+  "historyId": "ArrghServer.Tests.PluginsLogicTests#FetchIndex_MissingFile_ReturnsNull",
+  "name": "FetchIndex_MissingFile_ReturnsNull",
+  "fullName": "ArrghServer.Tests.PluginsLogicTests.FetchIndex_MissingFile_ReturnsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780228635356,
+  "stop": 1780228635422,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "FetchIndex_MissingFile_ReturnsNull"
+    }
+  ]
+}
