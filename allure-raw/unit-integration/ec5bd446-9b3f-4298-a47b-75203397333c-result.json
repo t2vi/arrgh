@@ -1,0 +1,40 @@
+{
+  "uuid": "ec5bd446-9b3f-4298-a47b-75203397333c",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TrendingCache_GetStale_ReturnsData_EvenAfterTtlExpiry",
+  "name": "TrendingCache_GetStale_ReturnsData_EvenAfterTtlExpiry",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TrendingCache_GetStale_ReturnsData_EvenAfterTtlExpiry",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780231439242,
+  "stop": 1780231439242,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "TrendingCache_GetStale_ReturnsData_EvenAfterTtlExpiry"
+    }
+  ]
+}

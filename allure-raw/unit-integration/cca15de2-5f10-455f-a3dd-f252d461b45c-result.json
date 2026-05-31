@@ -1,0 +1,40 @@
+{
+  "uuid": "cca15de2-5f10-455f-a3dd-f252d461b45c",
+  "historyId": "ArrghServer.Tests.SourcesTests#DeleteSource_Forbidden_ForMember",
+  "name": "DeleteSource_Forbidden_ForMember",
+  "fullName": "ArrghServer.Tests.SourcesTests.DeleteSource_Forbidden_ForMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780231486933,
+  "stop": 1780231487670,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "DeleteSource_Forbidden_ForMember"
+    }
+  ]
+}
