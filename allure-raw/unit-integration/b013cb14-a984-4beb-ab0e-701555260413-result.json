@@ -1,0 +1,36 @@
+{
+  "uuid": "b013cb14-a984-4beb-ab0e-701555260413",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingManhwa_ReturnsAniListKrResults",
+  "name": "TrendingManhwa_ReturnsAniListKrResults",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingManhwa_ReturnsAniListKrResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226287887,
+  "stop": 1780226288430,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "story",
+      "value": "TrendingManhwa_ReturnsAniListKrResults"
+    }
+  ]
+}

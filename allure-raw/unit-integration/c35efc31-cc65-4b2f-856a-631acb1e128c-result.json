@@ -1,0 +1,36 @@
+{
+  "uuid": "c35efc31-cc65-4b2f-856a-631acb1e128c",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#AuthorityOrder_WuxiaWorldBeforeEHentai",
+  "name": "AuthorityOrder_WuxiaWorldBeforeEHentai",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.AuthorityOrder_WuxiaWorldBeforeEHentai",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279524,
+  "stop": 1780226279524,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "AuthorityOrder_WuxiaWorldBeforeEHentai"
+    }
+  ]
+}

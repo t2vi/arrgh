@@ -1,0 +1,36 @@
+{
+  "uuid": "0595b166-32d9-462e-9361-e11effbd09ae",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapEntry_IsAdult_False_WhenFlagAbsent",
+  "name": "MapEntry_IsAdult_False_WhenFlagAbsent",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapEntry_IsAdult_False_WhenFlagAbsent",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279650,
+  "stop": 1780226279650,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "MapEntry_IsAdult_False_WhenFlagAbsent"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "fdad341c-0fcb-4617-a77e-2c5c68f2c002",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapContentType(input: &quot;Light Novel&quot;, expected: &quot;novel&quot;)",
+  "name": "MapContentType(input: &quot;Light Novel&quot;, expected: &quot;novel&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapContentType(input: &quot;Light Novel&quot;, expected: &quot;novel&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279604,
+  "stop": 1780226279604,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "MapContentType(input: &quot;Light Novel&quot;, expected: &quot;novel&quot;)"
+    }
+  ]
+}

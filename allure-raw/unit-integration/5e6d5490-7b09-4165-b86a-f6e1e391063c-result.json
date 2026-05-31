@@ -1,0 +1,36 @@
+{
+  "uuid": "5e6d5490-7b09-4165-b86a-f6e1e391063c",
+  "historyId": "ArrghServer.Tests.PluginsTests#GetIndex_Unauthorized_WithoutToken",
+  "name": "GetIndex_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.PluginsTests.GetIndex_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226294835,
+  "stop": 1780226295448,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "GetIndex_Unauthorized_WithoutToken"
+    }
+  ]
+}

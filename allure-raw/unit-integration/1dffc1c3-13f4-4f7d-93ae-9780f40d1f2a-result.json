@@ -1,0 +1,36 @@
+{
+  "uuid": "1dffc1c3-13f4-4f7d-93ae-9780f40d1f2a",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#FilterMuScope_MixedTypes_ReturnsOnlyMangaAndOneShot",
+  "name": "FilterMuScope_MixedTypes_ReturnsOnlyMangaAndOneShot",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.FilterMuScope_MixedTypes_ReturnsOnlyMangaAndOneShot",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279528,
+  "stop": 1780226279528,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "FilterMuScope_MixedTypes_ReturnsOnlyMangaAndOneShot"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "e2f2d99a-6c7c-4073-ba34-0a85c1de74f0",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_Novel_ChapterFormat_IsText",
+  "name": "Sync_Novel_ChapterFormat_IsText",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_Novel_ChapterFormat_IsText",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226333734,
+  "stop": 1780226334342,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "story",
+      "value": "Sync_Novel_ChapterFormat_IsText"
+    }
+  ]
+}

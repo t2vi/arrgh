@@ -1,0 +1,36 @@
+{
+  "uuid": "d6be2218-00d5-47f3-acab-fb53bc016ebd",
+  "historyId": "ArrghServer.Tests.TitlesTests#GetTitle_IsLocal_FalseWhenHasSources",
+  "name": "GetTitle_IsLocal_FalseWhenHasSources",
+  "fullName": "ArrghServer.Tests.TitlesTests.GetTitle_IsLocal_FalseWhenHasSources",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226303528,
+  "stop": 1780226304326,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "GetTitle_IsLocal_FalseWhenHasSources"
+    }
+  ]
+}

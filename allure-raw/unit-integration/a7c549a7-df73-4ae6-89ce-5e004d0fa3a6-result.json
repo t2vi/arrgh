@@ -1,0 +1,36 @@
+{
+  "uuid": "a7c549a7-df73-4ae6-89ce-5e004d0fa3a6",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TitleMatches_AniListSynonymCloseEnough_Matches",
+  "name": "TitleMatches_AniListSynonymCloseEnough_Matches",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TitleMatches_AniListSynonymCloseEnough_Matches",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279607,
+  "stop": 1780226279607,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "TitleMatches_AniListSynonymCloseEnough_Matches"
+    }
+  ]
+}

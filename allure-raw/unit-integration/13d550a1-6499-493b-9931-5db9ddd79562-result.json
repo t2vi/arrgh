@@ -1,0 +1,36 @@
+{
+  "uuid": "13d550a1-6499-493b-9931-5db9ddd79562",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#NormalizeTitle_StripsPunctuation",
+  "name": "NormalizeTitle_StripsPunctuation",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.NormalizeTitle_StripsPunctuation",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279631,
+  "stop": 1780226279631,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "NormalizeTitle_StripsPunctuation"
+    }
+  ]
+}

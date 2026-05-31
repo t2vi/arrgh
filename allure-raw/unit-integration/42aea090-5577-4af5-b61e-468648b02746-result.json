@@ -1,0 +1,36 @@
+{
+  "uuid": "42aea090-5577-4af5-b61e-468648b02746",
+  "historyId": "ArrghServer.Tests.SourcesTests#ListSources_ReturnsEmpty_WhenNone",
+  "name": "ListSources_ReturnsEmpty_WhenNone",
+  "fullName": "ArrghServer.Tests.SourcesTests.ListSources_ReturnsEmpty_WhenNone",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226289511,
+  "stop": 1780226290057,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_ReturnsEmpty_WhenNone"
+    }
+  ]
+}

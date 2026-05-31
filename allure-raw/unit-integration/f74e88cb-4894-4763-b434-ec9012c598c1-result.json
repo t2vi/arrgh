@@ -1,0 +1,36 @@
+{
+  "uuid": "f74e88cb-4894-4763-b434-ec9012c598c1",
+  "historyId": "ArrghServer.Tests.SourcesTests#ListSources_Unauthorized_NoToken",
+  "name": "ListSources_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.SourcesTests.ListSources_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226290612,
+  "stop": 1780226291007,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_Unauthorized_NoToken"
+    }
+  ]
+}

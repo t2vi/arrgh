@@ -1,0 +1,36 @@
+{
+  "uuid": "673c95cb-034a-4a3d-9e2b-e13a582f2bf5",
+  "historyId": "ArrghServer.Tests.QueueLogicTests#IsAllowedExplicit_True_WhenNullRole_ButFlagTrue",
+  "name": "IsAllowedExplicit_True_WhenNullRole_ButFlagTrue",
+  "fullName": "ArrghServer.Tests.QueueLogicTests.IsAllowedExplicit_True_WhenNullRole_ButFlagTrue",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279496,
+  "stop": 1780226279496,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "QueueLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "IsAllowedExplicit_True_WhenNullRole_ButFlagTrue"
+    }
+  ]
+}

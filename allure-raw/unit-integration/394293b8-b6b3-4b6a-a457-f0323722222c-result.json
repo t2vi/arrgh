@@ -1,0 +1,36 @@
+{
+  "uuid": "394293b8-b6b3-4b6a-a457-f0323722222c",
+  "historyId": "ArrghServer.Tests.DiscoverTests#TrendingManga_ReturnsEmptyArray_WhenMuFails_AndNoCachedData",
+  "name": "TrendingManga_ReturnsEmptyArray_WhenMuFails_AndNoCachedData",
+  "fullName": "ArrghServer.Tests.DiscoverTests.TrendingManga_ReturnsEmptyArray_WhenMuFails_AndNoCachedData",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226320848,
+  "stop": 1780226321555,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "TrendingManga_ReturnsEmptyArray_WhenMuFails_AndNoCachedData"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "e297b25e-4dd1-4d08-b059-68f23def92ce",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#NormalizeTitle_ReplacesNonAlphanumericWithSpaces",
+  "name": "NormalizeTitle_ReplacesNonAlphanumericWithSpaces",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.NormalizeTitle_ReplacesNonAlphanumericWithSpaces",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279640,
+  "stop": 1780226279640,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "NormalizeTitle_ReplacesNonAlphanumericWithSpaces"
+    }
+  ]
+}

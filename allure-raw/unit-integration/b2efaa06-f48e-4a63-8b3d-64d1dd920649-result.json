@@ -1,0 +1,36 @@
+{
+  "uuid": "b2efaa06-f48e-4a63-8b3d-64d1dd920649",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_Forbidden_NonCommunitySource",
+  "name": "DeletePlugin_Forbidden_NonCommunitySource",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_Forbidden_NonCommunitySource",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226290604,
+  "stop": 1780226291217,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_Forbidden_NonCommunitySource"
+    }
+  ]
+}

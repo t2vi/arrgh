@@ -1,0 +1,36 @@
+{
+  "uuid": "a9501433-ff78-426b-9ebe-48b9de0ddc08",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TrendingCache_GetFresh_ReturnsCachedResults_ForCorrectLane",
+  "name": "TrendingCache_GetFresh_ReturnsCachedResults_ForCorrectLane",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TrendingCache_GetFresh_ReturnsCachedResults_ForCorrectLane",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226279658,
+  "stop": 1780226279658,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "TrendingCache_GetFresh_ReturnsCachedResults_ForCorrectLane"
+    }
+  ]
+}
