@@ -4,6 +4,10 @@ import { vi } from 'vitest'
 import { SourcesSection } from './SourcesSection'
 import { api } from '@/api'
 import type { SourceRow, PluginIndexEntry } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Settings')
+  await allure.feature('Sources')
+})
 
 vi.mock('@/api', () => ({
   api: {

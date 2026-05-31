@@ -3,6 +3,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { useNovelFontSize, FontSizeControl } from './FontSizeControl'
+beforeEach(async () => {
+  await allure.epic('Reader')
+  await allure.feature('Font Size')
+})
 
 const STORAGE_KEY = 'reader-font-size'
 

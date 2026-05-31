@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ContentTypeFilter } from './ContentTypeFilter'
+beforeEach(async () => {
+  await allure.epic('Discover')
+  await allure.feature('Search')
+})
 
 describe('ContentTypeFilter', () => {
   it('returns null when availableTypes is empty', () => {

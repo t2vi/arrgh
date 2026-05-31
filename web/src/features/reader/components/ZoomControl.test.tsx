@@ -3,6 +3,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { useImageZoom, ZoomControl } from './ZoomControl'
+beforeEach(async () => {
+  await allure.epic('Reader')
+  await allure.feature('Zoom')
+})
 
 const STORAGE_KEY = 'reader-image-zoom'
 

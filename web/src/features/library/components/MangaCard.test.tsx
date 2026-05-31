@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MangaCard } from './MangaCard'
 import type { Title } from '@/types'
+beforeEach(async () => {
+  await allure.epic('Library')
+  await allure.feature('Library List')
+})
 
 vi.mock('@/api', () => ({
   api: { coverUrl: (id: string) => `/covers/${id}` },

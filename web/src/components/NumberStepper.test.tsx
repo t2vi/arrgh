@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { NumberStepper } from './NumberStepper'
+beforeEach(async () => {
+  await allure.epic('Components')
+  await allure.feature('UI Controls')
+})
 
 describe('NumberStepper', () => {
   it('renders current value', () => {

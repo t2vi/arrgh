@@ -2,6 +2,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { TrendingCard, TrendingModal } from './Cards'
 import { api } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Home')
+  await allure.feature('Home')
+})
 
 vi.mock('@/api', () => ({
   api: {

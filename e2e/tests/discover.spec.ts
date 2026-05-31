@@ -1,4 +1,11 @@
 import { test, expect } from '../fixtures/auth'
+import { allure } from 'allure-playwright'
+
+test.beforeEach(async () => {
+  await allure.epic('Discover')
+  await allure.feature('Search')
+})
+
 
 const BASE = 'http://localhost:8080'
 

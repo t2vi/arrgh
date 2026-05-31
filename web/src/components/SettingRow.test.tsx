@@ -1,5 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { SettingRow } from './SettingRow'
+beforeEach(async () => {
+  await allure.epic('Components')
+  await allure.feature('UI Controls')
+})
 
 describe('SettingRow', () => {
   it('renders label and hint', () => {

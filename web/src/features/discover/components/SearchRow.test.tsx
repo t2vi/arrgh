@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SearchRow } from './SearchRow'
 import type { SearchResult } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Discover')
+  await allure.feature('Search')
+})
 
 vi.mock('@/api', () => ({
   api: { proxyImageUrl: (url: string) => `/proxy?url=${url}` },

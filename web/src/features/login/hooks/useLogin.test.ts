@@ -10,6 +10,10 @@ vi.mock('@/api', () => ({
 
 import { useLogin } from './useLogin'
 import { api, setToken } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Auth')
+  await allure.feature('Login')
+})
 
 function wrapper({ children }: { children: React.ReactNode }) {
   return React.createElement(MemoryRouter, null, children)

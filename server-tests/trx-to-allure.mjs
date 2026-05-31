@@ -10,6 +10,39 @@ import { randomUUID } from 'crypto'
 import { join } from 'path'
 
 const [,, trxPath, outDir, layer = 'unit'] = process.argv
+
+// Epic + Feature mapping keyed by test class name suffix
+const LABELS = {
+  // Auth
+  AuthTokenTests:           { epic: 'Auth',     feature: 'Token'          },
+  AuthTests:                { epic: 'Auth',     feature: 'Auth API'       },
+  // Library
+  TitlesTests:              { epic: 'Library',  feature: 'Titles'         },
+  ChaptersTests:            { epic: 'Library',  feature: 'Chapters'       },
+  ChapterSyncTests:         { epic: 'Library',  feature: 'Chapter Sync'   },
+  ProgressTests:            { epic: 'Library',  feature: 'Reading Progress'},
+  PatchTitleBodyTests:      { epic: 'Library',  feature: 'Patch API'      },
+  MediaLogicTests:          { epic: 'Library',  feature: 'Media'          },
+  // Discover
+  DiscoverTests:            { epic: 'Discover', feature: 'Search + Add'   },
+  DiscoverLogicTests:       { epic: 'Discover', feature: 'Logic'          },
+  DiscoverFanOutTests:      { epic: 'Discover', feature: 'Fan-Out'        },
+  DiscoverFanOutLogicTests: { epic: 'Discover', feature: 'Fan-Out Logic'  },
+  TrendingLaneTests:        { epic: 'Discover', feature: 'Trending Lanes' },
+  // Queue
+  QueueTests:               { epic: 'Queue',    feature: 'Queue API'      },
+  QueueLogicTests:          { epic: 'Queue',    feature: 'Access Control' },
+  DownloaderTests:          { epic: 'Queue',    feature: 'Download'       },
+  // Settings
+  SettingsTests:            { epic: 'Settings', feature: 'Config'         },
+  SettingsLogicTests:       { epic: 'Settings', feature: 'Validation'     },
+  SourcesTests:             { epic: 'Settings', feature: 'Sources'        },
+  PluginsTests:             { epic: 'Settings', feature: 'Plugins'        },
+  LogsTests:                { epic: 'Settings', feature: 'Logs'           },
+  LogServiceTests:          { epic: 'Settings', feature: 'Logs'           },
+  VersionTests:             { epic: 'Settings', feature: 'Version'        },
+  UpdateCacheTests:         { epic: 'Settings', feature: 'Update Check'   },
+}
 if (!trxPath || !outDir) {
   console.error('Usage: trx-to-allure.mjs <results.trx> <allure-results-dir> <layer>')
   process.exit(1)
@@ -85,14 +118,18 @@ for (const [, attrs] of resultMatches) {
     stage: 'finished',
     start,
     stop,
-    labels: [
-      { name: 'layer',        value: layer         },
-      { name: 'tag',          value: 'Server'       },
-      { name: 'suite',        value: suite          },
-      { name: 'parentSuite',  value: 'Server Tests' },
-      { name: 'feature',      value: suite          },
-      { name: 'story',        value: methodName     },
-    ],
+    labels: (() => {
+      const map = LABELS[suite] ?? { epic: 'Server', feature: suite }
+      return [
+        { name: 'layer',       value: layer         },
+        { name: 'tag',         value: 'Server'      },
+        { name: 'suite',       value: suite         },
+        { name: 'parentSuite', value: map.epic      },
+        { name: 'epic',        value: map.epic      },
+        { name: 'feature',     value: map.feature   },
+        { name: 'story',       value: methodName    },
+      ]
+    })(),
   }
 
   writeFileSync(join(outDir, `${result.uuid}-result.json`), JSON.stringify(result, null, 2))

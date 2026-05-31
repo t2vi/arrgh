@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect } from 'vitest'
 import { ReaderFooter } from './ReaderFooter'
 import type { Chapter } from '@/types'
+beforeEach(async () => {
+  await allure.epic('Reader')
+  await allure.feature('Reader UI')
+})
 
 const stubChapter = (id: string): Chapter => ({
   id,
