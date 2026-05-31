@@ -130,7 +130,7 @@ public static class Discover
     // After add: query external_sources by content_type, call plugin-host /search,
     // match by normalized title, create title_sources + sync chapters via ChapterSync.
 
-    static async Task MatchSourcesAsync(
+    internal static async Task MatchSourcesAsync(
         AppDbContext db, IHttpClientFactory httpFactory,
         string titleId, string? titleName, string? contentType, string pluginHostUrl)
     {
@@ -170,7 +170,6 @@ public static class Discover
                 if (results is null || results.Count == 0)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No results from {source.SourceKey}");
-                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No results from {source.SourceKey}");
                     continue;
                 }
 
@@ -182,7 +181,6 @@ public static class Discover
                 if (match is null)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No title match on {source.SourceKey} (searched \"{titleName}\")");
-                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No title match on {source.SourceKey}");
                     continue;
                 }
 
@@ -212,6 +210,13 @@ public static class Discover
                 await AppendSyncWarningAsync(db, titleId, source.SourceKey!, ex.Message);
             }
         }
+
+        // Only warn when zero sources were linked after the full loop.
+        // Per-source misses are expected when some sources don't carry the title.
+        var linked = await db.TitleSources.AnyAsync(ts => ts.TitleId == titleId);
+        if (!linked)
+            await AppendSyncWarningAsync(db, titleId, "source-matching",
+                "No sources could be matched for this title. Chapters may not be available.");
     }
 
     record PluginSearchResult(

@@ -694,6 +694,60 @@ public class TitlesTests
         Assert.Equal(0, res.GetArrayLength()); // user1 doesn't own title2
     }
 
+    // ── POST /api/titles/:id/refresh-metadata ────────────────────────────────
+
+    [Fact]
+    public async Task RefreshMetadata_Returns404_WhenTitleNotOwned()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+        var res = await client.PostAsync("/api/titles/nonexistent/refresh-metadata", null);
+        Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task RefreshMetadata_Returns401_WithoutToken()
+    {
+        var (client, _) = NewFactory().CreateClientWithDb();
+        var res = await client.PostAsync("/api/titles/any/refresh-metadata", null);
+        Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task RefreshMetadata_ClearsSyncWarnings()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        var title = await Seed.TitleAsync(db, user.Id);
+        await Seed.AddSyncWarningAsync(db, title.Id);
+        Authorize(client, user);
+
+        db.ChangeTracker.Clear();
+        Assert.True(await db.SyncWarnings.AnyAsync(w => w.TitleId == title.Id));
+
+        var res = await client.PostAsync($"/api/titles/{title.Id}/refresh-metadata", null);
+        Assert.Equal(HttpStatusCode.Accepted, res.StatusCode);
+
+        await Task.Delay(200);
+        db.ChangeTracker.Clear();
+        Assert.False(await db.SyncWarnings.AnyAsync(w => w.TitleId == title.Id));
+    }
+
+    [Fact]
+    public async Task RefreshMetadata_Returns202_ForAniListTitle_WithNoMangaupdatesId()
+    {
+        // AniList-sourced titles have no MangaupdatesId — must return 202, not 422
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        var t = Fake.Title(); t.MangaupdatesId = null; t.MetadataSource = "anilist";
+        var title = await Seed.TitleAsync(db, user.Id, t);
+        Authorize(client, user);
+
+        var res = await client.PostAsync($"/api/titles/{title.Id}/refresh-metadata", null);
+        Assert.Equal(HttpStatusCode.Accepted, res.StatusCode);
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────
 
     void Authorize(HttpClient client, ArrghServer.Data.Models.User user, bool? allowExplicit = null)

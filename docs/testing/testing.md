@@ -17,11 +17,11 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Layer | Framework | Count | In Allure |
 |---|---|---|---|
 | Web unit | Vitest | 175 | ✓ |
-| Server .NET unit + integration | xUnit | 430 | ✗ TRX only |
+| Server .NET unit + integration | xUnit | 435 | ✗ TRX only |
 | Plugin host | Vitest (supertest) | ~30 | ✓ |
 | API | Hurl | 8 | ✓ |
 | E2e | Playwright | 29 | ✓ |
-| **Total** | | **~672** | |
+| **Total** | | **~677** | |
 
 _Recount: `grep -rh "\[Fact\]\|\[Theory\]" server-tests --include="*.cs" | wc -l` for .NET; `npm test --run` in `web/` for Vitest._
 
@@ -263,6 +263,10 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /titles/:id` → `is_local=true` when no title_sources; `is_local=false` when sources exist | ✅ |
 | `GET /titles/:id` → `has_sync_warnings=true` when warning exists | ✅ |
 | `GET /titles/new-releases` → returns new chapters for owned titles only | ✅ |
+| `POST /titles/:id/refresh-metadata` → 401 without token | ✅ |
+| `POST /titles/:id/refresh-metadata` → 404 when title not owned | ✅ |
+| `POST /titles/:id/refresh-metadata` → 202 and clears sync warnings | ✅ |
+| `POST /titles/:id/refresh-metadata` → 202 for AniList title with no MangaupdatesId (not 422) | ✅ |
 | `GET /titles/new-releases` → excludes explicit from non-explicit user | ✅ |
 | `DELETE /titles/:id` → 204; does not delete when other user still has it; deletes when last user | ✅ |
 | `DELETE /titles/:id` → 404 not owned | ✅ |
@@ -482,6 +486,7 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `MatchSourcesAsync` → plugin returns hyphen-variant title ("Soeun" for "So-Eun") → still links source via fuzzy match | ✅ |
 | `MatchSourcesAsync` → plugin returns alias-matching title ("Everything Is Agreed" for alias "Everything Is Agreed Upon") → links source | ✅ |
 | `MatchSourcesAsync` → plugin returns completely unrelated title → warning logged, no source link created | ✅ |
+| `MatchSourcesAsync` → one source misses, another links → no warning (warning only on total miss) | ✅ |
 
 ### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ✅ ADR 0031
 

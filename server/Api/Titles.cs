@@ -302,30 +302,50 @@ public static class Titles
         return Results.Ok(entries);
     }
 
-    static async Task<IResult> RefreshMetadata(string id, ClaimsPrincipal principal, AppDbContext db, MangaUpdatesService mu)
+    static async Task<IResult> RefreshMetadata(string id, ClaimsPrincipal principal, AppDbContext db, MangaUpdatesService mu, IHttpClientFactory httpFactory, IConfiguration config, IServiceScopeFactory scopeFactory)
     {
         var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         var title = await db.Titles.FirstOrDefaultAsync(m =>
             m.Id == id && m.UserTitles.Any(ut => ut.UserId == userId));
         if (title is null) return Results.NotFound();
-        if (title.MangaupdatesId is null) return Results.UnprocessableEntity();
-        if (!ulong.TryParse(title.MangaupdatesId, out var muId)) return Results.UnprocessableEntity();
 
-        var series = await mu.SeriesDetailAsync(muId);
-        if (series is null) return Results.NotFound();
-
-        if (series.CoverUrl is not null && title.CoverUrl is null)
-            title.CoverUrl = series.CoverUrl;
-
-        await db.TitleAliases.Where(a => a.TitleId == id).ExecuteDeleteAsync();
-        foreach (var alias in series.AssociatedNames)
-            db.TitleAliases.Add(new() { Id = Guid.NewGuid().ToString(), TitleId = id, Alias = alias });
-
+        // Clear stale warnings and logs before retrying
+        await db.SyncWarnings.Where(w => w.TitleId == id).ExecuteDeleteAsync();
         await db.SyncLogs.Where(l => l.TitleId == id).ExecuteDeleteAsync();
+
+        // MU metadata + alias refresh (only for MU-sourced titles)
+        if (title.MangaupdatesId is not null && ulong.TryParse(title.MangaupdatesId, out var muId))
+        {
+            var series = await mu.SeriesDetailAsync(muId);
+            if (series is not null)
+            {
+                if (series.CoverUrl is not null && title.CoverUrl is null)
+                    title.CoverUrl = series.CoverUrl;
+                await db.TitleAliases.Where(a => a.TitleId == id).ExecuteDeleteAsync();
+                foreach (var alias in series.AssociatedNames)
+                    db.TitleAliases.Add(new() { Id = Guid.NewGuid().ToString(), TitleId = id, Alias = alias });
+            }
+        }
+
+        await db.Titles.Where(t => t.Id == id)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.SyncStatus, "syncing"));
         await db.SaveChangesAsync();
 
-        _ = Task.Run(() => RefreshMatchAsync(db, id, series.Title, series.AssociatedNames));
+        var capturedTitleId  = id;
+        var capturedTitle    = title.TitleName;
+        var capturedType     = title.ContentType;
+        var pluginHostUrl    = config["PluginHostUrl"] ?? "http://plugin-host:4000";
+        var downloadDir      = config["DownloadDir"] ?? "./downloads";
+
+        _ = Task.Run(async () =>
+        {
+            using var scope = scopeFactory.CreateScope();
+            var bgDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await Discover.MatchSourcesAsync(bgDb, httpFactory, capturedTitleId, capturedTitle, capturedType, pluginHostUrl);
+            await bgDb.Titles.Where(t => t.Id == capturedTitleId)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.SyncStatus, "ready"));
+        });
 
         return Results.StatusCode(202);
     }
