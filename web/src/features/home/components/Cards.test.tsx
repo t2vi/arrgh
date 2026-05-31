@@ -1,11 +1,13 @@
-import { render, screen } from '@testing-library/react'
-import { vi, describe, it, expect } from 'vitest'
-import { TrendingCard } from './Cards'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { TrendingCard, TrendingModal } from './Cards'
+import { api } from '@/api'
 
 vi.mock('@/api', () => ({
   api: {
     proxyImageUrl: (url: string) =>
       url.startsWith('/api/') ? url : `/api/media/proxy?url=${encodeURIComponent(url)}`,
+    addTitle: vi.fn(),
   },
 }))
 
@@ -86,5 +88,40 @@ describe('TrendingCard', () => {
       <TrendingCard result={makeResult()} badge="TOP" onClick={() => {}} />
     )
     expect(screen.getByText('TOP')).toBeTruthy()
+  })
+})
+
+describe('TrendingModal', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('calls onAdded (closes modal) after successful add', async () => {
+    vi.mocked(api.addTitle).mockResolvedValue(undefined as never)
+    const onAdded = vi.fn()
+    render(
+      <TrendingModal
+        result={makeResult()}
+        onClose={() => {}}
+        onViewDetails={() => {}}
+        onAdded={onAdded}
+      />
+    )
+    fireEvent.click(screen.getByText(/Add to Library/i))
+    await waitFor(() => expect(onAdded).toHaveBeenCalledTimes(1))
+  })
+
+  it('does not call onAdded when add fails', async () => {
+    vi.mocked(api.addTitle).mockRejectedValue(new Error('fail'))
+    const onAdded = vi.fn()
+    render(
+      <TrendingModal
+        result={makeResult()}
+        onClose={() => {}}
+        onViewDetails={() => {}}
+        onAdded={onAdded}
+      />
+    )
+    fireEvent.click(screen.getByText(/Add to Library/i))
+    await waitFor(() => expect(screen.getByText(/Add to Library/i)).toBeTruthy())
+    expect(onAdded).not.toHaveBeenCalled()
   })
 })

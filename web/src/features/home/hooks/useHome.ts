@@ -14,6 +14,7 @@ export interface HomeHandle {
   coverManga: { id: string; cover_url: string | null } | null
   selectedTrending: SearchResult | null
   setSelectedTrending: (r: SearchResult | null) => void
+  refreshLibrary: () => void
 }
 
 export function useHome(): HomeHandle {
@@ -114,6 +115,10 @@ export function useHome(): HomeHandle {
       ? { id: continueItems[0].title_id, cover_url: continueItems[0].cover_url }
       : items[0] ?? null
 
+  function refreshLibrary() {
+    api.listTitles(1).then(setMangaData).catch(() => {})
+  }
+
   return {
     items,
     isLoading,
@@ -126,5 +131,6 @@ export function useHome(): HomeHandle {
     coverManga,
     selectedTrending,
     setSelectedTrending,
+    refreshLibrary,
   }
 }

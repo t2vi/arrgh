@@ -14,11 +14,11 @@ Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential 
 
 | Layer | Framework | Count | In Allure |
 |---|---|---|---|
-| Web unit | Vitest | 161 | ✓ |
+| Web unit | Vitest | 164 | ✓ |
 | E2e | Playwright | 25 | ✓ |
 | API | Hurl | 8 | ✓ |
 | Server .NET | xUnit | 447 | ✗ TRX only |
-| **Total** | | **616** | 194 visible |
+| **Total** | | **619** | 197 visible |
 
 Update this table whenever tests are added or removed.
 
@@ -45,6 +45,8 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Login | `useLogin` | initial state, submit success/fail, loading cleared | ✅ |
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
 | Library | `MangaCard` | render, remove button, amber badge (warnings+0ch→show; warnings+ch→hide; no warnings→hide) | ✅ |
+| Home | `TrendingModal` | calls onAdded (closes modal) on successful add; does not call onAdded on failure | ✅ |
+| Home | `useHome` | refreshLibrary re-fetches listTitles | ✅ |
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
 | Discover | `SearchRow` | render, is_explicit→18+ badge, tag-based badge removed, loading state, In Library, cover/skeleton (3 TDD ⬜) | 🟡 |
 | Discover | `ContentTypeFilter` | render, hentai pill, novel pill, onChange (2 TDD ⬜) | 🟡 |
