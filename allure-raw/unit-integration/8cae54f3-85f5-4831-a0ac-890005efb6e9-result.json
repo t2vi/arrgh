@@ -1,0 +1,36 @@
+{
+  "uuid": "8cae54f3-85f5-4831-a0ac-890005efb6e9",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#ReaderMode_JsonNull_BehaviorDocumented",
+  "name": "ReaderMode_JsonNull_BehaviorDocumented",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.ReaderMode_JsonNull_BehaviorDocumented",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188404975,
+  "stop": 1780188404975,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "story",
+      "value": "ReaderMode_JsonNull_BehaviorDocumented"
+    }
+  ]
+}

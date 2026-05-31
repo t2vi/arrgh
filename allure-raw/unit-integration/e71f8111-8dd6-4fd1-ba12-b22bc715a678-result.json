@@ -1,0 +1,36 @@
+{
+  "uuid": "e71f8111-8dd6-4fd1-ba12-b22bc715a678",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;manhwa&quot;, expected: &quot;anilist&quot;)",
+  "name": "DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;manhwa&quot;, expected: &quot;anilist&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;manhwa&quot;, expected: &quot;anilist&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405067,
+  "stop": 1780188405067,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;manhwa&quot;, expected: &quot;anilist&quot;)"
+    }
+  ]
+}

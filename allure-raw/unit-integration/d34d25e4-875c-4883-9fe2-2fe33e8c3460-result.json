@@ -1,0 +1,36 @@
+{
+  "uuid": "d34d25e4-875c-4883-9fe2-2fe33e8c3460",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#IsHentaiTag_AdultOnly_False",
+  "name": "IsHentaiTag_AdultOnly_False",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.IsHentaiTag_AdultOnly_False",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405070,
+  "stop": 1780188405071,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "IsHentaiTag_AdultOnly_False"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "aa5aed43-e7f1-4043-9b74-1e5d2e4890b5",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_CancelsDownloading_InsteadOfDelete",
+  "name": "RemoveFromQueue_CancelsDownloading_InsteadOfDelete",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_CancelsDownloading_InsteadOfDelete",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188415232,
+  "stop": 1780188415820,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "QueueTests"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_CancelsDownloading_InsteadOfDelete"
+    }
+  ]
+}

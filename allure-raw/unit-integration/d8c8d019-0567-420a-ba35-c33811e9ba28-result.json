@@ -1,0 +1,36 @@
+{
+  "uuid": "d8c8d019-0567-420a-ba35-c33811e9ba28",
+  "historyId": "ArrghServer.Tests.ProgressTests#GetProgress_ReturnsProgress",
+  "name": "GetProgress_ReturnsProgress",
+  "fullName": "ArrghServer.Tests.ProgressTests.GetProgress_ReturnsProgress",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188408389,
+  "stop": 1780188412101,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "story",
+      "value": "GetProgress_ReturnsProgress"
+    }
+  ]
+}

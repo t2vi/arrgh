@@ -1,0 +1,36 @@
+{
+  "uuid": "973a0cb4-f6b0-4bf8-a19f-e86c63942498",
+  "historyId": "ArrghServer.Tests.VersionTests#GetVersion_NoAuthRequired",
+  "name": "GetVersion_NoAuthRequired",
+  "fullName": "ArrghServer.Tests.VersionTests.GetVersion_NoAuthRequired",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188437433,
+  "stop": 1780188437730,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "VersionTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "VersionTests"
+    },
+    {
+      "name": "story",
+      "value": "GetVersion_NoAuthRequired"
+    }
+  ]
+}

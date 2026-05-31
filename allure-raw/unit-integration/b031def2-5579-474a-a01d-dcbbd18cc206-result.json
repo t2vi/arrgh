@@ -1,0 +1,36 @@
+{
+  "uuid": "b031def2-5579-474a-a01d-dcbbd18cc206",
+  "historyId": "ArrghServer.Tests.AuthTests#DeleteUser_NoContent_Success",
+  "name": "DeleteUser_NoContent_Success",
+  "fullName": "ArrghServer.Tests.AuthTests.DeleteUser_NoContent_Success",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188453775,
+  "stop": 1780188454391,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "DeleteUser_NoContent_Success"
+    }
+  ]
+}

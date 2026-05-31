@@ -1,0 +1,36 @@
+{
+  "uuid": "d49593e7-e0b2-4c1f-848e-0ee7e4166b38",
+  "historyId": "ArrghServer.Tests.AuthTests#Login_ReturnsToken_ValidCredentials",
+  "name": "Login_ReturnsToken_ValidCredentials",
+  "fullName": "ArrghServer.Tests.AuthTests.Login_ReturnsToken_ValidCredentials",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188447979,
+  "stop": 1780188448493,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "Login_ReturnsToken_ValidCredentials"
+    }
+  ]
+}

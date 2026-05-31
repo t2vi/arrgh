@@ -1,0 +1,36 @@
+{
+  "uuid": "9ac4e4b6-5682-4d00-a4b3-b4f68a8f1409",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_PartialFailure_ReturnsOtherResults",
+  "name": "Search_PartialFailure_ReturnsOtherResults",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_PartialFailure_ReturnsOtherResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188435770,
+  "stop": 1780188436357,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "Search_PartialFailure_ReturnsOtherResults"
+    }
+  ]
+}

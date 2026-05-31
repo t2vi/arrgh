@@ -1,0 +1,36 @@
+{
+  "uuid": "3c1d075e-0106-437c-86ac-7f27f8bb97cd",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;novel&quot;, expected: &quot;novelupdates&quot;)",
+  "name": "DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;novel&quot;, expected: &quot;novelupdates&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;novel&quot;, expected: &quot;novelupdates&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405067,
+  "stop": 1780188405067,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "DesignatedAuthority_ReturnsCorrectSource(contentType: &quot;novel&quot;, expected: &quot;novelupdates&quot;)"
+    }
+  ]
+}

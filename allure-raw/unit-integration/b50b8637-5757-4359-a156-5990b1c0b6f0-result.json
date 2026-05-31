@@ -1,0 +1,36 @@
+{
+  "uuid": "b50b8637-5757-4359-a156-5990b1c0b6f0",
+  "historyId": "ArrghServer.Tests.LogServiceTests#RingBufferLogger_HttpDiagnosticsCategory_IsCaptured",
+  "name": "RingBufferLogger_HttpDiagnosticsCategory_IsCaptured",
+  "fullName": "ArrghServer.Tests.LogServiceTests.RingBufferLogger_HttpDiagnosticsCategory_IsCaptured",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405116,
+  "stop": 1780188405116,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "RingBufferLogger_HttpDiagnosticsCategory_IsCaptured"
+    }
+  ]
+}

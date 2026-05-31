@@ -1,0 +1,36 @@
+{
+  "uuid": "f5c835d7-99a1-4a96-8e72-ade9145a1adf",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_InLibrary_ByNormalizedTitleAndContentType",
+  "name": "Search_InLibrary_ByNormalizedTitleAndContentType",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_InLibrary_ByNormalizedTitleAndContentType",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188430546,
+  "stop": 1780188431066,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "Search_InLibrary_ByNormalizedTitleAndContentType"
+    }
+  ]
+}

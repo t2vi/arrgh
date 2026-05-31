@@ -1,0 +1,36 @@
+{
+  "uuid": "2e1d3154-7fee-4309-a866-02108c8f3bc4",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ValidReaderMode_Empty_Invalid",
+  "name": "ValidReaderMode_Empty_Invalid",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ValidReaderMode_Empty_Invalid",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405095,
+  "stop": 1780188405095,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ValidReaderMode_Empty_Invalid"
+    }
+  ]
+}

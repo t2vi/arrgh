@@ -1,0 +1,36 @@
+{
+  "uuid": "43b63480-485a-4cca-a129-d6290e992367",
+  "historyId": "ArrghServer.Tests.LogServiceTests#LevelToString_ReturnsExpectedString(level: Information, expected: &quot;INFO&quot;)",
+  "name": "LevelToString_ReturnsExpectedString(level: Information, expected: &quot;INFO&quot;)",
+  "fullName": "ArrghServer.Tests.LogServiceTests.LevelToString_ReturnsExpectedString(level: Information, expected: &quot;INFO&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405102,
+  "stop": 1780188405102,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "LevelToString_ReturnsExpectedString(level: Information, expected: &quot;INFO&quot;)"
+    }
+  ]
+}

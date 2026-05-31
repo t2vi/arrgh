@@ -1,0 +1,36 @@
+{
+  "uuid": "b4883eec-b05b-4352-b249-d3a24377d335",
+  "historyId": "ArrghServer.Tests.TitlesTests#NewReleases_ReturnsNewChapters",
+  "name": "NewReleases_ReturnsNewChapters",
+  "fullName": "ArrghServer.Tests.TitlesTests.NewReleases_ReturnsNewChapters",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188447321,
+  "stop": 1780188447723,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "NewReleases_ReturnsNewChapters"
+    }
+  ]
+}

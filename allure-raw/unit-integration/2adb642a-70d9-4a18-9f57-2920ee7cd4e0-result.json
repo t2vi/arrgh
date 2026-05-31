@@ -1,0 +1,36 @@
+{
+  "uuid": "2adb642a-70d9-4a18-9f57-2920ee7cd4e0",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_CreatesAdminAndReturnsToken",
+  "name": "Register_CreatesAdminAndReturnsToken",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_CreatesAdminAndReturnsToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188450327,
+  "stop": 1780188450760,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "Register_CreatesAdminAndReturnsToken"
+    }
+  ]
+}

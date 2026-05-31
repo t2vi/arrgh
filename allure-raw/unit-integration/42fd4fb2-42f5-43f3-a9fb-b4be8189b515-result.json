@@ -1,0 +1,36 @@
+{
+  "uuid": "42fd4fb2-42f5-43f3-a9fb-b4be8189b515",
+  "historyId": "ArrghServer.Tests.AuthTests#PatchUser_NotFound_NonexistentUser",
+  "name": "PatchUser_NotFound_NonexistentUser",
+  "fullName": "ArrghServer.Tests.AuthTests.PatchUser_NotFound_NonexistentUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188456785,
+  "stop": 1780188457177,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "PatchUser_NotFound_NonexistentUser"
+    }
+  ]
+}

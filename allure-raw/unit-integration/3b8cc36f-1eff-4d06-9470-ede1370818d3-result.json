@@ -1,0 +1,36 @@
+{
+  "uuid": "3b8cc36f-1eff-4d06-9470-ede1370818d3",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;manhuafast&quot;)",
+  "name": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;manhuafast&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;manhuafast&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188439738,
+  "stop": 1780188440325,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;manhuafast&quot;)"
+    }
+  ]
+}

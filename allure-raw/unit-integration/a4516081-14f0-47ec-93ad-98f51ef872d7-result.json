@@ -1,0 +1,36 @@
+{
+  "uuid": "a4516081-14f0-47ec-93ad-98f51ef872d7",
+  "historyId": "ArrghServer.Tests.LogsTests#SetLevel_Member_Forbidden",
+  "name": "SetLevel_Member_Forbidden",
+  "fullName": "ArrghServer.Tests.LogsTests.SetLevel_Member_Forbidden",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188435189,
+  "stop": 1780188435876,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogsTests"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_Member_Forbidden"
+    }
+  ]
+}

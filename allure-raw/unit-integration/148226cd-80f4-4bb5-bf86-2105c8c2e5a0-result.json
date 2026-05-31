@@ -1,0 +1,36 @@
+{
+  "uuid": "148226cd-80f4-4bb5-bf86-2105c8c2e5a0",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_ExplicitTags_SetsIsExplicit",
+  "name": "AddManga_ExplicitTags_SetsIsExplicit",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_ExplicitTags_SetsIsExplicit",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188443595,
+  "stop": 1780188444002,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_ExplicitTags_SetsIsExplicit"
+    }
+  ]
+}

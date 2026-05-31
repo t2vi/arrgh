@@ -1,0 +1,36 @@
+{
+  "uuid": "bcfd2cbd-3407-439e-afbe-8f69ec5c62b8",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_Forbidden_MemberCantCancelOthersItem",
+  "name": "RemoveFromQueue_Forbidden_MemberCantCancelOthersItem",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_Forbidden_MemberCantCancelOthersItem",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188415821,
+  "stop": 1780188416596,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "QueueTests"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_Forbidden_MemberCantCancelOthersItem"
+    }
+  ]
+}

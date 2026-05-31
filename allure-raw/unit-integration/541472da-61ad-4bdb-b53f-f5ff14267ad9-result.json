@@ -1,0 +1,36 @@
+{
+  "uuid": "541472da-61ad-4bdb-b53f-f5ff14267ad9",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#PageCache_HitAfterSet",
+  "name": "PageCache_HitAfterSet",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.PageCache_HitAfterSet",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405106,
+  "stop": 1780188405111,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "PageCache_HitAfterSet"
+    }
+  ]
+}

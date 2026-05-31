@@ -1,0 +1,36 @@
+{
+  "uuid": "170a9191-6334-4029-aa38-5d0137eddf91",
+  "historyId": "ArrghServer.Tests.QueueLogicTests#IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse",
+  "name": "IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse",
+  "fullName": "ArrghServer.Tests.QueueLogicTests.IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405039,
+  "stop": 1780188405039,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "QueueLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse"
+    }
+  ]
+}

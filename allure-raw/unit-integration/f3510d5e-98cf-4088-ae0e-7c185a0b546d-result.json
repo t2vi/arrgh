@@ -1,0 +1,36 @@
+{
+  "uuid": "f3510d5e-98cf-4088-ae0e-7c185a0b546d",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddManhwa_AniListSource_StoresSynonymsAsAliases",
+  "name": "AddManhwa_AniListSource_StoresSynonymsAsAliases",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddManhwa_AniListSource_StoresSynonymsAsAliases",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188419991,
+  "stop": 1780188420549,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManhwa_AniListSource_StoresSynonymsAsAliases"
+    }
+  ]
+}

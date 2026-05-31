@@ -1,0 +1,36 @@
+{
+  "uuid": "5086931d-68c9-4938-a1b3-b7a53a2aeb96",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#StripHtml_RemovesTags",
+  "name": "StripHtml_RemovesTags",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.StripHtml_RemovesTags",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405070,
+  "stop": 1780188405070,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "StripHtml_RemovesTags"
+    }
+  ]
+}

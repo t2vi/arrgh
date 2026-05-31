@@ -1,0 +1,36 @@
+{
+  "uuid": "82ae0011-0c91-4161-ab20-31ce9fa21aa2",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;boxnovel&quot;)",
+  "name": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;boxnovel&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;boxnovel&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188438718,
+  "stop": 1780188439250,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;boxnovel&quot;)"
+    }
+  ]
+}

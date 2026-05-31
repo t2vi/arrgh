@@ -1,0 +1,36 @@
+{
+  "uuid": "382a4907-b448-401a-952b-6c1040a7ddb7",
+  "historyId": "ArrghServer.Tests.AuthTests#CreateUser_Created_ValidMember",
+  "name": "CreateUser_Created_ValidMember",
+  "fullName": "ArrghServer.Tests.AuthTests.CreateUser_Created_ValidMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188445766,
+  "stop": 1780188446521,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "CreateUser_Created_ValidMember"
+    }
+  ]
+}

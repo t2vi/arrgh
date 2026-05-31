@@ -1,0 +1,36 @@
+{
+  "uuid": "a83101e3-72a1-418f-8b5d-ac2fe924f671",
+  "historyId": "ArrghServer.Tests.PluginsTests#InstallPlugin_BadGateway_WhenPluginHostFails",
+  "name": "InstallPlugin_BadGateway_WhenPluginHostFails",
+  "fullName": "ArrghServer.Tests.PluginsTests.InstallPlugin_BadGateway_WhenPluginHostFails",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188418366,
+  "stop": 1780188418923,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "InstallPlugin_BadGateway_WhenPluginHostFails"
+    }
+  ]
+}

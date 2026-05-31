@@ -1,0 +1,36 @@
+{
+  "uuid": "ce9458dc-4e83-4ec5-b785-88f4bbf9788c",
+  "historyId": "ArrghServer.Tests.PluginsTests#InstallPlugin_Created_OnSuccess",
+  "name": "InstallPlugin_Created_OnSuccess",
+  "fullName": "ArrghServer.Tests.PluginsTests.InstallPlugin_Created_OnSuccess",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188412781,
+  "stop": 1780188413352,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "InstallPlugin_Created_OnSuccess"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "2b3393b4-cc7d-4767-8bc7-a8a10133dcf7",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_DuplicateChapterNumbers_DoesNotFailChapterSources",
+  "name": "Sync_DuplicateChapterNumbers_DoesNotFailChapterSources",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_DuplicateChapterNumbers_DoesNotFailChapterSources",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188440228,
+  "stop": 1780188440949,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "story",
+      "value": "Sync_DuplicateChapterNumbers_DoesNotFailChapterSources"
+    }
+  ]
+}

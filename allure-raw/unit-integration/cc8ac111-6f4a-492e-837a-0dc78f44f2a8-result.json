@@ -1,0 +1,36 @@
+{
+  "uuid": "cc8ac111-6f4a-492e-837a-0dc78f44f2a8",
+  "historyId": "ArrghServer.Tests.LogServiceTests#GetRecent_Empty_ReturnsEmptyList",
+  "name": "GetRecent_Empty_ReturnsEmptyList",
+  "fullName": "ArrghServer.Tests.LogServiceTests.GetRecent_Empty_ReturnsEmptyList",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188405106,
+  "stop": 1780188405106,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "GetRecent_Empty_ReturnsEmptyList"
+    }
+  ]
+}

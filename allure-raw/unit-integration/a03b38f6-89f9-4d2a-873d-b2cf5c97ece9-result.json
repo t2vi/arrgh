@@ -1,0 +1,36 @@
+{
+  "uuid": "a03b38f6-89f9-4d2a-873d-b2cf5c97ece9",
+  "historyId": "ArrghServer.Tests.PluginsTests#InstallPlugin_UnprocessableEntity_NoDownloadUrl",
+  "name": "InstallPlugin_UnprocessableEntity_NoDownloadUrl",
+  "fullName": "ArrghServer.Tests.PluginsTests.InstallPlugin_UnprocessableEntity_NoDownloadUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188415821,
+  "stop": 1780188416351,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "InstallPlugin_UnprocessableEntity_NoDownloadUrl"
+    }
+  ]
+}
