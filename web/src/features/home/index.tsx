@@ -9,6 +9,40 @@ import {
   NewReleaseCard, RecentCard, TrendingCard, TrendingModal,
 } from './components/Cards'
 
+function TrendingLane({
+  heading, items, loading, onSelect,
+}: {
+  heading: string
+  items: ReturnType<typeof useHome>['trendingManga']
+  loading: boolean
+  onSelect: (r: ReturnType<typeof useHome>['trendingManga'][number]) => void
+}) {
+  if (!loading && items.length < 2) return null
+  return (
+    <section className="mt-8 px-6 space-y-4">
+      <h2 className="text-xl font-bold">{heading}</h2>
+      <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="shrink-0 w-36">
+                <div className="rounded-xl aspect-[2/3] bg-muted animate-pulse" />
+                <div className="mt-2 h-3 w-24 bg-muted animate-pulse rounded" />
+              </div>
+            ))
+          : items.map((r, i) => (
+              <TrendingCard
+                key={r.mangaupdates_id}
+                result={r}
+                badge={['HOT', 'TOP', 'NEW', '🔥', '📈', '⭐', '💥', '🎯'][i] ?? '•'}
+                onClick={() => onSelect(r)}
+              />
+            ))
+        }
+      </div>
+    </section>
+  )
+}
+
 export default function Home() {
   const navigate = useNavigate()
   const h = useHome()
@@ -18,108 +52,113 @@ export default function Home() {
       <div className="flex-1 overflow-auto">
         {h.isLoading ? (
           <HomeSkeleton />
-        ) : h.items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-24 gap-4">
-            <p className="text-muted-foreground text-sm">Library empty — discover titles to add some.</p>
-            <Button onClick={() => navigate(ROUTES.discover)}>Discover</Button>
-          </div>
         ) : (
           <div className="pb-12">
-            <GreetingJumbotron
-              typeCounts={h.items.reduce<Record<string, number>>((acc, m) => {
-                acc[m.content_type] = (acc[m.content_type] ?? 0) + 1
-                return acc
-              }, {})}
-              totalRead={h.totalRead}
-              coverManga={h.coverManga}
-            />
-
-            {h.continueItems.length > 0 && (
-              <section className="mt-8 px-6 space-y-4">
-                <h2 className="text-xl font-bold">Continue Reading</h2>
-                <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {h.continueItems.map((item) => (
-                    <ContinueCard
-                      key={item.chapter_id}
-                      item={item}
-                      onPlay={() => navigate(ROUTES.reader(item.chapter_id))}
-                      onDetail={() => navigate(ROUTES.title(item.title_id))}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <section className="mt-8 px-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">My Library</h2>
-                <button
-                  onClick={() => navigate(ROUTES.library)}
-                  className="text-sm text-primary hover:opacity-80 transition-opacity font-medium"
-                >
-                  View All
-                </button>
+            {h.items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 gap-4">
+                <p className="text-muted-foreground text-sm">Library empty — discover titles to add some.</p>
+                <Button onClick={() => navigate(ROUTES.discover)}>Discover</Button>
               </div>
-              <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {h.items.slice(0, 10).map((m) => (
-                  <LibraryCoverCard key={m.id} manga={m} onClick={() => navigate(ROUTES.title(m.id))} />
-                ))}
-              </div>
-            </section>
+            ) : (
+              <>
+                <GreetingJumbotron
+                  typeCounts={h.items.reduce<Record<string, number>>((acc, m) => {
+                    acc[m.content_type] = (acc[m.content_type] ?? 0) + 1
+                    return acc
+                  }, {})}
+                  totalRead={h.totalRead}
+                  coverManga={h.coverManga}
+                />
 
-            {h.newReleases.length > 0 && (
-              <section className="mt-8 px-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold">New Releases</h2>
-                  <span className="text-xs text-muted-foreground">{h.newReleases.length} new</span>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {h.newReleases.map((r) => (
-                    <NewReleaseCard
-                      key={r.chapter_id}
-                      item={r}
-                      onClick={() => navigate(ROUTES.reader(r.chapter_id))}
-                      onMangaClick={() => navigate(ROUTES.title(r.manga_id))}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {h.recentUp.length > 0 && (
-              <section className="mt-8 px-6 space-y-4">
-                <h2 className="text-xl font-bold">Recently Updated</h2>
-                <div className="grid grid-cols-3 gap-3">
-                  {h.recentUp.map((m) => (
-                    <RecentCard key={m.id} manga={m} onClick={() => navigate(ROUTES.title(m.id))} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {(h.trendingLoading || h.trending.length >= 2) && (
-              <section className="mt-8 px-6 space-y-4">
-                <h2 className="text-xl font-bold">Trending Now</h2>
-                <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {h.trendingLoading
-                    ? Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="shrink-0 w-36">
-                          <div className="rounded-xl aspect-[2/3] bg-muted animate-pulse" />
-                          <div className="mt-2 h-3 w-24 bg-muted animate-pulse rounded" />
-                        </div>
-                      ))
-                    : h.trending.map((r, i) => (
-                        <TrendingCard
-                          key={r.mangaupdates_id}
-                          result={r}
-                          badge={['HOT', 'TOP', 'NEW', '🔥', '📈', '⭐', '💥', '🎯'][i] ?? '•'}
-                          onClick={() => h.setSelectedTrending(r)}
+                {h.continueItems.length > 0 && (
+                  <section className="mt-8 px-6 space-y-4">
+                    <h2 className="text-xl font-bold">Continue Reading</h2>
+                    <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                      {h.continueItems.map((item) => (
+                        <ContinueCard
+                          key={item.chapter_id}
+                          item={item}
+                          onPlay={() => navigate(ROUTES.reader(item.chapter_id))}
+                          onDetail={() => navigate(ROUTES.title(item.title_id))}
                         />
-                      ))
-                  }
-                </div>
-              </section>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                <section className="mt-8 px-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold">My Library</h2>
+                    <button
+                      onClick={() => navigate(ROUTES.library)}
+                      className="text-sm text-primary hover:opacity-80 transition-opacity font-medium"
+                    >
+                      View All
+                    </button>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {h.items.slice(0, 10).map((m) => (
+                      <LibraryCoverCard key={m.id} manga={m} onClick={() => navigate(ROUTES.title(m.id))} />
+                    ))}
+                  </div>
+                </section>
+
+                {h.newReleases.length > 0 && (
+                  <section className="mt-8 px-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold">New Releases</h2>
+                      <span className="text-xs text-muted-foreground">{h.newReleases.length} new</span>
+                    </div>
+                    <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                      {h.newReleases.map((r) => (
+                        <NewReleaseCard
+                          key={r.chapter_id}
+                          item={r}
+                          onClick={() => navigate(ROUTES.reader(r.chapter_id))}
+                          onMangaClick={() => navigate(ROUTES.title(r.manga_id))}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {h.recentUp.length > 0 && (
+                  <section className="mt-8 px-6 space-y-4">
+                    <h2 className="text-xl font-bold">Recently Updated</h2>
+                    <div className="grid grid-cols-3 gap-3">
+                      {h.recentUp.map((m) => (
+                        <RecentCard key={m.id} manga={m} onClick={() => navigate(ROUTES.title(m.id))} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </>
             )}
+
+            <TrendingLane
+              heading="Trending Manga"
+              items={h.trendingManga}
+              loading={h.trendingMangaLoading}
+              onSelect={h.setSelectedTrending}
+            />
+            <TrendingLane
+              heading="Trending Manhwa"
+              items={h.trendingManhwa}
+              loading={h.trendingManhwaLoading}
+              onSelect={h.setSelectedTrending}
+            />
+            <TrendingLane
+              heading="Trending Manhua"
+              items={h.trendingManhua}
+              loading={h.trendingManhuaLoading}
+              onSelect={h.setSelectedTrending}
+            />
+            <TrendingLane
+              heading="Trending Adult Manhwa"
+              items={h.trendingAdultManhwa}
+              loading={h.trendingAdultManhwaLoading}
+              onSelect={h.setSelectedTrending}
+            />
           </div>
         )}
       </div>
@@ -137,7 +176,7 @@ export default function Home() {
           result={h.selectedTrending}
           onClose={() => h.setSelectedTrending(null)}
           onViewDetails={(id) => { h.setSelectedTrending(null); navigate(ROUTES.title(id)) }}
-          onAdded={() => { h.refreshLibrary(); h.setSelectedTrending(null) }}
+          onAdded={() => { h.setSelectedTrending(null); navigate(ROUTES.library) }}
         />
       )}
     </>

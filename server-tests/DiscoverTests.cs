@@ -111,42 +111,51 @@ public class DiscoverTests
         Assert.Equal(title.Id, res[0].GetProperty("library_id").GetString());
     }
 
-    // ── GET /api/discover/trending ────────────────────────────────────────────
+    // ── GET /api/discover/trending/* — covered by TrendingLaneTests.cs (ADR 0032) ──
+    // Old single /trending endpoint replaced by per-lane endpoints. Tests below
+    // are updated to use the new /trending/manga route.
 
     [Fact]
     public async Task Trending_Unauthorized_WithoutToken()
     {
         var (client, _) = NewFactory().CreateClientWithDb();
-        var res = await client.GetAsync("/api/discover/trending");
+        var res = await client.GetAsync("/api/discover/trending/manga");
         Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
     }
 
     [Fact]
-    public async Task Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData()
+    public async Task TrendingManga_ReturnsEmptyArray_WhenMuFails_AndNoCachedData()
     {
         var factory = new DiscoverFactory(muReleasesThrows: true);
         var (client, db) = factory.CreateClientWithDb();
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user);
 
-        var res = await client.GetAsync("/api/discover/trending");
-        Assert.Equal(HttpStatusCode.BadGateway, res.StatusCode);
+        // Failure with no stale → 200 [] (not 502 — discovery content degrades silently)
+        var res = await client.GetAsync("/api/discover/trending/manga");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement[]>();
+        Assert.NotNull(body);
+        Assert.Empty(body);
     }
 
     [Fact]
-    public async Task Trending_ServesStaleCache_WhenMuFails()
+    public async Task TrendingManga_ServesStaleCache_WhenMuFails()
     {
         var factory = new DiscoverFactory(muReleasesThrows: true);
         var (client, db) = factory.CreateClientWithDb();
 
-        // Pre-populate the cache
         var cache = factory.Services.GetRequiredService<TrendingCacheService>();
-        cache.Set([new MuSeries(1, "Cached Title", null, null, "ongoing", "manga", null, null, null, [])]);
+        cache.Set("manga", [new DiscoverResult
+        {
+            MangaupdatesId = "1", Title = "Cached Title", Status = "ongoing",
+            ContentType = "manga", Source = "mangaupdates",
+        }]);
 
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user);
 
-        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover/trending");
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover/trending/manga");
         Assert.NotNull(res);
         Assert.Single(res);
         Assert.Equal("Cached Title", res[0].GetProperty("title").GetString());
