@@ -1,0 +1,36 @@
+{
+  "uuid": "4026cf64-cc75-49d6-9ca5-c61452d555e3",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#AutoDownload_Absent_IsNull",
+  "name": "AutoDownload_Absent_IsNull",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.AutoDownload_Absent_IsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188252777,
+  "stop": 1780188252777,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "story",
+      "value": "AutoDownload_Absent_IsNull"
+    }
+  ]
+}

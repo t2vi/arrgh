@@ -1,0 +1,36 @@
+{
+  "uuid": "2a6901c8-76c4-419e-8946-42a326480dcb",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_UnprocessableEntity_ShortPassword",
+  "name": "Register_UnprocessableEntity_ShortPassword",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_UnprocessableEntity_ShortPassword",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188308197,
+  "stop": 1780188308537,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "Register_UnprocessableEntity_ShortPassword"
+    }
+  ]
+}

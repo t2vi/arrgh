@@ -1,0 +1,36 @@
+{
+  "uuid": "881a5652-1580-497d-b1d0-34cb1b7cedb8",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_SameInputs_ProducesDifferentTokens_DueToTimestamp",
+  "name": "CreateToken_SameInputs_ProducesDifferentTokens_DueToTimestamp",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_SameInputs_ProducesDifferentTokens_DueToTimestamp",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780188252937,
+  "stop": 1780188252937,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_SameInputs_ProducesDifferentTokens_DueToTimestamp"
+    }
+  ]
+}
