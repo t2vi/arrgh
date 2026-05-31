@@ -1,0 +1,36 @@
+{
+  "uuid": "48980bde-28c7-4181-9ebb-0ae5ffaed304",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ClampTrending_Boundary1_Valid",
+  "name": "ClampTrending_Boundary1_Valid",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ClampTrending_Boundary1_Valid",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190621590,
+  "stop": 1780190621591,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ClampTrending_Boundary1_Valid"
+    }
+  ]
+}

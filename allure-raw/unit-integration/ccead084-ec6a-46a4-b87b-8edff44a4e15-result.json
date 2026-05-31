@@ -1,0 +1,36 @@
+{
+  "uuid": "ccead084-ec6a-46a4-b87b-8edff44a4e15",
+  "historyId": "ArrghServer.Tests.LogsTests#GetLogs_ReturnsEmptyArray_WhenNoEntries",
+  "name": "GetLogs_ReturnsEmptyArray_WhenNoEntries",
+  "fullName": "ArrghServer.Tests.LogsTests.GetLogs_ReturnsEmptyArray_WhenNoEntries",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190668465,
+  "stop": 1780190669086,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogsTests"
+    },
+    {
+      "name": "story",
+      "value": "GetLogs_ReturnsEmptyArray_WhenNoEntries"
+    }
+  ]
+}

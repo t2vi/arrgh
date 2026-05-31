@@ -1,0 +1,36 @@
+{
+  "uuid": "b7d581d9-3aa0-46af-8397-171ee72e45ca",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#ParseFlexULong_Number",
+  "name": "ParseFlexULong_Number",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.ParseFlexULong_Number",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190621672,
+  "stop": 1780190621672,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ParseFlexULong_Number"
+    }
+  ]
+}

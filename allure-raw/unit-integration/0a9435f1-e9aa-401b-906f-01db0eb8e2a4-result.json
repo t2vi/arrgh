@@ -1,0 +1,36 @@
+{
+  "uuid": "0a9435f1-e9aa-401b-906f-01db0eb8e2a4",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_SearchFiltersByTitle",
+  "name": "ListTitles_SearchFiltersByTitle",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_SearchFiltersByTitle",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190666848,
+  "stop": 1780190667405,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_SearchFiltersByTitle"
+    }
+  ]
+}
