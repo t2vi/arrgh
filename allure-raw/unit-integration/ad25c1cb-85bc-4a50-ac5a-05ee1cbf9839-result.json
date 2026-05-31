@@ -1,0 +1,36 @@
+{
+  "uuid": "ad25c1cb-85bc-4a50-ac5a-05ee1cbf9839",
+  "historyId": "ArrghServer.Tests.LogServiceTests#SetLevel_InvalidLevel_ReturnsFalse",
+  "name": "SetLevel_InvalidLevel_ReturnsFalse",
+  "fullName": "ArrghServer.Tests.LogServiceTests.SetLevel_InvalidLevel_ReturnsFalse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226429409,
+  "stop": 1780226429409,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_InvalidLevel_ReturnsFalse"
+    }
+  ]
+}

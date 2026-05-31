@@ -1,0 +1,36 @@
+{
+  "uuid": "5383c26c-4791-4872-aed5-8afaa897fc75",
+  "historyId": "ArrghServer.Tests.LogServiceTests#GetRecent_ReturnsLastN",
+  "name": "GetRecent_ReturnsLastN",
+  "fullName": "ArrghServer.Tests.LogServiceTests.GetRecent_ReturnsLastN",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226429409,
+  "stop": 1780226429420,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "GetRecent_ReturnsLastN"
+    }
+  ]
+}

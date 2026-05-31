@@ -1,0 +1,36 @@
+{
+  "uuid": "1ea8a6c0-a435-4d48-a640-fd746559245e",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TrendingCache_IndependentLanes_DoNotCrossContaminate",
+  "name": "TrendingCache_IndependentLanes_DoNotCrossContaminate",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TrendingCache_IndependentLanes_DoNotCrossContaminate",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226429440,
+  "stop": 1780226429442,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "TrendingCache_IndependentLanes_DoNotCrossContaminate"
+    }
+  ]
+}

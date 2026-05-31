@@ -1,0 +1,36 @@
+{
+  "uuid": "647c7351-bd38-47e3-9ac8-e60f762e4b30",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_ShowsExplicitToExplicitUser",
+  "name": "ListTitles_ShowsExplicitToExplicitUser",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_ShowsExplicitToExplicitUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226469695,
+  "stop": 1780226470378,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_ShowsExplicitToExplicitUser"
+    }
+  ]
+}

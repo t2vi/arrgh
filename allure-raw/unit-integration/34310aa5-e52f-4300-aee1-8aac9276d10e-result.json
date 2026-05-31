@@ -1,0 +1,36 @@
+{
+  "uuid": "34310aa5-e52f-4300-aee1-8aac9276d10e",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapEntry_ContentType_ChineseManga_IsManhua",
+  "name": "MapEntry_ContentType_ChineseManga_IsManhua",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapEntry_ContentType_ChineseManga_IsManhua",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226429457,
+  "stop": 1780226429457,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "MapEntry_ContentType_ChineseManga_IsManhua"
+    }
+  ]
+}

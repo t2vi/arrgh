@@ -1,0 +1,36 @@
+{
+  "uuid": "eb02701d-b5b7-4609-8fdb-124e57ea4dd6",
+  "historyId": "ArrghServer.Tests.LogsTests#GetLogs_Unauthorized_WithoutToken",
+  "name": "GetLogs_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.LogsTests.GetLogs_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226440557,
+  "stop": 1780226440838,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogsTests"
+    },
+    {
+      "name": "story",
+      "value": "GetLogs_Unauthorized_WithoutToken"
+    }
+  ]
+}

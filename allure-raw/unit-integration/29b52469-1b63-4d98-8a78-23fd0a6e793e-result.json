@@ -1,0 +1,36 @@
+{
+  "uuid": "29b52469-1b63-4d98-8a78-23fd0a6e793e",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingManga_ReturnsAtMostSixResults",
+  "name": "TrendingManga_ReturnsAtMostSixResults",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingManga_ReturnsAtMostSixResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226488299,
+  "stop": 1780226489124,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "story",
+      "value": "TrendingManga_ReturnsAtMostSixResults"
+    }
+  ]
+}

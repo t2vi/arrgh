@@ -1,0 +1,36 @@
+{
+  "uuid": "f0cce576-f2a8-4456-8f6c-ef61d16511e3",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_PageChapter_SetsLocalPath",
+  "name": "Download_PageChapter_SetsLocalPath",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_PageChapter_SetsLocalPath",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780226476193,
+  "stop": 1780226479277,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "story",
+      "value": "Download_PageChapter_SetsLocalPath"
+    }
+  ]
+}
