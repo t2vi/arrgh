@@ -279,6 +279,7 @@ export const api = {
       year: result.year,
       tags: result.tags,
       content_type: result.content_type,
+      is_explicit: result.is_explicit,
     }),
 
   getQueue: () => get<QueueItem[]>('/api/queue'),

@@ -164,6 +164,7 @@ public static class Discover
                 if (results is null || results.Count == 0)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No results from {source.SourceKey}");
+                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No results from {source.SourceKey}");
                     continue;
                 }
 
@@ -175,6 +176,7 @@ public static class Discover
                 if (match is null)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No title match on {source.SourceKey} (searched \"{titleName}\")");
+                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No title match on {source.SourceKey}");
                     continue;
                 }
 
@@ -204,9 +206,6 @@ public static class Discover
                 await AppendSyncWarningAsync(db, titleId, source.SourceKey!, ex.Message);
             }
         }
-
-        if (!await db.TitleSources.AnyAsync(ts => ts.TitleId == titleId))
-            await AppendSyncWarningAsync(db, titleId, "source-matching", "No matching source found for this title");
     }
 
     record PluginSearchResult(
@@ -322,7 +321,7 @@ public static class Discover
         else
         {
             titleId = Guid.NewGuid().ToString();
-            var isExplicit = body.ContentType == "hentai" || IsHentaiTag(body.Tags) ||
+            var isExplicit = body.IsExplicit == true || body.ContentType == "hentai" || IsHentaiTag(body.Tags) ||
                 body.Tags?.Split(',').Any(t => t.Trim().Equals("adult", StringComparison.OrdinalIgnoreCase)) == true;
             var cleanTitle = StripSearchQualifier(body.Title) ?? body.Title;
 
@@ -779,4 +778,5 @@ public class AddMangaBody
     [JsonPropertyName("year")]            public int? Year { get; set; }
     [JsonPropertyName("tags")]            public string? Tags { get; set; }
     [JsonPropertyName("content_type")]    public string ContentType { get; set; } = "manga";
+    [JsonPropertyName("is_explicit")]     public bool? IsExplicit { get; set; }
 }

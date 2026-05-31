@@ -52,6 +52,9 @@ export default function MangaDetail() {
             <div className="flex-1 min-w-0 pb-1 space-y-2.5">
               <div className="flex gap-1.5 flex-wrap">
                 <ContentTypePill type={manga.content_type} />
+                {manga.is_explicit && (
+                  <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400">18+</span>
+                )}
                 {h.tags.slice(0, 5).map((tag) => (
                   <span
                     key={tag}
