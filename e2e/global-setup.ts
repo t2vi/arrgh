@@ -2,7 +2,7 @@ import { chromium, FullConfig } from '@playwright/test'
 import fs from 'fs'
 import path from 'path'
 
-const BASE = 'http://localhost:8080'
+const BASE = 'http://localhost:8282'
 const ADMIN = { username: 'test-admin', password: 'testpassword123' }
 
 export default async function globalSetup(_config: FullConfig) {
