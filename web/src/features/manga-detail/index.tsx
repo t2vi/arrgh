@@ -10,6 +10,7 @@ import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 import { useMangaDetail, CHAPTERS_PREVIEW, type FilterMode } from './hooks/useMangaDetail'
 import { ChapterRow } from './components/ChapterRow'
+import { NoChaptersMessage } from './components/NoChaptersMessage'
 import {
   SectionHeading, CoverImg, ChapterListSkeleton,
   ReaderModeCard, AutoDownloadCard, ExplicitCard, DownloadDirCard, CoverUrlCard, ContentTypeCard,
@@ -287,12 +288,13 @@ export default function MangaDetail() {
                 {h.loadingChapters ? (
                   <ChapterListSkeleton />
                 ) : h.total === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 flex items-center gap-2">
-                    {isSyncing || h.sync.isPending
-                      ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Fetching chapters…</>
-                      : <>No chapters.{isRemoteSource && <button onClick={() => h.sync.mutate()} className="underline hover:text-foreground ml-1">Sync.</button>}</>
-                    }
-                  </p>
+                  <NoChaptersMessage
+                    hasSyncWarnings={manga?.has_sync_warnings ?? false}
+                    isSyncing={isSyncing}
+                    isPending={h.sync.isPending}
+                    isRemoteSource={isRemoteSource}
+                    onSync={() => h.sync.mutate()}
+                  />
                 ) : (
                   <>
                     <div className="space-y-1.5">

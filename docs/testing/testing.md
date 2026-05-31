@@ -14,11 +14,11 @@ Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential 
 
 | Layer | Framework | Count | In Allure |
 |---|---|---|---|
-| Web unit | Vitest | 164 | ✓ |
+| Web unit | Vitest | 169 | ✓ |
 | E2e | Playwright | 25 | ✓ |
 | API | Hurl | 8 | ✓ |
 | Server .NET | xUnit | 447 | ✗ TRX only |
-| **Total** | | **619** | 197 visible |
+| **Total** | | **624** | 202 visible |
 
 Update this table whenever tests are added or removed.
 
@@ -46,6 +46,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
 | Library | `MangaCard` | render, remove button, amber badge (warnings+0ch→show; warnings+ch→hide; no warnings→hide) | ✅ |
 | Home | `TrendingModal` | calls onAdded (closes modal) on successful add; does not call onAdded on failure | ✅ |
+| Title detail | `NoChaptersMessage` | `hasSyncWarnings=true` → "no sources found"; `false` → "No chapters"; `isSyncing` → spinner; `isPending` → spinner; `isRemoteSource=false` → no Retry button | ✅ |
 | Home | `useHome` | refreshLibrary re-fetches listTitles | ✅ |
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
 | Discover | `SearchRow` | render, is_explicit→18+ badge, tag-based badge removed, loading state, In Library, cover/skeleton (3 TDD ⬜) | 🟡 |

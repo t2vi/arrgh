@@ -40,6 +40,14 @@ jobs:
         working-directory: plugins/fixture
         run: npm install --omit=dev
 
+      - name: Pre-pull MCR base images (retry on transient 403)
+        run: |
+          for i in 1 2 3; do
+            docker pull mcr.microsoft.com/dotnet/aspnet:10.0 && \
+            docker pull mcr.microsoft.com/dotnet/sdk:10.0 && break
+            echo "Attempt $i failed, retrying in 20s…" && sleep 20
+          done
+
       - name: Start test stack
         run: docker compose -f docker-compose.test.yml up -d --build --wait
         timeout-minutes: 5
