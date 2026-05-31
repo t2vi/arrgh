@@ -20,7 +20,7 @@
 <span class="line"><span style="color:#C678DD">    proxy_busy_buffers_size </span><span style="color:#D19A66"> 256k</span><span style="color:#ABB2BF">;</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#C678DD">    location</span><span style="color:#ABB2BF"> / {</span></span>
-<span class="line"><span style="color:#C678DD">        proxy_pass </span><span style="color:#ABB2BF">        http://localhost:8080;</span></span>
+<span class="line"><span style="color:#C678DD">        proxy_pass </span><span style="color:#ABB2BF">        http://localhost:8282;</span></span>
 <span class="line"><span style="color:#C678DD">        proxy_set_header </span><span style="color:#ABB2BF">  Host $</span><span style="color:#E06C75">host</span><span style="color:#ABB2BF">;</span></span>
 <span class="line"><span style="color:#C678DD">        proxy_set_header </span><span style="color:#ABB2BF">  X-Real-IP $</span><span style="color:#E06C75">remote_addr</span><span style="color:#ABB2BF">;</span></span>
 <span class="line"><span style="color:#C678DD">        proxy_set_header </span><span style="color:#ABB2BF">  X-Forwarded-For $</span><span style="color:#E06C75">proxy_add_x_forwarded_for</span><span style="color:#ABB2BF">;</span></span>
@@ -32,7 +32,7 @@
 <p>Bind arrgh to localhost only so it’s not directly reachable:</p>
 <pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#E06C75">arrgh</span><span style="color:#ABB2BF">:</span></span>
 <span class="line"><span style="color:#E06C75">  ports</span><span style="color:#ABB2BF">:</span></span>
-<span class="line"><span style="color:#ABB2BF">    - </span><span style="color:#98C379">"127.0.0.1:8080:8080"</span></span></code></pre>
+<span class="line"><span style="color:#ABB2BF">    - </span><span style="color:#98C379">"127.0.0.1:8282:8080"</span></span></code></pre>
 <p>Then use the nginx config above. Certbot manages the SSL cert:</p>
 <pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#61AFEF">certbot</span><span style="color:#D19A66"> --nginx</span><span style="color:#D19A66"> -d</span><span style="color:#98C379"> arrgh.example.com</span></span></code></pre>
 <h2 id="lan-only-no-domain-self-signed">LAN-only (no domain, self-signed)</h2>
@@ -46,7 +46,7 @@
 <span class="line"><span style="color:#C678DD">    ssl_certificate </span><span style="color:#ABB2BF">    /etc/nginx/ssl/arrgh.crt;</span></span>
 <span class="line"><span style="color:#C678DD">    ssl_certificate_key </span><span style="color:#ABB2BF">/etc/nginx/ssl/arrgh.key;</span></span>
 <span class="line"><span style="color:#C678DD">    location</span><span style="color:#ABB2BF"> / {</span></span>
-<span class="line"><span style="color:#C678DD">        proxy_pass </span><span style="color:#ABB2BF">http://127.0.0.1:8080;</span></span>
+<span class="line"><span style="color:#C678DD">        proxy_pass </span><span style="color:#ABB2BF">http://127.0.0.1:8282;</span></span>
 <span class="line"><span style="color:#C678DD">        proxy_set_header </span><span style="color:#ABB2BF">Host $</span><span style="color:#E06C75">host</span><span style="color:#ABB2BF">;</span></span>
 <span class="line"><span style="color:#C678DD">        proxy_read_timeout </span><span style="color:#D19A66">120s</span><span style="color:#ABB2BF">;</span></span>
 <span class="line"><span style="color:#ABB2BF">    }</span></span>
