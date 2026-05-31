@@ -1,0 +1,36 @@
+{
+  "uuid": "87d4d47c-2bdb-466f-86ea-a2fd0b00609d",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_NoContent_RemovesSource",
+  "name": "DeletePlugin_NoContent_RemovesSource",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_NoContent_RemovesSource",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190532079,
+  "stop": 1780190532582,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_NoContent_RemovesSource"
+    }
+  ]
+}

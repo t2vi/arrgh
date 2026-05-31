@@ -1,0 +1,36 @@
+{
+  "uuid": "2f23f19d-92f3-4005-bd15-09b81195e98b",
+  "historyId": "ArrghServer.Tests.PluginsLogicTests#FetchIndex_ReadsFileUrl",
+  "name": "FetchIndex_ReadsFileUrl",
+  "fullName": "ArrghServer.Tests.PluginsLogicTests.FetchIndex_ReadsFileUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490285,
+  "stop": 1780190490302,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "FetchIndex_ReadsFileUrl"
+    }
+  ]
+}

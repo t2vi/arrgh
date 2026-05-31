@@ -1,0 +1,36 @@
+{
+  "uuid": "cebe19ad-f3a0-47ad-953b-5d4bbcec7159",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant",
+  "name": "SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190545531,
+  "stop": 1780190546014,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant"
+    }
+  ]
+}

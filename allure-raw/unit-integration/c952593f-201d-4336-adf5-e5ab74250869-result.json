@@ -1,0 +1,36 @@
+{
+  "uuid": "c952593f-201d-4336-adf5-e5ab74250869",
+  "historyId": "ArrghServer.Tests.PluginsTests#InstallPlugin_Conflict_WhenAlreadyInstalled",
+  "name": "InstallPlugin_Conflict_WhenAlreadyInstalled",
+  "fullName": "ArrghServer.Tests.PluginsTests.InstallPlugin_Conflict_WhenAlreadyInstalled",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190530385,
+  "stop": 1780190530843,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "InstallPlugin_Conflict_WhenAlreadyInstalled"
+    }
+  ]
+}

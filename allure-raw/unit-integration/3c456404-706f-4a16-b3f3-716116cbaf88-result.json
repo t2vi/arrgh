@@ -1,0 +1,36 @@
+{
+  "uuid": "3c456404-706f-4a16-b3f3-716116cbaf88",
+  "historyId": "ArrghServer.Tests.TitlesTests#SyncTitle_SyncLogContainsSyncComplete",
+  "name": "SyncTitle_SyncLogContainsSyncComplete",
+  "fullName": "ArrghServer.Tests.TitlesTests.SyncTitle_SyncLogContainsSyncComplete",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190528808,
+  "stop": 1780190529369,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "SyncTitle_SyncLogContainsSyncComplete"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "20c02736-8832-4603-8a25-b1dacbdd636a",
+  "historyId": "ArrghServer.Tests.ChaptersTests#QueueDownload_NotFound_ExplicitHiddenFromUser",
+  "name": "QueueDownload_NotFound_ExplicitHiddenFromUser",
+  "fullName": "ArrghServer.Tests.ChaptersTests.QueueDownload_NotFound_ExplicitHiddenFromUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190502850,
+  "stop": 1780190503651,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "story",
+      "value": "QueueDownload_NotFound_ExplicitHiddenFromUser"
+    }
+  ]
+}

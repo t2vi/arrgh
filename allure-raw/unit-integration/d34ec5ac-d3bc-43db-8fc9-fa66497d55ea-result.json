@@ -1,0 +1,36 @@
+{
+  "uuid": "d34ec5ac-d3bc-43db-8fc9-fa66497d55ea",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#StripQualifier_NoSuffix_ReturnsNull",
+  "name": "StripQualifier_NoSuffix_ReturnsNull",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.StripQualifier_NoSuffix_ReturnsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490226,
+  "stop": 1780190490226,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "StripQualifier_NoSuffix_ReturnsNull"
+    }
+  ]
+}

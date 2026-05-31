@@ -1,0 +1,36 @@
+{
+  "uuid": "bbe4a546-36df-4007-b63d-d20e37584a58",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_Forbidden_WhenUsersExist",
+  "name": "Register_Forbidden_WhenUsersExist",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_Forbidden_WhenUsersExist",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190513348,
+  "stop": 1780190514502,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTests"
+    },
+    {
+      "name": "story",
+      "value": "Register_Forbidden_WhenUsersExist"
+    }
+  ]
+}

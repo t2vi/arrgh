@@ -1,0 +1,36 @@
+{
+  "uuid": "dcf89a5c-4f5f-4aba-a50f-c48db6487fdb",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_NotFound_Unknown",
+  "name": "DeletePlugin_NotFound_Unknown",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_NotFound_Unknown",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190533551,
+  "stop": 1780190534139,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_NotFound_Unknown"
+    }
+  ]
+}

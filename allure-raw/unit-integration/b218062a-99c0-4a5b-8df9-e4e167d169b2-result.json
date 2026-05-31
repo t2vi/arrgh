@@ -1,0 +1,36 @@
+{
+  "uuid": "b218062a-99c0-4a5b-8df9-e4e167d169b2",
+  "historyId": "ArrghServer.Tests.ProgressTests#GetProgress_Unauthorized_NoToken",
+  "name": "GetProgress_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.ProgressTests.GetProgress_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190519313,
+  "stop": 1780190519754,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "story",
+      "value": "GetProgress_Unauthorized_NoToken"
+    }
+  ]
+}

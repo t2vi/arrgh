@@ -1,0 +1,36 @@
+{
+  "uuid": "5f1200cd-998d-49f0-befe-cd4025f3444b",
+  "historyId": "ArrghServer.Tests.LogsTests#SetLevel_Admin_UpdatesLevel",
+  "name": "SetLevel_Admin_UpdatesLevel",
+  "fullName": "ArrghServer.Tests.LogsTests.SetLevel_Admin_UpdatesLevel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190527004,
+  "stop": 1780190527370,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogsTests"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_Admin_UpdatesLevel"
+    }
+  ]
+}

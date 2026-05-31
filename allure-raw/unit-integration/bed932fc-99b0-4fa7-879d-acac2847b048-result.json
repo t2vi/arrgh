@@ -1,0 +1,36 @@
+{
+  "uuid": "bed932fc-99b0-4fa7-879d-acac2847b048",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#ParseHtml_OngoingStatus_MapsCorrectly",
+  "name": "ParseHtml_OngoingStatus_MapsCorrectly",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.ParseHtml_OngoingStatus_MapsCorrectly",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490234,
+  "stop": 1780190490235,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ParseHtml_OngoingStatus_MapsCorrectly"
+    }
+  ]
+}

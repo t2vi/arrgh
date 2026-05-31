@@ -1,0 +1,36 @@
+{
+  "uuid": "4c350792-52fd-4076-a3a2-f3ab867bcba0",
+  "historyId": "ArrghServer.Tests.ProgressTests#UpdateProgress_Updates_WhenAlreadyExists",
+  "name": "UpdateProgress_Updates_WhenAlreadyExists",
+  "fullName": "ArrghServer.Tests.ProgressTests.UpdateProgress_Updates_WhenAlreadyExists",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190516511,
+  "stop": 1780190517057,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "story",
+      "value": "UpdateProgress_Updates_WhenAlreadyExists"
+    }
+  ]
+}

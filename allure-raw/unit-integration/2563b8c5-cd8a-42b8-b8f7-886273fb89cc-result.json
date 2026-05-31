@@ -1,0 +1,36 @@
+{
+  "uuid": "2563b8c5-cd8a-42b8-b8f7-886273fb89cc",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_NoContent_DeletesPendingItem",
+  "name": "RemoveFromQueue_NoContent_DeletesPendingItem",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_NoContent_DeletesPendingItem",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190503328,
+  "stop": 1780190504300,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "QueueTests"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_NoContent_DeletesPendingItem"
+    }
+  ]
+}

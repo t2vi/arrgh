@@ -1,0 +1,36 @@
+{
+  "uuid": "ece6c13a-fddf-4662-8c42-6520393d0834",
+  "historyId": "ArrghServer.Tests.ChaptersTests#GetChapterText_NotFound_Nonexistent",
+  "name": "GetChapterText_NotFound_Nonexistent",
+  "fullName": "ArrghServer.Tests.ChaptersTests.GetChapterText_NotFound_Nonexistent",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190513519,
+  "stop": 1780190514562,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterText_NotFound_Nonexistent"
+    }
+  ]
+}

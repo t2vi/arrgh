@@ -1,0 +1,36 @@
+{
+  "uuid": "4c24e3d4-2aaf-4a4a-9d7d-2e876f1c3cc3",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#RootDomainReferer_Empty_ReturnsEmpty",
+  "name": "RootDomainReferer_Empty_ReturnsEmpty",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.RootDomainReferer_Empty_ReturnsEmpty",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490316,
+  "stop": 1780190490316,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "RootDomainReferer_Empty_ReturnsEmpty"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "914375a9-2cd3-46c5-8726-bcf9ad7d2f4d",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_DifferentUsers_DifferentTokens",
+  "name": "CreateToken_DifferentUsers_DifferentTokens",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_DifferentUsers_DifferentTokens",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490365,
+  "stop": 1780190490367,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_DifferentUsers_DifferentTokens"
+    }
+  ]
+}

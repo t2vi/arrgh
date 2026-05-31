@@ -1,0 +1,36 @@
+{
+  "uuid": "be00e4d8-ca9c-4113-9bb3-29076f5c58ba",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_UnprocessableEntity_InvalidReaderMode",
+  "name": "SaveSettings_UnprocessableEntity_InvalidReaderMode",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_UnprocessableEntity_InvalidReaderMode",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190498822,
+  "stop": 1780190499115,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_UnprocessableEntity_InvalidReaderMode"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "43db071e-b5ff-43ec-acf4-e0c0d9fb698b",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#AuthorityOrder_MuBeforeAniList",
+  "name": "AuthorityOrder_MuBeforeAniList",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.AuthorityOrder_MuBeforeAniList",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490200,
+  "stop": 1780190490200,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "AuthorityOrder_MuBeforeAniList"
+    }
+  ]
+}

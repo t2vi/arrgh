@@ -1,0 +1,36 @@
+{
+  "uuid": "968021a8-348a-4d31-93bc-9b131426055c",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ParseLong_InvalidString_ReturnsDefault",
+  "name": "ParseLong_InvalidString_ReturnsDefault",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ParseLong_InvalidString_ReturnsDefault",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490136,
+  "stop": 1780190490136,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ParseLong_InvalidString_ReturnsDefault"
+    }
+  ]
+}

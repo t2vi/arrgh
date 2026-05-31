@@ -1,0 +1,36 @@
+{
+  "uuid": "258bfc50-e1f6-4a81-a5eb-5ab9661ed6fc",
+  "historyId": "ArrghServer.Tests.ChaptersTests#GetChapterText_ReturnsContent_WhenFileExists",
+  "name": "GetChapterText_ReturnsContent_WhenFileExists",
+  "fullName": "ArrghServer.Tests.ChaptersTests.GetChapterText_ReturnsContent_WhenFileExists",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190500100,
+  "stop": 1780190501077,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterText_ReturnsContent_WhenFileExists"
+    }
+  ]
+}

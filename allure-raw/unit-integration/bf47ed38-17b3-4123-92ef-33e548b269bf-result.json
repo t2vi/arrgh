@@ -1,0 +1,36 @@
+{
+  "uuid": "bf47ed38-17b3-4123-92ef-33e548b269bf",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#StripJpegIcc_NonJpeg_ReturnedUnchanged",
+  "name": "StripJpegIcc_NonJpeg_ReturnedUnchanged",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.StripJpegIcc_NonJpeg_ReturnedUnchanged",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490328,
+  "stop": 1780190490328,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "StripJpegIcc_NonJpeg_ReturnedUnchanged"
+    }
+  ]
+}

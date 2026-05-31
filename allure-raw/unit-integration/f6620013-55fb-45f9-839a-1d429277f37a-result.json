@@ -1,0 +1,36 @@
+{
+  "uuid": "f6620013-55fb-45f9-839a-1d429277f37a",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_NoChapterSources_SetsError",
+  "name": "Download_NoChapterSources_SetsError",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_NoChapterSources_SetsError",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190519156,
+  "stop": 1780190522329,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "story",
+      "value": "Download_NoChapterSources_SetsError"
+    }
+  ]
+}

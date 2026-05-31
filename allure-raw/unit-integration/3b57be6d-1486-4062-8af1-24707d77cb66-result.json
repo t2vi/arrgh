@@ -1,0 +1,36 @@
+{
+  "uuid": "3b57be6d-1486-4062-8af1-24707d77cb66",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_EHentai_NotIncluded_ForNonExplicitUser",
+  "name": "Search_EHentai_NotIncluded_ForNonExplicitUser",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_EHentai_NotIncluded_ForNonExplicitUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190543199,
+  "stop": 1780190543675,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "Search_EHentai_NotIncluded_ForNonExplicitUser"
+    }
+  ]
+}

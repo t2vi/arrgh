@@ -1,0 +1,36 @@
+{
+  "uuid": "854c5779-3bce-42cf-9735-42f72d1e26e6",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_Unauthorized_WithoutToken",
+  "name": "AddManga_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190536036,
+  "stop": 1780190536417,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_Unauthorized_WithoutToken"
+    }
+  ]
+}

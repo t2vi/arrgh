@@ -1,0 +1,36 @@
+{
+  "uuid": "9d735b2a-1636-4ae7-b002-bcb28657a3da",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields",
+  "name": "SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190493614,
+  "stop": 1780190498076,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "2b9453bb-ed20-4c76-8f5a-c3b796f3a528",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_Returns404_WhenTitleNotFound",
+  "name": "Sync_Returns404_WhenTitleNotFound",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_Returns404_WhenTitleNotFound",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190519043,
+  "stop": 1780190519672,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "story",
+      "value": "Sync_Returns404_WhenTitleNotFound"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "c3598411-1ec6-49ae-8cfd-7ba2e81ed5bc",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_MuMangaResult_HasSourceMangaupdates",
+  "name": "Search_MuMangaResult_HasSourceMangaupdates",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_MuMangaResult_HasSourceMangaupdates",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190543675,
+  "stop": 1780190544168,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "Search_MuMangaResult_HasSourceMangaupdates"
+    }
+  ]
+}

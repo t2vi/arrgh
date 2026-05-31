@@ -1,0 +1,36 @@
+{
+  "uuid": "406a6afe-f6ac-45da-881f-bc6b8f699a1b",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#ParseFlexULong_Null_ReturnsNull",
+  "name": "ParseFlexULong_Null_ReturnsNull",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.ParseFlexULong_Null_ReturnsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490206,
+  "stop": 1780190490209,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ParseFlexULong_Null_ReturnsNull"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "509263a4-5c1c-4a23-89e0-33be39226542",
+  "historyId": "ArrghServer.Tests.LogServiceTests#RingBufferLogger_EFCoreCategory_NotCaptured",
+  "name": "RingBufferLogger_EFCoreCategory_NotCaptured",
+  "fullName": "ArrghServer.Tests.LogServiceTests.RingBufferLogger_EFCoreCategory_NotCaptured",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190490221,
+  "stop": 1780190490221,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "story",
+      "value": "RingBufferLogger_EFCoreCategory_NotCaptured"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "uuid": "e3248ee2-e349-4a08-8099-6d86c1772e86",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_TrimsDownloadDir",
+  "name": "SaveSettings_TrimsDownloadDir",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_TrimsDownloadDir",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780190500233,
+  "stop": 1780190500541,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_TrimsDownloadDir"
+    }
+  ]
+}
