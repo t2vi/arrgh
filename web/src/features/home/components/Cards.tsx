@@ -227,22 +227,23 @@ export function TrendingModal({
   result,
   onClose,
   onViewDetails,
+  onAdded,
 }: {
   result: SearchResult
   onClose: () => void
   onViewDetails: (libraryId: string) => void
+  onAdded: () => void
 }) {
   const [coverFailed, setCoverFailed] = useState(false)
   const coverUrl = result.cover_url ? api.proxyImageUrl(result.cover_url) : ''
 
   const [addPending, setAddPending] = useState(false)
-  const [addSuccess, setAddSuccess] = useState(false)
 
   async function handleAdd() {
     setAddPending(true)
     try {
       await api.addTitle(result)
-      setAddSuccess(true)
+      onAdded()
     } catch {
       // ignore
     } finally {
@@ -315,10 +316,6 @@ export function TrendingModal({
             {result.in_library && result.library_id ? (
               <Button className="flex-1" onClick={() => onViewDetails(result.library_id!)}>
                 View Details
-              </Button>
-            ) : addSuccess ? (
-              <Button className="flex-1" variant="outline" disabled>
-                <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" /> Added to Library
               </Button>
             ) : (
               <Button className="flex-1" onClick={handleAdd} disabled={addPending}>

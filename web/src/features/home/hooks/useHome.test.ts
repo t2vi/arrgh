@@ -123,4 +123,12 @@ describe('useHome', () => {
     expect(result.current.trendingLoading).toBe(true)
     await waitFor(() => expect(result.current.trendingLoading).toBe(false))
   })
+  it('refreshLibrary re-fetches listTitles', async () => {
+    const { result } = renderHook(() => useHome())
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    const callsBefore = (api.listTitles as ReturnType<typeof vi.fn>).mock.calls.length
+    await act(async () => { result.current.refreshLibrary() })
+    expect((api.listTitles as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(callsBefore)
+  })
+
 })

@@ -137,6 +137,7 @@ export default function Home() {
           result={h.selectedTrending}
           onClose={() => h.setSelectedTrending(null)}
           onViewDetails={(id) => { h.setSelectedTrending(null); navigate(ROUTES.title(id)) }}
+          onAdded={() => { h.refreshLibrary(); h.setSelectedTrending(null) }}
         />
       )}
     </>
