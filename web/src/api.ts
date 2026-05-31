@@ -265,7 +265,11 @@ export const api = {
   searchManga: (q: string) =>
     get<SearchResult[]>('/api/discover', { q }),
 
-  getTrending: () => get<SearchResult[]>('/api/discover/trending'),
+  getTrending: () => get<SearchResult[]>('/api/discover/trending/manga'),
+  getTrendingManga: () => get<SearchResult[]>('/api/discover/trending/manga'),
+  getTrendingManhwa: () => get<SearchResult[]>('/api/discover/trending/manhwa'),
+  getTrendingManhua: () => get<SearchResult[]>('/api/discover/trending/manhua'),
+  getTrendingAdultManhwa: () => get<SearchResult[]>('/api/discover/trending/adult-manhwa'),
 
   addTitle: (result: SearchResult) =>
     post<Title>('/api/discover/add', {

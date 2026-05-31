@@ -12,6 +12,19 @@ Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential 
 
 Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known failing · ❌ gap (needed, not planned yet)
 
+## Test counts
+
+| Layer | Framework | Count | In Allure |
+|---|---|---|---|
+| Web unit | Vitest | 175 | ✓ |
+| Server .NET unit + integration | xUnit | 430 | ✗ TRX only |
+| Plugin host | Vitest (supertest) | ~30 | ✓ |
+| API | Hurl | 8 | ✓ |
+| E2e | Playwright | 29 | ✓ |
+| **Total** | | **~672** | |
+
+_Recount: `grep -rh "\[Fact\]\|\[Theory\]" server-tests --include="*.cs" | wc -l` for .NET; `npm test --run` in `web/` for Vitest._
+
 ---
 
 ## Web — Unit (Vitest, jsdom)
@@ -403,15 +416,37 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /discover` → 502 when MangaUpdates fails | ✅ |
 | `GET /discover` → returns mapped results with `in_library=false` | ✅ |
 | `GET /discover` → `in_library=true` when title already in library | ✅ |
-| `GET /discover/trending` → 401 without token | ✅ |
-| `GET /discover/trending` → 502 when MU fails and no cached data | ✅ |
-| `GET /discover/trending` → serves stale cache when MU fails | ✅ |
+| `GET /discover/trending/manga` → 401 without token | ✅ |
+| `GET /discover/trending/manga` → 200 [] when MU fails and no cached data (not 502) | ✅ |
+| `GET /discover/trending/manga` → serves stale cache when MU fails | ✅ |
 | `POST /discover/add` → 401 without token | ✅ |
 | `POST /discover/add` → creates title with qualifier stripped + returns `sync_status=syncing` | ✅ |
 | `POST /discover/add` → duplicate MU ID subscribes user and returns existing title | ✅ |
 | `POST /discover/add` → explicit tags → `is_explicit=true` | ✅ |
 | `POST /discover/add` → `is_explicit=true` field stores `IsExplicit=true` for manhwa (no hentai tags) | ✅ |
 | `POST /discover/add` → `is_explicit=false` does not suppress hentai `content_type` detection | ✅ |
+
+### Trending Lanes (`TrendingLaneTests.cs`) ADR 0032
+
+`TrendingLaneFactory` fakes MU releases + AniList GraphQL by hostname. Tests RED until implementation.
+
+| Case | Status |
+|---|---|
+| `GET /trending/manga` → 401 without token | ✅ |
+| `GET /trending/manga` → returns MU results mapped to DiscoverResult | ✅ |
+| `GET /trending/manga` → returns ≤6 results | ✅ |
+| `GET /trending/manga` → serves stale on MU failure | ✅ |
+| `GET /trending/manga` → returns [] on MU failure with no stale | ✅ |
+| `GET /trending/manhwa` → 401 without token | ✅ |
+| `GET /trending/manhwa` → returns AniList KR results | ✅ |
+| `GET /trending/manhwa` → serves stale on AniList failure | ✅ |
+| `GET /trending/manhwa` → returns [] on AniList failure with no stale | ✅ |
+| `GET /trending/manhua` → 401 without token | ✅ |
+| `GET /trending/manhua` → returns AniList CN results | ✅ |
+| `GET /trending/adult-manhwa` → 403 when user lacks Explicit Permission | ✅ |
+| `GET /trending/adult-manhwa` → returns explicit KR results for explicit user | ✅ |
+| `GET /trending/adult-manhwa` → serves stale on AniList failure | ✅ |
+| manga cache does not leak to manhwa lane | ✅ |
 
 ### Discover Fan-Out — Integration (`DiscoverFanOutTests.cs`) ✅ ADR 0031
 
@@ -631,6 +666,10 @@ The fixture responds to `/:source/search`, `/:source/manga/:id/chapters`, `/:sou
 | Selecting 50% sets image `max-width: 400px` | `reader.spec.ts` | Fixture Manga | ✅ |
 | Zoom persists via localStorage after reload | `reader.spec.ts` | Fixture Manga | ✅ |
 | Zoom applies `max-width` in scroll reader | `reader.spec.ts` | Fixture Manga | ✅ |
+| Home shows Trending Manga / Manhwa / Manhua headings | `home.spec.ts` | page.route() mock | ✅ |
+| Each lane shows cards from its source | `home.spec.ts` | page.route() mock | ✅ |
+| Adult manhwa lane hidden for non-explicit user | `home.spec.ts` | page.route() mock (403) | ✅ |
+| Clicking trending card opens modal | `home.spec.ts` | page.route() mock | ✅ |
 | Manhwa title → chapters rendered after sync (fixture serves any source key) | `library.spec.ts` | Fixture Manhwa | ⬜ |
 | Chapter row shows spinner + progress bar while downloading (no navigation needed) | `library.spec.ts` | Fixture Manga | ⬜ |
 | Chapter row flips to "Downloaded" after download completes (no navigation needed) | `library.spec.ts` | Fixture Manga | ⬜ |

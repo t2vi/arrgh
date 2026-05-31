@@ -11,6 +11,7 @@ A self-hosted East Asian comics and novel manager, downloader, and reader for yo
 ## Features
 
 - **Discover** powered by [MangaUpdates](https://www.mangaupdates.com/) — consistent metadata (titles, covers, descriptions, tags, authors) from a single authoritative source; [E-Hentai](https://e-hentai.org/) for explicit titles
+- **Trending lanes** — Home screen shows 4 independent trending rows: Manga (MangaUpdates), Manhwa, Manhua, and Adult Manhwa (AniList); each lane caches independently
 - Title aliases from MangaUpdates associated names — improves cross-source matching for series with multiple romanisations
 - Chapters aggregated across all registered sources — completeness doesn't depend on any one source being up to date
 - Automatic download fallback — if the preferred source fails, arrgh tries the next by priority
@@ -24,7 +25,7 @@ A self-hosted East Asian comics and novel manager, downloader, and reader for yo
 - Web reader (paged or scroll mode for comics; prose mode for novels)
 - Multi-user support — per-user libraries with shared file storage, per-user reading progress
 - Auto-download new chapters on a schedule
-- Explicit content controls — admin grants access per user
+- Explicit content controls — admin grants access per user; 18+ badge shown in library and Discover
 - Shared download queue — visible to all users, members cancel own items, admins cancel any
 
 ---

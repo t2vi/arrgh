@@ -256,7 +256,7 @@ export function TrendingModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="relative w-full max-w-lg bg-card rounded-2xl overflow-hidden shadow-2xl border border-border animate-in fade-in slide-in-from-bottom-4 duration-200">

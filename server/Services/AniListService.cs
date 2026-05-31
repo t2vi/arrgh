@@ -39,6 +39,45 @@ public class AniListService(IHttpClientFactory httpFactory)
         }
         """;
 
+    const string TrendingQuery = """
+        query ($country: CountryCode, $isAdult: Boolean, $perPage: Int) {
+          Page(perPage: $perPage) {
+            media(type: MANGA, sort: [TRENDING_DESC], countryOfOrigin: $country, isAdult: $isAdult) {
+              id
+              title { romaji english }
+              isAdult
+              format
+              countryOfOrigin
+              status
+              description(asHtml: false)
+              coverImage { large }
+              startDate { year }
+              staff(perPage: 5) { nodes { name { full } } }
+              synonyms
+            }
+          }
+        }
+        """;
+
+    public async Task<List<AniListSeries>> TrendingAsync(string countryOfOrigin, bool isAdult, int limit = 15)
+    {
+        var http = httpFactory.CreateClient();
+        try
+        {
+            var resp = await http.PostAsJsonAsync(Endpoint, new
+            {
+                query = TrendingQuery,
+                variables = new { country = countryOfOrigin, isAdult, perPage = limit },
+            });
+            resp.EnsureSuccessStatusCode();
+            var body = await resp.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(body)) return [];
+            var json = JsonSerializer.Deserialize<JsonElement>(body);
+            return ParseResponse(json);
+        }
+        catch { return []; }
+    }
+
     public async Task<List<string>> GetSynonymsAsync(string mediaId)
     {
         if (!int.TryParse(mediaId, out var id)) return [];

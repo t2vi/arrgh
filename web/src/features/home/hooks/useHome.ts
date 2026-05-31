@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { api, type SearchResult, type NewReleaseItem, type ContinueItem } from '@/api'
+import { api, getAllowExplicit, type SearchResult, type NewReleaseItem, type ContinueItem } from '@/api'
 import type { Title } from '@/types'
 
 export interface HomeHandle {
@@ -7,6 +7,14 @@ export interface HomeHandle {
   isLoading: boolean
   trending: SearchResult[]
   trendingLoading: boolean
+  trendingManga: SearchResult[]
+  trendingMangaLoading: boolean
+  trendingManhwa: SearchResult[]
+  trendingManhwaLoading: boolean
+  trendingManhua: SearchResult[]
+  trendingManhuaLoading: boolean
+  trendingAdultManhwa: SearchResult[]
+  trendingAdultManhwaLoading: boolean
   newReleases: NewReleaseItem[]
   continueItems: ContinueItem[]
   recentUp: Title[]
@@ -22,10 +30,20 @@ export function useHome(): HomeHandle {
 
   const [mangaData, setMangaData] = useState<{ items: Title[]; total: number; limit: number } | undefined>()
   const [isLoading, setIsLoading] = useState(true)
-  const [trendingData, setTrendingData] = useState<SearchResult[]>([])
-  const [trendingLoading, setTrendingLoading] = useState(true)
+
+  const [trendingMangaData, setTrendingMangaData] = useState<SearchResult[]>([])
+  const [trendingMangaLoading, setTrendingMangaLoading] = useState(true)
+  const [trendingManhwaData, setTrendingManhwaData] = useState<SearchResult[]>([])
+  const [trendingManhwaLoading, setTrendingManhwaLoading] = useState(true)
+  const [trendingManhuaData, setTrendingManhuaData] = useState<SearchResult[]>([])
+  const [trendingManhuaLoading, setTrendingManhuaLoading] = useState(true)
+  const [trendingAdultManhwaData, setTrendingAdultManhwaData] = useState<SearchResult[]>([])
+  const [trendingAdultManhwaLoading, setTrendingAdultManhwaLoading] = useState(true)
+
   const [newReleasesData, setNewReleasesData] = useState<NewReleaseItem[]>([])
   const [continueData, setContinueData] = useState<ContinueItem[]>([])
+
+  const allowExplicit = getAllowExplicit()
 
   // Manga list — initial fetch
   useEffect(() => {
@@ -35,40 +53,45 @@ export function useHome(): HomeHandle {
       .finally(() => setIsLoading(false))
   }, [])
 
-  // Trending — fetch on mount, refetch on window focus
+  // Trending manga lane — MU
   useEffect(() => {
-    function fetchTrending() {
-      setTrendingLoading(true)
-      api.getTrending()
-        .then(setTrendingData)
-        .catch(() => {})
-        .finally(() => setTrendingLoading(false))
-    }
-    fetchTrending()
-    window.addEventListener('focus', fetchTrending)
-    return () => window.removeEventListener('focus', fetchTrending)
+    setTrendingMangaLoading(true)
+    api.getTrendingManga()
+      .then(setTrendingMangaData)
+      .catch(() => {})
+      .finally(() => setTrendingMangaLoading(false))
   }, [])
 
-  // Poll trending every 5s while any card is still missing a cover (downloads in-flight)
-  const trendingPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // Trending manhwa lane — AniList KR
   useEffect(() => {
-    if (trendingPollRef.current) clearInterval(trendingPollRef.current)
-    const missingCovers = trendingData.some((r) => !r.cover_url)
-    if (!missingCovers || trendingLoading) return
-    trendingPollRef.current = setInterval(() => {
-      api.getTrending()
-        .then((data) => {
-          setTrendingData(data)
-          if (data.every((r) => r.cover_url)) {
-            if (trendingPollRef.current) clearInterval(trendingPollRef.current)
-          }
-        })
-        .catch(() => {})
-    }, 5000)
-    return () => {
-      if (trendingPollRef.current) clearInterval(trendingPollRef.current)
+    setTrendingManhwaLoading(true)
+    api.getTrendingManhwa()
+      .then(setTrendingManhwaData)
+      .catch(() => {})
+      .finally(() => setTrendingManhwaLoading(false))
+  }, [])
+
+  // Trending manhua lane — AniList CN
+  useEffect(() => {
+    setTrendingManhuaLoading(true)
+    api.getTrendingManhua()
+      .then(setTrendingManhuaData)
+      .catch(() => {})
+      .finally(() => setTrendingManhuaLoading(false))
+  }, [])
+
+  // Trending adult manhwa lane — AniList KR isAdult (only when allow_explicit)
+  useEffect(() => {
+    if (!allowExplicit) {
+      setTrendingAdultManhwaLoading(false)
+      return
     }
-  }, [trendingData, trendingLoading])
+    setTrendingAdultManhwaLoading(true)
+    api.getTrendingAdultManhwa()
+      .then(setTrendingAdultManhwaData)
+      .catch(() => {})
+      .finally(() => setTrendingAdultManhwaLoading(false))
+  }, [allowExplicit])
 
   // New releases — poll every 5 minutes
   useEffect(() => {
@@ -106,7 +129,16 @@ export function useHome(): HomeHandle {
   const recentUp = [...items]
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     .slice(0, 3)
-  const trending = (trendingData ?? []).filter((r) => !r.in_library).slice(0, 8)
+
+  const trendingManga = trendingMangaData.filter((r) => !r.in_library)
+  const trendingManhwa = trendingManhwaData.filter((r) => !r.in_library)
+  const trendingManhua = trendingManhuaData.filter((r) => !r.in_library)
+  const trendingAdultManhwa = trendingAdultManhwaData.filter((r) => !r.in_library)
+
+  // Legacy single-lane compat (uses manga lane)
+  const trending = trendingManga.slice(0, 8)
+  const trendingLoading = trendingMangaLoading
+
   const newReleases = newReleasesData ?? []
   const continueItems = continueData ?? []
   const totalRead = items.reduce((s, m) => s + (m.chapters_read ?? 0), 0)
@@ -124,6 +156,14 @@ export function useHome(): HomeHandle {
     isLoading,
     trending,
     trendingLoading,
+    trendingManga,
+    trendingMangaLoading,
+    trendingManhwa,
+    trendingManhwaLoading,
+    trendingManhua,
+    trendingManhuaLoading,
+    trendingAdultManhwa,
+    trendingAdultManhwaLoading,
     newReleases,
     continueItems,
     recentUp,
