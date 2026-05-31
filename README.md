@@ -37,7 +37,7 @@ curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
 docker compose up -d
 ```
 
-Open `http://<your-server-ip>:8080` — the setup wizard runs on first launch.
+Open `http://<your-server-ip>:8282` — the setup wizard runs on first launch.
 
 The default Compose file includes the **Mangapill** and **MangaDex** plugins. They auto-register on first boot via `PLUGIN_URLS` — no manual configuration needed.
 

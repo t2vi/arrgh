@@ -77,7 +77,7 @@ export function ClientSection() {
       <Input
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        placeholder="http://192.168.1.x:8080"
+        placeholder="http://192.168.1.x:8282"
         onKeyDown={(e) => e.key === 'Enter' && save()}
         className="max-w-xs"
       />

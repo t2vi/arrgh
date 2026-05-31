@@ -24,7 +24,7 @@ server {
     proxy_busy_buffers_size  256k;
 
     location / {
-        proxy_pass         http://localhost:8080;
+        proxy_pass         http://localhost:8282;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -41,7 +41,7 @@ Bind arrgh to localhost only so it's not directly reachable:
 ```yaml
 arrgh:
   ports:
-    - "127.0.0.1:8080:8080"
+    - "127.0.0.1:8282:8080"
 ```
 
 Then use the nginx config above. Certbot manages the SSL cert:
@@ -67,7 +67,7 @@ server {
     ssl_certificate     /etc/nginx/ssl/arrgh.crt;
     ssl_certificate_key /etc/nginx/ssl/arrgh.key;
     location / {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:8282;
         proxy_set_header Host $host;
         proxy_read_timeout 120s;
     }

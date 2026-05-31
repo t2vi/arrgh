@@ -3,7 +3,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8282:8080"
     environment:
       DATABASE_URL: sqlite:///data/arrgh.db   # maps to DatabasePath=/data/arrgh.db
       DOWNLOAD_DIR: /data/downloads

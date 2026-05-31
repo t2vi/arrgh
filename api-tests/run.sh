@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE=${BASE_URL:-http://localhost:8080}
+BASE=${BASE_URL:-http://localhost:8282}
 RESULTS_DIR=${ALLURE_RESULTS_DIR:-./allure-results}
 JUNIT_FILE=${JUNIT_FILE:-./junit.xml}
 ADMIN_USER=${ADMIN_USER:-test-admin}

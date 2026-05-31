@@ -7,7 +7,7 @@ curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
 docker compose up -d
 ```
 
-Open `http://<your-server-ip>:8080`. The setup wizard runs on first launch.
+Open `http://<your-server-ip>:8282`. The setup wizard runs on first launch.
 
 ---
 
@@ -15,7 +15,7 @@ Open `http://<your-server-ip>:8080`. The setup wizard runs on first launch.
 
 | Service | Port (host) | Description |
 |---|---|---|
-| `arrgh` | 8080 | Main server + web UI (Rust API + nginx) |
+| `arrgh` | 8282 | Main server + web UI (Rust API + nginx) |
 | `plugin-host` | _(internal)_ | Node.js plugin host — serves all bundled sources on port 4000 |
 | `cloakbrowser` | _(internal)_ | Stealth Chromium CDP server for CF-protected sources |
 

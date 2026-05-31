@@ -7,7 +7,7 @@ test.beforeEach(async () => {
 })
 
 
-const BASE = 'http://localhost:8080'
+const BASE = 'http://localhost:8282'
 
 // Mock all 4 trending lanes so tests are deterministic regardless of MU/AniList availability
 async function mockTrendingLanes(page: import('@playwright/test').Page) {

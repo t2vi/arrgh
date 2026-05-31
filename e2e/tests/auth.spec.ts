@@ -7,7 +7,7 @@ test.beforeEach(async () => {
 })
 
 
-const BASE = 'http://localhost:8080'
+const BASE = 'http://localhost:8282'
 const ADMIN = { username: 'test-admin', password: 'testpassword123' }
 
 test.describe('Auth', () => {

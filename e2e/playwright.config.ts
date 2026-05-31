@@ -10,7 +10,7 @@ export default defineConfig({
     : [['list']],
   globalSetup: './global-setup.ts',
   use: {
-    baseURL: 'http://localhost:8080',
+    baseURL: 'http://localhost:8282',
     trace: 'on-first-retry',
     storageState: '.auth/admin.json',
   },
