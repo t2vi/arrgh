@@ -1,0 +1,36 @@
+{
+  "uuid": "6528fccc-0856-423b-a5ff-1a7ccd72b27d",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#ParseHtml_MultipleResults_ParsesAll",
+  "name": "ParseHtml_MultipleResults_ParsesAll",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.ParseHtml_MultipleResults_ParsesAll",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780194537666,
+  "stop": 1780194537667,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "ParseHtml_MultipleResults_ParsesAll"
+    }
+  ]
+}

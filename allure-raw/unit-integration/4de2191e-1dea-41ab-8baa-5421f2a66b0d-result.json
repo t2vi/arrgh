@@ -1,0 +1,36 @@
+{
+  "uuid": "4de2191e-1dea-41ab-8baa-5421f2a66b0d",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddManhwa_AniListSource_EmptySynonyms_SyncStillCompletes",
+  "name": "AddManhwa_AniListSource_EmptySynonyms_SyncStillCompletes",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddManhwa_AniListSource_EmptySynonyms_SyncStillCompletes",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780194556237,
+  "stop": 1780194557376,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "story",
+      "value": "AddManhwa_AniListSource_EmptySynonyms_SyncStillCompletes"
+    }
+  ]
+}

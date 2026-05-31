@@ -1,0 +1,36 @@
+{
+  "uuid": "b6c69df8-0a50-400f-a1c9-7e92e9ec0927",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_UnprocessableEntity_InvalidContentType",
+  "name": "PatchTitle_UnprocessableEntity_InvalidContentType",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_UnprocessableEntity_InvalidContentType",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780194600535,
+  "stop": 1780194600884,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_UnprocessableEntity_InvalidContentType"
+    }
+  ]
+}
