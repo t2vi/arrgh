@@ -17,6 +17,10 @@ vi.mock('@/api', () => ({
 
 import { useHome } from './useHome'
 import { api } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Home')
+  await allure.feature('Home')
+})
 
 const emptyPage = { items: [], total: 0, page: 1, limit: 20 }
 

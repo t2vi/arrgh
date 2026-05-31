@@ -14,6 +14,10 @@ vi.mock('@/api', () => ({
 
 import { useSettings } from './useSettings'
 import { api, clearToken, isAdmin } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Settings')
+  await allure.feature('Config')
+})
 
 const mockSettings = { workers: 3, reader_mode: 'paged' }
 

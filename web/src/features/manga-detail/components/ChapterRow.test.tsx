@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { ChapterRow } from './ChapterRow'
 import type { Chapter, ReadProgress } from '@/types'
 import type { QueueItem } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Library')
+  await allure.feature('Chapters')
+})
 
 function makeChapter(overrides: Partial<Chapter> = {}): Chapter {
   return {

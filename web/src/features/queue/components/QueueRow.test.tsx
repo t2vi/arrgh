@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueueRow } from './QueueRow'
 import type { QueueItem } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Queue')
+  await allure.feature('Queue')
+})
 
 function makeItem(overrides: Partial<QueueItem> = {}): QueueItem {
   return {

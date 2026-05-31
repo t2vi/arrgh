@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { cn } from './utils'
+beforeEach(async () => {
+  await allure.epic('Components')
+  await allure.feature('Utils')
+})
 
 describe('cn', () => {
   it('merges class names', () => {

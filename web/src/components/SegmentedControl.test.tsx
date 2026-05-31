@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SegmentedControl } from './SegmentedControl'
+beforeEach(async () => {
+  await allure.epic('Components')
+  await allure.feature('UI Controls')
+})
 
 const OPTIONS = [
   { value: 'paged', label: 'Paged' },

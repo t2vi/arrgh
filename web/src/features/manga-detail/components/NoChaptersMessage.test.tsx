@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import { vi, describe, it, expect } from 'vitest'
 import { NoChaptersMessage } from './NoChaptersMessage'
+beforeEach(async () => {
+  await allure.epic('Library')
+  await allure.feature('Title Detail')
+})
 
 describe('NoChaptersMessage', () => {
   it('shows "no sources" message when hasSyncWarnings is true', () => {

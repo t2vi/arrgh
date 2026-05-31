@@ -11,6 +11,10 @@ vi.mock('@/api', () => ({
 
 import { useLibrary } from './useLibrary'
 import { api } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Library')
+  await allure.feature('Library List')
+})
 
 const mockPage = {
   items: [{ id: 'm1', title: 'Naruto', sync_status: 'ready' }],

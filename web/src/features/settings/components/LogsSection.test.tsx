@@ -4,6 +4,10 @@ import { vi } from 'vitest'
 import { LogsSection } from './LogsSection'
 import { api } from '@/api'
 import type { LogEntry } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Settings')
+  await allure.feature('Logs')
+})
 
 vi.mock('@/api', () => ({
   api: {

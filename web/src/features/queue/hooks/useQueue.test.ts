@@ -11,6 +11,10 @@ vi.mock('@/api', () => ({
 }))
 
 import { api } from '@/api'
+beforeEach(async () => {
+  await allure.epic('Queue')
+  await allure.feature('Queue')
+})
 
 const mockItems = [
   { id: '1', manga_title: 'Test', chapter_num: 1, status: 'done', error: null, chapter_id: 'c1', pages_downloaded: 0, pages_total: 0, created_at: '', updated_at: '' },

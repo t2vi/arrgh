@@ -1,4 +1,11 @@
 import { test, expect } from '@playwright/test'
+import { allure } from 'allure-playwright'
+
+test.beforeEach(async () => {
+  await allure.epic('Auth')
+  await allure.feature('Login')
+})
+
 
 const BASE = 'http://localhost:8080'
 const ADMIN = { username: 'test-admin', password: 'testpassword123' }
