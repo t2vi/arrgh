@@ -1,0 +1,40 @@
+{
+  "uuid": "f9f6ec79-0dfd-4faf-8bcc-d9baff854857",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TrendingCache_IndependentLanes_DoNotCrossContaminate",
+  "name": "TrendingCache_IndependentLanes_DoNotCrossContaminate",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TrendingCache_IndependentLanes_DoNotCrossContaminate",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780233888393,
+  "stop": 1780233888393,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "TrendingCache_IndependentLanes_DoNotCrossContaminate"
+    }
+  ]
+}

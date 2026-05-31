@@ -1,0 +1,40 @@
+{
+  "uuid": "628b32d3-6fee-4e2c-a939-c58908968700",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TrendingCache_GetFresh_ReturnsNull_ForDifferentLane",
+  "name": "TrendingCache_GetFresh_ReturnsNull_ForDifferentLane",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TrendingCache_GetFresh_ReturnsNull_ForDifferentLane",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780233888399,
+  "stop": 1780233888399,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "TrendingCache_GetFresh_ReturnsNull_ForDifferentLane"
+    }
+  ]
+}
