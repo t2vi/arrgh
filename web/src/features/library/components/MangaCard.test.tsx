@@ -128,4 +128,16 @@ describe('MangaCard', () => {
       expect(screen.queryByTitle('Some sources could not be matched — click title to refresh metadata')).toBeNull()
     })
   })
+
+  describe('18+ badge', () => {
+    it('shows 18+ badge when is_explicit=true', () => {
+      render(<MangaCard manga={makeManga({ is_explicit: true })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+      expect(screen.getByText('18+')).toBeInTheDocument()
+    })
+
+    it('hides 18+ badge when is_explicit=false', () => {
+      render(<MangaCard manga={makeManga({ is_explicit: false })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+      expect(screen.queryByText('18+')).toBeNull()
+    })
+  })
 })

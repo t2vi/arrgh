@@ -239,6 +239,53 @@ public class DiscoverTests
         Assert.True(title.IsExplicit);
     }
 
+    [Fact]
+    public async Task AddManga_IsExplicitField_SetsIsExplicitForManhwa()
+    {
+        // Regression: explicit manhwa (content_type != "hentai", no hentai tags) must
+        // store IsExplicit=true when the client sends is_explicit=true.
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            mangaupdates_id = "888",
+            title = "Adult Manhwa",
+            status = "ongoing",
+            content_type = "manhwa",
+            is_explicit = true,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        db.ChangeTracker.Clear();
+        var title = await db.Titles.FirstAsync(t => t.MangaupdatesId == "888");
+        Assert.True(title.IsExplicit);
+    }
+
+    [Fact]
+    public async Task AddManga_IsExplicitFalse_DoesNotOverrideHentaiContentType()
+    {
+        // Sending is_explicit=false must not suppress hentai content_type detection.
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            mangaupdates_id = "889",
+            title = "Hentai Title",
+            status = "complete",
+            content_type = "hentai",
+            is_explicit = false,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        db.ChangeTracker.Clear();
+        var title = await db.Titles.FirstAsync(t => t.MangaupdatesId == "889");
+        Assert.True(title.IsExplicit);
+    }
+
     // ── Sync log — metadata source (Bug: novel plugins fell through to "unknown") ──
 
     [Fact]
@@ -285,6 +332,7 @@ public class DiscoverTests
     [InlineData("boxnovel")]
     [InlineData("asurascans")]
     [InlineData("manhuafast")]
+    [InlineData("mangafire")]
     public async Task AddManga_AllPluginSources_SyncLogShowsSourceName(string source)
     {
         var (client, db) = NewFactory().CreateClientWithDb();
