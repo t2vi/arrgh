@@ -1,0 +1,36 @@
+{
+  "uuid": "1e6fbd6b-ead2-4fa2-b7f1-6030514104b9",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_Expires_In30Days",
+  "name": "CreateToken_Expires_In30Days",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_Expires_In30Days",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780194689719,
+  "stop": 1780194689720,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_Expires_In30Days"
+    }
+  ]
+}

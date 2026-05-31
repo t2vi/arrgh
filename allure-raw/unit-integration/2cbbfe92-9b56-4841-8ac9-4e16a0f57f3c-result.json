@@ -1,0 +1,36 @@
+{
+  "uuid": "2cbbfe92-9b56-4841-8ac9-4e16a0f57f3c",
+  "historyId": "ArrghServer.Tests.LogsTests#SetLevel_Admin_PersistsAcrossRequests",
+  "name": "SetLevel_Admin_PersistsAcrossRequests",
+  "fullName": "ArrghServer.Tests.LogsTests.SetLevel_Admin_PersistsAcrossRequests",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780194744196,
+  "stop": 1780194744711,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server Tests"
+    },
+    {
+      "name": "feature",
+      "value": "LogsTests"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_Admin_PersistsAcrossRequests"
+    }
+  ]
+}
