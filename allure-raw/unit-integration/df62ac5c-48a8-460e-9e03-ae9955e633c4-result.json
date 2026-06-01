@@ -1,0 +1,40 @@
+{
+  "uuid": "df62ac5c-48a8-460e-9e03-ae9955e633c4",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_PendingMangaChapter_SetsDone_AndChapterDownloaded",
+  "name": "Download_PendingMangaChapter_SetsDone_AndChapterDownloaded",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_PendingMangaChapter_SetsDone_AndChapterDownloaded",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282449167,
+  "stop": 1780282452229,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_PendingMangaChapter_SetsDone_AndChapterDownloaded"
+    }
+  ]
+}

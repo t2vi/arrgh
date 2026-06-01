@@ -1,0 +1,40 @@
+{
+  "uuid": "4dc5c731-43a9-492c-8c2b-95ad5a6cffb4",
+  "historyId": "ArrghServer.Tests.SourcesTests#PatchSource_NotFound_NonexistentId",
+  "name": "PatchSource_NotFound_NonexistentId",
+  "fullName": "ArrghServer.Tests.SourcesTests.PatchSource_NotFound_NonexistentId",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282391910,
+  "stop": 1780282392487,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "PatchSource_NotFound_NonexistentId"
+    }
+  ]
+}
