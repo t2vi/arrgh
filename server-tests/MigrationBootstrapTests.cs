@@ -154,6 +154,68 @@ public class MigrationBootstrapTests
 
     [Fact]
     [Trait("Category", TestCategories.Unit)]
+    public void Bootstrap_EmptyHistoryTable_StillRepairsAndMigrateSucceeds()
+    {
+        // Simulate state left by a previous crash: external_sources exists AND __EFMigrationsHistory
+        // exists but is empty (EF creates the table at the start of Migrate() before crashing).
+        var dbPath = Path.Combine(Path.GetTempPath(), $"bootstrap-empty-hist-{Guid.NewGuid():N}.db");
+        try
+        {
+            using (var conn = new SqliteConnection($"Data Source={dbPath}"))
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = """
+                    CREATE TABLE "external_sources" (
+                        "id" TEXT NOT NULL PRIMARY KEY,
+                        "name" TEXT NOT NULL,
+                        "base_url" TEXT NOT NULL,
+                        "api_key" TEXT,
+                        "content_types" TEXT NOT NULL,
+                        "enabled" INTEGER NOT NULL,
+                        "created_at" TEXT NOT NULL,
+                        "priority" INTEGER NOT NULL
+                    );
+                    INSERT INTO "external_sources" VALUES ('src1','MangaDex','http://plugin-host:4000',NULL,'manga',1,'2026-01-01',10);
+                    """;
+                cmd.ExecuteNonQuery();
+                cmd.CommandText = """
+                    CREATE TABLE "__EFMigrationsHistory" (
+                        "MigrationId" TEXT NOT NULL PRIMARY KEY,
+                        "ProductVersion" TEXT NOT NULL
+                    );
+                    """;
+                cmd.ExecuteNonQuery();
+            }
+
+            var opts = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            // Bootstrap + Migrate must not throw even with empty __EFMigrationsHistory
+            using (var db = new AppDbContext(opts))
+            {
+                MigrationBootstrap.Bootstrap(db);
+                db.Database.Migrate();
+            }
+
+            // SaveChanges must work
+            using (var db = new AppDbContext(opts))
+            {
+                var src = db.ExternalSources.Find("src1")!;
+                src.Enabled = false;
+                db.SaveChanges();
+            }
+        }
+        finally
+        {
+            foreach (var f in new[] { dbPath, dbPath + "-shm", dbPath + "-wal" })
+                if (File.Exists(f)) try { File.Delete(f); } catch { }
+        }
+    }
+
+    [Fact]
+    [Trait("Category", TestCategories.Unit)]
     public void Bootstrap_AlreadyMigratedDb_IsIdempotent()
     {
         var dbPath = Path.Combine(Path.GetTempPath(), $"bootstrap-migrated-{Guid.NewGuid():N}.db");

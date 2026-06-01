@@ -21,9 +21,14 @@ public static class MigrationBootstrap
 
             using var check = conn.CreateCommand();
 
-            // Already migrated — nothing to do
+            // Already migrated (history table exists AND has records) — nothing to do
             check.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='__EFMigrationsHistory'";
-            if ((long)check.ExecuteScalar()! > 0) return;
+            if ((long)check.ExecuteScalar()! > 0)
+            {
+                check.CommandText = "SELECT COUNT(*) FROM \"__EFMigrationsHistory\"";
+                if ((long)check.ExecuteScalar()! > 0) return;
+                // History table exists but is empty — previous run crashed mid-migration; fall through to repair
+            }
 
             // Fresh DB — let Migrate() handle everything
             check.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='external_sources'";
@@ -33,19 +38,19 @@ public static class MigrationBootstrap
             CreateMissingTables(conn);
             PatchExternalSourcesColumns(conn);
 
-            // Create history and record InitialSchema
-            Exec(conn, $"""
-                CREATE TABLE "__EFMigrationsHistory" (
+            // Create history if not already there (may exist but empty from a previous crash)
+            Exec(conn, """
+                CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
                     "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
                     "ProductVersion" TEXT NOT NULL
-                );
-                INSERT INTO "__EFMigrationsHistory" VALUES ('20260529064158_InitialSchema', '{V}');
+                )
                 """);
+            Exec(conn, $"INSERT OR IGNORE INTO \"__EFMigrationsHistory\" VALUES ('20260529064158_InitialSchema', '{V}')");
 
             // Record AddMetadataSourceColumns if already applied (column exists)
             check.CommandText = "SELECT COUNT(*) FROM pragma_table_info('titles') WHERE name='metadata_source'";
             if ((long)check.ExecuteScalar()! > 0)
-                Exec(conn, $"INSERT INTO \"__EFMigrationsHistory\" VALUES ('20260529104924_AddMetadataSourceColumns', '{V}')");
+                Exec(conn, $"INSERT OR IGNORE INTO \"__EFMigrationsHistory\" VALUES ('20260529104924_AddMetadataSourceColumns', '{V}')");
         }
         finally
         {
