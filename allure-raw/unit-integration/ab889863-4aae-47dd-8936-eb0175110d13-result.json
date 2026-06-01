@@ -1,0 +1,40 @@
+{
+  "uuid": "ab889863-4aae-47dd-8936-eb0175110d13",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_AdminCanSetExplicit",
+  "name": "PatchTitle_AdminCanSetExplicit",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_AdminCanSetExplicit",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287674640,
+  "stop": 1780287675087,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_AdminCanSetExplicit"
+    }
+  ]
+}

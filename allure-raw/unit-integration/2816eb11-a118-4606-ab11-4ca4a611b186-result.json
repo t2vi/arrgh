@@ -1,0 +1,40 @@
+{
+  "uuid": "2816eb11-a118-4606-ab11-4ca4a611b186",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ClampTrending_Below1_ClampsTo1",
+  "name": "ClampTrending_Below1_ClampsTo1",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ClampTrending_Below1_ClampsTo1",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287607538,
+  "stop": 1780287607543,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Validation"
+    },
+    {
+      "name": "story",
+      "value": "ClampTrending_Below1_ClampsTo1"
+    }
+  ]
+}

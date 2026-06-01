@@ -1,0 +1,40 @@
+{
+  "uuid": "f2ad3aff-3dc8-49a1-bf2a-d4185bc5e419",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapEntry_IsAdult_True_WhenFlagSet",
+  "name": "MapEntry_IsAdult_True_WhenFlagSet",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapEntry_IsAdult_True_WhenFlagSet",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287607604,
+  "stop": 1780287607605,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapEntry_IsAdult_True_WhenFlagSet"
+    }
+  ]
+}

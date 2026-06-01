@@ -1,0 +1,40 @@
+{
+  "uuid": "995d8842-3572-4604-8bc3-b6d47906dad5",
+  "historyId": "ArrghServer.Tests.AuthTests#DeleteUser_NotFound_NonexistentUser",
+  "name": "DeleteUser_NotFound_NonexistentUser",
+  "fullName": "ArrghServer.Tests.AuthTests.DeleteUser_NotFound_NonexistentUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287642301,
+  "stop": 1780287642942,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "DeleteUser_NotFound_NonexistentUser"
+    }
+  ]
+}

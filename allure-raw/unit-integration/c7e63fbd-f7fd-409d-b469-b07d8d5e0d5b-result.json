@@ -1,0 +1,40 @@
+{
+  "uuid": "c7e63fbd-f7fd-409d-b469-b07d8d5e0d5b",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_DuplicateMuId_SubscribesUserAndReturnsExisting",
+  "name": "AddManga_DuplicateMuId_SubscribesUserAndReturnsExisting",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_DuplicateMuId_SubscribesUserAndReturnsExisting",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287612570,
+  "stop": 1780287617614,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_DuplicateMuId_SubscribesUserAndReturnsExisting"
+    }
+  ]
+}

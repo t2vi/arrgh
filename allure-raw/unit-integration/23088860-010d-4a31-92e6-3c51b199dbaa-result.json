@@ -1,0 +1,40 @@
+{
+  "uuid": "23088860-010d-4a31-92e6-3c51b199dbaa",
+  "historyId": "ArrghServer.Tests.SourcesLogicTests#IsAdmin_False_ForMemberRole",
+  "name": "IsAdmin_False_ForMemberRole",
+  "fullName": "ArrghServer.Tests.SourcesLogicTests.IsAdmin_False_ForMemberRole",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287607346,
+  "stop": 1780287607471,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "IsAdmin_False_ForMemberRole"
+    }
+  ]
+}

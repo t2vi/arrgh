@@ -1,0 +1,40 @@
+{
+  "uuid": "c7d10ea6-58fc-4c0f-8adc-f79fdb57e9bd",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_Forbidden_ForMember",
+  "name": "DeletePlugin_Forbidden_ForMember",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_Forbidden_ForMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287637472,
+  "stop": 1780287638071,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_Forbidden_ForMember"
+    }
+  ]
+}

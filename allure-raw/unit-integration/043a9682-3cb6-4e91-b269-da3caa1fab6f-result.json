@@ -1,0 +1,40 @@
+{
+  "uuid": "043a9682-3cb6-4e91-b269-da3caa1fab6f",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_PluginHostError_SetsStatusError",
+  "name": "Sync_PluginHostError_SetsStatusError",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_PluginHostError_SetsStatusError",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287635580,
+  "stop": 1780287641449,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_PluginHostError_SetsStatusError"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "461429b8-8733-42b2-9c11-b0cf5d706ab8",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_Forbidden_NonCommunitySource",
+  "name": "DeletePlugin_Forbidden_NonCommunitySource",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_Forbidden_NonCommunitySource",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287630324,
+  "stop": 1780287631299,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_Forbidden_NonCommunitySource"
+    }
+  ]
+}

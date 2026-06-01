@@ -1,0 +1,40 @@
+{
+  "uuid": "700ac0c6-100e-4554-af8e-c6e68dceb2c7",
+  "historyId": "ArrghServer.Tests.ChaptersTests#QueueDownload_NotFound_ExplicitHiddenFromUser",
+  "name": "QueueDownload_NotFound_ExplicitHiddenFromUser",
+  "fullName": "ArrghServer.Tests.ChaptersTests.QueueDownload_NotFound_ExplicitHiddenFromUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780287644477,
+  "stop": 1780287644943,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "QueueDownload_NotFound_ExplicitHiddenFromUser"
+    }
+  ]
+}
