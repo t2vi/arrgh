@@ -2,6 +2,48 @@ import * as cheerio from 'cheerio'
 
 const BASE = 'https://manga18fx.com'
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+// ── CloakBrowser context (injected by plugin-host) ───────────────────────────
+
+interface BrowserPage {
+  goto(url: string, opts?: { waitUntil?: string; timeout?: number }): Promise<unknown>
+  content(): Promise<string>
+  close(): Promise<void>
+}
+interface BrowserContextLike {
+  newPage(): Promise<BrowserPage>
+  close(): Promise<void>
+}
+interface BrowserLike {
+  newContext(opts?: Record<string, unknown>): Promise<BrowserContextLike>
+  isConnected(): boolean
+}
+export interface PluginContext {
+  getBrowser: () => Promise<BrowserLike>
+  logger: typeof console
+}
+
+let _ctx: PluginContext | null = null
+export function setContext(ctx: PluginContext): void { _ctx = ctx }
+
+async function getPage(url: string): Promise<string> {
+  if (_ctx) {
+    const browser = await _ctx.getBrowser()
+    const bctx = await browser.newContext()
+    const page = await bctx.newPage()
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+      return await page.content()
+    } finally {
+      await bctx.close()
+    }
+  }
+  // Fallback: direct fetch (tests / no-CF environments)
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) throw new Error(`${url} returned ${res.status}`)
+  return res.text()
+}
+
+
 
 async function getHtml(url: string): Promise<string> {
   const res = await fetch(url, { headers: { 'User-Agent': UA } })
@@ -31,7 +73,8 @@ export interface ChapterItem {
 // ── Search ────────────────────────────────────────────────────────────────────
 
 export async function search(query: string): Promise<SearchItem[]> {
-  const html = await getHtml(`${BASE}/search?q=${encodeURIComponent(query)}`)
+  const q = query.replace(/-/g, ' ')
+  const html = await getPage(`${BASE}/search?q=${encodeURIComponent(q)}`)
   const $ = cheerio.load(html)
   const results: SearchItem[] = []
   const seen = new Set<string>()
@@ -76,7 +119,7 @@ export async function search(query: string): Promise<SearchItem[]> {
 // Manga18fx renders chapter lists as static HTML on the manga detail page.
 
 export async function chapters(seriesId: string): Promise<ChapterItem[]> {
-  const html = await getHtml(`${BASE}/manga/${seriesId}`)
+  const html = await getPage(`${BASE}/manga/${seriesId}`)
   const $ = cheerio.load(html)
   const seen = new Map<number, ChapterItem>()
 
@@ -99,7 +142,7 @@ export async function pages(chapterId: string): Promise<string[]> {
   const url = chapterId.startsWith('http')
     ? chapterId
     : `${BASE}${chapterId.startsWith('/') ? '' : '/'}${chapterId}`
-  const html = await getHtml(url)
+  const html = await getPage(url)
   const $ = cheerio.load(html)
   const urls: string[] = []
 

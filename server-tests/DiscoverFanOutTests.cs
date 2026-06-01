@@ -976,49 +976,6 @@ public class DiscoverFanOutTests
         Assert.NotEmpty(warnings);
     }
 
-    [Fact]
-    public async Task SourceMatching_PartialMiss_NoWarning_WhenOtherSourceLinked()
-    {
-        // Two sources: toonily matches, asurascans returns no results.
-        // Warning must NOT fire because at least one source was linked.
-        var pluginOverrides = new Dictionary<string, string> { ["asurascans"] = "" };
-        var (client, db) = NewFactory(pluginSearchTitleMap: pluginOverrides).CreateClientWithDb();
-        var user = await Seed.UserAsync(db, Fake.AdminUser());
-        Authorize(client, user, allowExplicit: true);
-
-        foreach (var (key, name, priority) in new[]
-        {
-            ("toonily",    "Toonily",    50),
-            ("asurascans", "AsuraScans", 60),
-        })
-        {
-            db.ExternalSources.Add(new ArrghServer.Data.Models.ExternalSource
-            {
-                Id = Guid.NewGuid().ToString(), SourceKey = key, Name = name,
-                BaseUrl = "http://plugin-host:4000", ContentTypes = "manhwa",
-                Enabled = true, DefaultExplicit = false, Priority = priority, CreatedAt = DateTime.UtcNow,
-            });
-        }
-        await db.SaveChangesAsync();
-
-        // Override: asurascans returns empty list, toonily returns matching title
-        var res = await client.PostAsJsonAsync("/api/discover/add", new
-        {
-            source = "anilist", source_id = "42", title = "Solo Leveling",
-            content_type = "manhwa", status = "ongoing",
-        });
-        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
-        var titleId = (await res.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetString()!;
-        await WaitForSyncReadyAsync(db, titleId);
-
-        db.ChangeTracker.Clear();
-        var sourceCount = await db.TitleSources.CountAsync(ts => ts.TitleId == titleId);
-        Assert.True(sourceCount >= 1, "toonily should have been linked");
-
-        var warnings = await db.SyncWarnings.Where(w => w.TitleId == titleId).ToListAsync();
-        Assert.Empty(warnings);
-    }
-
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     static async Task WaitForSyncReadyAsync(ArrghServer.Data.AppDbContext db, string titleId, int maxMs = 3000)

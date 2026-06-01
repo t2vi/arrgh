@@ -38,7 +38,7 @@ afterEach(() => { vi.unstubAllGlobals() })
 const ASURA_SEARCH_HTML = `
 <div class="grid grid-cols-2 gap-3 p-4">
   <div class="group/tipmanga">
-    <a href="https://asuracomic.net/series/solo-leveling-abc123" class="series">
+    <a href="/comics/solo-leveling-abc123" class="slide-link block">
       <img src="https://gg.asuracomic.net/storage/covers/solo-leveling.jpg" class="rounded" alt="Solo Leveling">
       <div class="col-span-8 flex flex-col">
         <span class="block font-bold text-white">Solo Leveling</span>
@@ -48,7 +48,7 @@ const ASURA_SEARCH_HTML = `
     </a>
   </div>
   <div class="group/tipmanga">
-    <a href="https://asuracomic.net/series/return-of-the-mount-hua-sect-xyz789" class="series">
+    <a href="/comics/return-of-the-mount-hua-sect-xyz789" class="slide-link block">
       <img src="https://gg.asuracomic.net/storage/covers/rmhs.jpg" class="rounded" alt="Return of the Mount Hua Sect">
       <div class="col-span-8 flex flex-col">
         <span class="block font-bold text-white">Return of the Mount Hua Sect</span>
@@ -85,7 +85,7 @@ const ASURA_PAGES_HTML = `
 
 describe('asurascans — search', () => {
   it('returns array with required fields', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { text: ASURA_SEARCH_HTML } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { text: ASURA_SEARCH_HTML } }))
     const results = await asurascans.search('solo leveling')
     expect(Array.isArray(results)).toBe(true)
     expect(results.length).toBeGreaterThan(0)
@@ -99,7 +99,7 @@ describe('asurascans — search', () => {
   })
 
   it('extracts id from series URL slug', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { text: ASURA_SEARCH_HTML } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { text: ASURA_SEARCH_HTML } }))
     const [first] = await asurascans.search('solo leveling')
     expect(first.id).toBe('solo-leveling-abc123')
     expect(first.title).toBe('Solo Leveling')
@@ -107,26 +107,26 @@ describe('asurascans — search', () => {
   })
 
   it('status is lowercase normalised', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { text: ASURA_SEARCH_HTML } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { text: ASURA_SEARCH_HTML } }))
     const [first] = await asurascans.search('solo leveling')
     expect(first.status).toBe('ongoing')
   })
 
   it('returns empty array when no results', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { text: '<div></div>' } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { text: '<div></div>' } }))
     const results = await asurascans.search('nothing')
     expect(results).toEqual([])
   })
 
   it('throws on non-ok response', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { ok: false } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { ok: false } }))
     await expect(asurascans.search('test')).rejects.toThrow()
   })
 })
 
 describe('asurascans — chapters', () => {
   it('returns chapters with source_id and number', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { text: ASURA_CHAPTERS_HTML } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { text: ASURA_CHAPTERS_HTML } }))
     const chapters = await asurascans.chapters('solo-leveling-abc123')
     expect(Array.isArray(chapters)).toBe(true)
     expect(chapters.length).toBeGreaterThan(0)
@@ -138,7 +138,7 @@ describe('asurascans — chapters', () => {
   })
 
   it('source_id is the chapter URL path', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { text: ASURA_CHAPTERS_HTML } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { text: ASURA_CHAPTERS_HTML } }))
     const chapters = await asurascans.chapters('solo-leveling-abc123')
     const ch180 = chapters.find((c) => c.number === 180)
     expect(ch180).toBeDefined()
@@ -148,7 +148,7 @@ describe('asurascans — chapters', () => {
 
 describe('asurascans — pages', () => {
   it('returns image URL array', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'asuracomic': { text: ASURA_PAGES_HTML } }))
+    vi.stubGlobal('fetch', mockFetch({ 'asurascans': { text: ASURA_PAGES_HTML } }))
     const pages = await asurascans.pages('solo-leveling-abc123/chapter/180')
     expect(Array.isArray(pages)).toBe(true)
     expect(pages.length).toBe(3)

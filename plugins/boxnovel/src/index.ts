@@ -1,3 +1,5 @@
+import { setContext } from "./boxnovel"
+import type { PluginContext } from "./boxnovel"
 import * as b from './boxnovel'
 
 export const info = {
@@ -7,9 +9,7 @@ export const info = {
   content_types: ['novel'],
 }
 
-export function init(_ctx: unknown): void {
-  // Direct fetch — no browser needed
-}
+export function init(ctx: PluginContext): void { setContext(ctx) }
 
 export const search      = b.search
 export const chapters    = b.chapters

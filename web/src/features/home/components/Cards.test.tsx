@@ -1,17 +1,13 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { TrendingCard, TrendingModal } from './Cards'
-import { api } from '@/api'
-beforeEach(async () => {
-  await allure.epic('Home')
-  await allure.feature('Home')
-})
+import { render, screen } from '@testing-library/react'
+import { vi, describe, it, expect } from 'vitest'
+import { TrendingCard, LibraryCoverCard } from './Cards'
+import type { Title } from '@/types'
 
 vi.mock('@/api', () => ({
   api: {
     proxyImageUrl: (url: string) =>
       url.startsWith('/api/') ? url : `/api/media/proxy?url=${encodeURIComponent(url)}`,
-    addTitle: vi.fn(),
+    coverUrl: (id: string) => `/covers/${id}`,
   },
 }))
 
@@ -21,6 +17,20 @@ function makeResult(overrides: object = {}) {
     description: null, cover_url: null, status: 'ongoing',
     author: 'Miura, Kentaro', year: 1989, tags: null, content_type: 'manga',
     in_library: false, library_id: null,
+    is_explicit: false,
+    source: 'mangaupdates',
+    ...overrides,
+  }
+}
+
+function makeManga(overrides: Partial<Title> = {}): Title {
+  return {
+    id: 'm1', title: 'Berserk', author: 'Miura', description: null,
+    cover_url: null, status: 'ongoing', content_type: 'manga',
+    sync_status: 'ready', is_local: false, local_path: null,
+    year: null, tags: null, auto_download: null, reader_mode: null,
+    download_dir: null, is_explicit: false, has_sync_warnings: false,
+    created_at: '', updated_at: '',
     ...overrides,
   }
 }
@@ -93,39 +103,26 @@ describe('TrendingCard', () => {
     )
     expect(screen.getByText('TOP')).toBeTruthy()
   })
-})
 
-describe('TrendingModal', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it('calls onAdded (closes modal) after successful add', async () => {
-    vi.mocked(api.addTitle).mockResolvedValue(undefined as never)
-    const onAdded = vi.fn()
-    render(
-      <TrendingModal
-        result={makeResult()}
-        onClose={() => {}}
-        onViewDetails={() => {}}
-        onAdded={onAdded}
-      />
-    )
-    fireEvent.click(screen.getByText(/Add to Library/i))
-    await waitFor(() => expect(onAdded).toHaveBeenCalledTimes(1))
+  it('shows 18+ pill when is_explicit is true', () => {
+    render(<TrendingCard result={makeResult({ is_explicit: true })} badge="HOT" onClick={() => {}} />)
+    expect(screen.getByText('18+')).toBeInTheDocument()
   })
 
-  it('does not call onAdded when add fails', async () => {
-    vi.mocked(api.addTitle).mockRejectedValue(new Error('fail'))
-    const onAdded = vi.fn()
-    render(
-      <TrendingModal
-        result={makeResult()}
-        onClose={() => {}}
-        onViewDetails={() => {}}
-        onAdded={onAdded}
-      />
-    )
-    fireEvent.click(screen.getByText(/Add to Library/i))
-    await waitFor(() => expect(screen.getByText(/Add to Library/i)).toBeTruthy())
-    expect(onAdded).not.toHaveBeenCalled()
+  it('does not show 18+ pill when is_explicit is false', () => {
+    render(<TrendingCard result={makeResult({ is_explicit: false })} badge="HOT" onClick={() => {}} />)
+    expect(screen.queryByText('18+')).not.toBeInTheDocument()
+  })
+})
+
+describe('LibraryCoverCard', () => {
+  it('shows 18+ pill when is_explicit is true', () => {
+    render(<LibraryCoverCard manga={makeManga({ is_explicit: true })} onClick={() => {}} />)
+    expect(screen.getByText('18+')).toBeInTheDocument()
+  })
+
+  it('does not show 18+ pill when is_explicit is false', () => {
+    render(<LibraryCoverCard manga={makeManga({ is_explicit: false })} onClick={() => {}} />)
+    expect(screen.queryByText('18+')).not.toBeInTheDocument()
   })
 })

@@ -211,12 +211,11 @@ public static class Discover
             }
         }
 
-        // Only warn when zero sources were linked after the full loop.
-        // Per-source misses are expected when some sources don't carry the title.
-        var linked = await db.TitleSources.AnyAsync(ts => ts.TitleId == titleId);
-        if (!linked)
+        // Warn only if NO source was matched at all
+        var anyLinked = await db.TitleSources.AnyAsync(ts => ts.TitleId == titleId);
+        if (!anyLinked)
             await AppendSyncWarningAsync(db, titleId, "source-matching",
-                "No sources could be matched for this title. Chapters may not be available.");
+                "No sources could be matched for this title. Check that the title name is correct and the plugins are reachable.");
     }
 
     record PluginSearchResult(
@@ -774,6 +773,9 @@ public static class Discover
         InLibrary = inLibrary,
         LibraryId = libraryId,
         Source = "mangaupdates",
+        IsExplicit = s.Tags is not null && s.Tags.Split(',').Any(t =>
+            t.Trim().Equals("adult", StringComparison.OrdinalIgnoreCase) ||
+            t.Trim().Equals("hentai", StringComparison.OrdinalIgnoreCase)),
     };
 
     // ── Pure helpers — unit-testable ──────────────────────────────────────────

@@ -12,19 +12,6 @@ Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential 
 
 Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known failing · ❌ gap (needed, not planned yet)
 
-## Test counts
-
-| Layer | Framework | Count | In Allure |
-|---|---|---|---|
-| Web unit | Vitest | 175 | ✓ |
-| Server .NET unit + integration | xUnit | 435 | ✗ TRX only |
-| Plugin host | Vitest (supertest) | ~30 | ✓ |
-| API | Hurl | 8 | ✓ |
-| E2e | Playwright | 29 | ✓ |
-| **Total** | | **~677** | |
-
-_Recount: `grep -rh "\[Fact\]\|\[Theory\]" server-tests --include="*.cs" | wc -l` for .NET; `npm test --run` in `web/` for Vitest._
-
 ---
 
 ## Web — Unit (Vitest, jsdom)
@@ -45,12 +32,12 @@ _Recount: `grep -rh "\[Fact\]\|\[Theory\]" server-tests --include="*.cs" | wc -l
 |---|---|---|---|
 | Login | `useLogin` | initial state, submit success/fail, loading cleared | ✅ |
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
-| Library | `MangaCard` | render, remove button | ✅ |
+| Library | `MangaCard` | render, remove button, is_explicit=true→18+ pill shown, is_explicit=false→no 18+ pill | ✅ |
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
-| Discover | `SearchRow` | render, is_explicit→18+ badge, tag-based badge removed, loading state, In Library, cover/skeleton (3 TDD ⬜) | 🟡 |
+| Discover | `SearchRow` | render, is_explicit=true→18+ badge shown, is_explicit=false→no 18+ badge, tag-based inference blocked, loading state, In Library, cover/skeleton | ✅ |
 | Discover | `ContentTypeFilter` | render, hentai pill, novel pill, onChange (2 TDD ⬜) | 🟡 |
-| Home | `useHome` | — | ✅ |
-| Home | `Cards` | render variants, title+author below cover, error→emoji | ✅ |
+| Home | `useHome` | loads trending on mount, filters in-library, trendingLoading lifecycle | ✅ |
+| Home | `Cards` | render variants, title+author below cover, error→emoji, is_explicit=true→18+ pill shown (TrendingCard + LibraryCoverCard), is_explicit=false→no 18+ pill | ✅ |
 | Settings | `useSettings` | load, tab defaults, save, logout | ✅ |
 | Queue | `useQueue` | fetch, sort, canClear, remove+refetch | ✅ |
 | Queue | `QueueRow` | render, remove btn hidden while downloading, onRemove, error | ✅ |
@@ -263,10 +250,6 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /titles/:id` → `is_local=true` when no title_sources; `is_local=false` when sources exist | ✅ |
 | `GET /titles/:id` → `has_sync_warnings=true` when warning exists | ✅ |
 | `GET /titles/new-releases` → returns new chapters for owned titles only | ✅ |
-| `POST /titles/:id/refresh-metadata` → 401 without token | ✅ |
-| `POST /titles/:id/refresh-metadata` → 404 when title not owned | ✅ |
-| `POST /titles/:id/refresh-metadata` → 202 and clears sync warnings | ✅ |
-| `POST /titles/:id/refresh-metadata` → 202 for AniList title with no MangaupdatesId (not 422) | ✅ |
 | `GET /titles/new-releases` → excludes explicit from non-explicit user | ✅ |
 | `DELETE /titles/:id` → 204; does not delete when other user still has it; deletes when last user | ✅ |
 | `DELETE /titles/:id` → 404 not owned | ✅ |
@@ -412,7 +395,7 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /version` → no update available → latest + url are null | ✅ |
 | `GET /version` → update available → returns latest version + URL | ✅ |
 
-### Discover (`DiscoverTests.cs`) ✅
+### Discover (`DiscoverTests.cs`) 🟡
 
 | Case | Status |
 |---|---|
@@ -420,37 +403,17 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /discover` → 502 when MangaUpdates fails | ✅ |
 | `GET /discover` → returns mapped results with `in_library=false` | ✅ |
 | `GET /discover` → `in_library=true` when title already in library | ✅ |
-| `GET /discover/trending/manga` → 401 without token | ✅ |
-| `GET /discover/trending/manga` → 200 [] when MU fails and no cached data (not 502) | ✅ |
-| `GET /discover/trending/manga` → serves stale cache when MU fails | ✅ |
+| `GET /discover` → MU result with "Adult" genre → `is_explicit=true` in response | ✅ |
+| `GET /discover` → MU result with no adult genres → `is_explicit=false` in response | ✅ |
+| `GET /discover/trending` → 401 without token | ✅ |
+| `GET /discover/trending` → 502 when MU fails and no cached data | ✅ |
+| `GET /discover/trending` → serves stale cache when MU fails | ✅ |
 | `POST /discover/add` → 401 without token | ✅ |
 | `POST /discover/add` → creates title with qualifier stripped + returns `sync_status=syncing` | ✅ |
 | `POST /discover/add` → duplicate MU ID subscribes user and returns existing title | ✅ |
 | `POST /discover/add` → explicit tags → `is_explicit=true` | ✅ |
 | `POST /discover/add` → `is_explicit=true` field stores `IsExplicit=true` for manhwa (no hentai tags) | ✅ |
 | `POST /discover/add` → `is_explicit=false` does not suppress hentai `content_type` detection | ✅ |
-
-### Trending Lanes (`TrendingLaneTests.cs`) ADR 0032
-
-`TrendingLaneFactory` fakes MU releases + AniList GraphQL by hostname. Tests RED until implementation.
-
-| Case | Status |
-|---|---|
-| `GET /trending/manga` → 401 without token | ✅ |
-| `GET /trending/manga` → returns MU results mapped to DiscoverResult | ✅ |
-| `GET /trending/manga` → returns ≤6 results | ✅ |
-| `GET /trending/manga` → serves stale on MU failure | ✅ |
-| `GET /trending/manga` → returns [] on MU failure with no stale | ✅ |
-| `GET /trending/manhwa` → 401 without token | ✅ |
-| `GET /trending/manhwa` → returns AniList KR results | ✅ |
-| `GET /trending/manhwa` → serves stale on AniList failure | ✅ |
-| `GET /trending/manhwa` → returns [] on AniList failure with no stale | ✅ |
-| `GET /trending/manhua` → 401 without token | ✅ |
-| `GET /trending/manhua` → returns AniList CN results | ✅ |
-| `GET /trending/adult-manhwa` → 403 when user lacks Explicit Permission | ✅ |
-| `GET /trending/adult-manhwa` → returns explicit KR results for explicit user | ✅ |
-| `GET /trending/adult-manhwa` → serves stale on AniList failure | ✅ |
-| manga cache does not leak to manhwa lane | ✅ |
 
 ### Discover Fan-Out — Integration (`DiscoverFanOutTests.cs`) ✅ ADR 0031
 
@@ -486,7 +449,6 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `MatchSourcesAsync` → plugin returns hyphen-variant title ("Soeun" for "So-Eun") → still links source via fuzzy match | ✅ |
 | `MatchSourcesAsync` → plugin returns alias-matching title ("Everything Is Agreed" for alias "Everything Is Agreed Upon") → links source | ✅ |
 | `MatchSourcesAsync` → plugin returns completely unrelated title → warning logged, no source link created | ✅ |
-| `MatchSourcesAsync` → one source misses, another links → no warning (warning only on total miss) | ✅ |
 
 ### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ✅ ADR 0031
 
@@ -671,10 +633,6 @@ The fixture responds to `/:source/search`, `/:source/manga/:id/chapters`, `/:sou
 | Selecting 50% sets image `max-width: 400px` | `reader.spec.ts` | Fixture Manga | ✅ |
 | Zoom persists via localStorage after reload | `reader.spec.ts` | Fixture Manga | ✅ |
 | Zoom applies `max-width` in scroll reader | `reader.spec.ts` | Fixture Manga | ✅ |
-| Home shows Trending Manga / Manhwa / Manhua headings | `home.spec.ts` | page.route() mock | ✅ |
-| Each lane shows cards from its source | `home.spec.ts` | page.route() mock | ✅ |
-| Adult manhwa lane hidden for non-explicit user | `home.spec.ts` | page.route() mock (403) | ✅ |
-| Clicking trending card opens modal | `home.spec.ts` | page.route() mock | ✅ |
 | Manhwa title → chapters rendered after sync (fixture serves any source key) | `library.spec.ts` | Fixture Manhwa | ⬜ |
 | Chapter row shows spinner + progress bar while downloading (no navigation needed) | `library.spec.ts` | Fixture Manga | ⬜ |
 | Chapter row flips to "Downloaded" after download completes (no navigation needed) | `library.spec.ts` | Fixture Manga | ⬜ |

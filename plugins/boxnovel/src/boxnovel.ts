@@ -3,6 +3,48 @@ import TurndownService from 'turndown'
 
 const BASE = 'https://boxnovel.com'
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+// ── CloakBrowser context (injected by plugin-host) ───────────────────────────
+
+interface BrowserPage {
+  goto(url: string, opts?: { waitUntil?: string; timeout?: number }): Promise<unknown>
+  content(): Promise<string>
+  close(): Promise<void>
+}
+interface BrowserContextLike {
+  newPage(): Promise<BrowserPage>
+  close(): Promise<void>
+}
+interface BrowserLike {
+  newContext(opts?: Record<string, unknown>): Promise<BrowserContextLike>
+  isConnected(): boolean
+}
+export interface PluginContext {
+  getBrowser: () => Promise<BrowserLike>
+  logger: typeof console
+}
+
+let _ctx: PluginContext | null = null
+export function setContext(ctx: PluginContext): void { _ctx = ctx }
+
+async function getPage(url: string): Promise<string> {
+  if (_ctx) {
+    const browser = await _ctx.getBrowser()
+    const bctx = await browser.newContext()
+    const page = await bctx.newPage()
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+      return await page.content()
+    } finally {
+      await bctx.close()
+    }
+  }
+  // Fallback: direct fetch (tests / no-CF environments)
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) throw new Error(`${url} returned ${res.status}`)
+  return res.text()
+}
+
+
 const td = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
 
 async function getHtml(url: string): Promise<string> {
@@ -46,7 +88,7 @@ export interface ChapterItem {
 
 export async function search(query: string): Promise<SearchItem[]> {
   const q = encodeURIComponent(query)
-  const html = await getHtml(`${BASE}/?s=${q}&post_type=wp-manga`)
+  const html = await getPage(`${BASE}/?s=${q}&post_type=wp-manga`)
   const $ = cheerio.load(html)
   const results: SearchItem[] = []
   const seen = new Set<string>()
@@ -99,7 +141,7 @@ export async function search(query: string): Promise<SearchItem[]> {
 // BoxNovel chapter list on the novel page: ul.main.version-chap li.wp-manga-chapter
 
 export async function chapters(novelId: string): Promise<ChapterItem[]> {
-  const html = await getHtml(`${BASE}/novel/${novelId}/`)
+  const html = await getPage(`${BASE}/novel/${novelId}/`)
   const $ = cheerio.load(html)
   const seen = new Map<number, ChapterItem>()
 
@@ -123,7 +165,7 @@ export async function chapters(novelId: string): Promise<ChapterItem[]> {
 
 export async function chapterText(chapterId: string): Promise<string> {
   const url = chapterId.startsWith('http') ? chapterId : `${BASE}${chapterId.startsWith('/') ? '' : '/'}${chapterId}`
-  const html = await getHtml(url)
+  const html = await getPage(url)
   const $ = cheerio.load(html)
   const content = $('.reading-content .text-left').html()
     || $('.reading-content').html()
