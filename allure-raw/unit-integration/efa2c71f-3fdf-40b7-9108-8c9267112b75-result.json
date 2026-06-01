@@ -1,0 +1,40 @@
+{
+  "uuid": "efa2c71f-3fdf-40b7-9108-8c9267112b75",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#ParseFlexULong_Null_ReturnsNull",
+  "name": "ParseFlexULong_Null_ReturnsNull",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.ParseFlexULong_Null_ReturnsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780288424645,
+  "stop": 1780288424645,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "ParseFlexULong_Null_ReturnsNull"
+    }
+  ]
+}

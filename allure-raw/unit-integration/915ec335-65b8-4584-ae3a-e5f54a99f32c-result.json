@@ -1,0 +1,40 @@
+{
+  "uuid": "915ec335-65b8-4584-ae3a-e5f54a99f32c",
+  "historyId": "ArrghServer.Tests.AuthTests#Login_Unauthorized_WrongPassword",
+  "name": "Login_Unauthorized_WrongPassword",
+  "fullName": "ArrghServer.Tests.AuthTests.Login_Unauthorized_WrongPassword",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780288477700,
+  "stop": 1780288478729,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Login_Unauthorized_WrongPassword"
+    }
+  ]
+}

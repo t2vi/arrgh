@@ -1,0 +1,40 @@
+{
+  "uuid": "1b89703b-00a5-4bfe-bc3c-e96a452fdb66",
+  "historyId": "ArrghServer.Tests.LogServiceTests#RingBufferLogger_HttpDiagnosticsCategory_IsCaptured",
+  "name": "RingBufferLogger_HttpDiagnosticsCategory_IsCaptured",
+  "fullName": "ArrghServer.Tests.LogServiceTests.RingBufferLogger_HttpDiagnosticsCategory_IsCaptured",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780288424873,
+  "stop": 1780288424873,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "RingBufferLogger_HttpDiagnosticsCategory_IsCaptured"
+    }
+  ]
+}

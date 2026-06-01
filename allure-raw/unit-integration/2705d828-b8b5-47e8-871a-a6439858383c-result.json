@@ -1,0 +1,40 @@
+{
+  "uuid": "2705d828-b8b5-47e8-871a-a6439858383c",
+  "historyId": "ArrghServer.Tests.TitlesTests#SyncTitle_NotFound_WhenNotOwned",
+  "name": "SyncTitle_NotFound_WhenNotOwned",
+  "fullName": "ArrghServer.Tests.TitlesTests.SyncTitle_NotFound_WhenNotOwned",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780288442379,
+  "stop": 1780288443625,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "SyncTitle_NotFound_WhenNotOwned"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "350c6ee6-a561-46a0-b8ca-600d59f25b97",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddManga_MangaSource_SyncLog_CallsMangaUpdates",
+  "name": "AddManga_MangaSource_SyncLog_CallsMangaUpdates",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddManga_MangaSource_SyncLog_CallsMangaUpdates",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780288465194,
+  "stop": 1780288466003,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_MangaSource_SyncLog_CallsMangaUpdates"
+    }
+  ]
+}
