@@ -131,6 +131,14 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GetRecent` returns last N entries | ✅ |
 | `Append` evicts oldest entry when capacity exceeded | ✅ |
 
+### MigrationBootstrap (`MigrationBootstrapTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| Pre-migration DB (tables exist, no `__EFMigrationsHistory`) → `Bootstrap` creates history → `Migrate()` succeeds | ✅ |
+| Fresh DB (no tables) → `Bootstrap` is no-op → `Migrate()` handles it normally | ✅ |
+| Already-migrated DB → `Bootstrap` is idempotent → `Migrate()` is no-op | ✅ |
+
 ### PatchTitleBody (`PatchTitleBodyTests.cs`) ✅
 
 | Case | Status |

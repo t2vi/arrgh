@@ -4,7 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| [v0.1.5](docs/releases/v0.1.5.md) | 2026-06-01 | Portainer/remote deploy 403 fix, CI port fix |
+| [v0.1.5](docs/releases/v0.1.5.md) | 2026-06-01 | Portainer/remote deploy 403 fix, CI port fix, migration bootstrap for existing DBs |
 | [v0.1.4](docs/releases/v0.1.4.md) | 2026-06-01 | asurascans fix (manhwa chapters, fixes #85), 18+ pills on home cards + trending, MU explicit detection, sync warning accuracy |
 | [v0.1.3](docs/releases/v0.1.3.md) | 2026-05-31 | Trending lane fan-out (4 lanes), 18+ badge fix on add, 18+ badge in library, NoChaptersMessage, manga18fx lazy-load, MangaFire removed, sync warning accuracy, AniList synonyms, nginx cache-control |
 | [v0.1.2](docs/releases/v0.1.2.md) | 2026-05-30 | .NET migration (replaces Rust), manga18fx plugin, E2e layer, LOG_LEVEL, source priority PATCH, download/sync fixes |
