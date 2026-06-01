@@ -63,7 +63,7 @@ jobs:
         working-directory: api-tests
         run: bash run.sh
         env:
-          BASE_URL: http://localhost:8080
+          BASE_URL: http://localhost:8282
           ALLURE_RESULTS_DIR: ./allure-results
           JUNIT_FILE: ./junit.xml
 
