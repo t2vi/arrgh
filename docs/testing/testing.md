@@ -560,6 +560,8 @@ HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked respo
 | manga18fx | search shape + slug extraction, chapters with numbers, pages URLs | ✅ |
 | manga18fx | chapters — sidebar/popular chapter links from other series NOT included (contamination regression) | ✅ |
 | manga18fx | search URL is `/search?q=` not `/?s=` (WordPress fallback regression) | ✅ |
+| manga18fx | pages — lazy-load URLs match any `imgXX.manga18fx.com` CDN subdomain (not hardcoded to `img01`) | ✅ |
+| manga18fx | pages — mixed lazy+eager: some imgs have `data-src`, some have `src` only — all CDN URLs returned | ✅ |
 | novelupdates | `parseSearchHtml` — id/title/status/cover, multiple results, empty HTML, status mapping | ✅ |
 
 ---
