@@ -1,0 +1,40 @@
+{
+  "uuid": "f589c8ef-3ae2-485d-b826-746f053a65ae",
+  "historyId": "ArrghServer.Tests.LogsTests#SetLevel_Admin_UnprocessableEntity_InvalidLevel",
+  "name": "SetLevel_Admin_UnprocessableEntity_InvalidLevel",
+  "fullName": "ArrghServer.Tests.LogsTests.SetLevel_Admin_UnprocessableEntity_InvalidLevel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780281635930,
+  "stop": 1780281636932,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_Admin_UnprocessableEntity_InvalidLevel"
+    }
+  ]
+}

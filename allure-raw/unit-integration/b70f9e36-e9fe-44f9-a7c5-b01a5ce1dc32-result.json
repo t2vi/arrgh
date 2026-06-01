@@ -1,0 +1,40 @@
+{
+  "uuid": "b70f9e36-e9fe-44f9-a7c5-b01a5ce1dc32",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#IsHentaiTag_CaseInsensitive",
+  "name": "IsHentaiTag_CaseInsensitive",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.IsHentaiTag_CaseInsensitive",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780281611321,
+  "stop": 1780281611321,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "IsHentaiTag_CaseInsensitive"
+    }
+  ]
+}

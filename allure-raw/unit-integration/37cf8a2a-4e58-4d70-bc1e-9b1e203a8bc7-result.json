@@ -1,0 +1,40 @@
+{
+  "uuid": "37cf8a2a-4e58-4d70-bc1e-9b1e203a8bc7",
+  "historyId": "ArrghServer.Tests.LogServiceTests#ParseLevel_UnknownLevel_ReturnsNull(input: &quot;&quot;)",
+  "name": "ParseLevel_UnknownLevel_ReturnsNull(input: &quot;&quot;)",
+  "fullName": "ArrghServer.Tests.LogServiceTests.ParseLevel_UnknownLevel_ReturnsNull(input: &quot;&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780281611393,
+  "stop": 1780281611393,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "ParseLevel_UnknownLevel_ReturnsNull(input: &quot;&quot;)"
+    }
+  ]
+}
