@@ -2,7 +2,9 @@
 [![CI](https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ci.yml) [![GHCR](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml) [![Docs-site](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml)
 [![E2e](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml)
 
-A self-hosted East Asian comics and novel manager, downloader, and reader for your home server. Supports manga, manhwa, manhua, and light novels from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
+**v0.1.4-beta** · A self-hosted East Asian comics and novel manager, downloader, and reader for your home server. Supports manga, manhwa, manhua, and light novels from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
+
+> ⚠️ **Port change (v0.1.3+)** — the host-exposed port is now **8282** (was 8080 in v0.1.2 and earlier). Update any firewall rules, bookmarks, or reverse proxy configs. The internal container port remains 8080 — only the host-side mapping changed.
 
 > I'm a solo dev who built this for myself — tired of juggling browser tabs, download scripts, and folder structures just to keep up with series. If you find it useful or want to contribute, you're very welcome. See [Contributing](#contributing).
 
@@ -25,7 +27,7 @@ A self-hosted East Asian comics and novel manager, downloader, and reader for yo
 - Web reader (paged or scroll mode for comics; prose mode for novels)
 - Multi-user support — per-user libraries with shared file storage, per-user reading progress
 - Auto-download new chapters on a schedule
-- Explicit content controls — admin grants access per user; 18+ badge shown in library and Discover
+- Explicit content controls — admin grants access per user; 18+ badge shown on all title cards (library, home, Discover, trending)
 - Shared download queue — visible to all users, members cancel own items, admins cancel any
 
 ---
@@ -39,9 +41,24 @@ docker compose up -d
 
 Open `http://<your-server-ip>:8282` — the setup wizard runs on first launch.
 
+> **Upgrading from v0.1.2 or earlier?** The host port changed from `8080` to `8282`. Run `docker compose pull && docker compose up -d` and update any firewall rules or reverse proxy configs pointing to the old port.
+
 The default Compose file includes the **Mangapill** and **MangaDex** plugins. They auto-register on first boot via `PLUGIN_URLS` — no manual configuration needed.
 
 See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full configuration.
+
+---
+
+## Upgrading
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Migrations run automatically on startup. No manual DB steps needed.
+
+**From v0.1.2 or earlier** — the host port changed from `8080` to `8282`. Update firewall rules, bookmarks, and any reverse proxy config that referenced `:8080`.
 
 ---
 
@@ -109,7 +126,7 @@ arrgh/
     └── manga18fx/
 ```
 
-- **Backend**: .NET 9, ASP.NET Core, EF Core (SQLite)
+- **Backend**: .NET 10, ASP.NET Core, EF Core (SQLite)
 - **Frontend**: React 18, TypeScript, Vite, Tailwind
 - **Plugins**: Node.js bundles loaded by plugin-host; CF-protected sources use CloakBrowser via CDP
 

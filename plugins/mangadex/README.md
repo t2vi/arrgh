@@ -16,35 +16,20 @@ Implements the [Source Plugin Protocol](../../docs/adr/0004-external-source-plug
 
 ### With Docker Compose (recommended)
 
-Included in the root `docker-compose.yml` — starts automatically alongside arrgh. MangaDex auto-registers via `PLUGIN_URLS=http://mangadex:4001` on first boot.
+Bundled into the **plugin-host** container — starts automatically with `docker compose up -d`. No separate container or manual registration needed.
 
 ### Locally (dev)
+
+Build the bundle and hot-reload it into a running plugin-host:
 
 ```bash
 cd plugins/mangadex
 npm install
-npm run dev        # ts-node watch mode
-# or
-npm run build && npm start
+npm run build   # esbuild → bundles/mangadex.js
+docker cp bundles/mangadex.js gwarr-plugin-host-1:/app/bundles/mangadex.js
 ```
 
-Plugin listens on `http://localhost:4001` by default.
-
-**Important:** running the plugin is not enough — you must also register it with arrgh. Pick one:
-
-**Option A — auto-register at startup** (recommended for dev)
-
-Add to `server/.env`:
-
-```
-PLUGIN_URLS=http://localhost:4001
-```
-
-Then (re)start the arrgh server. The URL is inserted once; subsequent restarts skip it.
-
-**Option B — register at runtime**
-
-With both arrgh and the plugin running, open **Settings → Sources → Add** and enter `http://localhost:4001`. No restart needed.
+Plugin-host hot-reloads when the file changes — no container restart needed.
 
 ---
 
