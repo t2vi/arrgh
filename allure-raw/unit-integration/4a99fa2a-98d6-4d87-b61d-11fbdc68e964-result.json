@@ -1,0 +1,40 @@
+{
+  "uuid": "4a99fa2a-98d6-4d87-b61d-11fbdc68e964",
+  "historyId": "ArrghServer.Tests.SourcesLogicTests#IsAdmin_False_WhenNoRoleClaim",
+  "name": "IsAdmin_False_WhenNoRoleClaim",
+  "fullName": "ArrghServer.Tests.SourcesLogicTests.IsAdmin_False_WhenNoRoleClaim",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780304120225,
+  "stop": 1780304120225,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "IsAdmin_False_WhenNoRoleClaim"
+    }
+  ]
+}

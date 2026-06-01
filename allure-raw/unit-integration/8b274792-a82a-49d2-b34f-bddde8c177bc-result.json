@@ -1,0 +1,40 @@
+{
+  "uuid": "8b274792-a82a-49d2-b34f-bddde8c177bc",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#StripQualifier_NoSuffix_ReturnsNull",
+  "name": "StripQualifier_NoSuffix_ReturnsNull",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.StripQualifier_NoSuffix_ReturnsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780304120357,
+  "stop": 1780304120358,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "StripQualifier_NoSuffix_ReturnsNull"
+    }
+  ]
+}

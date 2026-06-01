@@ -1,0 +1,40 @@
+{
+  "uuid": "fa356838-228c-4560-9144-5fde92874636",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapSeries_StringSeriesId",
+  "name": "MapSeries_StringSeriesId",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapSeries_StringSeriesId",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780304120379,
+  "stop": 1780304120384,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapSeries_StringSeriesId"
+    }
+  ]
+}
