@@ -1,0 +1,40 @@
+{
+  "uuid": "1e72c2c7-9bc6-40de-9b54-5c41fff8b586",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#ContentType_Manga_Parsed",
+  "name": "ContentType_Manga_Parsed",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.ContentType_Manga_Parsed",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282024694,
+  "stop": 1780282024694,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Patch API"
+    },
+    {
+      "name": "story",
+      "value": "ContentType_Manga_Parsed"
+    }
+  ]
+}

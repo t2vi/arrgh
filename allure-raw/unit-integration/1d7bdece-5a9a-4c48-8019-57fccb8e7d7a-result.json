@@ -1,0 +1,40 @@
+{
+  "uuid": "1d7bdece-5a9a-4c48-8019-57fccb8e7d7a",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_CreatesChapterSources",
+  "name": "Sync_CreatesChapterSources",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_CreatesChapterSources",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282060778,
+  "stop": 1780282061474,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_CreatesChapterSources"
+    }
+  ]
+}

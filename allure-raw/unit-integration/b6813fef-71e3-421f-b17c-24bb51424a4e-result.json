@@ -1,0 +1,40 @@
+{
+  "uuid": "b6813fef-71e3-421f-b17c-24bb51424a4e",
+  "historyId": "ArrghServer.Tests.DefaultSeedingTests#Seeded_Manga18fx_IsEnabled_WithManhwaContentType",
+  "name": "Seeded_Manga18fx_IsEnabled_WithManhwaContentType",
+  "fullName": "ArrghServer.Tests.DefaultSeedingTests.Seeded_Manga18fx_IsEnabled_WithManhwaContentType",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282032311,
+  "stop": 1780282032533,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DefaultSeedingTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "DefaultSeedingTests"
+    },
+    {
+      "name": "story",
+      "value": "Seeded_Manga18fx_IsEnabled_WithManhwaContentType"
+    }
+  ]
+}

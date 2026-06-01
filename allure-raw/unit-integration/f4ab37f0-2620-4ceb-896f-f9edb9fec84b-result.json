@@ -1,0 +1,40 @@
+{
+  "uuid": "f4ab37f0-2620-4ceb-896f-f9edb9fec84b",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Trending_ServesStaleCache_WhenMuFails",
+  "name": "Trending_ServesStaleCache_WhenMuFails",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Trending_ServesStaleCache_WhenMuFails",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282082584,
+  "stop": 1780282083088,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "Trending_ServesStaleCache_WhenMuFails"
+    }
+  ]
+}

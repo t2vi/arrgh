@@ -1,0 +1,40 @@
+{
+  "uuid": "5b05b8d5-28ad-49ab-a7c7-3b08a7439fd9",
+  "historyId": "ArrghServer.Tests.AuthTests#PatchUser_UpdatesRole",
+  "name": "PatchUser_UpdatesRole",
+  "fullName": "ArrghServer.Tests.AuthTests.PatchUser_UpdatesRole",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282060768,
+  "stop": 1780282061516,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "PatchUser_UpdatesRole"
+    }
+  ]
+}

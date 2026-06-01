@@ -1,0 +1,40 @@
+{
+  "uuid": "296a0ad6-b4cb-4739-bf2b-5b2775d73ebe",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingManhua_ReturnsAniListCnResults",
+  "name": "TrendingManhua_ReturnsAniListCnResults",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingManhua_ReturnsAniListCnResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282034962,
+  "stop": 1780282035412,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Trending Lanes"
+    },
+    {
+      "name": "story",
+      "value": "TrendingManhua_ReturnsAniListCnResults"
+    }
+  ]
+}

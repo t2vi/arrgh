@@ -1,0 +1,40 @@
+{
+  "uuid": "1b99b961-4af4-4368-b864-efd5735ad7f9",
+  "historyId": "ArrghServer.Tests.LogsTests#SetLevel_Admin_UpdatesLevel",
+  "name": "SetLevel_Admin_UpdatesLevel",
+  "fullName": "ArrghServer.Tests.LogsTests.SetLevel_Admin_UpdatesLevel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282078541,
+  "stop": 1780282079191,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_Admin_UpdatesLevel"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "bcfd62ec-0a6a-4d57-8a50-77e62ae4cd58",
+  "historyId": "ArrghServer.Tests.SourcesTests#DeleteSource_NoContent_WhenExists",
+  "name": "DeleteSource_NoContent_WhenExists",
+  "fullName": "ArrghServer.Tests.SourcesTests.DeleteSource_NoContent_WhenExists",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282071644,
+  "stop": 1780282072299,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "DeleteSource_NoContent_WhenExists"
+    }
+  ]
+}

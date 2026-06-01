@@ -1,0 +1,40 @@
+{
+  "uuid": "5e8baebc-9054-4ae5-af7c-24d0aa6ceddd",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_TrimsDownloadDir",
+  "name": "SaveSettings_TrimsDownloadDir",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_TrimsDownloadDir",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282072315,
+  "stop": 1780282072715,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Config"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_TrimsDownloadDir"
+    }
+  ]
+}

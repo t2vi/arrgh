@@ -1,0 +1,40 @@
+{
+  "uuid": "b69ba8ff-0cca-4668-ad9e-9558643ff993",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_ExcludesOtherUsersLibrary",
+  "name": "ListTitles_ExcludesOtherUsersLibrary",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_ExcludesOtherUsersLibrary",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282052572,
+  "stop": 1780282053384,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_ExcludesOtherUsersLibrary"
+    }
+  ]
+}

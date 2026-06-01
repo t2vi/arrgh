@@ -1,0 +1,40 @@
+{
+  "uuid": "d4da23a3-8c19-478e-9a20-d384ff52076e",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_Forbidden_WhenUsersExist",
+  "name": "Register_Forbidden_WhenUsersExist",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_Forbidden_WhenUsersExist",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282059617,
+  "stop": 1780282060169,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Register_Forbidden_WhenUsersExist"
+    }
+  ]
+}

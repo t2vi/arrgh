@@ -1,0 +1,40 @@
+{
+  "uuid": "0709df95-b7e3-4b7d-abc8-7376a0c5c577",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#FilterMuScope_EmptyInput_ReturnsEmpty",
+  "name": "FilterMuScope_EmptyInput_ReturnsEmpty",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.FilterMuScope_EmptyInput_ReturnsEmpty",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282024669,
+  "stop": 1780282024669,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "FilterMuScope_EmptyInput_ReturnsEmpty"
+    }
+  ]
+}

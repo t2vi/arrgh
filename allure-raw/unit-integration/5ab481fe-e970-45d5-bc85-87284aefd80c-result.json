@@ -1,0 +1,40 @@
+{
+  "uuid": "5ab481fe-e970-45d5-bc85-87284aefd80c",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_NotFound_Unknown",
+  "name": "DeletePlugin_NotFound_Unknown",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_NotFound_Unknown",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282072177,
+  "stop": 1780282072779,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_NotFound_Unknown"
+    }
+  ]
+}

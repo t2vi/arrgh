@@ -1,0 +1,40 @@
+{
+  "uuid": "b816bddf-bcb2-4714-b0b5-188a6c67bf40",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;mangafire&quot;)",
+  "name": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;mangafire&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;mangafire&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282076194,
+  "stop": 1780282076881,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;mangafire&quot;)"
+    }
+  ]
+}

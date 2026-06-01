@@ -1,0 +1,40 @@
+{
+  "uuid": "2a6f3fdb-70d8-4813-9018-647fd8ab794d",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_NoContent_DeletesPendingItem",
+  "name": "RemoveFromQueue_NoContent_DeletesPendingItem",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_NoContent_DeletesPendingItem",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282075671,
+  "stop": 1780282076419,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_NoContent_DeletesPendingItem"
+    }
+  ]
+}
