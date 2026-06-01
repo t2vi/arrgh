@@ -11,7 +11,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro'
   <ul>
     <li>Docker + Docker Compose v2</li>
     <li>A machine on your local network (NAS, Raspberry Pi, mini PC, or any Linux box)</li>
-    <li>Ports <code>8080</code> available (configurable)</li>
+    <li>Ports <code>8282</code> available (configurable)</li>
   </ul>
 
   <h2>Install</h2>
@@ -19,12 +19,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro'
   <pre><code>curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
 docker compose up -d</code></pre>
 
-  <p>Open <code>http://&lt;your-server-ip&gt;:8080</code>. The setup wizard runs on first launch and creates your admin account.</p>
+  <p>Open <code>http://&lt;your-server-ip&gt;:8282</code>. The setup wizard runs on first launch and creates your admin account.</p>
 
   <h2>What's included</h2>
   <p>The default Compose file starts three services:</p>
   <ul>
-    <li><strong>arrgh</strong> — .NET API server + nginx serving the web UI on port 8080</li>
+    <li><strong>arrgh</strong> — .NET API server + nginx serving the web UI on port 8282</li>
     <li><strong>plugin-host</strong> — Node.js process that loads plugin bundles (internal only)</li>
     <li><strong>cloakbrowser</strong> — Stealth Chromium for Cloudflare-protected sources (internal only)</li>
   </ul>
