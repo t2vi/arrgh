@@ -1,0 +1,40 @@
+{
+  "uuid": "bf84b116-059a-453b-b6f5-9e93970023e6",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingLanes_CacheIndependent_MangaStaleDoesNotLeakToManhwa",
+  "name": "TrendingLanes_CacheIndependent_MangaStaleDoesNotLeakToManhwa",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingLanes_CacheIndependent_MangaStaleDoesNotLeakToManhwa",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282555716,
+  "stop": 1780282556678,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Trending Lanes"
+    },
+    {
+      "name": "story",
+      "value": "TrendingLanes_CacheIndependent_MangaStaleDoesNotLeakToManhwa"
+    }
+  ]
+}

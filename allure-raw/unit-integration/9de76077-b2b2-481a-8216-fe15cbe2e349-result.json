@@ -1,0 +1,40 @@
+{
+  "uuid": "9de76077-b2b2-481a-8216-fe15cbe2e349",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#AuthorityOrder_WuxiaWorldBeforeEHentai",
+  "name": "AuthorityOrder_WuxiaWorldBeforeEHentai",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.AuthorityOrder_WuxiaWorldBeforeEHentai",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282545426,
+  "stop": 1780282545426,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "AuthorityOrder_WuxiaWorldBeforeEHentai"
+    }
+  ]
+}

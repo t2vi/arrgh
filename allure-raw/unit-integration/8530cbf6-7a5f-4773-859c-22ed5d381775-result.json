@@ -1,0 +1,40 @@
+{
+  "uuid": "8530cbf6-7a5f-4773-859c-22ed5d381775",
+  "historyId": "ArrghServer.Tests.AuthTests#PatchUser_NotFound_NonexistentUser",
+  "name": "PatchUser_NotFound_NonexistentUser",
+  "fullName": "ArrghServer.Tests.AuthTests.PatchUser_NotFound_NonexistentUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282585722,
+  "stop": 1780282586450,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "PatchUser_NotFound_NonexistentUser"
+    }
+  ]
+}

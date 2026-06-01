@@ -1,0 +1,40 @@
+{
+  "uuid": "57529469-9fb2-49d0-939e-d0878d779fce",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_MemberCanCancelOwnItem",
+  "name": "RemoveFromQueue_MemberCanCancelOwnItem",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_MemberCanCancelOwnItem",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282555124,
+  "stop": 1780282556063,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_MemberCanCancelOwnItem"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "50c83823-ff74-4dd4-81d9-833e5adc62f6",
+  "historyId": "ArrghServer.Tests.AuthTests#Me_Unauthorized_NoToken",
+  "name": "Me_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.AuthTests.Me_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282572410,
+  "stop": 1780282573023,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Me_Unauthorized_NoToken"
+    }
+  ]
+}
