@@ -1,6 +1,8 @@
 services:
   arrgh:
     build: .
+    volumes:
+      - ./web/dist:/var/www/arrgh:ro   # dev: serve local build without image rebuild
 
   plugin-host:
     build:

@@ -109,6 +109,14 @@ CF-protected plugins will return errors for those sources; all others work norma
 
 ---
 
+## Web assets (Portainer / remote deployments)
+
+The web UI is **baked into the Docker image** — no `web/dist` directory is needed on the host. If you deploy via Portainer or `docker compose pull`, it works out of the box.
+
+The `docker-compose.override.yml` (used automatically for local `docker compose up`) mounts `./web/dist` over the image copy so local source changes appear without a rebuild. This override file is ignored when deploying remotely.
+
+---
+
 ## Updating
 
 ```bash
