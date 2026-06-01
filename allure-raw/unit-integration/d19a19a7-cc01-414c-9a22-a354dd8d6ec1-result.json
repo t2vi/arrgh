@@ -1,0 +1,40 @@
+{
+  "uuid": "d19a19a7-cc01-414c-9a22-a354dd8d6ec1",
+  "historyId": "ArrghServer.Tests.LogsTests#GetLevel_ReturnsDefaultInfoLevel",
+  "name": "GetLevel_ReturnsDefaultInfoLevel",
+  "fullName": "ArrghServer.Tests.LogsTests.GetLevel_ReturnsDefaultInfoLevel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780291052104,
+  "stop": 1780291052787,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "GetLevel_ReturnsDefaultInfoLevel"
+    }
+  ]
+}

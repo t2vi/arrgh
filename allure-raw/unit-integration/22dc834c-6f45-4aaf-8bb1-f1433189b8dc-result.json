@@ -1,0 +1,40 @@
+{
+  "uuid": "22dc834c-6f45-4aaf-8bb1-f1433189b8dc",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_ImageError_ErrorMessageContainsUrl",
+  "name": "Download_ImageError_ErrorMessageContainsUrl",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_ImageError_ErrorMessageContainsUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780291042333,
+  "stop": 1780291045381,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_ImageError_ErrorMessageContainsUrl"
+    }
+  ]
+}

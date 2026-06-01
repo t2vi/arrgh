@@ -1,0 +1,40 @@
+{
+  "uuid": "8feb54a9-212b-4588-8ba1-873f8730716e",
+  "historyId": "ArrghServer.Tests.AuthTests#CreateUser_Conflict_DuplicateUsername",
+  "name": "CreateUser_Conflict_DuplicateUsername",
+  "fullName": "ArrghServer.Tests.AuthTests.CreateUser_Conflict_DuplicateUsername",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780291049458,
+  "stop": 1780291050426,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "CreateUser_Conflict_DuplicateUsername"
+    }
+  ]
+}

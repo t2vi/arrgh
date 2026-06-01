@@ -1,0 +1,40 @@
+{
+  "uuid": "503b10d2-1362-4139-b47e-763728294288",
+  "historyId": "ArrghServer.Tests.DefaultSeedingTests#Seeded_Toonily_ContentTypes_IsManhwaOnly",
+  "name": "Seeded_Toonily_ContentTypes_IsManhwaOnly",
+  "fullName": "ArrghServer.Tests.DefaultSeedingTests.Seeded_Toonily_ContentTypes_IsManhwaOnly",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780291037650,
+  "stop": 1780291037897,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DefaultSeedingTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "DefaultSeedingTests"
+    },
+    {
+      "name": "story",
+      "value": "Seeded_Toonily_ContentTypes_IsManhwaOnly"
+    }
+  ]
+}
