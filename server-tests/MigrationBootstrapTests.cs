@@ -1,5 +1,6 @@
 using ArrghServer;
 using ArrghServer.Data;
+using ArrghServer.Data.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -81,6 +82,68 @@ public class MigrationBootstrapTests
             // Normal Migrate() handles fresh DB fine
             using (var db = new AppDbContext(opts))
                 db.Database.Migrate();
+        }
+        finally
+        {
+            foreach (var f in new[] { dbPath, dbPath + "-shm", dbPath + "-wal" })
+                if (File.Exists(f)) try { File.Delete(f); } catch { }
+        }
+    }
+
+    [Fact]
+    [Trait("Category", TestCategories.Unit)]
+    public void Bootstrap_PartialSchemaDb_AddsNullableColumns_AndSaveChangesSucceeds()
+    {
+        // Simulate old Rust DB: external_sources exists but missing default_explicit, is_community, source_key
+        var dbPath = Path.Combine(Path.GetTempPath(), $"bootstrap-partial-{Guid.NewGuid():N}.db");
+        try
+        {
+            using (var conn = new SqliteConnection($"Data Source={dbPath}"))
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = """
+                    CREATE TABLE "external_sources" (
+                        "id" TEXT NOT NULL PRIMARY KEY,
+                        "name" TEXT NOT NULL,
+                        "base_url" TEXT NOT NULL,
+                        "api_key" TEXT,
+                        "content_types" TEXT NOT NULL,
+                        "enabled" INTEGER NOT NULL,
+                        "created_at" TEXT NOT NULL,
+                        "priority" INTEGER NOT NULL
+                    );
+                    INSERT INTO "external_sources" VALUES ('src1','MangaDex','http://plugin-host:4000',NULL,'manga',1,'2026-01-01',10);
+                    """;
+                cmd.ExecuteNonQuery();
+            }
+
+            var opts = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            // Bootstrap + Migrate must not throw
+            using (var db = new AppDbContext(opts))
+            {
+                MigrationBootstrap.Bootstrap(db);
+                db.Database.Migrate();
+            }
+
+            // SaveChanges must work — EF can UPDATE the row without hitting missing-column errors
+            using (var db = new AppDbContext(opts))
+            {
+                var src = db.ExternalSources.Find("src1")!;
+                src.Enabled = false;
+                src.Priority = 99;
+                db.SaveChanges();
+            }
+
+            using (var db = new AppDbContext(opts))
+            {
+                var src = db.ExternalSources.Find("src1")!;
+                Assert.False(src.Enabled);
+                Assert.Equal(99, src.Priority);
+            }
         }
         finally
         {
