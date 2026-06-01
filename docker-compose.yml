@@ -12,7 +12,6 @@ services:
       # LOG_LEVEL: warn   # debug|info|warn|error — default info
     volumes:
       - arrgh_data:/data
-      - ./web/dist:/var/www/arrgh:ro
     depends_on:
       plugin-host:
         condition: service_healthy
