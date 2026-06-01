@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using ArrghServer;
 using ArrghServer.Api;
 using ArrghServer.Data;
 using ArrghServer.Data.Models;
@@ -27,8 +28,6 @@ logService.SetLevel(configuredLevel switch
 });
 builder.Services.AddSingleton(logService);
 builder.Logging.AddProvider(new RingBufferLoggerProvider(logService));
-builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.None);
-builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Transaction", LogLevel.None);
 
 // Version / update checker
 builder.Services.AddSingleton<UpdateCache>();
@@ -95,6 +94,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    MigrationBootstrap.Bootstrap(db);
     db.Database.Migrate();
 
     if (cfg["SeedDefaultSources"] != "false" && !db.ExternalSources.Any())
@@ -107,6 +107,7 @@ using (var scope = app.Services.CreateScope())
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "toonily",    Name = "Toonily",    BaseUrl = pluginHost, ContentTypes = "manhwa",                        Enabled = true,  DefaultExplicit = false, Priority = 30, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "novelfull",  Name = "NovelFull",  BaseUrl = pluginHost, ContentTypes = "novel",                         Enabled = true,  DefaultExplicit = false, Priority = 40, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "nhentai",    Name = "nhentai",    BaseUrl = pluginHost, ContentTypes = "manga",                         Enabled = true,  DefaultExplicit = true,  Priority = 50, CreatedAt = now },
+            new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "mangafire",  Name = "MangaFire",  BaseUrl = pluginHost, ContentTypes = "manga,manhwa,manhua,one-shot", Enabled = true,  DefaultExplicit = false, Priority = 60, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "asurascans", Name = "AsuraScans", BaseUrl = pluginHost, ContentTypes = "manhwa",                        Enabled = true,  DefaultExplicit = false, Priority = 110, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "manga18fx",  Name = "Manga18fx",  BaseUrl = pluginHost, ContentTypes = "manhwa",                        Enabled = true,  DefaultExplicit = true,  Priority = 75, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "manhuafast", Name = "ManhuaFast", BaseUrl = pluginHost, ContentTypes = "manhua",                        Enabled = true,  DefaultExplicit = false, Priority = 80, CreatedAt = now },
