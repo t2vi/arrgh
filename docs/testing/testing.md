@@ -538,9 +538,7 @@ Tests `info` shape and exported fn signatures for all bundled default plugins. N
 |---|---|---|---|
 | mangafire | `['manga','manhwa','manhua','one-shot']` | no (pages) | ✅ |
 | asurascans | `['manhwa']` | no (pages) | ✅ |
-| manhuafast | `['manhua']` | no (pages) | ✅ |
 | wuxiaworld | `['novel']` | yes (chapterText, no pages) | ✅ |
-| boxnovel | `['novel']` | yes (chapterText, no pages) | ✅ |
 | manga18fx | `['manhwa']` | no (pages) | ✅ |
 
 ## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) — `novelupdates` added ✅
@@ -558,15 +556,10 @@ HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked respo
 |---|---|---|
 | mangafire | search shape + field values, manhwa type, chapters w/ numbers, pages URLs | ✅ |
 | asurascans | search shape + slug extraction, status normalization, chapters, pages | ✅ |
-| manhuafast | search shape + slug, status normalization, cover_url, chapters, pages | ✅ |
 | wuxiaworld | search shape + API mapping, chapters + source_id, chapterText extraction | ✅ |
-| boxnovel | search shape + slug + author, chapters + numbers, chapterText extraction | ✅ |
 | manga18fx | search shape + slug extraction, chapters with numbers, pages URLs | ✅ |
 | manga18fx | chapters — sidebar/popular chapter links from other series NOT included (contamination regression) | ✅ |
 | manga18fx | search URL is `/search?q=` not `/?s=` (WordPress fallback regression) | ✅ |
-| manga18fx | pages — lazy-load: `data-src` extracted when `src` is a placeholder GIF | ✅ |
-| manga18fx | pages — lazy-load URLs start with `https://img01.manga18fx.com/uploads/` | ✅ |
-| manga18fx | pages — mixed lazy+eager: some imgs have `data-src`, some have `src` only — all CDN URLs returned | ✅ |
 | novelupdates | `parseSearchHtml` — id/title/status/cover, multiple results, empty HTML, status mapping | ✅ |
 
 ---
@@ -666,6 +659,45 @@ await allure.owner('vinny')
 Failure categories: `allure-categories.json` at repo root — Product defects (failed), Test defects (broken), Skipped.
 
 Server tests (xUnit) appear under their class paths in the Suites view.
+
+---
+
+## Live Source Snapshot Tests (`live-tests/`)
+
+**Not in CI.** Run on-demand when a source-related bug is suspected or to update fixtures after a source layout change. See ADR 0033.
+
+```bash
+# First run — generates snapshots (no prior .snap files exist)
+cd live-tests && npm install && npm test
+
+# After a source changes — update snapshots, inspect diff, update behavior test fixtures
+cd live-tests && npm run test:update
+
+# Single source
+cd live-tests && npx vitest run src/asurascans.live.test.ts
+
+# CF-protected sources require CloakBrowser running
+CLOAK_WS_URL=ws://localhost:3000 npm test
+```
+
+**What runs per source**: search → snapshot parsed results + save raw response. Chains to chapters → pages (or chapterText for novels). CF sources (asurascans, toonily, nhentai, manhuafast, boxnovel, manga18fx, novelfull, novelupdates) skip when `CLOAK_WS_URL` not set.
+
+**Corpus**: `live-tests/corpus/<source>.json` — adversarial titles chosen for known edge cases (hyphens in slugs, `(Novel)` suffix, special characters, apostrophes). Add new entries whenever a real parsing bug is found.
+
+**Raw snapshots**: `live-tests/snapshots/<source>/` — HTML/JSON files saved by `captureFetch` (non-CF) or CloakBrowser page capture (CF). These are the ground truth for updating behavior test fixtures in `plugin-host/src/`.
+
+**Parsed snapshots**: Vitest `.snap` files in `live-tests/src/__snapshots__/`. Diff tells you what the parser returns now vs. before.
+
+| Source | CF? | Operations | Status |
+|---|---|---|---|
+| asurascans | ✅ | search, chapters, pages | ⬜ (run to generate) |
+| mangadex | — | search, chapters, pages | ⬜ |
+| mangapill | — | search, chapters, pages | ⬜ |
+| toonily | ✅ | search, chapters, pages | ⬜ |
+| novelfull | ✅ | search, meta, chapters, chapterText | ⬜ |
+| nhentai | ✅ | search, chapters, pages | ⬜ |
+| manga18fx | ✅ | search, chapters, pages | ✅ |
+| novelupdates | ✅ | search | ⬜ |
 
 ---
 

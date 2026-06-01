@@ -1,0 +1,131 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { getCollection } from 'astro:content'
+import { idToVersion } from '@/lib/releases'
+
+const releases = await getCollection('releases')
+const latest = releases
+  .sort((a, b) => b.id.localeCompare(a.id))
+  .slice(0, 1)[0]
+
+const FEATURES = [
+  { icon: '🔍', title: 'Metadata authority', body: 'MangaUpdates for standard titles; E-Hentai for explicit content. Consistent covers, descriptions, tags, and associated names.' },
+  { icon: '⬇️', title: 'Multi-source download', body: 'Chapters aggregated across sources — automatic fallback if one goes down. Explicit sources auto-routed for hentai titles.' },
+  { icon: '🧩', title: 'Plugin system', body: 'Add new download sources without recompiling. Covers manga, manhwa, manhua, novels, and hentai doujinshi.' },
+  { icon: '📖', title: 'Web reader', body: 'Paged or scroll mode for comics, prose mode for novels. Chapter navigation and reading progress.' },
+  { icon: '👥', title: 'Multi-user', body: 'Per-user libraries with shared file storage and individual reading progress.' },
+  { icon: '⚙️', title: 'Self-hosted', body: 'Single Docker Compose file. Runs on a NAS, Raspberry Pi, or any always-on box.' },
+]
+---
+
+<BaseLayout title="*ARRgh!" description="Self-hosted East Asian comics and novel manager, downloader, and reader.">
+  <!-- Hero -->
+  <section class="max-w-6xl mx-auto px-4 pt-20 pb-16 text-center">
+    <div class="flex justify-center mb-6">
+      <img
+        src="/arrgh/logo.png"
+        alt="*ARRgh logo"
+        class="w-32 h-32 rounded-full shadow-[0_0_40px_rgba(139,92,246,0.45)] ring-2 ring-primary/30"
+      />
+    </div>
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-xs font-medium mb-6">
+      {latest && <span>Latest: {idToVersion(latest.id)}</span>}
+    </div>
+    <h1 class="text-5xl sm:text-6xl font-black tracking-tight text-foreground mb-4">
+      *<span class="text-primary">ARR</span>gh!
+    </h1>
+    <p class="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
+      Self-hosted East Asian comics and novel manager, downloader, and reader. Runs on your NAS, Pi, or any home server.
+    </p>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/arrgh/getting-started"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-colors"
+      >
+        Get started →
+      </a>
+      <a
+        href="/arrgh/deploy/docker-compose"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-border bg-card text-foreground font-semibold text-sm hover:bg-muted transition-colors"
+      >
+        Deploy with Docker
+      </a>
+    </div>
+  </section>
+
+  <!-- Quick start snippet -->
+  <section class="max-w-2xl mx-auto px-4 pb-16">
+    <div class="rounded-xl border border-border bg-card overflow-hidden">
+      <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/50">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span>
+        <span class="ml-2 text-xs text-muted-foreground font-mono">terminal</span>
+      </div>
+      <pre class="p-4 text-sm font-mono text-foreground overflow-x-auto"><code><span class="text-muted-foreground"># Pull and start</span>
+curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
+docker compose up -d
+
+<span class="text-muted-foreground"># Open in browser</span>
+open http://localhost:8080</code></pre>
+    </div>
+  </section>
+
+  <!-- Status badges -->
+  <section class="max-w-6xl mx-auto px-4 pb-16">
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 text-center">Build Status</h2>
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
+      <a href="https://github.com/t2vi/arrgh/actions/workflows/ci.yml" target="_blank" rel="noopener noreferrer">
+        <img src="https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg" alt="CI" class="h-5" />
+      </a>
+      <a href="https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml" target="_blank" rel="noopener noreferrer">
+        <img src="https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml/badge.svg" alt="GHCR" class="h-5" />
+      </a>
+      <a href="https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml" target="_blank" rel="noopener noreferrer">
+        <img src="https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml/badge.svg" alt="Docs" class="h-5" />
+      </a>
+      <a href="https://github.com/t2vi/arrgh/actions/workflows/e2e.yml" target="_blank" rel="noopener noreferrer">
+        <img src="https://github.com/t2vi/arrgh/actions/workflows/e2e.yml/badge.svg" alt="E2e" class="h-5" />
+      </a>
+      <a
+        href="/arrgh/test-reports"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-muted border border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        📊 Full test report ↗
+      </a>
+    </div>
+    <div class="flex flex-wrap items-center justify-center gap-2">
+      {[
+        { name: 'arrgh', pkg: 'arrgh' },
+        { name: 'plugin-host', pkg: 'plugin-host' },
+        { name: 'cloakbrowser-server', pkg: 'cloakbrowser-server' },
+      ].map(({ name, pkg }) => (
+        <a
+          href={`https://github.com/t2vi/arrgh/pkgs/container/${pkg}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-muted border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors font-mono"
+        >
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 5.43h2.12a.186.186 0 00.184-.185V9.006a.185.185 0 00-.185-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.136a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m5.893 2.715h2.118a.186.186 0 00.186-.185v-1.888a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186v-1.887a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.186m2.93-5.431h2.117a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.117a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185M0 11.547v6.516c0 1.375 1.12 2.491 2.499 2.491h16.002c1.378 0 2.499-1.116 2.499-2.491v-6.516z"/></svg>
+          ghcr.io/t2vi/{name}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="max-w-6xl mx-auto px-4 pb-20">
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-8 text-center">Features</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {FEATURES.map((f) => (
+        <div class="rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors">
+          <div class="text-2xl mb-3">{f.icon}</div>
+          <h3 class="text-sm font-semibold text-foreground mb-1">{f.title}</h3>
+          <p class="text-sm text-muted-foreground leading-relaxed">{f.body}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

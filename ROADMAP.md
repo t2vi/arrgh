@@ -56,7 +56,12 @@ Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim 
 🔳 Webhook on new chapter download<br />
 
 ## **Testing**
-🔳 Live source integration tests — real HTTP calls against actual sources (MangaDex, AsuraScans, etc.) to catch edge cases that fixture tests miss (e.g. slug normalisation: "shut-in" vs "shutin"). Goal: use failures to identify new fixture scenarios to add to the test suite, not to run in CI.<br />
+✅ Live source snapshot tests — `live-tests/` package; real HTTP calls against all sources; adversarial corpus (slug hyphens, `(Novel)` suffix, special chars); raw response + parsed output captured per source. Run on-demand, not in CI; snapshots drive behavior fixture updates. See ADR 0033.<br />
+🔳 Scheduled CI snapshot job — detect source layout changes automatically, open PR with diff when snapshots change (ADR 0033 long-term goal)<br />
 
 ## **Known Bugs**
 🔳 Regular (non-explicit) manga being matched to nhentai — explicit-only sources must not match non-explicit titles<br />
+🔳 WuxiaWorld plugin broken — `api2.wuxiaworld.com` returns 404; plugin needs new API endpoint or replacement source<br />
+🔳 Royal Road not fully removed — source code remains at `plugins/royalroad/`, still referenced in `plugin-host/src/contract.test.ts`; should be purged entirely (ADR 0024 removed it from bundled set but left files behind)<br />
+🔳 BoxNovel plugin broken — `boxnovel.com` is domain-parked (redirects to `router.parklogic.com`); plugin needs replacement source or removal<br />
+🔳 ManhuaFast blocked by CF managed challenge — `manhuafast.net` uses Cloudflare managed/Turnstile challenge; CloakBrowser cannot bypass it (JS challenge only); all plugin calls return empty results until the CF tier is downgraded or a bypass is found<br />
