@@ -32,12 +32,12 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 |---|---|---|---|
 | Login | `useLogin` | initial state, submit success/fail, loading cleared | ✅ |
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
-| Library | `MangaCard` | render, remove button | ✅ |
+| Library | `MangaCard` | render, remove button, is_explicit=true→18+ pill shown, is_explicit=false→no 18+ pill | ✅ |
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
-| Discover | `SearchRow` | render, is_explicit→18+ badge, tag-based badge removed, loading state, In Library, cover/skeleton (3 TDD ⬜) | 🟡 |
+| Discover | `SearchRow` | render, is_explicit=true→18+ badge shown, is_explicit=false→no 18+ badge, tag-based inference blocked, loading state, In Library, cover/skeleton | ✅ |
 | Discover | `ContentTypeFilter` | render, hentai pill, novel pill, onChange (2 TDD ⬜) | 🟡 |
-| Home | `useHome` | — | ✅ |
-| Home | `Cards` | render variants, title+author below cover, error→emoji | ✅ |
+| Home | `useHome` | loads trending on mount, filters in-library, trendingLoading lifecycle | ✅ |
+| Home | `Cards` | render variants, title+author below cover, error→emoji, is_explicit=true→18+ pill shown (TrendingCard + LibraryCoverCard), is_explicit=false→no 18+ pill | ✅ |
 | Settings | `useSettings` | load, tab defaults, save, logout | ✅ |
 | Queue | `useQueue` | fetch, sort, canClear, remove+refetch | ✅ |
 | Queue | `QueueRow` | render, remove btn hidden while downloading, onRemove, error | ✅ |
@@ -130,6 +130,16 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GetRecent` empty buffer → empty list | ✅ |
 | `GetRecent` returns last N entries | ✅ |
 | `Append` evicts oldest entry when capacity exceeded | ✅ |
+
+### MigrationBootstrap (`MigrationBootstrapTests.cs`) ✅
+
+| Case | Status |
+|---|---|
+| Pre-migration DB (tables exist, no `__EFMigrationsHistory`) → `Bootstrap` creates history → `Migrate()` succeeds | ✅ |
+| Partial-schema DB (old Rust DB missing `default_explicit` etc.) → Bootstrap patches columns → `SaveChanges()` succeeds | ✅ |
+| Empty history table (previous crash left `__EFMigrationsHistory` empty) → Bootstrap repairs → `Migrate()` succeeds | ✅ |
+| Fresh DB (no tables) → `Bootstrap` is no-op → `Migrate()` handles it normally | ✅ |
+| Already-migrated DB → `Bootstrap` is idempotent → `Migrate()` is no-op | ✅ |
 
 ### PatchTitleBody (`PatchTitleBodyTests.cs`) ✅
 
@@ -395,7 +405,7 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /version` → no update available → latest + url are null | ✅ |
 | `GET /version` → update available → returns latest version + URL | ✅ |
 
-### Discover (`DiscoverTests.cs`) ✅
+### Discover (`DiscoverTests.cs`) 🟡
 
 | Case | Status |
 |---|---|
@@ -403,6 +413,8 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /discover` → 502 when MangaUpdates fails | ✅ |
 | `GET /discover` → returns mapped results with `in_library=false` | ✅ |
 | `GET /discover` → `in_library=true` when title already in library | ✅ |
+| `GET /discover` → MU result with "Adult" genre → `is_explicit=true` in response | ✅ |
+| `GET /discover` → MU result with no adult genres → `is_explicit=false` in response | ✅ |
 | `GET /discover/trending` → 401 without token | ✅ |
 | `GET /discover/trending` → 502 when MU fails and no cached data | ✅ |
 | `GET /discover/trending` → serves stale cache when MU fails | ✅ |
@@ -410,6 +422,8 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `POST /discover/add` → creates title with qualifier stripped + returns `sync_status=syncing` | ✅ |
 | `POST /discover/add` → duplicate MU ID subscribes user and returns existing title | ✅ |
 | `POST /discover/add` → explicit tags → `is_explicit=true` | ✅ |
+| `POST /discover/add` → `is_explicit=true` field stores `IsExplicit=true` for manhwa (no hentai tags) | ✅ |
+| `POST /discover/add` → `is_explicit=false` does not suppress hentai `content_type` detection | ✅ |
 
 ### Discover Fan-Out — Integration (`DiscoverFanOutTests.cs`) ✅ ADR 0031
 
@@ -440,6 +454,11 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `POST /discover/add` → manga (`source="mangaupdates"`) → sync log says "Fetching metadata from MangaUpdates" | ✅ |
 | `POST /discover/add` → manga with matching `external_sources` → creates `title_sources` rows | ✅ |
 | `POST /discover/add` → no matching `external_sources` → no `title_sources` rows | ✅ |
+| `POST /discover/add` → `source="anilist"` → AniList synonyms stored as `TitleAliases` + sync log contains "synonym" | ✅ |
+| `POST /discover/add` → `source="anilist"`, empty synonyms → sync reaches "ready", zero aliases stored | ✅ |
+| `MatchSourcesAsync` → plugin returns hyphen-variant title ("Soeun" for "So-Eun") → still links source via fuzzy match | ✅ |
+| `MatchSourcesAsync` → plugin returns alias-matching title ("Everything Is Agreed" for alias "Everything Is Agreed Upon") → links source | ✅ |
+| `MatchSourcesAsync` → plugin returns completely unrelated title → warning logged, no source link created | ✅ |
 
 ### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ✅ ADR 0031
 
@@ -519,9 +538,7 @@ Tests `info` shape and exported fn signatures for all bundled default plugins. N
 |---|---|---|---|
 | mangafire | `['manga','manhwa','manhua','one-shot']` | no (pages) | ✅ |
 | asurascans | `['manhwa']` | no (pages) | ✅ |
-| manhuafast | `['manhua']` | no (pages) | ✅ |
 | wuxiaworld | `['novel']` | yes (chapterText, no pages) | ✅ |
-| boxnovel | `['novel']` | yes (chapterText, no pages) | ✅ |
 | manga18fx | `['manhwa']` | no (pages) | ✅ |
 
 ## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) — `novelupdates` added ✅
@@ -539,12 +556,13 @@ HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked respo
 |---|---|---|
 | mangafire | search shape + field values, manhwa type, chapters w/ numbers, pages URLs | ✅ |
 | asurascans | search shape + slug extraction, status normalization, chapters, pages | ✅ |
-| manhuafast | search shape + slug, status normalization, cover_url, chapters, pages | ✅ |
 | wuxiaworld | search shape + API mapping, chapters + source_id, chapterText extraction | ✅ |
-| boxnovel | search shape + slug + author, chapters + numbers, chapterText extraction | ✅ |
 | manga18fx | search shape + slug extraction, chapters with numbers, pages URLs | ✅ |
 | manga18fx | chapters — sidebar/popular chapter links from other series NOT included (contamination regression) | ✅ |
 | manga18fx | search URL is `/search?q=` not `/?s=` (WordPress fallback regression) | ✅ |
+| manga18fx | pages — lazy-load: `data-src` extracted when `src` is a placeholder GIF | ✅ |
+| manga18fx | pages — lazy-load URLs match any `imgXX.manga18fx.com` CDN subdomain (not hardcoded to `img01`) | ✅ |
+| manga18fx | pages — mixed lazy+eager: some imgs have `data-src`, some have `src` only — all CDN URLs returned | ✅ |
 | novelupdates | `parseSearchHtml` — id/title/status/cover, multiple results, empty HTML, status mapping | ✅ |
 
 ---
@@ -644,6 +662,45 @@ await allure.owner('vinny')
 Failure categories: `allure-categories.json` at repo root — Product defects (failed), Test defects (broken), Skipped.
 
 Server tests (xUnit) appear under their class paths in the Suites view.
+
+---
+
+## Live Source Snapshot Tests (`live-tests/`)
+
+**Not in CI.** Run on-demand when a source-related bug is suspected or to update fixtures after a source layout change. See ADR 0033.
+
+```bash
+# First run — generates snapshots (no prior .snap files exist)
+cd live-tests && npm install && npm test
+
+# After a source changes — update snapshots, inspect diff, update behavior test fixtures
+cd live-tests && npm run test:update
+
+# Single source
+cd live-tests && npx vitest run src/asurascans.live.test.ts
+
+# CF-protected sources require CloakBrowser running
+CLOAK_WS_URL=ws://localhost:3000 npm test
+```
+
+**What runs per source**: search → snapshot parsed results + save raw response. Chains to chapters → pages (or chapterText for novels). CF sources (asurascans, toonily, nhentai, manhuafast, boxnovel, manga18fx, novelfull, novelupdates) skip when `CLOAK_WS_URL` not set.
+
+**Corpus**: `live-tests/corpus/<source>.json` — adversarial titles chosen for known edge cases (hyphens in slugs, `(Novel)` suffix, special characters, apostrophes). Add new entries whenever a real parsing bug is found.
+
+**Raw snapshots**: `live-tests/snapshots/<source>/` — HTML/JSON files saved by `captureFetch` (non-CF) or CloakBrowser page capture (CF). These are the ground truth for updating behavior test fixtures in `plugin-host/src/`.
+
+**Parsed snapshots**: Vitest `.snap` files in `live-tests/src/__snapshots__/`. Diff tells you what the parser returns now vs. before.
+
+| Source | CF? | Operations | Status |
+|---|---|---|---|
+| asurascans | ✅ | search, chapters, pages | ⬜ (run to generate) |
+| mangadex | — | search, chapters, pages | ⬜ |
+| mangapill | — | search, chapters, pages | ⬜ |
+| toonily | ✅ | search, chapters, pages | ⬜ |
+| novelfull | ✅ | search, meta, chapters, chapterText | ⬜ |
+| nhentai | ✅ | search, chapters, pages | ⬜ |
+| manga18fx | ✅ | search, chapters, pages | ✅ |
+| novelupdates | ✅ | search | ⬜ |
 
 ---
 

@@ -1,6 +1,6 @@
 # *ARRgh Plugin Index
 
-This directory is the default plugin registry served at startup. The Rust server reads `PLUGIN_INDEX_URL` (defaults to this file via raw GitHub) when an admin browses or installs community plugins.
+This directory is the default plugin registry served at startup. The server reads `PLUGIN_INDEX_URL` (defaults to this file via raw GitHub) when an admin browses or installs community plugins.
 
 ## Schema — `index.json`
 

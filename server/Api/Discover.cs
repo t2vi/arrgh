@@ -16,8 +16,14 @@ public static class Discover
         group.MapGet("/", Search).RequireAuthorization()
             .WithSummary("Search titles across all metadata authorities (MU, AniList, MangaDex, NovelUpdates, E-Hentai)")
             .WithDescription("Fan-out parallel search. Results deduped by designated authority per content_type (manga→MU, manhwa→AniList, manhua→MangaDex, novel→NovelUpdates, hentai→E-Hentai). E-Hentai gated on allow_explicit claim. Returns 502 only if all authorities fail.");
-        group.MapGet("/trending", Trending).RequireAuthorization()
-            .WithSummary("Trending titles from MangaUpdates latest releases");
+        group.MapGet("/trending/manga", TrendingManga).RequireAuthorization()
+            .WithSummary("Trending manga from MangaUpdates latest releases");
+        group.MapGet("/trending/manhwa", TrendingManhwa).RequireAuthorization()
+            .WithSummary("Trending manhwa from AniList (KR, non-adult)");
+        group.MapGet("/trending/manhua", TrendingManhua).RequireAuthorization()
+            .WithSummary("Trending manhua from AniList (CN, non-adult)");
+        group.MapGet("/trending/adult-manhwa", TrendingAdultManhwa).RequireAuthorization()
+            .WithSummary("Trending adult manhwa from AniList (KR, isAdult). Requires allow_explicit.");
         group.MapPost("/add", AddManga).RequireAuthorization()
             .WithSummary("Add a title to the library")
             .WithDescription("Accepts source+source_id (any authority) or legacy mangaupdates_id. Deduplicates by metadata_source+metadata_source_id. Backward compatible with old mangaupdates_id-only clients.");
@@ -43,12 +49,13 @@ public static class Discover
             .ContinueWith(t => (IEnumerable<DiscoverResult>)FilterMuScope(
                 t.Result.Select(s => MuToDiscoverResult(s, false, null))).ToList(),
                 TaskContinuationOptions.OnlyOnRanToCompletion));
-        var alTask = SafeSearch(() => aniList.SearchAsync(q)
+        var alTask = SafeSearch(() => aniList.SearchAsync(q, allowExplicit)
             .ContinueWith(t => (IEnumerable<DiscoverResult>)t.Result.Select(s => new DiscoverResult
             {
                 MangaupdatesId = s.SourceId, Title = s.Title, Description = s.Description,
                 CoverUrl = s.CoverUrl, Status = s.Status, Author = s.Author, Year = s.Year,
                 ContentType = s.ContentType, Source = "anilist",
+                IsExplicit = s.IsAdult,
             }).ToList(), TaskContinuationOptions.OnlyOnRanToCompletion));
         var mdTask = SafeSearch(() => mdMeta.SearchAsync(q)
             .ContinueWith(t => (IEnumerable<DiscoverResult>)t.Result.Select(s => new DiscoverResult
@@ -123,7 +130,7 @@ public static class Discover
     // After add: query external_sources by content_type, call plugin-host /search,
     // match by normalized title, create title_sources + sync chapters via ChapterSync.
 
-    static async Task MatchSourcesAsync(
+    internal static async Task MatchSourcesAsync(
         AppDbContext db, IHttpClientFactory httpFactory,
         string titleId, string? titleName, string? contentType, string pluginHostUrl)
     {
@@ -139,6 +146,12 @@ public static class Discover
 
         var http = httpFactory.CreateClient();
         var normTarget = Media.NormalizeTitle(titleName);
+
+        var aliases = await db.TitleAliases
+            .Where(a => a.TitleId == titleId)
+            .Select(a => a.Alias)
+            .ToListAsync();
+        var normAliases = aliases.Select(Media.NormalizeTitle).ToList();
 
         foreach (var source in sources)
         {
@@ -157,16 +170,17 @@ public static class Discover
                 if (results is null || results.Count == 0)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No results from {source.SourceKey}");
-                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No results from {source.SourceKey}");
                     continue;
                 }
 
-                var match = results.FirstOrDefault(r =>
-                    Media.NormalizeTitle(r.Title ?? "") == normTarget);
+                var match = results.FirstOrDefault(r => {
+                    var normResult = Media.NormalizeTitle(r.Title ?? "");
+                    return TitleMatches(normResult, normTarget) ||
+                           normAliases.Any(na => TitleMatches(normResult, na));
+                });
                 if (match is null)
                 {
                     await AppendSyncLogAsync(db, titleId, $"No title match on {source.SourceKey} (searched \"{titleName}\")");
-                    await AppendSyncWarningAsync(db, titleId, source.SourceKey!, $"No title match on {source.SourceKey}");
                     continue;
                 }
 
@@ -196,6 +210,12 @@ public static class Discover
                 await AppendSyncWarningAsync(db, titleId, source.SourceKey!, ex.Message);
             }
         }
+
+        // Warn only if NO source was matched at all
+        var anyLinked = await db.TitleSources.AnyAsync(ts => ts.TitleId == titleId);
+        if (!anyLinked)
+            await AppendSyncWarningAsync(db, titleId, "source-matching",
+                "No sources could be matched for this title. Check that the title name is correct and the plugins are reachable.");
     }
 
     record PluginSearchResult(
@@ -215,48 +235,137 @@ public static class Discover
         }
     }
 
-    // ── GET /api/discover/trending ────────────────────────────────────────────
+    // ── GET /api/discover/trending/{lane} ────────────────────────────────────
 
-    static async Task<IResult> Trending(
+    static async Task<IResult> TrendingManga(
         ClaimsPrincipal principal,
-        AppDbContext db, MangaUpdatesService mu, TrendingCacheService cache, IHttpClientFactory httpFactory, IConfiguration config)
+        AppDbContext db, MangaUpdatesService mu, TrendingCacheService cache)
     {
         var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        const string lane = "manga";
 
-        var series = cache.GetFresh();
-        if (series is null)
+        var cached = cache.GetFresh(lane);
+        if (cached is null)
         {
-            List<MuSeries> fresh;
-            try { fresh = await mu.LatestReleasesAsync(); }
+            try
+            {
+                var fresh = await mu.LatestReleasesAsync();
+                cached = fresh.Select(s => MuToDiscoverResult(s, false, null)).ToList();
+                if (cached.Count > 0) cache.Set(lane, cached);
+                else cached = cache.GetStale(lane) ?? [];
+            }
             catch
             {
-                series = cache.GetStale();
-                if (series is null) return Results.StatusCode(502);
-                fresh = series;
-            }
-
-            if (fresh.Count > 0)
-            {
-                cache.Set(fresh);
-                series = fresh;
-            }
-            else
-            {
-                series = cache.GetStale() ?? [];
+                cached = cache.GetStale(lane) ?? [];
             }
         }
 
-        var results = new List<DiscoverResult>(series.Count);
-        foreach (var s in series)
-        {
-            var muId = s.SeriesId.ToString();
-            var (inLibrary, libraryId) = await CheckInLibraryAsync(db, userId, "mangaupdates", muId, s.Title, s.ContentType);
-            var result = MuToDiscoverResult(s, inLibrary, libraryId);
-            await EnrichCoverAsync(db, result);
-            results.Add(result);
-        }
-
+        var results = await EnrichAndCheckLibraryAsync(db, userId, cached.Take(6).ToList());
         return Results.Ok(results);
+    }
+
+    static async Task<IResult> TrendingManhwa(
+        ClaimsPrincipal principal,
+        AppDbContext db, AniListService aniList, TrendingCacheService cache)
+    {
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        const string lane = "manhwa";
+
+        var cached = cache.GetFresh(lane);
+        if (cached is null)
+        {
+            try
+            {
+                var fresh = await aniList.TrendingAsync("KR", isAdult: false);
+                cached = fresh.Select(AniListToDiscoverResult).ToList();
+                if (cached.Count > 0) cache.Set(lane, cached);
+                else cached = cache.GetStale(lane) ?? [];
+            }
+            catch
+            {
+                cached = cache.GetStale(lane) ?? [];
+            }
+        }
+
+        var results = await EnrichAndCheckLibraryAsync(db, userId, cached.Take(6).ToList());
+        return Results.Ok(results);
+    }
+
+    static async Task<IResult> TrendingManhua(
+        ClaimsPrincipal principal,
+        AppDbContext db, AniListService aniList, TrendingCacheService cache)
+    {
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        const string lane = "manhua";
+
+        var cached = cache.GetFresh(lane);
+        if (cached is null)
+        {
+            try
+            {
+                var fresh = await aniList.TrendingAsync("CN", isAdult: false);
+                cached = fresh.Select(AniListToDiscoverResult).ToList();
+                if (cached.Count > 0) cache.Set(lane, cached);
+                else cached = cache.GetStale(lane) ?? [];
+            }
+            catch
+            {
+                cached = cache.GetStale(lane) ?? [];
+            }
+        }
+
+        var results = await EnrichAndCheckLibraryAsync(db, userId, cached.Take(6).ToList());
+        return Results.Ok(results);
+    }
+
+    static async Task<IResult> TrendingAdultManhwa(
+        ClaimsPrincipal principal,
+        AppDbContext db, AniListService aniList, TrendingCacheService cache)
+    {
+        var allowExplicit = principal.FindFirstValue("allow_explicit") == "true";
+        if (!allowExplicit) return Results.Forbid();
+
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        const string lane = "adult-manhwa";
+
+        var cached = cache.GetFresh(lane);
+        if (cached is null)
+        {
+            try
+            {
+                var fresh = await aniList.TrendingAsync("KR", isAdult: true);
+                cached = fresh.Select(AniListToDiscoverResult).ToList();
+                if (cached.Count > 0) cache.Set(lane, cached);
+                else cached = cache.GetStale(lane) ?? [];
+            }
+            catch
+            {
+                cached = cache.GetStale(lane) ?? [];
+            }
+        }
+
+        var results = await EnrichAndCheckLibraryAsync(db, userId, cached.Take(6).ToList());
+        return Results.Ok(results);
+    }
+
+    static DiscoverResult AniListToDiscoverResult(AniListSeries s) => new()
+    {
+        MangaupdatesId = s.SourceId, Title = s.Title, Description = s.Description,
+        CoverUrl = s.CoverUrl, Status = s.Status, Author = s.Author, Year = s.Year,
+        ContentType = s.ContentType, Source = "anilist", IsExplicit = s.IsAdult,
+    };
+
+    static async Task<List<DiscoverResult>> EnrichAndCheckLibraryAsync(
+        AppDbContext db, string userId, List<DiscoverResult> items)
+    {
+        foreach (var r in items)
+        {
+            var (inLibrary, libraryId) = await CheckInLibraryAsync(db, userId, r.Source, r.MangaupdatesId, r.Title, r.ContentType);
+            r.InLibrary = inLibrary;
+            r.LibraryId = libraryId;
+            await EnrichCoverAsync(db, r);
+        }
+        return items;
     }
 
     // ── POST /api/discover/add ────────────────────────────────────────────────
@@ -311,7 +420,7 @@ public static class Discover
         else
         {
             titleId = Guid.NewGuid().ToString();
-            var isExplicit = body.ContentType == "hentai" || IsHentaiTag(body.Tags) ||
+            var isExplicit = body.IsExplicit == true || body.ContentType == "hentai" || IsHentaiTag(body.Tags) ||
                 body.Tags?.Split(',').Any(t => t.Trim().Equals("adult", StringComparison.OrdinalIgnoreCase)) == true;
             var cleanTitle = StripSearchQualifier(body.Title) ?? body.Title;
 
@@ -400,6 +509,32 @@ public static class Discover
                     break;
 
                 case "anilist":
+                    await AppendSyncLogAsync(bgDb, capturedTitleId, "Fetching synonyms from AniList…");
+                    if (!string.IsNullOrEmpty(capturedMetaSourceId))
+                    {
+                        try
+                        {
+                            var bgAniList = scope.ServiceProvider.GetRequiredService<AniListService>();
+                            var synonyms = await bgAniList.GetSynonymsAsync(capturedMetaSourceId);
+                            if (synonyms.Count > 0)
+                            {
+                                await bgDb.TitleAliases.Where(a => a.TitleId == capturedTitleId).ExecuteDeleteAsync();
+                                foreach (var syn in synonyms)
+                                    bgDb.TitleAliases.Add(new TitleAlias
+                                    {
+                                        Id = Guid.NewGuid().ToString(),
+                                        TitleId = capturedTitleId,
+                                        Alias = syn,
+                                    });
+                                await bgDb.SaveChangesAsync();
+                                await AppendSyncLogAsync(bgDb, capturedTitleId,
+                                    $"Loaded {synonyms.Count} synonym(s)");
+                            }
+                        }
+                        catch { /* best-effort */ }
+                    }
+                    break;
+
                 case "mangadex":
                 case "novelupdates":
                 case "ehentai":
@@ -638,6 +773,9 @@ public static class Discover
         InLibrary = inLibrary,
         LibraryId = libraryId,
         Source = "mangaupdates",
+        IsExplicit = s.Tags is not null && s.Tags.Split(',').Any(t =>
+            t.Trim().Equals("adult", StringComparison.OrdinalIgnoreCase) ||
+            t.Trim().Equals("hentai", StringComparison.OrdinalIgnoreCase)),
     };
 
     // ── Pure helpers — unit-testable ──────────────────────────────────────────
@@ -742,4 +880,5 @@ public class AddMangaBody
     [JsonPropertyName("year")]            public int? Year { get; set; }
     [JsonPropertyName("tags")]            public string? Tags { get; set; }
     [JsonPropertyName("content_type")]    public string ContentType { get; set; } = "manga";
+    [JsonPropertyName("is_explicit")]     public bool? IsExplicit { get; set; }
 }

@@ -35,6 +35,16 @@ public class DiscoverLogicTests
             Media.NormalizeTitle("Tower of God")));
     }
 
+    [Fact] public void TitleMatches_HyphenatedVsCompact_Matches() =>
+        Assert.True(Discover.TitleMatches(
+            Media.NormalizeTitle("So-Eun"),
+            Media.NormalizeTitle("Soeun")));
+
+    [Fact] public void TitleMatches_AniListSynonymCloseEnough_Matches() =>
+        Assert.True(Discover.TitleMatches(
+            Media.NormalizeTitle("Everything Is Agreed Upon"),
+            Media.NormalizeTitle("Everything Is Agreed")));
+
     [Fact] public void Levenshtein_SameString_IsZero() =>
         Assert.Equal(0, Discover.Levenshtein("abc", "abc"));
 
@@ -258,4 +268,67 @@ public class DiscoverLogicTests
         var results = NovelUpdatesService.ParseHtml(html);
         Assert.Equal("ongoing", results[0].Status);
     }
+
+    // ── AniListService.MapEntry ───────────────────────────────────────────────
+
+    static JsonElement AniListItem(string json) => JsonDocument.Parse(json).RootElement;
+
+    [Fact]
+    public void MapEntry_ReturnsNullForNonMangaFormat()
+    {
+        var json = """{"id":1,"title":{"romaji":"Test","english":null},"isAdult":false,"format":"ANIME","countryOfOrigin":"JP","status":"FINISHED","description":null,"coverImage":{"large":null},"startDate":{"year":2020},"staff":{"nodes":[]}}""";
+        Assert.Null(AniListService.MapEntry(AniListItem(json)));
+    }
+
+    [Fact]
+    public void MapEntry_IsAdult_True_WhenFlagSet()
+    {
+        var json = """{"id":2,"title":{"romaji":"So-Eun","english":"So-Eun"},"isAdult":true,"format":"MANHWA","countryOfOrigin":"KR","status":"RELEASING","description":null,"coverImage":{"large":null},"startDate":{"year":2021},"staff":{"nodes":[]}}""";
+        var result = AniListService.MapEntry(AniListItem(json));
+        Assert.NotNull(result);
+        Assert.True(result!.IsAdult);
+    }
+
+    [Fact]
+    public void MapEntry_IsAdult_False_WhenFlagAbsent()
+    {
+        var json = """{"id":3,"title":{"romaji":"Berserk","english":"Berserk"},"isAdult":false,"format":"MANGA","countryOfOrigin":"JP","status":"RELEASING","description":null,"coverImage":{"large":null},"startDate":{"year":1989},"staff":{"nodes":[]}}""";
+        var result = AniListService.MapEntry(AniListItem(json));
+        Assert.NotNull(result);
+        Assert.False(result!.IsAdult);
+    }
+
+    [Fact]
+    public void MapEntry_ContentType_KoreanManga_IsManhwa()
+    {
+        var json = """{"id":4,"title":{"romaji":"Test","english":"Test"},"isAdult":false,"format":"MANGA","countryOfOrigin":"KR","status":"RELEASING","description":null,"coverImage":{"large":null},"startDate":{"year":2020},"staff":{"nodes":[]}}""";
+        var result = AniListService.MapEntry(AniListItem(json));
+        Assert.Equal("manhwa", result!.ContentType);
+    }
+
+    [Fact]
+    public void MapEntry_ContentType_ChineseManga_IsManhua()
+    {
+        var json = """{"id":5,"title":{"romaji":"Test","english":"Test"},"isAdult":false,"format":"MANGA","countryOfOrigin":"CN","status":"RELEASING","description":null,"coverImage":{"large":null},"startDate":{"year":2020},"staff":{"nodes":[]}}""";
+        var result = AniListService.MapEntry(AniListItem(json));
+        Assert.Equal("manhua", result!.ContentType);
+    }
+
+    [Fact]
+    public void MapContentType_MapsManhwa()
+    {
+        Assert.Equal("manhwa", AniListService.MapContentType("MANHWA", null));
+        Assert.Equal("manhwa", AniListService.MapContentType("MANGA", "KR"));
+    }
+
+    [Fact]
+    public void MapContentType_MapsNovel()
+    {
+        Assert.Equal("novel", AniListService.MapContentType("NOVEL", null));
+        Assert.Equal("novel", AniListService.MapContentType("LIGHT_NOVEL", null));
+    }
+
+    [Fact]
+    public void MapContentType_UnknownFormat_IsOther() =>
+        Assert.Equal("other", AniListService.MapContentType("ANIME", "JP"));
 }

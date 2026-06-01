@@ -4,10 +4,14 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 vi.mock('@/api', () => ({
   api: {
     listTitles: vi.fn(),
-    getTrending: vi.fn(),
+    getTrendingManga: vi.fn(),
+    getTrendingManhwa: vi.fn(),
+    getTrendingManhua: vi.fn(),
+    getTrendingAdultManhwa: vi.fn(),
     getNewReleases: vi.fn(),
     getContinueReading: vi.fn(),
   },
+  getAllowExplicit: vi.fn(() => false),
 }))
 
 import { useHome } from './useHome'
@@ -28,7 +32,10 @@ function makeTrendingResult(overrides: object = {}) {
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(api.listTitles).mockResolvedValue(emptyPage as never)
-  vi.mocked(api.getTrending).mockResolvedValue([])
+  vi.mocked(api.getTrendingManga).mockResolvedValue([])
+  vi.mocked(api.getTrendingManhwa).mockResolvedValue([])
+  vi.mocked(api.getTrendingManhua).mockResolvedValue([])
+  vi.mocked(api.getTrendingAdultManhwa).mockResolvedValue([])
   vi.mocked(api.getNewReleases).mockResolvedValue([])
   vi.mocked(api.getContinueReading).mockResolvedValue([])
 })
@@ -40,7 +47,7 @@ afterEach(() => {
 describe('useHome', () => {
   it('loads trending on mount', async () => {
     const item = makeTrendingResult({ cover_url: 'https://cdn.example.com/cover.jpg', in_library: false })
-    vi.mocked(api.getTrending).mockResolvedValue([item] as never)
+    vi.mocked(api.getTrendingManga).mockResolvedValue([item] as never)
 
     const { result } = renderHook(() => useHome())
     await waitFor(() => expect(result.current.trendingLoading).toBe(false))
@@ -49,7 +56,7 @@ describe('useHome', () => {
   })
 
   it('filters in-library titles from trending', async () => {
-    vi.mocked(api.getTrending).mockResolvedValue([
+    vi.mocked(api.getTrendingManga).mockResolvedValue([
       makeTrendingResult({ cover_url: 'https://cdn.example.com/1.jpg', in_library: false }),
       makeTrendingResult({ id: 't2', title: 'One Piece', cover_url: 'https://cdn.example.com/2.jpg', in_library: true }),
     ] as never)
@@ -58,64 +65,6 @@ describe('useHome', () => {
     await waitFor(() => expect(result.current.trendingLoading).toBe(false))
     expect(result.current.trending.every((r) => !r.in_library)).toBe(true)
     expect(result.current.trending.some((r) => r.title === 'One Piece')).toBe(false)
-  })
-
-  it('polls trending every 5s while any item has no cover_url', async () => {
-    vi.useFakeTimers()
-    const missingCover = makeTrendingResult({ cover_url: null })
-    vi.mocked(api.getTrending).mockResolvedValue([missingCover] as never)
-
-    const { result } = renderHook(() => useHome())
-    await act(async () => { await Promise.resolve() })
-    await act(async () => { await Promise.resolve() })
-
-    const callsBefore = (api.getTrending as ReturnType<typeof vi.fn>).mock.calls.length
-
-    await act(async () => {
-      vi.advanceTimersByTime(5000)
-      await Promise.resolve()
-    })
-
-    expect((api.getTrending as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(callsBefore)
-  })
-
-  it('stops cover poll once all items have a cover_url', async () => {
-    vi.useFakeTimers()
-    const withCover = makeTrendingResult({ cover_url: 'https://cdn.example.com/cover.jpg' })
-    vi.mocked(api.getTrending).mockResolvedValue([withCover] as never)
-
-    renderHook(() => useHome())
-    await act(async () => { await Promise.resolve() })
-    await act(async () => { await Promise.resolve() })
-
-    const callsBefore = (api.getTrending as ReturnType<typeof vi.fn>).mock.calls.length
-
-    await act(async () => {
-      vi.advanceTimersByTime(5000)
-      await Promise.resolve()
-    })
-
-    // No poll should have fired since all covers are present
-    expect((api.getTrending as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callsBefore)
-  })
-
-  it('does not poll while trendingLoading is true', async () => {
-    vi.useFakeTimers()
-    let resolveFirst!: (v: unknown) => void
-    vi.mocked(api.getTrending).mockReturnValue(
-      new Promise((r) => { resolveFirst = r }) as never
-    )
-
-    renderHook(() => useHome())
-
-    await act(async () => {
-      vi.advanceTimersByTime(5000)
-      await Promise.resolve()
-    })
-
-    // Only the initial fetch; poll must not have fired while loading
-    expect((api.getTrending as ReturnType<typeof vi.fn>).mock.calls.length).toBe(1)
-    resolveFirst([])
   })
 
   it('trendingLoading is true initially and false after fetch', async () => {

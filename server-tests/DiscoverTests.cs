@@ -40,7 +40,7 @@ public class DiscoverTests
         return JsonSerializer.Serialize(new { results = hits });
     }
 
-    static object MuRecord(ulong id, string title) => new
+    static object MuRecord(ulong id, string title, params string[] genres) => new
     {
         series_id = id,
         title,
@@ -50,7 +50,7 @@ public class DiscoverTests
         year = (string?)null,
         status = "ongoing",
         authors = (object?)null,
-        genres = (object?)null,
+        genres = genres.Length > 0 ? genres.Select(g => new { genre = g }).ToArray() : (object?)null,
         associated = (object?)null,
     };
 
@@ -111,13 +111,41 @@ public class DiscoverTests
         Assert.Equal(title.Id, res[0].GetProperty("library_id").GetString());
     }
 
+    [Fact]
+    public async Task Search_MuResult_SetsIsExplicit_WhenTagContainsAdult()
+    {
+        var searchJson = MuSearchResponse(MuRecord(999, "Kaya-nee", "Drama", "Adult"));
+        var (client, db) = NewFactory(muSearchJson: searchJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=kaya-nee");
+        Assert.NotNull(res);
+        Assert.Single(res);
+        Assert.True(res[0].GetProperty("is_explicit").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Search_MuResult_IsExplicitFalse_WhenNoAdultTags()
+    {
+        var searchJson = MuSearchResponse(MuRecord(1000, "Berserk", "Action", "Fantasy"));
+        var (client, db) = NewFactory(muSearchJson: searchJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=berserk");
+        Assert.NotNull(res);
+        Assert.Single(res);
+        Assert.False(res[0].GetProperty("is_explicit").GetBoolean());
+    }
+
     // ── GET /api/discover/trending ────────────────────────────────────────────
 
     [Fact]
     public async Task Trending_Unauthorized_WithoutToken()
     {
         var (client, _) = NewFactory().CreateClientWithDb();
-        var res = await client.GetAsync("/api/discover/trending");
+        var res = await client.GetAsync("/api/discover/trending/manga");
         Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
     }
 
@@ -129,8 +157,9 @@ public class DiscoverTests
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user);
 
-        var res = await client.GetAsync("/api/discover/trending");
-        Assert.Equal(HttpStatusCode.BadGateway, res.StatusCode);
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover/trending/manga");
+        Assert.NotNull(res);
+        Assert.Empty(res);
     }
 
     [Fact]
@@ -141,12 +170,12 @@ public class DiscoverTests
 
         // Pre-populate the cache
         var cache = factory.Services.GetRequiredService<TrendingCacheService>();
-        cache.Set([new MuSeries(1, "Cached Title", null, null, "ongoing", "manga", null, null, null, [])]);
+        cache.Set("manga", [new DiscoverResult { MangaupdatesId = "1", Title = "Cached Title", Status = "ongoing", ContentType = "manga", Source = "mangaupdates" }]);
 
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user);
 
-        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover/trending");
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover/trending/manga");
         Assert.NotNull(res);
         Assert.Single(res);
         Assert.Equal("Cached Title", res[0].GetProperty("title").GetString());
@@ -236,6 +265,53 @@ public class DiscoverTests
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         db.ChangeTracker.Clear();
         var title = await db.Titles.FirstAsync(t => t.MangaupdatesId == "666");
+        Assert.True(title.IsExplicit);
+    }
+
+    [Fact]
+    public async Task AddManga_IsExplicitField_SetsIsExplicitForManhwa()
+    {
+        // Regression: explicit manhwa (content_type != "hentai", no hentai tags) must
+        // store IsExplicit=true when the client sends is_explicit=true.
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            mangaupdates_id = "888",
+            title = "Adult Manhwa",
+            status = "ongoing",
+            content_type = "manhwa",
+            is_explicit = true,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        db.ChangeTracker.Clear();
+        var title = await db.Titles.FirstAsync(t => t.MangaupdatesId == "888");
+        Assert.True(title.IsExplicit);
+    }
+
+    [Fact]
+    public async Task AddManga_IsExplicitFalse_DoesNotOverrideHentaiContentType()
+    {
+        // Sending is_explicit=false must not suppress hentai content_type detection.
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            mangaupdates_id = "889",
+            title = "Hentai Title",
+            status = "complete",
+            content_type = "hentai",
+            is_explicit = false,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        db.ChangeTracker.Clear();
+        var title = await db.Titles.FirstAsync(t => t.MangaupdatesId == "889");
         Assert.True(title.IsExplicit);
     }
 

@@ -49,6 +49,9 @@ export function LibraryCoverCard({ manga, onClick }: { manga: Title; onClick: ()
       </div>
       <div className="mt-2 px-0.5">
         <p className="text-sm font-semibold line-clamp-1">{manga.title}</p>
+        {manga.is_explicit && (
+          <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400 mt-0.5">18+</span>
+        )}
         {tags && <p className="text-[11px] text-muted-foreground truncate mt-0.5">{tags}</p>}
       </div>
     </div>
@@ -165,6 +168,9 @@ export function TrendingCard({ result, badge, onClick }: {
       <div className="mt-2 px-0.5">
         <p className="text-sm font-semibold line-clamp-1">{result.title}</p>
         <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{result.author ?? result.content_type}</p>
+        {result.is_explicit && (
+          <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400 mt-0.5">18+</span>
+        )}
         {result.in_library && (
           <p className="text-[11px] text-primary mt-0.5 font-medium">In library</p>
         )}
@@ -227,22 +233,23 @@ export function TrendingModal({
   result,
   onClose,
   onViewDetails,
+  onAdded,
 }: {
   result: SearchResult
   onClose: () => void
   onViewDetails: (libraryId: string) => void
+  onAdded: () => void
 }) {
   const [coverFailed, setCoverFailed] = useState(false)
   const coverUrl = result.cover_url ? api.proxyImageUrl(result.cover_url) : ''
 
   const [addPending, setAddPending] = useState(false)
-  const [addSuccess, setAddSuccess] = useState(false)
 
   async function handleAdd() {
     setAddPending(true)
     try {
       await api.addTitle(result)
-      setAddSuccess(true)
+      onAdded()
     } catch {
       // ignore
     } finally {
@@ -255,7 +262,7 @@ export function TrendingModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="relative w-full max-w-lg bg-card rounded-2xl overflow-hidden shadow-2xl border border-border animate-in fade-in slide-in-from-bottom-4 duration-200">
@@ -315,10 +322,6 @@ export function TrendingModal({
             {result.in_library && result.library_id ? (
               <Button className="flex-1" onClick={() => onViewDetails(result.library_id!)}>
                 View Details
-              </Button>
-            ) : addSuccess ? (
-              <Button className="flex-1" variant="outline" disabled>
-                <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" /> Added to Library
               </Button>
             ) : (
               <Button className="flex-1" onClick={handleAdd} disabled={addPending}>

@@ -110,4 +110,14 @@ describe('MangaCard', () => {
       expect(container.querySelector('.text-4xl')).toBeTruthy()
     })
   })
+
+  it('shows 18+ pill when is_explicit is true', () => {
+    render(<MangaCard manga={makeManga({ is_explicit: true })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+    expect(screen.getByText('18+')).toBeInTheDocument()
+  })
+
+  it('does not show 18+ pill when is_explicit is false', () => {
+    render(<MangaCard manga={makeManga({ is_explicit: false })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+    expect(screen.queryByText('18+')).not.toBeInTheDocument()
+  })
 })

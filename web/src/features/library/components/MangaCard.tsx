@@ -99,7 +99,12 @@ export function MangaCard({
 
       <div className="mt-2.5 px-0.5 space-y-1">
         <p className="text-sm font-semibold leading-snug line-clamp-2">{manga.title}</p>
-        <ContentTypePill type={manga.content_type} size="sm" />
+        <div className="flex gap-1 flex-wrap items-center">
+          <ContentTypePill type={manga.content_type} size="sm" />
+          {manga.is_explicit && (
+            <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400">18+</span>
+          )}
+        </div>
         {manga.author && (
           <p className="text-[11px] text-muted-foreground truncate">{manga.author}</p>
         )}

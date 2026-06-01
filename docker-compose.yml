@@ -3,7 +3,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8282:8080"
     environment:
       DATABASE_URL: sqlite:///data/arrgh.db   # maps to DatabasePath=/data/arrgh.db
       DOWNLOAD_DIR: /data/downloads
@@ -39,6 +39,8 @@ services:
     image: ghcr.io/t2vi/cloakbrowser-server:latest
     platform: linux/amd64
     restart: unless-stopped
+    ports:
+      - "3000:3000"
     environment:
       CDP_PORT: "3000"
     dns:

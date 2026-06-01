@@ -7,7 +7,9 @@ curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
 docker compose up -d
 ```
 
-Open `http://<your-server-ip>:8080`. The setup wizard runs on first launch.
+Open `http://<your-server-ip>:8282`. The setup wizard runs on first launch.
+
+> ⚠️ **Port change (v0.1.3+)** — host port is **8282** (was 8080 in v0.1.2 and earlier). Update firewall rules, bookmarks, and reverse proxy configs accordingly.
 
 ---
 
@@ -15,7 +17,7 @@ Open `http://<your-server-ip>:8080`. The setup wizard runs on first launch.
 
 | Service | Port (host) | Description |
 |---|---|---|
-| `arrgh` | 8080 | Main server + web UI (Rust API + nginx) |
+| `arrgh` | 8282 | Main server + web UI (.NET 10 API + nginx) |
 | `plugin-host` | _(internal)_ | Node.js plugin host — serves all bundled sources on port 4000 |
 | `cloakbrowser` | _(internal)_ | Stealth Chromium CDP server for CF-protected sources |
 
@@ -104,6 +106,14 @@ services:
 ```
 
 CF-protected plugins will return errors for those sources; all others work normally.
+
+---
+
+## Web assets (Portainer / remote deployments)
+
+The web UI is **baked into the Docker image** — no `web/dist` directory is needed on the host. If you deploy via Portainer or `docker compose pull`, it works out of the box.
+
+The `docker-compose.override.yml` (used automatically for local `docker compose up`) mounts `./web/dist` over the image copy so local source changes appear without a rebuild. This override file is ignored when deploying remotely.
 
 ---
 

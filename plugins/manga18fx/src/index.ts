@@ -1,4 +1,7 @@
-import { search, chapters, pages } from './manga18fx'
+import { search, chapters, pages, setContext } from './manga18fx'
+import type { PluginContext } from './manga18fx'
+
+export function init(ctx: PluginContext): void { setContext(ctx) }
 
 export const info = {
   id: 'manga18fx',

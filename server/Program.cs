@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using ArrghServer;
 using ArrghServer.Api;
 using ArrghServer.Data;
 using ArrghServer.Data.Models;
@@ -93,6 +94,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    MigrationBootstrap.Bootstrap(db);
     db.Database.Migrate();
 
     if (cfg["SeedDefaultSources"] != "false" && !db.ExternalSources.Any())

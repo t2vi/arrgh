@@ -1,3 +1,5 @@
+import { setContext } from "./manhuafast"
+import type { PluginContext } from "./manhuafast"
 import * as m from './manhuafast'
 
 export const info = {
@@ -7,9 +9,7 @@ export const info = {
   content_types: ['manhua'],
 }
 
-export function init(_ctx: unknown): void {
-  // Direct fetch — no browser needed
-}
+export function init(ctx: PluginContext): void { setContext(ctx) }
 
 export const search   = m.search
 export const chapters = m.chapters
