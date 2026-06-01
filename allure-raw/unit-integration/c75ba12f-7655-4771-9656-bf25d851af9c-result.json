@@ -1,0 +1,40 @@
+{
+  "uuid": "c75ba12f-7655-4771-9656-bf25d851af9c",
+  "historyId": "ArrghServer.Tests.LogsTests#SetLevel_Admin_PersistsAcrossRequests",
+  "name": "SetLevel_Admin_PersistsAcrossRequests",
+  "fullName": "ArrghServer.Tests.LogsTests.SetLevel_Admin_PersistsAcrossRequests",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780281465312,
+  "stop": 1780281465958,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_Admin_PersistsAcrossRequests"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "a23e5bc1-f89e-4604-b8f5-b0506aafe686",
+  "historyId": "ArrghServer.Tests.LogServiceTests#GetRecent_ReturnsLastN",
+  "name": "GetRecent_ReturnsLastN",
+  "fullName": "ArrghServer.Tests.LogServiceTests.GetRecent_ReturnsLastN",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780281449120,
+  "stop": 1780281449120,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "GetRecent_ReturnsLastN"
+    }
+  ]
+}

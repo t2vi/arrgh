@@ -1,0 +1,40 @@
+{
+  "uuid": "ed63c782-042b-4102-b126-2e937b07b9b6",
+  "historyId": "ArrghServer.Tests.LogServiceTests#RingBufferLogger_EFCoreCategory_NotCaptured",
+  "name": "RingBufferLogger_EFCoreCategory_NotCaptured",
+  "fullName": "ArrghServer.Tests.LogServiceTests.RingBufferLogger_EFCoreCategory_NotCaptured",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780281449130,
+  "stop": 1780281449130,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "RingBufferLogger_EFCoreCategory_NotCaptured"
+    }
+  ]
+}
