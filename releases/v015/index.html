@@ -6,9 +6,15 @@ ghcr.io/t2vi/plugin-host:0.1.5</code></pre> </div> <h1 id="arrgh-v015--portainer
 <ul>
 <li><strong>Portainer fix</strong> — remote deployments (Portainer, Docker Swarm, <code>docker compose pull</code>) no longer return 403. Web UI now served from the baked image; no host-side <code>web/dist</code> directory required.</li>
 <li><strong>CI port fix</strong> — API test layer in CI was pointing at the old port 8080; updated to 8282.</li>
+<li><strong>Migration bootstrap</strong> — server no longer crashes on startup when upgrading from a pre-migration database (<code>table "external_sources" already exists</code>).</li>
 </ul>
 <hr>
 <h2 id="whats-new">What’s new</h2>
+<h3 id="migration-bootstrap-for-existing-databases">Migration bootstrap for existing databases</h3>
+<p>Upgrading from an older arrgh installation (including the original Rust server) failed at startup with:</p>
+<pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>SQLite Error 1: 'table "external_sources" already exists'</span></span></code></pre>
+<p>This happened because EF Core’s <code>Migrate()</code> tried to apply <code>InitialSchema</code> against a database that already had all the tables, but had no <code>__EFMigrationsHistory</code> table to indicate that.</p>
+<p><strong>Fix</strong>: <code>MigrationBootstrap.Bootstrap()</code> now runs before <code>Migrate()</code>. It detects a pre-migration database (tables present, no history table) and inserts the appropriate migration records so <code>Migrate()</code> only applies genuinely new migrations. Idempotent — no effect on fresh or already-migrated databases.</p>
 <h3 id="web-assets-served-from-image">Web assets served from image</h3>
 <p>The <code>docker-compose.yml</code> previously included:</p>
 <pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#E06C75">volumes</span><span style="color:#ABB2BF">:</span></span>
