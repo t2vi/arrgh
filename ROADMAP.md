@@ -25,18 +25,38 @@ Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim 
 🔳 Reading statistics (time spent, chapters per week)<br />
 
 ## **Library**
+🔳 Library sorting and filtering (by status, content type, author, etc.)<br />
 🔳 Metadata editing (title, cover, tags)<br />
 🔳 CBZ / CBR local import<br />
 🔳 Backup and export (library + reading progress)<br />
+
+## **Discover / Trending**
+🔳 Trending hentai lane<br />
+🔳 Trending novels lane<br />
+
+## **Content Types**
+🔳 Hentai as a distinct content type — separate label from manga in UI, library counts, and source routing<br />
+🔳 Dashboard hero stats: manga and hentai counts displayed separately<br />
+
+## **UI / UX**
+🔳 Mobile-responsive layout<br />
+🔳 Dashboard "My Library" categories shown as pills instead of CSV text<br />
 
 ## **Server / Observability**
 ✅ In-memory log ring buffer — `GET /api/logs` streams recent server events to the web UI<br />
 ✅ Runtime log level control — Settings → Logs → adjust capture level without restart<br />
 🔳 Structured log export (JSON download)<br />
 
+## **Infrastructure**
+🔳 Proper upgrade migration path — documented scripts and tooling so users can upgrade without manual DB steps<br />
+🔳 PostgreSQL support alongside SQLite<br />
+
 ## **Integrations**
 🔳 Push notifications for new chapters<br />
 🔳 Webhook on new chapter download<br />
 
-## **Infrastructure**<br />
-🔳 PostgreSQL support alongside SQLite<br />
+## **Testing**
+🔳 Live source integration tests — real HTTP calls against actual sources (MangaDex, AsuraScans, etc.) to catch edge cases that fixture tests miss (e.g. slug normalisation: "shut-in" vs "shutin"). Goal: use failures to identify new fixture scenarios to add to the test suite, not to run in CI.<br />
+
+## **Known Bugs**
+🔳 Regular (non-explicit) manga being matched to nhentai — explicit-only sources must not match non-explicit titles<br />
