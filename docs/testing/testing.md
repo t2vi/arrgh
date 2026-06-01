@@ -136,6 +136,7 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | Case | Status |
 |---|---|
 | Pre-migration DB (tables exist, no `__EFMigrationsHistory`) → `Bootstrap` creates history → `Migrate()` succeeds | ✅ |
+| Partial-schema DB (old Rust DB missing `default_explicit` etc.) → Bootstrap patches columns → `SaveChanges()` succeeds | ✅ |
 | Fresh DB (no tables) → `Bootstrap` is no-op → `Migrate()` handles it normally | ✅ |
 | Already-migrated DB → `Bootstrap` is idempotent → `Migrate()` is no-op | ✅ |
 
