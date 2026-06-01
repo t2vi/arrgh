@@ -173,6 +173,10 @@
 <span class="line"><span style="color:#7F848E;font-style:italic">      # CLOAKBROWSER_WS_URL not set — CF-dependent plugins will error gracefully</span></span></code></pre>
 <p>CF-protected plugins will return errors for those sources; all others work normally.</p>
 <hr>
+<h2 id="web-assets-portainer--remote-deployments">Web assets (Portainer / remote deployments)</h2>
+<p>The web UI is <strong>baked into the Docker image</strong> — no <code>web/dist</code> directory is needed on the host. If you deploy via Portainer or <code>docker compose pull</code>, it works out of the box.</p>
+<p>The <code>docker-compose.override.yml</code> (used automatically for local <code>docker compose up</code>) mounts <code>./web/dist</code> over the image copy so local source changes appear without a rebuild. This override file is ignored when deploying remotely.</p>
+<hr>
 <h2 id="updating">Updating</h2>
 <pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#61AFEF">docker</span><span style="color:#98C379"> compose</span><span style="color:#98C379"> pull</span></span>
 <span class="line"><span style="color:#61AFEF">docker</span><span style="color:#98C379"> compose</span><span style="color:#98C379"> up</span><span style="color:#D19A66"> -d</span></span></code></pre>
