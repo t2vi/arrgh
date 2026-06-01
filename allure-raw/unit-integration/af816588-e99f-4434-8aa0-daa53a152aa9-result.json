@@ -1,0 +1,40 @@
+{
+  "uuid": "af816588-e99f-4434-8aa0-daa53a152aa9",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_AllSourcesFail_SetsError",
+  "name": "Download_AllSourcesFail_SetsError",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_AllSourcesFail_SetsError",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780280184622,
+  "stop": 1780280187662,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_AllSourcesFail_SetsError"
+    }
+  ]
+}

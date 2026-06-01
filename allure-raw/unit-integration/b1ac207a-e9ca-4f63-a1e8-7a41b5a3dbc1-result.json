@@ -1,0 +1,40 @@
+{
+  "uuid": "b1ac207a-e9ca-4f63-a1e8-7a41b5a3dbc1",
+  "historyId": "ArrghServer.Tests.SettingsTests#GetSettings_ReturnsDefaults_WhenNothingSaved",
+  "name": "GetSettings_ReturnsDefaults_WhenNothingSaved",
+  "fullName": "ArrghServer.Tests.SettingsTests.GetSettings_ReturnsDefaults_WhenNothingSaved",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780280174473,
+  "stop": 1780280174762,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Config"
+    },
+    {
+      "name": "story",
+      "value": "GetSettings_ReturnsDefaults_WhenNothingSaved"
+    }
+  ]
+}

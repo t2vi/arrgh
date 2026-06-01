@@ -1,0 +1,40 @@
+{
+  "uuid": "8e2aa296-d05f-458c-a644-aa144675b08b",
+  "historyId": "ArrghServer.Tests.TitlesTests#RefreshMetadata_Returns401_WithoutToken",
+  "name": "RefreshMetadata_Returns401_WithoutToken",
+  "fullName": "ArrghServer.Tests.TitlesTests.RefreshMetadata_Returns401_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780280169384,
+  "stop": 1780280169728,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "RefreshMetadata_Returns401_WithoutToken"
+    }
+  ]
+}

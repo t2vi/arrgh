@@ -1,0 +1,40 @@
+{
+  "uuid": "2d4fdec7-a1f4-4e35-a125-7b2bd845097e",
+  "historyId": "ArrghServer.Tests.ProgressTests#ContinueReading_Empty_WhenNothingStarted",
+  "name": "ContinueReading_Empty_WhenNothingStarted",
+  "fullName": "ArrghServer.Tests.ProgressTests.ContinueReading_Empty_WhenNothingStarted",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780280160990,
+  "stop": 1780280161858,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Reading Progress"
+    },
+    {
+      "name": "story",
+      "value": "ContinueReading_Empty_WhenNothingStarted"
+    }
+  ]
+}
