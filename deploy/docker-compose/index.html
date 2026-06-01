@@ -3,6 +3,9 @@
 <pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#61AFEF">curl</span><span style="color:#D19A66"> -O</span><span style="color:#98C379"> https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml</span></span>
 <span class="line"><span style="color:#61AFEF">docker</span><span style="color:#98C379"> compose</span><span style="color:#98C379"> up</span><span style="color:#D19A66"> -d</span></span></code></pre>
 <p>Open <code>http://&#x3C;your-server-ip>:8282</code>. The setup wizard runs on first launch.</p>
+<blockquote>
+<p>⚠️ <strong>Port change (v0.1.3+)</strong> — host port is <strong>8282</strong> (was 8080 in v0.1.2 and earlier). Update firewall rules, bookmarks, and reverse proxy configs accordingly.</p>
+</blockquote>
 <hr>
 <h2 id="services">Services</h2>
 
@@ -30,7 +33,7 @@
 
 
 
-<table><thead><tr><th>Service</th><th>Port (host)</th><th>Description</th></tr></thead><tbody><tr><td><code>arrgh</code></td><td>8282</td><td>Main server + web UI (Rust API + nginx)</td></tr><tr><td><code>plugin-host</code></td><td><em>(internal)</em></td><td>Node.js plugin host — serves all bundled sources on port 4000</td></tr><tr><td><code>cloakbrowser</code></td><td><em>(internal)</em></td><td>Stealth Chromium CDP server for CF-protected sources</td></tr></tbody></table>
+<table><thead><tr><th>Service</th><th>Port (host)</th><th>Description</th></tr></thead><tbody><tr><td><code>arrgh</code></td><td>8282</td><td>Main server + web UI (.NET 10 API + nginx)</td></tr><tr><td><code>plugin-host</code></td><td><em>(internal)</em></td><td>Node.js plugin host — serves all bundled sources on port 4000</td></tr><tr><td><code>cloakbrowser</code></td><td><em>(internal)</em></td><td>Stealth Chromium CDP server for CF-protected sources</td></tr></tbody></table>
 <p><code>plugin-host</code> and <code>cloakbrowser</code> are internal only — not exposed to the host.</p>
 <hr>
 <h2 id="environment-variables">Environment variables</h2>
