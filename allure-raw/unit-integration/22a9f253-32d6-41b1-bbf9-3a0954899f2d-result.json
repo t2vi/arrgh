@@ -1,0 +1,40 @@
+{
+  "uuid": "22a9f253-32d6-41b1-bbf9-3a0954899f2d",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#StripQualifier_Novel",
+  "name": "StripQualifier_Novel",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.StripQualifier_Novel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780285093607,
+  "stop": 1780285093610,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "StripQualifier_Novel"
+    }
+  ]
+}

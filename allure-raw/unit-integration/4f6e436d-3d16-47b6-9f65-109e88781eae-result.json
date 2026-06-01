@@ -1,0 +1,40 @@
+{
+  "uuid": "4f6e436d-3d16-47b6-9f65-109e88781eae",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapContentType(input: &quot;manhua&quot;, expected: &quot;manhua&quot;)",
+  "name": "MapContentType(input: &quot;manhua&quot;, expected: &quot;manhua&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapContentType(input: &quot;manhua&quot;, expected: &quot;manhua&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780285093582,
+  "stop": 1780285093583,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapContentType(input: &quot;manhua&quot;, expected: &quot;manhua&quot;)"
+    }
+  ]
+}
