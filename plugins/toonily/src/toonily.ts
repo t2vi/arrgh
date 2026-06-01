@@ -85,7 +85,8 @@ export interface MetaResponse {
 // ── Scrapers ──────────────────────────────────────────────────────────────────
 
 export async function search(query: string): Promise<SearchItem[]> {
-  const html = await getPage(`${BASE}/?s=${encodeURIComponent(query)}&post_type=wp-manga`)
+  const slug = query.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const html = await getPage(`${BASE}/search/${slug}?author&artist&adult`)
   const $ = cheerio.load(html)
   const results: SearchItem[] = []
 

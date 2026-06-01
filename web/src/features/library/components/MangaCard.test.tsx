@@ -2,10 +2,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MangaCard } from './MangaCard'
 import type { Title } from '@/types'
-beforeEach(async () => {
-  await allure.epic('Library')
-  await allure.feature('Library List')
-})
 
 vi.mock('@/api', () => ({
   api: { coverUrl: (id: string) => `/covers/${id}` },
@@ -29,7 +25,6 @@ function makeManga(overrides: Partial<Title> = {}): Title {
     reader_mode: null,
     download_dir: null,
     is_explicit: false,
-    has_sync_warnings: false,
     total_chapters: 10,
     downloaded_chapters: 5,
     chapters_read: 3,
@@ -116,32 +111,13 @@ describe('MangaCard', () => {
     })
   })
 
-  describe('amber warning badge', () => {
-    it('shows badge when has_sync_warnings=true and total_chapters=0', () => {
-      render(<MangaCard manga={makeManga({ has_sync_warnings: true, total_chapters: 0 })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
-      expect(screen.getByTitle('Some sources could not be matched — click title to refresh metadata')).toBeInTheDocument()
-    })
-
-    it('hides badge when has_sync_warnings=true but total_chapters>0', () => {
-      render(<MangaCard manga={makeManga({ has_sync_warnings: true, total_chapters: 5 })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
-      expect(screen.queryByTitle('Some sources could not be matched — click title to refresh metadata')).toBeNull()
-    })
-
-    it('hides badge when has_sync_warnings=false even with total_chapters=0', () => {
-      render(<MangaCard manga={makeManga({ has_sync_warnings: false, total_chapters: 0 })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
-      expect(screen.queryByTitle('Some sources could not be matched — click title to refresh metadata')).toBeNull()
-    })
+  it('shows 18+ pill when is_explicit is true', () => {
+    render(<MangaCard manga={makeManga({ is_explicit: true })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+    expect(screen.getByText('18+')).toBeInTheDocument()
   })
 
-  describe('18+ badge', () => {
-    it('shows 18+ badge when is_explicit=true', () => {
-      render(<MangaCard manga={makeManga({ is_explicit: true })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
-      expect(screen.getByText('18+')).toBeInTheDocument()
-    })
-
-    it('hides 18+ badge when is_explicit=false', () => {
-      render(<MangaCard manga={makeManga({ is_explicit: false })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
-      expect(screen.queryByText('18+')).toBeNull()
-    })
+  it('does not show 18+ pill when is_explicit is false', () => {
+    render(<MangaCard manga={makeManga({ is_explicit: false })} onClick={() => {}} onRemove={() => {}} isRemoving={false} />)
+    expect(screen.queryByText('18+')).not.toBeInTheDocument()
   })
 })

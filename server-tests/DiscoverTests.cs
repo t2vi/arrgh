@@ -40,7 +40,7 @@ public class DiscoverTests
         return JsonSerializer.Serialize(new { results = hits });
     }
 
-    static object MuRecord(ulong id, string title) => new
+    static object MuRecord(ulong id, string title, params string[] genres) => new
     {
         series_id = id,
         title,
@@ -50,7 +50,7 @@ public class DiscoverTests
         year = (string?)null,
         status = "ongoing",
         authors = (object?)null,
-        genres = (object?)null,
+        genres = genres.Length > 0 ? genres.Select(g => new { genre = g }).ToArray() : (object?)null,
         associated = (object?)null,
     };
 
@@ -111,9 +111,35 @@ public class DiscoverTests
         Assert.Equal(title.Id, res[0].GetProperty("library_id").GetString());
     }
 
-    // ── GET /api/discover/trending/* — covered by TrendingLaneTests.cs (ADR 0032) ──
-    // Old single /trending endpoint replaced by per-lane endpoints. Tests below
-    // are updated to use the new /trending/manga route.
+    [Fact]
+    public async Task Search_MuResult_SetsIsExplicit_WhenTagContainsAdult()
+    {
+        var searchJson = MuSearchResponse(MuRecord(999, "Kaya-nee", "Drama", "Adult"));
+        var (client, db) = NewFactory(muSearchJson: searchJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=kaya-nee");
+        Assert.NotNull(res);
+        Assert.Single(res);
+        Assert.True(res[0].GetProperty("is_explicit").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Search_MuResult_IsExplicitFalse_WhenNoAdultTags()
+    {
+        var searchJson = MuSearchResponse(MuRecord(1000, "Berserk", "Action", "Fantasy"));
+        var (client, db) = NewFactory(muSearchJson: searchJson).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=berserk");
+        Assert.NotNull(res);
+        Assert.Single(res);
+        Assert.False(res[0].GetProperty("is_explicit").GetBoolean());
+    }
+
+    // ── GET /api/discover/trending ────────────────────────────────────────────
 
     [Fact]
     public async Task Trending_Unauthorized_WithoutToken()
@@ -124,33 +150,27 @@ public class DiscoverTests
     }
 
     [Fact]
-    public async Task TrendingManga_ReturnsEmptyArray_WhenMuFails_AndNoCachedData()
+    public async Task Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData()
     {
         var factory = new DiscoverFactory(muReleasesThrows: true);
         var (client, db) = factory.CreateClientWithDb();
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user);
 
-        // Failure with no stale → 200 [] (not 502 — discovery content degrades silently)
-        var res = await client.GetAsync("/api/discover/trending/manga");
-        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
-        var body = await res.Content.ReadFromJsonAsync<JsonElement[]>();
-        Assert.NotNull(body);
-        Assert.Empty(body);
+        var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover/trending/manga");
+        Assert.NotNull(res);
+        Assert.Empty(res);
     }
 
     [Fact]
-    public async Task TrendingManga_ServesStaleCache_WhenMuFails()
+    public async Task Trending_ServesStaleCache_WhenMuFails()
     {
         var factory = new DiscoverFactory(muReleasesThrows: true);
         var (client, db) = factory.CreateClientWithDb();
 
+        // Pre-populate the cache
         var cache = factory.Services.GetRequiredService<TrendingCacheService>();
-        cache.Set("manga", [new DiscoverResult
-        {
-            MangaupdatesId = "1", Title = "Cached Title", Status = "ongoing",
-            ContentType = "manga", Source = "mangaupdates",
-        }]);
+        cache.Set("manga", [new DiscoverResult { MangaupdatesId = "1", Title = "Cached Title", Status = "ongoing", ContentType = "manga", Source = "mangaupdates" }]);
 
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user);

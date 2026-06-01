@@ -1,7 +1,50 @@
 import * as cheerio from 'cheerio'
 
-const BASE = 'https://asuracomic.net'
+const BASE = 'https://asurascans.com'
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+// ── CloakBrowser context (injected by plugin-host) ───────────────────────────
+
+interface BrowserPage {
+  goto(url: string, opts?: { waitUntil?: string; timeout?: number }): Promise<unknown>
+  content(): Promise<string>
+  close(): Promise<void>
+}
+interface BrowserContextLike {
+  newPage(): Promise<BrowserPage>
+  close(): Promise<void>
+}
+interface BrowserLike {
+  newContext(opts?: Record<string, unknown>): Promise<BrowserContextLike>
+  isConnected(): boolean
+}
+export interface PluginContext {
+  getBrowser: () => Promise<BrowserLike>
+  logger: typeof console
+}
+
+let _ctx: PluginContext | null = null
+export function setContext(ctx: PluginContext): void { _ctx = ctx }
+
+async function getPage(url: string, waitUntil: string = 'domcontentloaded', delayMs = 0): Promise<string> {
+  if (_ctx) {
+    const browser = await _ctx.getBrowser()
+    const bctx = await browser.newContext()
+    const page = await bctx.newPage()
+    try {
+      await page.goto(url, { waitUntil, timeout: 60_000 })
+      if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs))
+      return await page.content()
+    } finally {
+      await bctx.close()
+    }
+  }
+  // Fallback: direct fetch (tests / no-CF environments)
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) throw new Error(`${url} returned ${res.status}`)
+  return res.text()
+}
+
+
 
 async function getHtml(url: string): Promise<string> {
   const res = await fetch(url, { headers: { 'User-Agent': UA } })
@@ -37,21 +80,21 @@ export interface ChapterItem {
 }
 
 // ── Search ────────────────────────────────────────────────────────────────────
-// AsuraScans search: https://asuracomic.net/?s=query
+// AsuraScans search: https://asuracomic.net/browse?q=query
 
 export async function search(query: string): Promise<SearchItem[]> {
-  const q = encodeURIComponent(query)
-  const html = await getHtml(`${BASE}/?s=${q}`)
+  const q = query.replace(/-/g, '')
+  const html = await getPage(`${BASE}/browse?q=${encodeURIComponent(q)}`)
   const $ = cheerio.load(html)
   const results: SearchItem[] = []
   const seen = new Set<string>()
 
-  // Asura uses Tailwind-styled series grid with group/tipmanga items
-  $('a[href*="/series/"]').each((_, el) => {
+  // Asura uses /comics/{slug}-{hash} links
+  $('a[href*="/comics/"]').each((_, el) => {
     const $a = $(el)
     const href = $a.attr('href') ?? ''
-    // href: https://asuracomic.net/series/solo-leveling-abc123
-    const m = href.match(/\/series\/([\w-]+)\/?$/)
+    // href: /comics/solo-leveling-abc12345
+    const m = href.match(/\/comics\/([\w-]+)\/?$/)
     const id = m?.[1]
     if (!id || seen.has(id)) return
     seen.add(id)
@@ -86,35 +129,23 @@ export async function search(query: string): Promise<SearchItem[]> {
 // ── Chapters ──────────────────────────────────────────────────────────────────
 
 export async function chapters(seriesId: string): Promise<ChapterItem[]> {
-  const html = await getHtml(`${BASE}/series/${seriesId}`)
-  const $ = cheerio.load(html)
-  const all: ChapterItem[] = []
+  // Asura is an Astro/React SPA — chapter links render after JS hydration.
+  // Wait 5s after domcontentloaded then extract chapter numbers via regex.
+  const html = await getPage(`${BASE}/comics/${seriesId}`, 'domcontentloaded', 5000)
   const seen = new Map<number, ChapterItem>()
-
-  // Chapter items: div[data-num] or li[data-num] with links
-  $('[data-num] a[href*="/chapter/"], a[href*="/chapter/"]').each((_, el) => {
-    const $a = $(el)
-    const href = $a.attr('href') ?? ''
-    const $parent = $a.parents('[data-num]').first()
-    const numAttr = $parent.attr('data-num')
-
-    let num: number
-    if (numAttr) {
-      num = parseFloat(numAttr)
-    } else {
-      const m = href.match(/\/chapter\/(\d+(?:\.\d+)?)/)
-      num = m ? parseFloat(m[1]) : NaN
+  const re = new RegExp(`${seriesId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\/chapter\/(\\d+(?:\\.\\d+)?)`, 'g')
+  let m: RegExpExecArray | null
+  while ((m = re.exec(html)) !== null) {
+    const num = parseFloat(m[1])
+    if (!isNaN(num) && !seen.has(num)) {
+      seen.set(num, {
+        source_id: `/comics/${seriesId}/chapter/${m[1]}`,
+        number: num,
+        volume: null,
+        title: null,
+      })
     }
-    if (isNaN(num)) return
-
-    // source_id = full path from BASE (e.g. /series/slug/chapter/180)
-    const sourceId = href.startsWith(BASE) ? href.slice(BASE.length) : href
-    if (!sourceId) return
-
-    const item: ChapterItem = { source_id: sourceId, number: num, volume: null, title: null }
-    if (!seen.has(num)) seen.set(num, item)
-  })
-
+  }
   return Array.from(seen.values()).sort((a, b) => a.number - b.number)
 }
 
@@ -122,7 +153,7 @@ export async function chapters(seriesId: string): Promise<ChapterItem[]> {
 
 export async function pages(chapterId: string): Promise<string[]> {
   const url = chapterId.startsWith('http') ? chapterId : `${BASE}${chapterId.startsWith('/') ? '' : '/'}${chapterId}`
-  const html = await getHtml(url)
+  const html = await getPage(url)
   const $ = cheerio.load(html)
 
   const urls: string[] = []

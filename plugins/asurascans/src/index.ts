@@ -1,3 +1,5 @@
+import { setContext } from "./asurascans"
+import type { PluginContext } from "./asurascans"
 import * as a from './asurascans'
 
 export const info = {
@@ -7,9 +9,7 @@ export const info = {
   content_types: ['manhwa'],
 }
 
-export function init(_ctx: unknown): void {
-  // Direct fetch — no browser needed
-}
+export function init(ctx: PluginContext): void { setContext(ctx) }
 
 export const search   = a.search
 export const chapters = a.chapters

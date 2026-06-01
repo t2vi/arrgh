@@ -27,6 +27,8 @@ logService.SetLevel(configuredLevel switch
 });
 builder.Services.AddSingleton(logService);
 builder.Logging.AddProvider(new RingBufferLoggerProvider(logService));
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.None);
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Transaction", LogLevel.None);
 
 // Version / update checker
 builder.Services.AddSingleton<UpdateCache>();

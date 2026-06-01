@@ -20,7 +20,7 @@ export function MangaCard({
     ? manga.cover_url
     : api.coverUrl(manga.id)
   const isSyncing     = manga.sync_status === 'syncing'
-  const hasWarnings   = manga.has_sync_warnings && (manga.total_chapters ?? 0) === 0
+  const hasWarnings   = manga.has_sync_warnings
   const hasDownloads  = (manga.downloaded_chapters ?? 0) > 0
 
   return (
@@ -99,7 +99,7 @@ export function MangaCard({
 
       <div className="mt-2.5 px-0.5 space-y-1">
         <p className="text-sm font-semibold leading-snug line-clamp-2">{manga.title}</p>
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex gap-1 flex-wrap items-center">
           <ContentTypePill type={manga.content_type} size="sm" />
           {manga.is_explicit && (
             <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400">18+</span>

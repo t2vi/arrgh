@@ -49,6 +49,9 @@ export function LibraryCoverCard({ manga, onClick }: { manga: Title; onClick: ()
       </div>
       <div className="mt-2 px-0.5">
         <p className="text-sm font-semibold line-clamp-1">{manga.title}</p>
+        {manga.is_explicit && (
+          <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400 mt-0.5">18+</span>
+        )}
         {tags && <p className="text-[11px] text-muted-foreground truncate mt-0.5">{tags}</p>}
       </div>
     </div>
@@ -165,6 +168,9 @@ export function TrendingCard({ result, badge, onClick }: {
       <div className="mt-2 px-0.5">
         <p className="text-sm font-semibold line-clamp-1">{result.title}</p>
         <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{result.author ?? result.content_type}</p>
+        {result.is_explicit && (
+          <span className="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-red-500/15 text-red-400 mt-0.5">18+</span>
+        )}
         {result.in_library && (
           <p className="text-[11px] text-primary mt-0.5 font-medium">In library</p>
         )}
