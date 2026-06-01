@@ -1,0 +1,40 @@
+{
+  "uuid": "fbbf613f-4d4f-4c97-bb58-aa7943c5a555",
+  "historyId": "ArrghServer.Tests.UpdateCacheTests#Clear_AfterSet_ReturnsNulls",
+  "name": "Clear_AfterSet_ReturnsNulls",
+  "fullName": "ArrghServer.Tests.UpdateCacheTests.Clear_AfterSet_ReturnsNulls",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282246447,
+  "stop": 1780282246448,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "UpdateCacheTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Update Check"
+    },
+    {
+      "name": "story",
+      "value": "Clear_AfterSet_ReturnsNulls"
+    }
+  ]
+}

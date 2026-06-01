@@ -1,0 +1,40 @@
+{
+  "uuid": "e9c863c7-a6fe-4c93-816e-4b9120a4c010",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#avif&quot;)",
+  "name": "avif&quot;)",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.IsImage_KnownExtensions_ReturnsTrue(name: &quot;page.avif&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282246286,
+  "stop": 1780282246286,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "avif&quot;)"
+    }
+  ]
+}

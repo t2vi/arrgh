@@ -1,0 +1,40 @@
+{
+  "uuid": "2b199156-0099-4866-bc87-748954a9132b",
+  "historyId": "ArrghServer.Tests.ProgressTests#GetProgress_NotFound_WhenNoProgress",
+  "name": "GetProgress_NotFound_WhenNoProgress",
+  "fullName": "ArrghServer.Tests.ProgressTests.GetProgress_NotFound_WhenNoProgress",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282291814,
+  "stop": 1780282292583,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Reading Progress"
+    },
+    {
+      "name": "story",
+      "value": "GetProgress_NotFound_WhenNoProgress"
+    }
+  ]
+}

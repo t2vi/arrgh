@@ -1,0 +1,40 @@
+{
+  "uuid": "a4e5801f-10fe-42c5-9f77-7849c2388bae",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_Roundtrip_AdminClaims",
+  "name": "CreateToken_Roundtrip_AdminClaims",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_Roundtrip_AdminClaims",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282246486,
+  "stop": 1780282246559,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Token"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_Roundtrip_AdminClaims"
+    }
+  ]
+}

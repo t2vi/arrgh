@@ -1,0 +1,40 @@
+{
+  "uuid": "c2b80529-5573-4e4a-ba93-5db7672034c0",
+  "historyId": "ArrghServer.Tests.AuthTests#PatchMe_ChangesPassword",
+  "name": "PatchMe_ChangesPassword",
+  "fullName": "ArrghServer.Tests.AuthTests.PatchMe_ChangesPassword",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282294083,
+  "stop": 1780282295312,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "PatchMe_ChangesPassword"
+    }
+  ]
+}

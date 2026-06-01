@@ -1,0 +1,40 @@
+{
+  "uuid": "fefd1b30-534a-456e-9b34-773eb5a2bf69",
+  "historyId": "ArrghServer.Tests.LogServiceTests#GetRecent_Empty_ReturnsEmptyList",
+  "name": "GetRecent_Empty_ReturnsEmptyList",
+  "fullName": "ArrghServer.Tests.LogServiceTests.GetRecent_Empty_ReturnsEmptyList",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780282246340,
+  "stop": 1780282246340,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "GetRecent_Empty_ReturnsEmptyList"
+    }
+  ]
+}
