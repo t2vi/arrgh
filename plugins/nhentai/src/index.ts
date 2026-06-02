@@ -6,7 +6,7 @@ export const info = {
   id: 'nhentai',
   name: 'nhentai',
   default_explicit: true,
-  content_types: ['manga'],
+  content_types: ['hentai'],
 }
 
 export function init(ctx: PluginContext): void {

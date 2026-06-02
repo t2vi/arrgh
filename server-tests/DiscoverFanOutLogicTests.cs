@@ -21,7 +21,7 @@ public class DiscoverFanOutLogicTests
     [InlineData("manhwa",  "anilist")]
     [InlineData("manhua",  "mangadex")]
     [InlineData("novel",   "novelupdates")]
-    [InlineData("hentai",  "ehentai")]
+    [InlineData("hentai",  "nhentai")]
     [InlineData("unknown", "mangaupdates")] // fallback to MU
     public void DesignatedAuthority_ReturnsCorrectSource(string contentType, string expected) =>
         Assert.Equal(expected, Discover.DesignatedAuthority(contentType));
@@ -140,10 +140,10 @@ public class DiscoverFanOutLogicTests
     }
 
     [Fact]
-    public void AuthorityOrder_WuxiaWorldBeforeEHentai()
+    public void AuthorityOrder_WuxiaWorldBeforeNhentai()
     {
         var order = Discover.AuthorityOrder;
-        Assert.True(order.IndexOf("wuxiaworld") < order.IndexOf("ehentai"));
+        Assert.True(order.IndexOf("wuxiaworld") < order.IndexOf("nhentai"));
     }
 
     // ── MergeFanOut ───────────────────────────────────────────────────────────
@@ -229,6 +229,146 @@ public class DiscoverFanOutLogicTests
         Assert.All(filtered, r => Assert.True(r.ContentType is "manga" or "one-shot"));
         Assert.Contains(filtered, r => r.Title == "Naruto");
         Assert.Contains(filtered, r => r.Title == "Some One-shot");
+    }
+
+    // ── NhentaiUpgrade (MergeFanOut pre-dedup pass) ───────────────────────────
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_ExactMatch_UpgradesMangaResultToHentai()
+    {
+        // MU manga (explicit) + nhentai same title → one result, content_type=hentai, MU source kept
+        var muResult = Result("KayaNetori", "manga", "mangaupdates", "mu-1");
+        muResult.IsExplicit = true;
+        var raw = new List<DiscoverResult>
+        {
+            muResult,
+            Result("KayaNetori", "hentai", "nhentai", "nh-1"),
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
+        Assert.Single(merged);
+        Assert.Equal("hentai",       merged[0].ContentType);
+        Assert.True(merged[0].IsExplicit);
+        Assert.Equal("mangaupdates", merged[0].Source);
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_LongerMuTitle_NotUpgraded()
+    {
+        // nhentai returns query "KayaNetori"; MU returns full title "KayaNetori Kaya-Nee Series Aizou Ban"
+        // These normalize differently → no exact match → no merge (two separate results kept)
+        var muResult = Result("KayaNetori Kaya-Nee Series Aizou Ban", "manga", "mangaupdates", "mu-1");
+        muResult.IsExplicit = true;
+        var raw = new List<DiscoverResult>
+        {
+            muResult,
+            Result("KayaNetori", "hentai", "nhentai", "nh-1"),
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
+        Assert.Equal(2, merged.Count);
+        var muRes = merged.Single(r => r.Source == "mangaupdates");
+        Assert.Equal("manga", muRes.ContentType); // NOT upgraded — different normalized titles
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_NonExplicit_NotUpgraded()
+    {
+        // Berserk is NOT explicit — nhentai parody result must NOT upgrade MU manga result
+        var raw = new List<DiscoverResult>
+        {
+            Result("Berserk", "manga",  "mangaupdates", "mu-1"), // is_explicit=false
+            Result("Berserk", "hentai", "nhentai",      "nh-1"),
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
+        Assert.Equal(2, merged.Count);
+        var muResult = merged.Single(r => r.Source == "mangaupdates");
+        Assert.Equal("manga", muResult.ContentType); // NOT upgraded
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_MangaResultPreservesMetadata()
+    {
+        var muResult = new DiscoverResult
+        {
+            MangaupdatesId = "mu-1",
+            Title          = "KayaNetori",
+            Description    = "Some desc",
+            Author         = "Test Author",
+            ContentType    = "manga",
+            Source         = "mangaupdates",
+            Status         = "complete",
+            IsExplicit     = true,
+            InLibrary      = false,
+        };
+        var nh = Result("KayaNetori", "hentai", "nhentai", "nh-1");
+
+        var merged = Discover.MergeFanOut(new List<DiscoverResult> { muResult, nh });
+
+        Assert.Single(merged);
+        Assert.Equal("hentai",       merged[0].ContentType);
+        Assert.Equal("Some desc",    merged[0].Description);
+        Assert.Equal("Test Author",  merged[0].Author);
+        Assert.Equal("mangaupdates", merged[0].Source);
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_NoOverlap_NhentaiKept()
+    {
+        // nhentai result for a title not in any other source → keep it standalone
+        var raw = new List<DiscoverResult>
+        {
+            Result("Naruto",          "manga",  "mangaupdates", "mu-1"),
+            Result("SomeHentaiTitle", "hentai", "nhentai",      "nh-1"),
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
+        Assert.Equal(2, merged.Count);
+        Assert.Contains(merged, r => r.Source == "nhentai");
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_NormalizationApplied()
+    {
+        // NormalizeTitle strips punctuation → "KayaNetori!!" and "KayaNetori" both become "kayanetori"
+        var muResult = Result("KayaNetori!!", "manga", "mangaupdates", "mu-1");
+        muResult.IsExplicit = true;
+        var raw = new List<DiscoverResult>
+        {
+            muResult,
+            Result("KayaNetori", "hentai", "nhentai", "nh-1"),
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
+        Assert.Single(merged);
+        Assert.Equal("hentai", merged[0].ContentType);
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_OrderStillByAuthority()
+    {
+        // After upgrade, result re-ordered by authority (MU first)
+        var naruto = Result("Naruto",     "manga",  "mangaupdates", "mu-2");
+        var kaya   = Result("KayaNetori", "manga",  "mangaupdates", "mu-1");
+        kaya.IsExplicit = true;
+        var raw = new List<DiscoverResult>
+        {
+            naruto,
+            Result("KayaNetori", "hentai", "nhentai", "nh-1"),
+            kaya,
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
+        Assert.Equal(2, merged.Count);
+        Assert.Equal("mangaupdates", merged[0].Source);
+        Assert.All(merged, r => Assert.NotEqual("nhentai", r.Source));
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

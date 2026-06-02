@@ -271,37 +271,34 @@ public class DiscoverFanOutTests
     }
 
     [Fact]
-    public async Task Search_EHentai_NotIncluded_ForNonExplicitUser()
+    public async Task Search_Nhentai_NotIncluded_ForNonExplicitUser()
     {
-        // E-Hentai would return results, but user doesn't have allow_explicit
-        var ehHtml = EhSearchHtml(12345, "abc123");
-        var ehGdata = EhGdataResponse(12345, "Test Doujin", "naruto");
-
-        var (client, db) = NewFactory(ehentaiSearchHtml: ehHtml, ehentaiGdataJson: ehGdata).CreateClientWithDb();
+        // nhentai would return results via plugin-host, but user doesn't have allow_explicit
+        var (client, db) = NewFactory().CreateClientWithDb();
         var user = await Seed.UserAsync(db, Fake.AdminUser());
-        Authorize(client, user, allowExplicit: false); // explicit = false
+        Authorize(client, user, allowExplicit: false);
 
         var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=naruto");
 
         Assert.NotNull(res);
-        Assert.DoesNotContain(res, r => r.GetProperty("source").GetString() == "ehentai");
+        Assert.DoesNotContain(res, r => r.GetProperty("source").GetString() == "nhentai");
     }
 
     [Fact]
-    public async Task Search_EHentai_Included_ForExplicitUser()
+    public async Task Search_Nhentai_Included_ForExplicitUser()
     {
-        var ehHtml = EhSearchHtml(12345, "abc123");
-        var ehGdata = EhGdataResponse(12345, "Naruto Doujin", "naruto");
-
-        var (client, db) = NewFactory(ehentaiSearchHtml: ehHtml, ehentaiGdataJson: ehGdata).CreateClientWithDb();
+        // nhentai plugin-host returns a result — fan-out must include it as content_type:hentai
+        var pluginMap = new Dictionary<string, string> { ["nhentai"] = "Naruto Doujin" };
+        var (client, db) = NewFactory(pluginSearchTitleMap: pluginMap).CreateClientWithDb();
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user, allowExplicit: true);
 
         var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=naruto");
 
         Assert.NotNull(res);
-        var ehResult = res.FirstOrDefault(r => r.GetProperty("source").GetString() == "ehentai");
-        Assert.NotNull(ehResult);
+        var nhentaiResult = res.FirstOrDefault(r => r.GetProperty("source").GetString() == "nhentai");
+        Assert.NotNull(nhentaiResult);
+        Assert.Equal("hentai", nhentaiResult.GetProperty("content_type").GetString());
     }
 
     [Fact]
@@ -762,6 +759,87 @@ public class DiscoverFanOutTests
         var chapterIds = chapters.Select(c => c.Id).ToList();
         var sources = await db.ChapterSources.Where(cs => chapterIds.Contains(cs.ChapterId)).ToListAsync();
         Assert.NotEmpty(sources);
+    }
+
+    [Fact]
+    public async Task AddManga_ExplicitManga_AlsoQueriesNhentai()
+    {
+        // An explicit manga title (content_type=manga, is_explicit=true) should query
+        // nhentai sources in addition to manga sources, even though nhentai is "hentai" typed.
+        // This handles the case where MU classifies a hentai doujinshi as manga.
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: true);
+
+        db.ExternalSources.Add(new ArrghServer.Data.Models.ExternalSource
+        {
+            Id = Guid.NewGuid().ToString(), SourceKey = "nhentai", Name = "nhentai",
+            BaseUrl = "http://plugin-host:4000", ContentTypes = "hentai",
+            Enabled = true, Priority = 50, CreatedAt = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "mangaupdates",
+            source_id = "12345",
+            title = "KayaNetori",
+            content_type = "manga",
+            is_explicit = true,
+            status = "complete",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+
+        await WaitForSyncReadyAsync(db, titleId);
+        db.ChangeTracker.Clear();
+
+        // nhentai must appear in title_sources — it was matched via the hentai source pool
+        var sourceLinks = await db.TitleSources.Where(ts => ts.TitleId == titleId).ToListAsync();
+        Assert.Contains(sourceLinks, ts => ts.Source == "nhentai");
+    }
+
+    [Fact]
+    public async Task AddManga_NonExplicitManga_DoesNotQueryNhentai()
+    {
+        // Non-explicit manga should NOT query nhentai — only manga-typed sources
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        db.ExternalSources.AddRange(
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "mangadex", Name = "MangaDex",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "manga",
+                Enabled = true, Priority = 10, CreatedAt = DateTime.UtcNow,
+            },
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "nhentai", Name = "nhentai",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "hentai",
+                Enabled = true, Priority = 50, CreatedAt = DateTime.UtcNow,
+            });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "mangaupdates", source_id = "1",
+            title = "Berserk", content_type = "manga", is_explicit = false, status = "ongoing",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+
+        await WaitForSyncReadyAsync(db, titleId);
+        db.ChangeTracker.Clear();
+
+        var sourceLinks = await db.TitleSources.Where(ts => ts.TitleId == titleId).ToListAsync();
+        // mangadex matched, nhentai must NOT appear (not queried for non-explicit manga)
+        Assert.DoesNotContain(sourceLinks, ts => ts.Source == "nhentai");
     }
 
     [Fact]

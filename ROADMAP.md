@@ -35,7 +35,8 @@ Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim 
 🔳 Trending novels lane<br />
 
 ## **Content Types**
-🔳 Hentai as a distinct content type — separate label from manga in UI, library counts, and source routing<br />
+✅ Hentai as a distinct content type — nhentai replaces E-Hentai as hentai metadata authority in discover fan-out; E-Hentai removed (451 geo-blocked); nhentai results return `content_type: "hentai"` → source matching correctly targets nhentai plugin → chapters load<br />
+🔳 Hentai label separate from manga in UI, library counts<br />
 🔳 Dashboard hero stats: manga and hentai counts displayed separately<br />
 
 ## **UI / UX**
@@ -57,11 +58,11 @@ Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim 
 
 ## **Testing**
 ✅ Live source snapshot tests — `live-tests/` package; real HTTP calls against all sources; adversarial corpus (slug hyphens, `(Novel)` suffix, special chars); raw response + parsed output captured per source. Run on-demand, not in CI; snapshots drive behavior fixture updates. See ADR 0033.<br />
+✅ API live tests — `api-live-tests/` package; Vitest snapshot tests hitting a running server; covers discover (manga/manhwa/novel/hentai corpus), sources (nhentai=hentai assertion), and full library flow (discover→add→sync→download→view). Run on-demand with `API_USER`/`API_PASS`. Requires plugin-host + CloakBrowser for hentai flow.<br />
 🔳 Scheduled CI snapshot job — detect source layout changes automatically, open PR with diff when snapshots change (ADR 0033 long-term goal)<br />
 
 ## **Known Bugs**
-🔳 Regular (non-explicit) manga being matched to nhentai — explicit-only sources must not match non-explicit titles<br />
-🔳 WuxiaWorld plugin broken — `api2.wuxiaworld.com` returns 404; plugin needs new API endpoint or replacement source<br />
-🔳 Royal Road not fully removed — source code remains at `plugins/royalroad/`, still referenced in `plugin-host/src/contract.test.ts`; should be purged entirely (ADR 0024 removed it from bundled set but left files behind)<br />
-🔳 BoxNovel plugin broken — `boxnovel.com` is domain-parked (redirects to `router.parklogic.com`); plugin needs replacement source or removal<br />
-🔳 ManhuaFast blocked by CF managed challenge — `manhuafast.net` uses Cloudflare managed/Turnstile challenge; CloakBrowser cannot bypass it (JS challenge only); all plugin calls return empty results until the CF tier is downgraded or a bypass is found<br />
+✅ nhentai separated from manga — `content_types` changed to `["hentai"]` in plugin, plugin-index, and external_sources seed; migration updates existing rows; nhentai now only queried for hentai searches<br />
+✅ nhentai as hentai authority — E-Hentai replaced by nhentai plugin in discover fan-out (E-Hentai was 451 geo-blocked); nhentai results return `content_type: "hentai"`; CloakBrowser hostname rewrite added to plugin-host `getBrowser()` for Docker-on-host dev setups<br />
+✅ WuxiaWorld plugin fixed — migrated to `www.wuxiaworld.com/api` (search) + HTML scraping for chapters/chapterText; live test passing<br />
+✅ Removed broken plugins — royalroad (ADR 0024 remnant), boxnovel (domain parked), manhuafast (CF managed challenge); plugin dirs, contract/behavior tests, plugin-index entries, and seed rows all purged; migration deletes existing DB rows<br />

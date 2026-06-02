@@ -20,7 +20,13 @@ async function getBrowser(): Promise<Browser> {
     throw new Error('CLOAKBROWSER_WS_URL is not set — CF-dependent plugins will not work')
   }
   console.log('[plugin-host] connecting to CloakBrowser…')
-  browser = await chromium.connectOverCDP(CLOAKBROWSER_WS_URL)
+  // Fetch WS URL from /json/version and rewrite the internal Docker hostname to localhost,
+  // so dev setups (plugin-host on host OS, CloakBrowser in Docker) work without DNS for container names.
+  const versionRes = await fetch(`${CLOAKBROWSER_WS_URL}/json/version`)
+  const { webSocketDebuggerUrl } = await versionRes.json() as { webSocketDebuggerUrl: string }
+  const port = new URL(CLOAKBROWSER_WS_URL).port || '80'
+  const wsUrl = webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://localhost:${port}`)
+  browser = await chromium.connectOverCDP(wsUrl)
   browser.on('disconnected', () => {
     console.warn('[plugin-host] CloakBrowser disconnected — will reconnect on next request')
     browser = null

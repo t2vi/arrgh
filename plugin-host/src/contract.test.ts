@@ -11,7 +11,6 @@ import * as mangapill     from '../../plugins/mangapill/src/index'
 import { parseChapterNumber } from '../../plugins/mangapill/src/mangapill'
 import * as nhentai       from '../../plugins/nhentai/src/index'
 import * as novelfull     from '../../plugins/novelfull/src/index'
-import * as royalroad     from '../../plugins/royalroad/src/index'
 import * as toonily       from '../../plugins/toonily/src/index'
 import * as novelupdates  from '../../plugins/novelupdates/src/index'
 
@@ -55,6 +54,7 @@ describe('mangapill — parseChapterNumber', () => {
 describe('nhentai', () => {
   it('info.id matches plugin-index id', () => expect(nhentai.info.id).toBe('nhentai'))
   it('default_explicit is true (explicit-only source)', () => expect(nhentai.info.default_explicit).toBe(true))
+  it('content_types is ["hentai"] not ["manga"]', () => expect(nhentai.info.content_types).toEqual(['hentai']))
   it('exports search fn', () => expect(typeof nhentai.search).toBe('function'))
   it('exports chapters fn', () => expect(typeof nhentai.chapters).toBe('function'))
   it('exports pages fn', () => expect(typeof nhentai.pages).toBe('function'))
@@ -67,15 +67,6 @@ describe('novelfull', () => {
   it('exports search fn', () => expect(typeof novelfull.search).toBe('function'))
   it('exports chapters fn', () => expect(typeof novelfull.chapters).toBe('function'))
   it('novel plugin exports chapterText fn', () => expect(typeof novelfull.chapterText).toBe('function'))
-})
-
-describe('royalroad', () => {
-  it('info.id is royalroad', () => expect(royalroad.info.id).toBe('royalroad'))
-  it('default_explicit is false', () => expect(royalroad.info.default_explicit).toBe(false))
-  it('content_types includes novel', () => expect(royalroad.info.content_types).toContain('novel'))
-  it('exports search fn', () => expect(typeof royalroad.search).toBe('function'))
-  it('exports chapters fn', () => expect(typeof royalroad.chapters).toBe('function'))
-  it('novel plugin exports chapterText fn', () => expect(typeof royalroad.chapterText).toBe('function'))
 })
 
 describe('toonily', () => {
@@ -125,8 +116,26 @@ describe('plugin-index.json consistency', () => {
     expect(nhentai.info.default_explicit).toBe(true)
   })
 
+  it('nhentai: index.json content_types is ["hentai"] not ["manga"]', () => {
+    const indexed = indexMap.get('nhentai') ?? []
+    expect(indexed).toContain('hentai')
+    expect(indexed).not.toContain('manga')
+  })
+
   it('novelupdates: index.json content_types includes novel', () => {
     const indexed = indexMap.get('novelupdates') ?? []
     expect(indexed).toContain('novel')
+  })
+
+  it('royalroad not in plugin-index (removed — broken)', () => {
+    expect(indexMap.has('royalroad')).toBe(false)
+  })
+
+  it('manhuafast not in plugin-index (removed — CF managed challenge)', () => {
+    expect(indexMap.has('manhuafast')).toBe(false)
+  })
+
+  it('boxnovel not in plugin-index (removed — domain parked)', () => {
+    expect(indexMap.has('boxnovel')).toBe(false)
   })
 })

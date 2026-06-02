@@ -14,3 +14,5 @@ services:
     build:
       context: docker/cloakbrowser-server
       dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
