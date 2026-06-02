@@ -576,9 +576,9 @@ public static class Discover
             // 3. Source matching: find plugin-host sources by content_type, match by title, seed chapter_sources
             await MatchSourcesAsync(bgDb, httpFactory, capturedTitleId, capturedTitle, capturedContentType, pluginHostUrl);
 
+            await AppendSyncLogAsync(bgDb, capturedTitleId, "Sync complete");
             await bgDb.Titles.Where(t => t.Id == capturedTitleId)
                 .ExecuteUpdateAsync(s => s.SetProperty(t => t.SyncStatus, "ready"));
-            await AppendSyncLogAsync(bgDb, capturedTitleId, "Sync complete");
         });
 
         var item = await Titles.FetchTitleAsync(db, titleId, userId);
