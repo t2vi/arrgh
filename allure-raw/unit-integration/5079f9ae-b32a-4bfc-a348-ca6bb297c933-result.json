@@ -1,0 +1,40 @@
+{
+  "uuid": "5079f9ae-b32a-4bfc-a348-ca6bb297c933",
+  "historyId": "ArrghServer.Tests.LogServiceTests#ParseLevel_ValidLevel_ReturnsExpected(input: &quot;warn&quot;, expected: Warning)",
+  "name": "ParseLevel_ValidLevel_ReturnsExpected(input: &quot;warn&quot;, expected: Warning)",
+  "fullName": "ArrghServer.Tests.LogServiceTests.ParseLevel_ValidLevel_ReturnsExpected(input: &quot;warn&quot;, expected: Warning)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488391814,
+  "stop": 1780488391814,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "ParseLevel_ValidLevel_ReturnsExpected(input: &quot;warn&quot;, expected: Warning)"
+    }
+  ]
+}

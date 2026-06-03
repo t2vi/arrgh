@@ -1,0 +1,40 @@
+{
+  "uuid": "0432f514-5518-4fd3-90dd-d029862e7882",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant",
+  "name": "SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488415080,
+  "stop": 1780488415988,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "SourceMatching_FuzzyTitle_LinksSourceWhenHyphenVariant"
+    }
+  ]
+}

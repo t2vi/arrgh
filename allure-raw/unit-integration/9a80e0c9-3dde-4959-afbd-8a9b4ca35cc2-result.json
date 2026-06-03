@@ -1,0 +1,40 @@
+{
+  "uuid": "9a80e0c9-3dde-4959-afbd-8a9b4ca35cc2",
+  "historyId": "ArrghServer.Tests.ChaptersTests#ListChapters_ReturnsEmpty_NoChapters",
+  "name": "ListChapters_ReturnsEmpty_NoChapters",
+  "fullName": "ArrghServer.Tests.ChaptersTests.ListChapters_ReturnsEmpty_NoChapters",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488424216,
+  "stop": 1780488425164,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "ListChapters_ReturnsEmpty_NoChapters"
+    }
+  ]
+}

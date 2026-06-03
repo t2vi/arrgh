@@ -1,0 +1,40 @@
+{
+  "uuid": "d287d156-74bb-4687-a890-1bddd6df86b9",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_UpdatesAutoDownload",
+  "name": "PatchTitle_UpdatesAutoDownload",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_UpdatesAutoDownload",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488441181,
+  "stop": 1780488441750,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_UpdatesAutoDownload"
+    }
+  ]
+}

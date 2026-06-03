@@ -1,0 +1,40 @@
+{
+  "uuid": "6c6f8140-0ac4-48eb-823d-01b7de94391e",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapEntry_ContentType_KoreanManga_IsManhwa",
+  "name": "MapEntry_ContentType_KoreanManga_IsManhwa",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapEntry_ContentType_KoreanManga_IsManhwa",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488391855,
+  "stop": 1780488391862,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapEntry_ContentType_KoreanManga_IsManhwa"
+    }
+  ]
+}

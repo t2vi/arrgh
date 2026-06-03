@@ -1,0 +1,40 @@
+{
+  "uuid": "217337b0-5412-4926-9c46-e91052c511f8",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#cbz&quot;)",
+  "name": "cbz&quot;)",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.IsImage_NonImage_ReturnsFalse(name: &quot;page.cbz&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488391876,
+  "stop": 1780488391877,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "cbz&quot;)"
+    }
+  ]
+}

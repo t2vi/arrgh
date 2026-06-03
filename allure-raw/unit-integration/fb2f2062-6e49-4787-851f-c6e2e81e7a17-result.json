@@ -1,0 +1,40 @@
+{
+  "uuid": "fb2f2062-6e49-4787-851f-c6e2e81e7a17",
+  "historyId": "ArrghServer.Tests.ChaptersTests#QueueDownload_Unauthorized_NoToken",
+  "name": "QueueDownload_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.ChaptersTests.QueueDownload_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488413661,
+  "stop": 1780488414268,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "QueueDownload_Unauthorized_NoToken"
+    }
+  ]
+}
