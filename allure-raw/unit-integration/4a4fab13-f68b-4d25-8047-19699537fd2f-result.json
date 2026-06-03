@@ -1,0 +1,40 @@
+{
+  "uuid": "4a4fab13-f68b-4d25-8047-19699537fd2f",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TitleMatches_SmallTypo",
+  "name": "TitleMatches_SmallTypo",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TitleMatches_SmallTypo",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780528694874,
+  "stop": 1780528694875,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "TitleMatches_SmallTypo"
+    }
+  ]
+}

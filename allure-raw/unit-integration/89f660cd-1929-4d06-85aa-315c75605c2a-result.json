@@ -1,0 +1,40 @@
+{
+  "uuid": "89f660cd-1929-4d06-85aa-315c75605c2a",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapContentType_MapsNovel",
+  "name": "MapContentType_MapsNovel",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapContentType_MapsNovel",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780528694794,
+  "stop": 1780528694858,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapContentType_MapsNovel"
+    }
+  ]
+}

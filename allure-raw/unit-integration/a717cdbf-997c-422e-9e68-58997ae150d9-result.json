@@ -1,0 +1,40 @@
+{
+  "uuid": "a717cdbf-997c-422e-9e68-58997ae150d9",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Search_InLibrary_True_WhenAlreadyAdded",
+  "name": "Search_InLibrary_True_WhenAlreadyAdded",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Search_InLibrary_True_WhenAlreadyAdded",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780528715173,
+  "stop": 1780528715908,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "Search_InLibrary_True_WhenAlreadyAdded"
+    }
+  ]
+}

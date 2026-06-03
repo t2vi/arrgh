@@ -1,0 +1,40 @@
+{
+  "uuid": "6fb4163c-b6da-480b-a642-1119e21eb258",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields",
+  "name": "SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780528728478,
+  "stop": 1780528728887,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Config"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_PartialUpdate_OnlyChangesSpecifiedFields"
+    }
+  ]
+}

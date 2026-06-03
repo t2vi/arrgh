@@ -1,0 +1,40 @@
+{
+  "uuid": "a2f9155b-5dde-46b2-a122-cc0ac84e7c88",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#DetectContentType_Png",
+  "name": "DetectContentType_Png",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.DetectContentType_Png",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780528695099,
+  "stop": 1780528695099,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "DetectContentType_Png"
+    }
+  ]
+}
