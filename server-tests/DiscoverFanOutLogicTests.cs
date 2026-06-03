@@ -254,10 +254,10 @@ public class DiscoverFanOutLogicTests
     }
 
     [Fact]
-    public void MergeFanOut_NhentaiHit_LongerMuTitle_NotUpgraded()
+    public void MergeFanOut_NhentaiHit_PrefixTitle_UpgradedToHentai()
     {
-        // nhentai returns query "KayaNetori"; MU returns full title "KayaNetori Kaya-Nee Series Aizou Ban"
-        // These normalize differently → no exact match → no merge (two separate results kept)
+        // nhentai returns short title "KayaNetori"; MU returns full title "KayaNetori Kaya-Nee Series Aizou Ban"
+        // nhentai norm is a word-boundary prefix of MU norm → upgrade fires
         var muResult = Result("KayaNetori Kaya-Nee Series Aizou Ban", "manga", "mangaupdates", "mu-1");
         muResult.IsExplicit = true;
         var raw = new List<DiscoverResult>
@@ -268,9 +268,48 @@ public class DiscoverFanOutLogicTests
 
         var merged = Discover.MergeFanOut(raw);
 
+        Assert.Single(merged);
+        Assert.Equal("hentai",       merged[0].ContentType);
+        Assert.Equal("mangaupdates", merged[0].Source);
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_PrefixTitle_NoWordBoundary_NotUpgraded()
+    {
+        // nhentai "Berserk" must NOT upgrade MU "Berserker" — no space boundary after prefix
+        var muResult = Result("Berserker", "manga", "mangaupdates", "mu-1");
+        muResult.IsExplicit = true;
+        var raw = new List<DiscoverResult>
+        {
+            muResult,
+            Result("Berserk", "hentai", "nhentai", "nh-1"),
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
         Assert.Equal(2, merged.Count);
         var muRes = merged.Single(r => r.Source == "mangaupdates");
-        Assert.Equal("manga", muRes.ContentType); // NOT upgraded — different normalized titles
+        Assert.Equal("manga", muRes.ContentType);
+    }
+
+    [Fact]
+    public void MergeFanOut_NhentaiHit_ManhwaContentType_NotUpgraded()
+    {
+        // "Moby Dick" is an explicit manhwa that happens to share a title with an nhentai doujin.
+        // Only content_type="manga" should be upgraded — manhwa/manhua/novel titles are never reclassified.
+        var anilistResult = Result("Moby Dick", "manhwa", "anilist", "al-1");
+        anilistResult.IsExplicit = true;
+        var raw = new List<DiscoverResult>
+        {
+            anilistResult,
+            Result("Moby Dick", "hentai", "nhentai", "nh-1"),
+        };
+
+        var merged = Discover.MergeFanOut(raw);
+
+        Assert.Equal(2, merged.Count);
+        var alRes = merged.Single(r => r.Source == "anilist");
+        Assert.Equal("manhwa", alRes.ContentType); // NOT upgraded to hentai
     }
 
     [Fact]
