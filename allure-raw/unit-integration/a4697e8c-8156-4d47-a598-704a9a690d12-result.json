@@ -1,0 +1,40 @@
+{
+  "uuid": "a4697e8c-8156-4d47-a598-704a9a690d12",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#NormalizeTitle_Lowercase",
+  "name": "NormalizeTitle_Lowercase",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.NormalizeTitle_Lowercase",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481819987,
+  "stop": 1780481819987,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "NormalizeTitle_Lowercase"
+    }
+  ]
+}

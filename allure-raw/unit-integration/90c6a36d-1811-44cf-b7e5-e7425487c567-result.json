@@ -1,0 +1,40 @@
+{
+  "uuid": "90c6a36d-1811-44cf-b7e5-e7425487c567",
+  "historyId": "ArrghServer.Tests.QueueTests#ListQueue_Empty_WhenNoItems",
+  "name": "ListQueue_Empty_WhenNoItems",
+  "fullName": "ArrghServer.Tests.QueueTests.ListQueue_Empty_WhenNoItems",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481875587,
+  "stop": 1780481876051,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "ListQueue_Empty_WhenNoItems"
+    }
+  ]
+}

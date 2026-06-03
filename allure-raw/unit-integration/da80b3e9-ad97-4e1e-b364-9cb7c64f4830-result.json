@@ -1,0 +1,40 @@
+{
+  "uuid": "da80b3e9-ad97-4e1e-b364-9cb7c64f4830",
+  "historyId": "ArrghServer.Tests.ChaptersTests#ListChapters_HasSources_False_WhenNoChapterSource",
+  "name": "ListChapters_HasSources_False_WhenNoChapterSource",
+  "fullName": "ArrghServer.Tests.ChaptersTests.ListChapters_HasSources_False_WhenNoChapterSource",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481863966,
+  "stop": 1780481864778,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "ListChapters_HasSources_False_WhenNoChapterSource"
+    }
+  ]
+}

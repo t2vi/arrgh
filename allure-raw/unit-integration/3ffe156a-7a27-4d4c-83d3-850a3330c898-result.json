@@ -1,0 +1,40 @@
+{
+  "uuid": "3ffe156a-7a27-4d4c-83d3-850a3330c898",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#Deduplicate_NormalizedTitleComparison",
+  "name": "Deduplicate_NormalizedTitleComparison",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.Deduplicate_NormalizedTitleComparison",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481819868,
+  "stop": 1780481819868,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "Deduplicate_NormalizedTitleComparison"
+    }
+  ]
+}

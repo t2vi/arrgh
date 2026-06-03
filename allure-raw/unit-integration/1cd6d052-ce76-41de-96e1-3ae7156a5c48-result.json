@@ -1,0 +1,40 @@
+{
+  "uuid": "1cd6d052-ce76-41de-96e1-3ae7156a5c48",
+  "historyId": "ArrghServer.Tests.AuthTests#Me_ReturnsCurrentUser",
+  "name": "Me_ReturnsCurrentUser",
+  "fullName": "ArrghServer.Tests.AuthTests.Me_ReturnsCurrentUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481835887,
+  "stop": 1780481836459,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Me_ReturnsCurrentUser"
+    }
+  ]
+}

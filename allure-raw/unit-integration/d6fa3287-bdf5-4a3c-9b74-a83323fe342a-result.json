@@ -1,0 +1,40 @@
+{
+  "uuid": "d6fa3287-bdf5-4a3c-9b74-a83323fe342a",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingManhwa_ReturnsAniListKrResults",
+  "name": "TrendingManhwa_ReturnsAniListKrResults",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingManhwa_ReturnsAniListKrResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481830839,
+  "stop": 1780481831383,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Trending Lanes"
+    },
+    {
+      "name": "story",
+      "value": "TrendingManhwa_ReturnsAniListKrResults"
+    }
+  ]
+}

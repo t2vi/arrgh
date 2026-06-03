@@ -1,0 +1,40 @@
+{
+  "uuid": "f8700eae-8cd2-4107-8d02-e9a33c73e6c4",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingAdultManhwa_ServesStale_WhenAniListFails",
+  "name": "TrendingAdultManhwa_ServesStale_WhenAniListFails",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingAdultManhwa_ServesStale_WhenAniListFails",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481834977,
+  "stop": 1780481835449,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Trending Lanes"
+    },
+    {
+      "name": "story",
+      "value": "TrendingAdultManhwa_ServesStale_WhenAniListFails"
+    }
+  ]
+}

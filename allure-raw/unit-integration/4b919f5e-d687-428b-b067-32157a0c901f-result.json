@@ -1,0 +1,40 @@
+{
+  "uuid": "4b919f5e-d687-428b-b067-32157a0c901f",
+  "historyId": "ArrghServer.Tests.LogsTests#SetLevel_Member_Forbidden",
+  "name": "SetLevel_Member_Forbidden",
+  "fullName": "ArrghServer.Tests.LogsTests.SetLevel_Member_Forbidden",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481858450,
+  "stop": 1780481859142,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_Member_Forbidden"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "7f594b65-31e8-43d8-835a-b339e17d1a27",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_TextChapter_SetsDoneAndDownloaded",
+  "name": "Download_TextChapter_SetsDoneAndDownloaded",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_TextChapter_SetsDoneAndDownloaded",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481836609,
+  "stop": 1780481839768,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_TextChapter_SetsDoneAndDownloaded"
+    }
+  ]
+}

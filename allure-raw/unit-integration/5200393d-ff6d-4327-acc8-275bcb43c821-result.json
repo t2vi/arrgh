@@ -1,0 +1,40 @@
+{
+  "uuid": "5200393d-ff6d-4327-acc8-275bcb43c821",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_AllAuthoritiesFail_Returns502",
+  "name": "Search_AllAuthoritiesFail_Returns502",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_AllAuthoritiesFail_Returns502",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481880586,
+  "stop": 1780481880994,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "Search_AllAuthoritiesFail_Returns502"
+    }
+  ]
+}

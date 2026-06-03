@@ -1,0 +1,40 @@
+{
+  "uuid": "5fa9294a-4ad5-402e-bc21-8273e595cd09",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_ReturnsOwnedTitles",
+  "name": "ListTitles_ReturnsOwnedTitles",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_ReturnsOwnedTitles",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481848044,
+  "stop": 1780481848737,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_ReturnsOwnedTitles"
+    }
+  ]
+}

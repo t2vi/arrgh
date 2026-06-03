@@ -1,0 +1,40 @@
+{
+  "uuid": "c276c40a-e3ca-4ff2-a8e6-cd02d1760948",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TitleMatches_NovelSuffix_SiteResult",
+  "name": "TitleMatches_NovelSuffix_SiteResult",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TitleMatches_NovelSuffix_SiteResult",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481820052,
+  "stop": 1780481820052,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "TitleMatches_NovelSuffix_SiteResult"
+    }
+  ]
+}
