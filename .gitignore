@@ -37,16 +37,19 @@ app/build/
 app/.packages
 app/pubspec.lock
 
-# ── Claude Code ──────────────────────────────────────────────
+# ── Claude Code / dev-private (lives in gwarr-dev, symlinked) ──
 .agents/
 .claude/
 docs/adr
 docs/agents
 CLAUDE.md
 CONTEXT.md
+CONTEXT.MD
 graphify-out/
 skills-lock.json
 .understand-anything
+api-live-tests/
+live-tests/
 
 # ── General ──────────────────────────────────────────────────
 .DS_Store
