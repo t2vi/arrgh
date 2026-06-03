@@ -1,0 +1,40 @@
+{
+  "uuid": "002bfb52-9694-4bf6-a41c-607ab16ff868",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#DetectContentType_Gif",
+  "name": "DetectContentType_Gif",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.DetectContentType_Gif",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489641959,
+  "stop": 1780489641959,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "DetectContentType_Gif"
+    }
+  ]
+}

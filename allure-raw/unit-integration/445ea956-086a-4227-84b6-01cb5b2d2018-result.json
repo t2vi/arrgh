@@ -1,0 +1,40 @@
+{
+  "uuid": "445ea956-086a-4227-84b6-01cb5b2d2018",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_MangaDexManhua_HasSourceMangadex",
+  "name": "Search_MangaDexManhua_HasSourceMangadex",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_MangaDexManhua_HasSourceMangadex",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489682098,
+  "stop": 1780489682948,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "Search_MangaDexManhua_HasSourceMangadex"
+    }
+  ]
+}

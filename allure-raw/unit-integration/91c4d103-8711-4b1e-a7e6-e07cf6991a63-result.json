@@ -1,0 +1,40 @@
+{
+  "uuid": "91c4d103-8711-4b1e-a7e6-e07cf6991a63",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#ParseHtml_OngoingStatus_MapsCorrectly",
+  "name": "ParseHtml_OngoingStatus_MapsCorrectly",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.ParseHtml_OngoingStatus_MapsCorrectly",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489641978,
+  "stop": 1780489641978,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "ParseHtml_OngoingStatus_MapsCorrectly"
+    }
+  ]
+}

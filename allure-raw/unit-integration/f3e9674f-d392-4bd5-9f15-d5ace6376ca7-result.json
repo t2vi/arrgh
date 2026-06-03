@@ -1,0 +1,40 @@
+{
+  "uuid": "f3e9674f-d392-4bd5-9f15-d5ace6376ca7",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_MultiUser_EachSeesOnlyOwnLibrary",
+  "name": "ListTitles_MultiUser_EachSeesOnlyOwnLibrary",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_MultiUser_EachSeesOnlyOwnLibrary",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489695764,
+  "stop": 1780489696451,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_MultiUser_EachSeesOnlyOwnLibrary"
+    }
+  ]
+}

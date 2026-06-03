@@ -1,0 +1,40 @@
+{
+  "uuid": "bd88723d-138f-4c9f-ad20-4f973bf69515",
+  "historyId": "ArrghServer.Tests.MigrationBootstrapTests#Bootstrap_FreshDb_IsNoOpAndMigrateSucceeds",
+  "name": "Bootstrap_FreshDb_IsNoOpAndMigrateSucceeds",
+  "fullName": "ArrghServer.Tests.MigrationBootstrapTests.Bootstrap_FreshDb_IsNoOpAndMigrateSucceeds",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489643699,
+  "stop": 1780489643770,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MigrationBootstrapTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "MigrationBootstrapTests"
+    },
+    {
+      "name": "story",
+      "value": "Bootstrap_FreshDb_IsNoOpAndMigrateSucceeds"
+    }
+  ]
+}

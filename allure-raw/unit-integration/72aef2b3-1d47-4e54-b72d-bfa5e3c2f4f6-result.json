@@ -1,0 +1,40 @@
+{
+  "uuid": "72aef2b3-1d47-4e54-b72d-bfa5e3c2f4f6",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_Unauthorized_WithoutToken",
+  "name": "DeletePlugin_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489655301,
+  "stop": 1780489655697,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_Unauthorized_WithoutToken"
+    }
+  ]
+}

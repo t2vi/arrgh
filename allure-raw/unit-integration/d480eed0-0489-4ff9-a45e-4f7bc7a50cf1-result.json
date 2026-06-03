@@ -1,0 +1,40 @@
+{
+  "uuid": "d480eed0-0489-4ff9-a45e-4f7bc7a50cf1",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_SetsReaderMode",
+  "name": "PatchTitle_SetsReaderMode",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_SetsReaderMode",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489676963,
+  "stop": 1780489677921,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_SetsReaderMode"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "6a47796a-8dba-4213-bcc2-794f50ac4c48",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddManhwa_AniListSource_StoresSynonymsAsAliases",
+  "name": "AddManhwa_AniListSource_StoresSynonymsAsAliases",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddManhwa_AniListSource_StoresSynonymsAsAliases",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489671376,
+  "stop": 1780489672202,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "AddManhwa_AniListSource_StoresSynonymsAsAliases"
+    }
+  ]
+}

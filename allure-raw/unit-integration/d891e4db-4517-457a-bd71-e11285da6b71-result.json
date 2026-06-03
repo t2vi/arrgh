@@ -1,0 +1,40 @@
+{
+  "uuid": "d891e4db-4517-457a-bd71-e11285da6b71",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_Forbidden_MemberCantCancelOthersItem",
+  "name": "RemoveFromQueue_Forbidden_MemberCantCancelOthersItem",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_Forbidden_MemberCantCancelOthersItem",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489682103,
+  "stop": 1780489683127,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_Forbidden_MemberCantCancelOthersItem"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "aa0e004c-c187-4f23-852b-08844bcc181f",
+  "historyId": "ArrghServer.Tests.QueueTests#ListQueue_HidesExplicit_ForNonExplicitMember",
+  "name": "ListQueue_HidesExplicit_ForNonExplicitMember",
+  "fullName": "ArrghServer.Tests.QueueTests.ListQueue_HidesExplicit_ForNonExplicitMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489679786,
+  "stop": 1780489680567,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "ListQueue_HidesExplicit_ForNonExplicitMember"
+    }
+  ]
+}

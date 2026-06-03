@@ -1,0 +1,40 @@
+{
+  "uuid": "4d60a1e1-c29d-42de-b884-783cbc3e0903",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#MultipleFields_AllParsed",
+  "name": "MultipleFields_AllParsed",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.MultipleFields_AllParsed",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489641965,
+  "stop": 1780489641966,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Patch API"
+    },
+    {
+      "name": "story",
+      "value": "MultipleFields_AllParsed"
+    }
+  ]
+}
