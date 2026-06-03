@@ -1,0 +1,40 @@
+{
+  "uuid": "c9079f5f-cff6-4c20-bc7f-cc92f561915d",
+  "historyId": "ArrghServer.Tests.PluginsTests#InstallPlugin_UnprocessableEntity_NoDownloadUrl",
+  "name": "InstallPlugin_UnprocessableEntity_NoDownloadUrl",
+  "fullName": "ArrghServer.Tests.PluginsTests.InstallPlugin_UnprocessableEntity_NoDownloadUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490317439,
+  "stop": 1780490317962,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "InstallPlugin_UnprocessableEntity_NoDownloadUrl"
+    }
+  ]
+}

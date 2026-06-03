@@ -1,0 +1,40 @@
+{
+  "uuid": "7e58d0d8-eb9c-49f8-81fd-f983a0f20f01",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapContentType(input: null, expected: &quot;manga&quot;)",
+  "name": "MapContentType(input: null, expected: &quot;manga&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapContentType(input: null, expected: &quot;manga&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490278879,
+  "stop": 1780490278879,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapContentType(input: null, expected: &quot;manga&quot;)"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "0558ef12-e99a-4670-a1b0-1ec68ee1ea49",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#DetectContentType_Webp",
+  "name": "DetectContentType_Webp",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.DetectContentType_Webp",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490278906,
+  "stop": 1780490278906,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "DetectContentType_Webp"
+    }
+  ]
+}

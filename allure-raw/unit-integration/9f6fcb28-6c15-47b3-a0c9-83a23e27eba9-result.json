@@ -1,0 +1,40 @@
+{
+  "uuid": "9f6fcb28-6c15-47b3-a0c9-83a23e27eba9",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_Returns404_WhenTitleHasNoSources",
+  "name": "Sync_Returns404_WhenTitleHasNoSources",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_Returns404_WhenTitleHasNoSources",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490305345,
+  "stop": 1780490306073,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_Returns404_WhenTitleHasNoSources"
+    }
+  ]
+}

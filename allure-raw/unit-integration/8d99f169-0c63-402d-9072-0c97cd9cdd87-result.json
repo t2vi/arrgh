@@ -1,0 +1,40 @@
+{
+  "uuid": "8d99f169-0c63-402d-9072-0c97cd9cdd87",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_UnprocessableEntity_EmptyUsername",
+  "name": "Register_UnprocessableEntity_EmptyUsername",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_UnprocessableEntity_EmptyUsername",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490317523,
+  "stop": 1780490317806,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Register_UnprocessableEntity_EmptyUsername"
+    }
+  ]
+}

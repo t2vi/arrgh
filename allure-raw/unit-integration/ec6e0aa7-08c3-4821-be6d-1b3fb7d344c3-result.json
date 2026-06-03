@@ -1,0 +1,40 @@
+{
+  "uuid": "ec6e0aa7-08c3-4821-be6d-1b3fb7d344c3",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_WithPluginSource_SyncLogShowsSourceName_NotUnknown",
+  "name": "AddManga_WithPluginSource_SyncLogShowsSourceName_NotUnknown",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_WithPluginSource_SyncLogShowsSourceName_NotUnknown",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490309770,
+  "stop": 1780490310533,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_WithPluginSource_SyncLogShowsSourceName_NotUnknown"
+    }
+  ]
+}

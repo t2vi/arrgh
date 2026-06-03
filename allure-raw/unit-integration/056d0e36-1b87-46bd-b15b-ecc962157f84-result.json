@@ -1,0 +1,40 @@
+{
+  "uuid": "056d0e36-1b87-46bd-b15b-ecc962157f84",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#IsHentaiTag_Empty_False",
+  "name": "IsHentaiTag_Empty_False",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.IsHentaiTag_Empty_False",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490278923,
+  "stop": 1780490278923,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "IsHentaiTag_Empty_False"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "9c4fd53f-203b-4a23-b357-3e398776e177",
+  "historyId": "ArrghServer.Tests.SourcesTests#AddSource_BadGateway_WhenPluginNotPortedYet",
+  "name": "AddSource_BadGateway_WhenPluginNotPortedYet",
+  "fullName": "ArrghServer.Tests.SourcesTests.AddSource_BadGateway_WhenPluginNotPortedYet",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490343640,
+  "stop": 1780490344123,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "AddSource_BadGateway_WhenPluginNotPortedYet"
+    }
+  ]
+}

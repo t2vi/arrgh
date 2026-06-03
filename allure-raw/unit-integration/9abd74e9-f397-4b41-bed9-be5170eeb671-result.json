@@ -1,0 +1,40 @@
+{
+  "uuid": "9abd74e9-f397-4b41-bed9-be5170eeb671",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_RequestHasUserAgent",
+  "name": "Download_RequestHasUserAgent",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_RequestHasUserAgent",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490302883,
+  "stop": 1780490306137,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_RequestHasUserAgent"
+    }
+  ]
+}

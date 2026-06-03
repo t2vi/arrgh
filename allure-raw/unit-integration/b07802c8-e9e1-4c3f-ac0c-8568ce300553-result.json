@@ -1,0 +1,40 @@
+{
+  "uuid": "b07802c8-e9e1-4c3f-ac0c-8568ce300553",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_UnprocessableEntity_ShortPassword",
+  "name": "Register_UnprocessableEntity_ShortPassword",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_UnprocessableEntity_ShortPassword",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780490315329,
+  "stop": 1780490315603,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Register_UnprocessableEntity_ShortPassword"
+    }
+  ]
+}
