@@ -1,0 +1,40 @@
+{
+  "uuid": "4dd7700d-cedf-4ace-b1dc-81f5d5a3a9bf",
+  "historyId": "ArrghServer.Tests.SourcesLogicTests#IsAdmin_True_ForAdminRole",
+  "name": "IsAdmin_True_ForAdminRole",
+  "fullName": "ArrghServer.Tests.SourcesLogicTests.IsAdmin_True_ForAdminRole",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476000414,
+  "stop": 1780476000414,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "IsAdmin_True_ForAdminRole"
+    }
+  ]
+}

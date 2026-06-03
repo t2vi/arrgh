@@ -1,0 +1,40 @@
+{
+  "uuid": "426d8611-47ac-4815-ba10-48d9266ad3ca",
+  "historyId": "ArrghServer.Tests.UpdateCacheTests#GetIfNewer_SameVersion_ReturnsNulls",
+  "name": "GetIfNewer_SameVersion_ReturnsNulls",
+  "fullName": "ArrghServer.Tests.UpdateCacheTests.GetIfNewer_SameVersion_ReturnsNulls",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476000363,
+  "stop": 1780476000363,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "UpdateCacheTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Update Check"
+    },
+    {
+      "name": "story",
+      "value": "GetIfNewer_SameVersion_ReturnsNulls"
+    }
+  ]
+}

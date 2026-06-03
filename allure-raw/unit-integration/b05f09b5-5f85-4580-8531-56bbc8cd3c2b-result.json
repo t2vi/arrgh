@@ -1,0 +1,40 @@
+{
+  "uuid": "b05f09b5-5f85-4580-8531-56bbc8cd3c2b",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_IsExplicitField_SetsIsExplicitForManhwa",
+  "name": "AddManga_IsExplicitField_SetsIsExplicitForManhwa",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_IsExplicitField_SetsIsExplicitForManhwa",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476020002,
+  "stop": 1780476021175,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_IsExplicitField_SetsIsExplicitForManhwa"
+    }
+  ]
+}

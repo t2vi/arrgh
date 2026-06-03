@@ -1,0 +1,40 @@
+{
+  "uuid": "00beeec0-a940-43b8-b1d1-6f90e6873cc8",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#RootDomainReferer_ApexDomain_ReturnsSelf",
+  "name": "RootDomainReferer_ApexDomain_ReturnsSelf",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.RootDomainReferer_ApexDomain_ReturnsSelf",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476000474,
+  "stop": 1780476000474,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "RootDomainReferer_ApexDomain_ReturnsSelf"
+    }
+  ]
+}

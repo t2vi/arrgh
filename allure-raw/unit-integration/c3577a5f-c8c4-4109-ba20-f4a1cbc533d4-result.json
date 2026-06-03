@@ -1,0 +1,40 @@
+{
+  "uuid": "c3577a5f-c8c4-4109-ba20-f4a1cbc533d4",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_MuManhwa_ExcludedFromResults",
+  "name": "Search_MuManhwa_ExcludedFromResults",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_MuManhwa_ExcludedFromResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476039685,
+  "stop": 1780476040209,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "Search_MuManhwa_ExcludedFromResults"
+    }
+  ]
+}

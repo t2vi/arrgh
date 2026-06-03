@@ -1,0 +1,40 @@
+{
+  "uuid": "1b736c50-4a3b-4b02-8c2d-05d942e418e9",
+  "historyId": "ArrghServer.Tests.AuthTests#CreateUser_Created_ValidMember",
+  "name": "CreateUser_Created_ValidMember",
+  "fullName": "ArrghServer.Tests.AuthTests.CreateUser_Created_ValidMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476055602,
+  "stop": 1780476056802,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "CreateUser_Created_ValidMember"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "5d0e7141-e66f-497f-adc0-cf82c0e832d8",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_NoAuthRequired",
+  "name": "SaveSettings_NoAuthRequired",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_NoAuthRequired",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476010573,
+  "stop": 1780476010970,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Config"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_NoAuthRequired"
+    }
+  ]
+}

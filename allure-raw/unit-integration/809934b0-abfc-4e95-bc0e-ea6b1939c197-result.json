@@ -1,0 +1,40 @@
+{
+  "uuid": "809934b0-abfc-4e95-bc0e-ea6b1939c197",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_ClampsTrendingPerSource",
+  "name": "SaveSettings_ClampsTrendingPerSource",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_ClampsTrendingPerSource",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476011336,
+  "stop": 1780476012108,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Config"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_ClampsTrendingPerSource"
+    }
+  ]
+}

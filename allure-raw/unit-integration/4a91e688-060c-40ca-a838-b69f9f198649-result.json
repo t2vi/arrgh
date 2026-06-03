@@ -1,0 +1,40 @@
+{
+  "uuid": "4a91e688-060c-40ca-a838-b69f9f198649",
+  "historyId": "ArrghServer.Tests.TitlesTests#NewReleases_ReturnsNewChapters",
+  "name": "NewReleases_ReturnsNewChapters",
+  "fullName": "ArrghServer.Tests.TitlesTests.NewReleases_ReturnsNewChapters",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476059350,
+  "stop": 1780476059947,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "NewReleases_ReturnsNewChapters"
+    }
+  ]
+}

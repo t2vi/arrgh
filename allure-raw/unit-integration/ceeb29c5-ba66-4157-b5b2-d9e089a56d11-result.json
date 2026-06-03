@@ -1,0 +1,40 @@
+{
+  "uuid": "ceeb29c5-ba66-4157-b5b2-d9e089a56d11",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_Returns401_WhenUnauthenticated",
+  "name": "Sync_Returns401_WhenUnauthenticated",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_Returns401_WhenUnauthenticated",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476027708,
+  "stop": 1780476028572,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_Returns401_WhenUnauthenticated"
+    }
+  ]
+}

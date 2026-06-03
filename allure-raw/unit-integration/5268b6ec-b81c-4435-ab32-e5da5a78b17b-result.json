@@ -1,0 +1,40 @@
+{
+  "uuid": "5268b6ec-b81c-4435-ab32-e5da5a78b17b",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_ExplicitTags_SetsIsExplicit",
+  "name": "AddManga_ExplicitTags_SetsIsExplicit",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_ExplicitTags_SetsIsExplicit",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780476023674,
+  "stop": 1780476024663,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_ExplicitTags_SetsIsExplicit"
+    }
+  ]
+}
