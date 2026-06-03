@@ -38,8 +38,10 @@ builder.Services.AddScoped<AniListService>();
 builder.Services.AddScoped<MangaDexMetaService>();
 builder.Services.AddScoped<NovelUpdatesService>();
 builder.Services.AddScoped<WuxiaWorldMetaService>();
-builder.Services.AddScoped<EHentaiService>();
 builder.Services.AddHttpClient();
+// Short timeout for plugin-host source matching — CF-protected plugins that lack CloakBrowser
+// can hang for the full 100 s default; 20 s is enough for healthy plugin responses.
+builder.Services.AddHttpClient("PluginHost", c => c.Timeout = TimeSpan.FromSeconds(20));
 builder.Services.AddHostedService<UpdateCheckerService>();
 builder.Services.AddHostedService<DownloaderService>();
 
@@ -106,13 +108,11 @@ using (var scope = app.Services.CreateScope())
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "mangapill",  Name = "Mangapill",  BaseUrl = pluginHost, ContentTypes = "manga",                         Enabled = true,  DefaultExplicit = false, Priority = 20, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "toonily",    Name = "Toonily",    BaseUrl = pluginHost, ContentTypes = "manhwa",                        Enabled = true,  DefaultExplicit = false, Priority = 30, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "novelfull",  Name = "NovelFull",  BaseUrl = pluginHost, ContentTypes = "novel",                         Enabled = true,  DefaultExplicit = false, Priority = 40, CreatedAt = now },
-            new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "nhentai",    Name = "nhentai",    BaseUrl = pluginHost, ContentTypes = "manga",                         Enabled = true,  DefaultExplicit = true,  Priority = 50, CreatedAt = now },
+            new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "nhentai",    Name = "nhentai",    BaseUrl = pluginHost, ContentTypes = "hentai",                        Enabled = true,  DefaultExplicit = true,  Priority = 50, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "mangafire",  Name = "MangaFire",  BaseUrl = pluginHost, ContentTypes = "manga,manhwa,manhua,one-shot", Enabled = true,  DefaultExplicit = false, Priority = 60, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "asurascans", Name = "AsuraScans", BaseUrl = pluginHost, ContentTypes = "manhwa",                        Enabled = true,  DefaultExplicit = false, Priority = 110, CreatedAt = now },
             new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "manga18fx",  Name = "Manga18fx",  BaseUrl = pluginHost, ContentTypes = "manhwa",                        Enabled = true,  DefaultExplicit = true,  Priority = 75, CreatedAt = now },
-            new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "manhuafast", Name = "ManhuaFast", BaseUrl = pluginHost, ContentTypes = "manhua",                        Enabled = true,  DefaultExplicit = false, Priority = 80, CreatedAt = now },
-            new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "wuxiaworld", Name = "WuxiaWorld", BaseUrl = pluginHost, ContentTypes = "novel",                         Enabled = true,  DefaultExplicit = false, Priority = 90, CreatedAt = now },
-            new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "boxnovel",   Name = "BoxNovel",   BaseUrl = pluginHost, ContentTypes = "novel",                         Enabled = true,  DefaultExplicit = false, Priority = 100, CreatedAt = now }
+            new ExternalSource { Id = Guid.NewGuid().ToString(), SourceKey = "wuxiaworld", Name = "WuxiaWorld", BaseUrl = pluginHost, ContentTypes = "novel",                         Enabled = true,  DefaultExplicit = false, Priority = 90, CreatedAt = now }
         );
         db.SaveChanges();
     }

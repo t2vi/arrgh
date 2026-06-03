@@ -15,7 +15,7 @@ public static class Discover
     {
         group.MapGet("/", Search).RequireAuthorization()
             .WithSummary("Search titles across all metadata authorities (MU, AniList, MangaDex, NovelUpdates, E-Hentai)")
-            .WithDescription("Fan-out parallel search. Results deduped by designated authority per content_type (manga→MU, manhwa→AniList, manhua→MangaDex, novel→NovelUpdates, hentai→E-Hentai). E-Hentai gated on allow_explicit claim. Returns 502 only if all authorities fail.");
+            .WithDescription("Fan-out parallel search. Results deduped by designated authority per content_type (manga→MU, manhwa→AniList, manhua→MangaDex, novel→NovelUpdates, hentai→E-Hentai). hentai is a distinct content_type from manga; nhentai plugin only queried for hentai searches. E-Hentai gated on allow_explicit claim. Returns 502 only if all authorities fail.");
         group.MapGet("/trending/manga", TrendingManga).RequireAuthorization()
             .WithSummary("Trending manga from MangaUpdates latest releases");
         group.MapGet("/trending/manhwa", TrendingManhwa).RequireAuthorization()
@@ -36,12 +36,13 @@ public static class Discover
         string q, ClaimsPrincipal principal,
         AppDbContext db, MangaUpdatesService mu,
         AniListService aniList, MangaDexMetaService mdMeta,
-        NovelUpdatesService novelUpdates, WuxiaWorldMetaService wuxiaWorld, EHentaiService eHentai,
+        NovelUpdatesService novelUpdates, WuxiaWorldMetaService wuxiaWorld,
         IHttpClientFactory httpFactory, IConfiguration config)
     {
         var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var allowExplicit = principal.FindFirstValue("allow_explicit") == "true";
         var downloadDir = config["DownloadDir"] ?? "./downloads";
+        var pluginHostUrl = config["PluginHostUrl"] ?? "http://plugin-host:4000";
 
         // Fan-out HTTP calls in parallel — NO DB access inside tasks (EF DbContext is not thread-safe)
         // ADR 0031: MU is manga-authority only — filter to manga/one-shot before dedup
@@ -77,23 +78,18 @@ public static class Discover
                 MangaupdatesId = s.SourceId, Title = s.Title, CoverUrl = s.CoverUrl,
                 Status = s.Status, Author = s.Author, ContentType = "novel", Source = "wuxiaworld",
             }).ToList(), TaskContinuationOptions.OnlyOnRanToCompletion));
-        var ehTask = allowExplicit
-            ? SafeSearch(() => eHentai.SearchAsync(q)
-                .ContinueWith(t => (IEnumerable<DiscoverResult>)t.Result.Select(s => new DiscoverResult
-                {
-                    MangaupdatesId = s.SourceId, Title = s.Title, CoverUrl = s.CoverUrl,
-                    Tags = s.Tags is not null ? string.Join(",", s.Tags) : null,
-                    ContentType = "hentai", Status = "complete", Source = "ehentai", IsExplicit = true,
-                }).ToList(), TaskContinuationOptions.OnlyOnRanToCompletion))
+        // nhentai: hentai authority via plugin-host — gated on allow_explicit.
+        var nhentaiTask = allowExplicit
+            ? SafeSearch(() => NhentaiSearchAsync(httpFactory, pluginHostUrl, q))
             : Task.FromResult<IEnumerable<DiscoverResult>?>(null);
 
-        await Task.WhenAll(muTask, alTask, mdTask, nuTask, wwTask, ehTask);
+        await Task.WhenAll(muTask, alTask, mdTask, nuTask, wwTask, nhentaiTask);
 
         // Collect all results from succeeded tasks
         // 502 only if ALL queried authorities failed (threw); empty-but-succeeded → 200 []
         var raw = new List<DiscoverResult>();
         var anySucceeded = false;
-        foreach (var t in new[] { muTask, alTask, mdTask, nuTask, wwTask, ehTask })
+        foreach (var t in new[] { muTask, alTask, mdTask, nuTask, wwTask, nhentaiTask })
         {
             if (t.Result is not null) anySucceeded = true;
             if (t.Result is { } r) raw.AddRange(r);
@@ -136,15 +132,25 @@ public static class Discover
     {
         if (string.IsNullOrWhiteSpace(contentType) || string.IsNullOrWhiteSpace(titleName)) return;
 
-        var sources = await db.ExternalSources
-            .Where(s => s.Enabled && s.SourceKey != null &&
-                        EF.Functions.Like(s.ContentTypes, $"%{contentType}%"))
-            .OrderBy(s => s.Priority)
-            .ToListAsync();
+        // For explicit manga titles, also query nhentai — MU sometimes classifies hentai
+        // doujinshi as "manga"; nhentai may be the only source with chapter data.
+        var isExplicitManga = contentType == "manga" &&
+            await db.Titles.Where(t => t.Id == titleId).Select(t => t.IsExplicit).FirstOrDefaultAsync();
+
+        IQueryable<ArrghServer.Data.Models.ExternalSource> sourcesQuery;
+        if (isExplicitManga)
+            sourcesQuery = db.ExternalSources.Where(s => s.Enabled && s.SourceKey != null &&
+                (EF.Functions.Like(s.ContentTypes, "%manga%") ||
+                 EF.Functions.Like(s.ContentTypes, "%hentai%")));
+        else
+            sourcesQuery = db.ExternalSources.Where(s => s.Enabled && s.SourceKey != null &&
+                EF.Functions.Like(s.ContentTypes, $"%{contentType}%"));
+
+        var sources = await sourcesQuery.OrderBy(s => s.Priority).ToListAsync();
 
         if (sources.Count == 0) return;
 
-        var http = httpFactory.CreateClient();
+        var http = httpFactory.CreateClient("PluginHost");
         var normTarget = Media.NormalizeTitle(titleName);
 
         var aliases = await db.TitleAliases
@@ -204,6 +210,17 @@ public static class Discover
                 var chapterCount = await ChapterSync.SyncFromSourceAsync(db, http, pluginHostUrl, titleId, contentType, source.SourceKey!, sourceId);
                 await AppendSyncLogAsync(db, titleId, $"Synced {chapterCount} chapter(s) from {source.SourceKey}");
             }
+            catch (TaskCanceledException)
+            {
+                // Timeout — CF-protected source without CloakBrowser, or plugin-host unreachable.
+                // Soft failure: log but do not create a sync warning (amber button).
+                await AppendSyncLogAsync(db, titleId, $"Source {source.SourceKey} timed out");
+            }
+            catch (HttpRequestException ex) when (ex.InnerException is System.Net.Sockets.SocketException)
+            {
+                // Connection refused — plugin-host down or source not deployed.
+                await AppendSyncLogAsync(db, titleId, $"Source {source.SourceKey} unreachable");
+            }
             catch (Exception ex)
             {
                 await AppendSyncLogAsync(db, titleId, $"Error from {source.SourceKey}: {ex.Message}");
@@ -233,6 +250,26 @@ public static class Discover
         {
             return Task.FromResult<IEnumerable<DiscoverResult>?>(null);
         }
+    }
+
+    static async Task<IEnumerable<DiscoverResult>> NhentaiSearchAsync(
+        IHttpClientFactory httpFactory, string pluginHostUrl, string q)
+    {
+        var http = httpFactory.CreateClient();
+        var url = $"{pluginHostUrl.TrimEnd('/')}/nhentai/search?q={Uri.EscapeDataString(q)}";
+        var resp = await http.GetAsync(url);
+        resp.EnsureSuccessStatusCode();
+        var results = await resp.Content.ReadFromJsonAsync<List<PluginSearchResult>>(
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return results?.Select(s => new DiscoverResult
+        {
+            MangaupdatesId = s.Id ?? "",
+            Title = s.Title ?? "",
+            ContentType = "hentai",
+            Status = "complete",
+            Source = "nhentai",
+            IsExplicit = true,
+        }) ?? [];
     }
 
     // ── GET /api/discover/trending/{lane} ────────────────────────────────────
@@ -550,9 +587,9 @@ public static class Discover
             // 3. Source matching: find plugin-host sources by content_type, match by title, seed chapter_sources
             await MatchSourcesAsync(bgDb, httpFactory, capturedTitleId, capturedTitle, capturedContentType, pluginHostUrl);
 
+            await AppendSyncLogAsync(bgDb, capturedTitleId, "Sync complete");
             await bgDb.Titles.Where(t => t.Id == capturedTitleId)
                 .ExecuteUpdateAsync(s => s.SetProperty(t => t.SyncStatus, "ready"));
-            await AppendSyncLogAsync(bgDb, capturedTitleId, "Sync complete");
         });
 
         var item = await Titles.FetchTitleAsync(db, titleId, userId);
@@ -605,7 +642,7 @@ public static class Discover
     // ── Authority helpers (unit-testable) ─────────────────────────────────────
 
     public static readonly IList<string> AuthorityOrder =
-        ["mangaupdates", "anilist", "mangadex", "novelupdates", "wuxiaworld", "ehentai"];
+        ["mangaupdates", "anilist", "mangadex", "novelupdates", "wuxiaworld", "nhentai"];
 
     // ADR 0031: MangaUpdates is manga-authority only. Strip non-manga before dedup so MU novel/manhwa/manhua
     // results can't survive when the designated authority returns nothing.
@@ -617,7 +654,7 @@ public static class Discover
         "manhwa" => "anilist",
         "manhua" => "mangadex",
         "novel" or "web novel" or "light novel" => "novelupdates",
-        "hentai" => "ehentai",
+        "hentai" => "nhentai",
         _ => "mangaupdates",
     };
 
@@ -641,7 +678,40 @@ public static class Discover
 
     public static List<DiscoverResult> MergeFanOut(IList<DiscoverResult> results)
     {
-        var deduped = Deduplicate(results);
+        // nhentai upgrade pass: if nhentai found title X and another source returned the same
+        // title as non-hentai, upgrade that result to hentai and drop the standalone nhentai entry.
+        // Handles the case where MU classifies a hentai doujinshi as "manga".
+        var nhentaiNorms = results
+            .Where(r => r.Source == "nhentai")
+            .Select(r => Media.NormalizeTitle(r.Title))
+            .ToHashSet(StringComparer.Ordinal);
+
+        List<DiscoverResult> preDedup;
+        if (nhentaiNorms.Count > 0)
+        {
+            // Only upgrade when normalized titles match exactly AND result is already explicit.
+            // Prefix matching is intentionally avoided — it causes false upgrades for popular titles
+            // (e.g., "Berserk dj - Lightning" starts with "Berserk") that happen to have nhentai parodies.
+            var consumedNhentaiNorms = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var r in results)
+            {
+                if (r.Source == "nhentai" || !r.IsExplicit) continue;
+                var norm = Media.NormalizeTitle(r.Title);
+                if (!nhentaiNorms.Contains(norm)) continue;
+                r.ContentType = "hentai";
+                r.IsExplicit = true;
+                consumedNhentaiNorms.Add(norm);
+            }
+            preDedup = results
+                .Where(r => !(r.Source == "nhentai" && consumedNhentaiNorms.Contains(Media.NormalizeTitle(r.Title))))
+                .ToList();
+        }
+        else
+        {
+            preDedup = results.ToList();
+        }
+
+        var deduped = Deduplicate(preDedup);
         return deduped
             .OrderBy(r => {
                 var idx = AuthorityOrder.IndexOf(r.Source);

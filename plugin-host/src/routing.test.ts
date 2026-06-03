@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import type { PluginBundle, PluginInfo } from './index'
-import { createApp } from './index'
+import { createApp, rewriteCdpHost } from './index'
 
 // ── Mock plugin factories ─────────────────────────────────────────────────────
 
@@ -193,5 +193,33 @@ describe('DELETE /plugins/:id', () => {
     const res = await request(app).delete('/plugins/mock-manga')
     expect(res.status).toBe(204)
     expect(registry.has('mock-manga')).toBe(false)
+  })
+})
+
+// ── rewriteCdpHost ────────────────────────────────────────────────────────────
+
+describe('rewriteCdpHost', () => {
+  it('rewrites 0.0.0.0 to localhost for local dev', () => {
+    const result = rewriteCdpHost(
+      'ws://0.0.0.0:3001/devtools/browser/abc123',
+      'http://localhost:3001',
+    )
+    expect(result).toBe('ws://localhost:3001/devtools/browser/abc123')
+  })
+
+  it('rewrites internal hostname to Docker service name', () => {
+    const result = rewriteCdpHost(
+      'ws://0.0.0.0:3000/devtools/browser/abc123',
+      'http://cloakbrowser:3000',
+    )
+    expect(result).toBe('ws://cloakbrowser:3000/devtools/browser/abc123')
+  })
+
+  it('preserves path after host rewrite', () => {
+    const result = rewriteCdpHost(
+      'ws://172.17.0.2:3000/devtools/browser/uuid-here/path',
+      'http://cloakbrowser:3000',
+    )
+    expect(result).toBe('ws://cloakbrowser:3000/devtools/browser/uuid-here/path')
   })
 })

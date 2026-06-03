@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useDiscover } from './hooks/useDiscover'
 import { SearchRow } from './components/SearchRow'
-import { SearchSkeleton } from './components/SearchSkeleton'
+import { SearchProgress } from './components/SearchProgress'
 import { ContentTypeFilter } from './components/ContentTypeFilter'
 
 export default function Discover() {
@@ -45,9 +45,11 @@ export default function Discover() {
             </div>
           )}
 
-          {h.isFetching && <SearchSkeleton />}
+          {(h.isFetching || h.showProgress) && (
+            <SearchProgress completedSources={h.showProgress ? h.completedSources : undefined} />
+          )}
 
-          {h.data && !h.isFetching && (
+          {h.data && !h.isFetching && !h.showProgress && (
             <div className="space-y-3">
               <ContentTypeFilter
                 value={h.contentTypeFilter}

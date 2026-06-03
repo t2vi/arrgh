@@ -49,11 +49,12 @@ public class DiscoverFanOutTests
         bool novelupdatesThrows               = false,
         bool wuxiaworldThrows                 = false,
         string? anilistSynonymsJson           = null,
-        Dictionary<string, string>? pluginSearchTitleMap = null) =>
+        Dictionary<string, string>? pluginSearchTitleMap = null,
+        HashSet<string>? pluginTimeoutSources = null) =>
         new(muSearchJson, anilistJson, mangadexJson, novelupdatesHtml, wuxiaworldJson,
             ehentaiSearchHtml, ehentaiGdataJson,
             muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows, wuxiaworldThrows,
-            anilistSynonymsJson, pluginSearchTitleMap);
+            anilistSynonymsJson, pluginSearchTitleMap, pluginTimeoutSources);
 
     void Authorize(HttpClient client, ArrghServer.Data.Models.User user, bool allowExplicit = false)
     {
@@ -271,37 +272,34 @@ public class DiscoverFanOutTests
     }
 
     [Fact]
-    public async Task Search_EHentai_NotIncluded_ForNonExplicitUser()
+    public async Task Search_Nhentai_NotIncluded_ForNonExplicitUser()
     {
-        // E-Hentai would return results, but user doesn't have allow_explicit
-        var ehHtml = EhSearchHtml(12345, "abc123");
-        var ehGdata = EhGdataResponse(12345, "Test Doujin", "naruto");
-
-        var (client, db) = NewFactory(ehentaiSearchHtml: ehHtml, ehentaiGdataJson: ehGdata).CreateClientWithDb();
+        // nhentai would return results via plugin-host, but user doesn't have allow_explicit
+        var (client, db) = NewFactory().CreateClientWithDb();
         var user = await Seed.UserAsync(db, Fake.AdminUser());
-        Authorize(client, user, allowExplicit: false); // explicit = false
+        Authorize(client, user, allowExplicit: false);
 
         var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=naruto");
 
         Assert.NotNull(res);
-        Assert.DoesNotContain(res, r => r.GetProperty("source").GetString() == "ehentai");
+        Assert.DoesNotContain(res, r => r.GetProperty("source").GetString() == "nhentai");
     }
 
     [Fact]
-    public async Task Search_EHentai_Included_ForExplicitUser()
+    public async Task Search_Nhentai_Included_ForExplicitUser()
     {
-        var ehHtml = EhSearchHtml(12345, "abc123");
-        var ehGdata = EhGdataResponse(12345, "Naruto Doujin", "naruto");
-
-        var (client, db) = NewFactory(ehentaiSearchHtml: ehHtml, ehentaiGdataJson: ehGdata).CreateClientWithDb();
+        // nhentai plugin-host returns a result — fan-out must include it as content_type:hentai
+        var pluginMap = new Dictionary<string, string> { ["nhentai"] = "Naruto Doujin" };
+        var (client, db) = NewFactory(pluginSearchTitleMap: pluginMap).CreateClientWithDb();
         var user = await Seed.UserAsync(db, Fake.AdminUser());
         Authorize(client, user, allowExplicit: true);
 
         var res = await client.GetFromJsonAsync<JsonElement[]>("/api/discover?q=naruto");
 
         Assert.NotNull(res);
-        var ehResult = res.FirstOrDefault(r => r.GetProperty("source").GetString() == "ehentai");
-        Assert.NotNull(ehResult);
+        var nhentaiResult = res.FirstOrDefault(r => r.GetProperty("source").GetString() == "nhentai");
+        Assert.NotNull(nhentaiResult);
+        Assert.Equal("hentai", nhentaiResult.GetProperty("content_type").GetString());
     }
 
     [Fact]
@@ -765,6 +763,87 @@ public class DiscoverFanOutTests
     }
 
     [Fact]
+    public async Task AddManga_ExplicitManga_AlsoQueriesNhentai()
+    {
+        // An explicit manga title (content_type=manga, is_explicit=true) should query
+        // nhentai sources in addition to manga sources, even though nhentai is "hentai" typed.
+        // This handles the case where MU classifies a hentai doujinshi as manga.
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user, allowExplicit: true);
+
+        db.ExternalSources.Add(new ArrghServer.Data.Models.ExternalSource
+        {
+            Id = Guid.NewGuid().ToString(), SourceKey = "nhentai", Name = "nhentai",
+            BaseUrl = "http://plugin-host:4000", ContentTypes = "hentai",
+            Enabled = true, Priority = 50, CreatedAt = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "mangaupdates",
+            source_id = "12345",
+            title = "KayaNetori",
+            content_type = "manga",
+            is_explicit = true,
+            status = "complete",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+
+        await WaitForSyncReadyAsync(db, titleId);
+        db.ChangeTracker.Clear();
+
+        // nhentai must appear in title_sources — it was matched via the hentai source pool
+        var sourceLinks = await db.TitleSources.Where(ts => ts.TitleId == titleId).ToListAsync();
+        Assert.Contains(sourceLinks, ts => ts.Source == "nhentai");
+    }
+
+    [Fact]
+    public async Task AddManga_NonExplicitManga_DoesNotQueryNhentai()
+    {
+        // Non-explicit manga should NOT query nhentai — only manga-typed sources
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        db.ExternalSources.AddRange(
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "mangadex", Name = "MangaDex",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "manga",
+                Enabled = true, Priority = 10, CreatedAt = DateTime.UtcNow,
+            },
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "nhentai", Name = "nhentai",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "hentai",
+                Enabled = true, Priority = 50, CreatedAt = DateTime.UtcNow,
+            });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "mangaupdates", source_id = "1",
+            title = "Berserk", content_type = "manga", is_explicit = false, status = "ongoing",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+
+        await WaitForSyncReadyAsync(db, titleId);
+        db.ChangeTracker.Clear();
+
+        var sourceLinks = await db.TitleSources.Where(ts => ts.TitleId == titleId).ToListAsync();
+        // mangadex matched, nhentai must NOT appear (not queried for non-explicit manga)
+        Assert.DoesNotContain(sourceLinks, ts => ts.Source == "nhentai");
+    }
+
+    [Fact]
     public async Task AddManga_NoMatchingExternalSource_NoSourceLinks()
     {
         // No external sources seeded → source matching finds nothing → no title_sources rows
@@ -976,6 +1055,91 @@ public class DiscoverFanOutTests
         Assert.NotEmpty(warnings);
     }
 
+    [Fact]
+    [Trait("Category", TestCategories.Integration)]
+    public async Task AddTitle_SourceTimeout_NoSyncWarning_WhenOtherSourceSucceeds()
+    {
+        // novelfull times out (CF-protected, no CB) but wuxiaworld succeeds →
+        // no sync warning should be created (timeout is soft failure, not error)
+        var (client, db) = NewFactory(pluginTimeoutSources: ["novelfull"]).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        db.ExternalSources.AddRange(
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "novelfull", Name = "NovelFull",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "novel",
+                Enabled = true, Priority = 10, CreatedAt = DateTime.UtcNow,
+            },
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "wuxiaworld", Name = "WuxiaWorld",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "novel",
+                Enabled = true, Priority = 20, CreatedAt = DateTime.UtcNow,
+            });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "novelupdates", source_id = "issth", title = "I Shall Seal the Heavens",
+            content_type = "novel", status = "complete",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+        await WaitForSyncReadyAsync(db, titleId);
+        db.ChangeTracker.Clear();
+
+        // wuxiaworld matched → title_sources row exists
+        Assert.True(await db.TitleSources.AnyAsync(ts => ts.TitleId == titleId && ts.Source == "wuxiaworld"));
+        // timeout on novelfull must NOT create a sync warning
+        var warnings = await db.SyncWarnings.Where(w => w.TitleId == titleId).ToListAsync();
+        Assert.Empty(warnings);
+    }
+
+    [Fact]
+    [Trait("Category", TestCategories.Integration)]
+    public async Task AddTitle_AllSourcesTimeout_SyncWarningSet()
+    {
+        // all sources timeout → no title_sources → "no sources matched" warning fires
+        var (client, db) = NewFactory(pluginTimeoutSources: ["novelfull", "wuxiaworld"]).CreateClientWithDb();
+        var user = await Seed.UserAsync(db, Fake.AdminUser());
+        Authorize(client, user);
+
+        db.ExternalSources.AddRange(
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "novelfull", Name = "NovelFull",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "novel",
+                Enabled = true, Priority = 10, CreatedAt = DateTime.UtcNow,
+            },
+            new ArrghServer.Data.Models.ExternalSource
+            {
+                Id = Guid.NewGuid().ToString(), SourceKey = "wuxiaworld", Name = "WuxiaWorld",
+                BaseUrl = "http://plugin-host:4000", ContentTypes = "novel",
+                Enabled = true, Priority = 20, CreatedAt = DateTime.UtcNow,
+            });
+        await db.SaveChangesAsync();
+
+        var res = await client.PostAsJsonAsync("/api/discover/add", new
+        {
+            source = "novelupdates", source_id = "issth", title = "I Shall Seal the Heavens",
+            content_type = "novel", status = "complete",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        var titleId = body.GetProperty("id").GetString()!;
+        await WaitForSyncReadyAsync(db, titleId);
+        db.ChangeTracker.Clear();
+
+        // no sources linked → warning expected
+        var warnings = await db.SyncWarnings.Where(w => w.TitleId == titleId).ToListAsync();
+        Assert.NotEmpty(warnings);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     static async Task WaitForSyncReadyAsync(ArrghServer.Data.AppDbContext db, string titleId, int maxMs = 3000)
@@ -1012,6 +1176,7 @@ public class FanOutDiscoverFactory : AppFactory
     readonly bool _wuxiaworldThrows;
     readonly string? _anilistSynonymsJson;
     readonly Dictionary<string, string>? _pluginSearchTitleMap;
+    readonly HashSet<string>? _pluginTimeoutSources;
 
     public FanOutDiscoverFactory(
         string muSearchJson = """{"results":[]}""",
@@ -1027,7 +1192,8 @@ public class FanOutDiscoverFactory : AppFactory
         bool novelupdatesThrows = false,
         bool wuxiaworldThrows = false,
         string? anilistSynonymsJson = null,
-        Dictionary<string, string>? pluginSearchTitleMap = null)
+        Dictionary<string, string>? pluginSearchTitleMap = null,
+        HashSet<string>? pluginTimeoutSources = null)
     {
         _muSearchJson = muSearchJson;
         _anilistJson = anilistJson;
@@ -1043,6 +1209,7 @@ public class FanOutDiscoverFactory : AppFactory
         _wuxiaworldThrows = wuxiaworldThrows;
         _anilistSynonymsJson = anilistSynonymsJson;
         _pluginSearchTitleMap = pluginSearchTitleMap;
+        _pluginTimeoutSources = pluginTimeoutSources;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -1061,6 +1228,7 @@ public class FanOutDiscoverFactory : AppFactory
         var wwThrows = _wuxiaworldThrows;
         var alSynonyms = _anilistSynonymsJson;
         var pluginTitleMap = _pluginSearchTitleMap;
+        var pluginTimeouts = _pluginTimeoutSources;
 
         builder.ConfigureServices(services =>
         {
@@ -1069,7 +1237,7 @@ public class FanOutDiscoverFactory : AppFactory
                 new FanOutFakeHttpClientFactory(
                     muSearch, anilist, mangadex, nu, ww, ehHtml, ehGdata,
                     muThrows, alThrows, mdThrows, nuThrows, wwThrows,
-                    alSynonyms, pluginTitleMap));
+                    alSynonyms, pluginTitleMap, pluginTimeouts));
         });
         return base.CreateHost(builder);
     }
@@ -1079,7 +1247,8 @@ file class FanOutFakeHttpClientFactory(
     string muSearchJson, string anilistJson, string mangadexJson,
     string novelupdatesHtml, string wuxiaworldJson, string ehentaiSearchHtml, string ehentaiGdataJson,
     bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows, bool wuxiaworldThrows,
-    string? anilistSynonymsJson = null, Dictionary<string, string>? pluginSearchTitleMap = null)
+    string? anilistSynonymsJson = null, Dictionary<string, string>? pluginSearchTitleMap = null,
+    HashSet<string>? pluginTimeoutSources = null)
     : IHttpClientFactory
 {
     public HttpClient CreateClient(string name) =>
@@ -1087,14 +1256,15 @@ file class FanOutFakeHttpClientFactory(
             muSearchJson, anilistJson, mangadexJson, novelupdatesHtml, wuxiaworldJson,
             ehentaiSearchHtml, ehentaiGdataJson,
             muSearchThrows, anilistThrows, mangadexThrows, novelupdatesThrows, wuxiaworldThrows,
-            anilistSynonymsJson, pluginSearchTitleMap));
+            anilistSynonymsJson, pluginSearchTitleMap, pluginTimeoutSources));
 }
 
 file class FanOutFakeHandler(
     string muSearchJson, string anilistJson, string mangadexJson,
     string novelupdatesHtml, string wuxiaworldJson, string ehentaiSearchHtml, string ehentaiGdataJson,
     bool muSearchThrows, bool anilistThrows, bool mangadexThrows, bool novelupdatesThrows, bool wuxiaworldThrows,
-    string? anilistSynonymsJson = null, Dictionary<string, string>? pluginSearchTitleMap = null)
+    string? anilistSynonymsJson = null, Dictionary<string, string>? pluginSearchTitleMap = null,
+    HashSet<string>? pluginTimeoutSources = null)
     : HttpMessageHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(
@@ -1178,6 +1348,9 @@ file class FanOutFakeHandler(
             var rawQ = qIdx >= 0 ? query[(qIdx + 2)..].Split('&')[0] : "";
             var qParam = Uri.UnescapeDataString(rawQ.Replace('+', ' '));
             var sourceKey = path.TrimStart('/').Split('/')[0];
+            // Simulate timeout for specified sources
+            if (pluginTimeoutSources?.Contains(sourceKey) == true)
+                throw new TaskCanceledException($"Plugin {sourceKey} timed out (simulated)");
             // Allow test to override what title the plugin returns
             var returnTitle = pluginSearchTitleMap is not null && pluginSearchTitleMap.TryGetValue(sourceKey, out var mapped)
                 ? mapped : qParam;

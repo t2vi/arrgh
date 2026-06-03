@@ -136,7 +136,7 @@ export async function chapters(seriesId: string): Promise<ChapterItem[]> {
 }
 
 // ── Pages ─────────────────────────────────────────────────────────────────────
-// Chapter pages serve images at https://img01.manga18fx.com/uploads/{id}/{ch}/{n}-{hash}.jpg
+// Chapter pages serve images from imgXX.manga18fx.com CDN subdomains
 
 export async function pages(chapterId: string): Promise<string[]> {
   const url = chapterId.startsWith('http')
@@ -146,13 +146,8 @@ export async function pages(chapterId: string): Promise<string[]> {
   const $ = cheerio.load(html)
   const urls: string[] = []
 
-  // Sites often lazy-load via data-src (src holds a placeholder); match both attributes
-  $([
-    'img[src*="manga18fx.com/uploads"]',
-    'img[src*="img01.manga18fx.com"]',
-    'img[data-src*="manga18fx.com/uploads"]',
-    'img[data-src*="img01.manga18fx.com"]',
-  ].join(', ')).each((_, el) => {
+  // Lazy-load: data-src holds real URL, src may be placeholder; match any manga18fx CDN subdomain
+  $('img[src*=".manga18fx.com"], img[data-src*=".manga18fx.com"]').each((_, el) => {
     const src = $(el).attr('data-src') || $(el).attr('src')
     if (src?.startsWith('http')) urls.push(src)
   })

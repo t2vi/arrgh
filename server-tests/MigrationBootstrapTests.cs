@@ -40,13 +40,13 @@ public class MigrationBootstrapTests
                 db.Database.Migrate();
             }
 
-            // Post-condition: __EFMigrationsHistory has both migration records
+            // Post-condition: __EFMigrationsHistory has all migration records
             using (var conn = new SqliteConnection($"Data Source={dbPath}"))
             {
                 conn.Open();
                 using var cmd = conn.CreateCommand();
                 cmd.CommandText = "SELECT COUNT(*) FROM __EFMigrationsHistory";
-                Assert.Equal(2L, (long)cmd.ExecuteScalar()!);
+                Assert.Equal(4L, (long)cmd.ExecuteScalar()!);
             }
         }
         finally

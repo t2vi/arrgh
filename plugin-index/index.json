@@ -59,7 +59,7 @@
     "bundled": true,
     "default_explicit": true,
     "content_types": [
-      "manga"
+      "hentai"
     ]
   },
   {
@@ -75,33 +75,9 @@
     ]
   },
   {
-    "id": "manhuafast",
-    "name": "ManhuaFast",
-    "description": "Manhua reader with a large Chinese comics catalog. No CF protection.",
-    "version": "1.0.0",
-    "download_url": null,
-    "bundled": true,
-    "default_explicit": false,
-    "content_types": [
-      "manhua"
-    ]
-  },
-  {
     "id": "wuxiaworld",
     "name": "WuxiaWorld",
     "description": "Premier English translation site for Chinese web novels. Has official API.",
-    "version": "1.0.0",
-    "download_url": null,
-    "bundled": true,
-    "default_explicit": false,
-    "content_types": [
-      "novel"
-    ]
-  },
-  {
-    "id": "boxnovel",
-    "name": "BoxNovel",
-    "description": "Large web novel aggregator (WordPress-based). No CF protection.",
     "version": "1.0.0",
     "download_url": null,
     "bundled": true,

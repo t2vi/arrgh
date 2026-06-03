@@ -8,9 +8,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 // ── Imports (fail until plugin dirs exist) ────────────────────────────────────
 
 import * as asurascans   from '../../plugins/asurascans/src/index'
-import * as manhuafast   from '../../plugins/manhuafast/src/index'
 import * as wuxiaworld   from '../../plugins/wuxiaworld/src/index'
-import * as boxnovel     from '../../plugins/boxnovel/src/index'
 import * as manga18fx    from '../../plugins/manga18fx/src/index'
 import { parseSearchHtml as nuParseSearchHtml } from '../../plugins/novelupdates/src/novelupdates'
 
@@ -160,175 +158,54 @@ describe('asurascans — pages', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ManhuaFast
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const MANHUAFAST_SEARCH_HTML = `
-<div class="page-listing-item">
-  <div class="item-thumb">
-    <a href="https://manhuafast.net/manga/the-beginning-after-the-end/">
-      <img src="https://manhuafast.net/wp-content/uploads/covers/tbate.jpg"
-           alt="The Beginning After the End"
-           class="img-responsive lazy">
-    </a>
-  </div>
-  <div class="item-summary">
-    <div class="post-title">
-      <h5><a href="https://manhuafast.net/manga/the-beginning-after-the-end/">The Beginning After the End</a></h5>
-    </div>
-    <div class="manga-title-badges new"><span>OnGoing</span></div>
-  </div>
-</div>
-<div class="page-listing-item">
-  <div class="item-thumb">
-    <a href="https://manhuafast.net/manga/nano-machine/">
-      <img src="https://manhuafast.net/wp-content/uploads/covers/nano.jpg"
-           alt="Nano Machine"
-           class="img-responsive lazy">
-    </a>
-  </div>
-  <div class="item-summary">
-    <div class="post-title">
-      <h5><a href="https://manhuafast.net/manga/nano-machine/">Nano Machine</a></h5>
-    </div>
-    <div class="manga-title-badges"><span>Completed</span></div>
-  </div>
-</div>
-`
-
-const MANHUAFAST_CHAPTERS_HTML = `
-<div class="listing-chapters_wrap">
-  <ul class="main version-chap">
-    <li class="wp-manga-chapter" data-chapter-link="https://manhuafast.net/manga/the-beginning-after-the-end/chapter-180/">
-      <a href="https://manhuafast.net/manga/the-beginning-after-the-end/chapter-180/">Chapter 180</a>
-    </li>
-    <li class="wp-manga-chapter" data-chapter-link="https://manhuafast.net/manga/the-beginning-after-the-end/chapter-179/">
-      <a href="https://manhuafast.net/manga/the-beginning-after-the-end/chapter-179/">Chapter 179</a>
-    </li>
-  </ul>
-</div>
-`
-
-const MANHUAFAST_PAGES_HTML = `
-<div class="reading-content">
-  <div class="page-break no-gaps">
-    <img src="https://manhuafast.net/wp-content/uploads/ch180/001.jpg" class="wp-manga-chapter-img" alt="page 1 tbate">
-  </div>
-  <div class="page-break no-gaps">
-    <img src="https://manhuafast.net/wp-content/uploads/ch180/002.jpg" class="wp-manga-chapter-img" alt="page 2 tbate">
-  </div>
-</div>
-`
-
-describe('manhuafast — search', () => {
-  it('returns array with required fields', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { text: MANHUAFAST_SEARCH_HTML } }))
-    const results = await manhuafast.search('beginning after the end')
-    expect(Array.isArray(results)).toBe(true)
-    expect(results.length).toBeGreaterThan(0)
-    for (const r of results) {
-      expect(r).toHaveProperty('id')
-      expect(r).toHaveProperty('title')
-      expect(r).toHaveProperty('cover_url')
-      expect(r).toHaveProperty('status')
-      expect(r).toHaveProperty('content_type')
-      expect(r.content_type).toBe('manhua')
-    }
-  })
-
-  it('id is the URL slug', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { text: MANHUAFAST_SEARCH_HTML } }))
-    const [first] = await manhuafast.search('beginning after the end')
-    expect(first.id).toBe('the-beginning-after-the-end')
-    expect(first.title).toBe('The Beginning After the End')
-  })
-
-  it('status is normalised to lowercase', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { text: MANHUAFAST_SEARCH_HTML } }))
-    const results = await manhuafast.search('nano machine')
-    const nano = results.find((r) => r.title === 'Nano Machine')
-    expect(nano!.status).toBe('completed')
-  })
-
-  it('cover_url is the img src', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { text: MANHUAFAST_SEARCH_HTML } }))
-    const [first] = await manhuafast.search('test')
-    expect(first.cover_url).toContain('manhuafast.net')
-  })
-
-  it('throws on non-ok response', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { ok: false } }))
-    await expect(manhuafast.search('test')).rejects.toThrow()
-  })
-})
-
-describe('manhuafast — chapters', () => {
-  it('returns chapters with source_id and number', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { text: MANHUAFAST_CHAPTERS_HTML } }))
-    const chapters = await manhuafast.chapters('the-beginning-after-the-end')
-    expect(Array.isArray(chapters)).toBe(true)
-    expect(chapters.length).toBeGreaterThan(0)
-    for (const ch of chapters) {
-      expect(ch).toHaveProperty('source_id')
-      expect(ch).toHaveProperty('number')
-      expect(typeof ch.number).toBe('number')
-    }
-  })
-
-  it('parses chapter numbers', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { text: MANHUAFAST_CHAPTERS_HTML } }))
-    const chapters = await manhuafast.chapters('the-beginning-after-the-end')
-    const nums = chapters.map((c) => c.number).sort((a, b) => a - b)
-    expect(nums).toContain(179)
-    expect(nums).toContain(180)
-  })
-})
-
-describe('manhuafast — pages', () => {
-  it('returns image URL array', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'manhuafast': { text: MANHUAFAST_PAGES_HTML } }))
-    const pages = await manhuafast.pages('the-beginning-after-the-end/chapter-180')
-    expect(Array.isArray(pages)).toBe(true)
-    expect(pages.length).toBe(2)
-    for (const p of pages) {
-      expect(typeof p).toBe('string')
-      expect(p.startsWith('http')).toBe(true)
-    }
-  })
-})
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // WuxiaWorld
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const WUXIA_SEARCH_JSON = {
   items: [
     {
-      id: 'swallowed-star',
+      id: 12,
+      slug: 'swallowed-star',
       name: 'Swallowed Star',
       coverUrl: 'https://cdn.wuxiaworld.com/covers/swallowed-star.jpg',
-      status: 'Completed',
-      author: { name: 'I Eat Tomatoes' },
+      status: 0,
+      authorName: 'I Eat Tomatoes',
+      tags: ['Chinese', 'Completed'],
       genres: ['Sci-fi', 'Action'],
     },
     {
-      id: 'martial-world',
+      id: 34,
+      slug: 'martial-world',
       name: 'Martial World',
       coverUrl: 'https://cdn.wuxiaworld.com/covers/martial-world.jpg',
-      status: 'Completed',
-      author: { name: 'Cocooned Cow' },
+      status: 0,
+      authorName: 'Cocooned Cow',
+      tags: ['Chinese', 'Completed'],
       genres: ['Martial Arts'],
     },
   ],
-  total: 2,
 }
 
-const WUXIA_CHAPTERS_JSON = {
-  items: [
-    { entityId: 'swallowed-star/swallowed-star-chapter-1', chapter: { num: 1 }, name: 'Chapter 1 — The Swift as Lightning Technique' },
-    { entityId: 'swallowed-star/swallowed-star-chapter-2', chapter: { num: 2 }, name: 'Chapter 2 — Practice' },
-  ],
-}
+// chapters() parses embedded React Query state from the chapters page HTML.
+// Both groups use fromChapterNumber.units=1 — matching WuxiaWorld's real decimal format
+// where all groups report units=1 (chapters are sub-1.0 decimals internally).
+// The implementation must use cumulative numbering, not fromChapterNumber.units + i.
+const WUXIA_CHAPTERS_HTML = `<html><body><script>
+window.__REACT_QUERY_STATE__ = {"queries":[{"queryKey":["novel","swallowed-star",null],"state":{"data":{"item":{
+  "chapterInfo":{
+    "chapterCount":{"value":3},
+    "firstChapter":{"slug":"swallowed-star-chapter-1","name":"Chapter 1 — The Swift as Lightning Technique","offset":1},
+    "chapterGroups":[
+      {"id":1,"title":"Volume 1","order":1,
+       "fromChapterNumber":{"units":1,"nanos":0},"toChapterNumber":{"units":1,"nanos":999999900},
+       "counts":{"total":2,"advance":0,"normal":2},"chapterList":[]},
+      {"id":2,"title":"Volume 2","order":2,
+       "fromChapterNumber":{"units":1,"nanos":0},"toChapterNumber":{"units":1,"nanos":999999900},
+       "counts":{"total":1,"advance":0,"normal":1},"chapterList":[]}
+    ]
+  }
+}}}}]};
+</script></body></html>`
 
 const WUXIA_CHAPTER_HTML = `
 <div class="chapter-content">
@@ -376,11 +253,12 @@ describe('wuxiaworld — search', () => {
 })
 
 describe('wuxiaworld — chapters', () => {
-  it('returns chapters with source_id and number', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { json: WUXIA_CHAPTERS_JSON } }))
+  it('returns all chapters from chapterGroups count', async () => {
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
     const chapters = await wuxiaworld.chapters('swallowed-star')
     expect(Array.isArray(chapters)).toBe(true)
-    expect(chapters.length).toBeGreaterThan(0)
+    // fixture has chapterCount=3 across 2 groups (2+1)
+    expect(chapters.length).toBe(3)
     for (const ch of chapters) {
       expect(ch).toHaveProperty('source_id')
       expect(ch).toHaveProperty('number')
@@ -388,12 +266,35 @@ describe('wuxiaworld — chapters', () => {
     }
   })
 
-  it('source_id is entityId from API', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { json: WUXIA_CHAPTERS_JSON } }))
+  it('chapter 1 source_id uses real slug from firstChapter', async () => {
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
     const [ch1] = await wuxiaworld.chapters('swallowed-star')
     expect(ch1.source_id).toBe('swallowed-star/swallowed-star-chapter-1')
     expect(ch1.number).toBe(1)
     expect(ch1.title).toBe('Chapter 1 — The Swift as Lightning Technique')
+  })
+
+  it('chapters 2+ use numeric source_id {novelSlug}/chapter/{N}', async () => {
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
+    const chapters = await wuxiaworld.chapters('swallowed-star')
+    expect(chapters[1].source_id).toBe('swallowed-star/chapter/2')
+    expect(chapters[2].source_id).toBe('swallowed-star/chapter/3')
+  })
+
+  it('volume set to chapterGroup order', async () => {
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
+    const chapters = await wuxiaworld.chapters('swallowed-star')
+    // group 1 covers chapters 1-2 (order=1), group 2 covers chapter 3 (order=2)
+    expect(chapters[0].volume).toBe(1)
+    expect(chapters[1].volume).toBe(1)
+    expect(chapters[2].volume).toBe(2)
+  })
+
+  it('returns empty array when chapterInfo missing', async () => {
+    const emptyHtml = `<html><body><script>window.__REACT_QUERY_STATE__ = {"queries":[]};</script></body></html>`
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: emptyHtml } }))
+    const chapters = await wuxiaworld.chapters('swallowed-star')
+    expect(chapters).toEqual([])
   })
 })
 
@@ -414,181 +315,6 @@ describe('wuxiaworld — chapterText', () => {
   it('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { ok: false } }))
     await expect(wuxiaworld.chapterText('test/test-chapter-1')).rejects.toThrow()
-  })
-})
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// BoxNovel
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const BOXNOVEL_SEARCH_HTML = `
-<div class="c-tabs-item">
-  <div class="row">
-    <div class="col-4">
-      <div class="tab-thumb c-image-inner">
-        <a href="https://boxnovel.com/novel/lord-of-the-mysteries/">
-          <img src="https://boxnovel.com/wp-content/uploads/2019/lord-of-mysteries.jpg"
-               class="img-responsive lazy" alt="Lord of the Mysteries">
-        </a>
-      </div>
-    </div>
-    <div class="col-8">
-      <div class="tab-summary">
-        <div class="post-title">
-          <h5><a href="https://boxnovel.com/novel/lord-of-the-mysteries/">Lord of the Mysteries</a></h5>
-        </div>
-        <div class="post-content_item">
-          <div class="summary-heading"><h5>Status</h5></div>
-          <div class="summary-content">Completed</div>
-        </div>
-        <div class="post-content_item">
-          <div class="summary-heading"><h5>Author(s)</h5></div>
-          <div class="summary-content"><a>Cuttlefish That Loves Diving</a></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="c-tabs-item">
-  <div class="row">
-    <div class="col-4">
-      <div class="tab-thumb c-image-inner">
-        <a href="https://boxnovel.com/novel/i-shall-seal-the-heavens/">
-          <img src="https://boxnovel.com/wp-content/uploads/issh.jpg"
-               class="img-responsive lazy" alt="I Shall Seal the Heavens">
-        </a>
-      </div>
-    </div>
-    <div class="col-8">
-      <div class="tab-summary">
-        <div class="post-title">
-          <h5><a href="https://boxnovel.com/novel/i-shall-seal-the-heavens/">I Shall Seal the Heavens</a></h5>
-        </div>
-        <div class="post-content_item">
-          <div class="summary-heading"><h5>Status</h5></div>
-          <div class="summary-content">Completed</div>
-        </div>
-        <div class="post-content_item">
-          <div class="summary-heading"><h5>Author(s)</h5></div>
-          <div class="summary-content"><a>Er Gen</a></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-`
-
-const BOXNOVEL_CHAPTERS_HTML = `
-<ul class="main version-chap">
-  <li class="wp-manga-chapter">
-    <a href="https://boxnovel.com/novel/lord-of-the-mysteries/chapter-1429/">Chapter 1429 - Epilogue</a>
-    <span class="chapter-release-date"></span>
-  </li>
-  <li class="wp-manga-chapter">
-    <a href="https://boxnovel.com/novel/lord-of-the-mysteries/chapter-1/">Chapter 1 - Abnormal Death</a>
-    <span class="chapter-release-date"></span>
-  </li>
-</ul>
-`
-
-const BOXNOVEL_CHAPTER_HTML = `
-<div class="reading-content">
-  <div class="text-left">
-    <p>With a flash of light, Zhou Mingrui awoke to find himself in a new world.</p>
-    <p>He had become Klein Moretti — a nobody from a lower-class family in Tingen City.</p>
-  </div>
-</div>
-`
-
-describe('boxnovel — search', () => {
-  it('returns array with required fields', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_SEARCH_HTML } }))
-    const results = await boxnovel.search('lord of the mysteries')
-    expect(Array.isArray(results)).toBe(true)
-    expect(results.length).toBeGreaterThan(0)
-    for (const r of results) {
-      expect(r).toHaveProperty('id')
-      expect(r).toHaveProperty('title')
-      expect(r).toHaveProperty('cover_url')
-      expect(r).toHaveProperty('status')
-      expect(r).toHaveProperty('content_type')
-      expect(r.content_type).toBe('novel')
-    }
-  })
-
-  it('id is the URL slug', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_SEARCH_HTML } }))
-    const [first] = await boxnovel.search('lord of the mysteries')
-    expect(first.id).toBe('lord-of-the-mysteries')
-    expect(first.title).toBe('Lord of the Mysteries')
-    expect(first.status.toLowerCase()).toBe('completed')
-    expect(first.author).toBe('Cuttlefish That Loves Diving')
-  })
-
-  it('cover_url is the img src', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_SEARCH_HTML } }))
-    const [first] = await boxnovel.search('lord')
-    expect(first.cover_url).toContain('boxnovel.com')
-  })
-
-  it('returns empty array when no results', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: '<div></div>' } }))
-    const results = await boxnovel.search('xyzzy')
-    expect(results).toEqual([])
-  })
-
-  it('throws on non-ok response', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { ok: false } }))
-    await expect(boxnovel.search('test')).rejects.toThrow()
-  })
-})
-
-describe('boxnovel — chapters', () => {
-  it('returns chapters with source_id and number', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_CHAPTERS_HTML } }))
-    const chapters = await boxnovel.chapters('lord-of-the-mysteries')
-    expect(Array.isArray(chapters)).toBe(true)
-    expect(chapters.length).toBeGreaterThan(0)
-    for (const ch of chapters) {
-      expect(ch).toHaveProperty('source_id')
-      expect(ch).toHaveProperty('number')
-      expect(typeof ch.number).toBe('number')
-    }
-  })
-
-  it('parses chapter numbers from URL', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_CHAPTERS_HTML } }))
-    const chapters = await boxnovel.chapters('lord-of-the-mysteries')
-    const nums = chapters.map((c) => c.number)
-    expect(nums).toContain(1)
-    expect(nums).toContain(1429)
-  })
-
-  it('source_id is the chapter URL path', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_CHAPTERS_HTML } }))
-    const chapters = await boxnovel.chapters('lord-of-the-mysteries')
-    const ch1 = chapters.find((c) => c.number === 1)
-    expect(ch1!.source_id).toContain('lord-of-the-mysteries/chapter-1')
-  })
-})
-
-describe('boxnovel — chapterText', () => {
-  it('returns string content', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_CHAPTER_HTML } }))
-    const text = await boxnovel.chapterText('lord-of-the-mysteries/chapter-1')
-    expect(typeof text).toBe('string')
-    expect(text.length).toBeGreaterThan(0)
-  })
-
-  it('extracts chapter text content', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { text: BOXNOVEL_CHAPTER_HTML } }))
-    const text = await boxnovel.chapterText('lord-of-the-mysteries/chapter-1')
-    expect(text).toContain('Zhou Mingrui')
-  })
-
-  it('throws on non-ok response', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'boxnovel': { ok: false } }))
-    await expect(boxnovel.chapterText('lord-of-the-mysteries/chapter-1')).rejects.toThrow()
   })
 })
 
