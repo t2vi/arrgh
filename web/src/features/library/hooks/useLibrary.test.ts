@@ -69,6 +69,94 @@ describe('useLibrary', () => {
     await waitFor(() => expect(result.current.removingId).toBeNull())
   })
 
+  it('sort defaults to "recent"', async () => {
+    const { result } = renderHook(() => useLibrary())
+    expect(result.current.sort).toBe('recent')
+  })
+
+  it('setSort resets page to 1 and refetches with new sort', async () => {
+    const { result } = renderHook(() => useLibrary())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    vi.clearAllMocks()
+    vi.mocked(api.listTitles).mockResolvedValue(mockPage as never)
+
+    act(() => result.current.setSort('title_asc'))
+    await waitFor(() => expect(api.listTitles).toHaveBeenCalled())
+    expect(api.listTitles).toHaveBeenCalledWith(1, undefined, 'title_asc', undefined, undefined)
+  })
+
+  it('toggleContentType adds then removes value', async () => {
+    const { result } = renderHook(() => useLibrary())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => result.current.toggleContentType('manga'))
+    expect(result.current.contentTypes).toEqual(['manga'])
+
+    act(() => result.current.toggleContentType('manga'))
+    expect(result.current.contentTypes).toEqual([])
+  })
+
+  it('toggleContentType resets page to 1', async () => {
+    const { result } = renderHook(() => useLibrary())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    act(() => result.current.setPage(3))
+
+    act(() => result.current.toggleContentType('manhwa'))
+    expect(result.current.page).toBe(1)
+  })
+
+  it('toggleStatus adds then removes value', async () => {
+    const { result } = renderHook(() => useLibrary())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => result.current.toggleStatus('ongoing'))
+    expect(result.current.statuses).toEqual(['ongoing'])
+
+    act(() => result.current.toggleStatus('ongoing'))
+    expect(result.current.statuses).toEqual([])
+  })
+
+  it('hasFilters is false with no filters, true when any active', async () => {
+    const { result } = renderHook(() => useLibrary())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.hasFilters).toBe(false)
+
+    act(() => result.current.toggleContentType('manga'))
+    expect(result.current.hasFilters).toBe(true)
+  })
+
+  it('clearFilters resets contentTypes and statuses and resets page', async () => {
+    const { result } = renderHook(() => useLibrary())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => { result.current.toggleContentType('manga'); result.current.toggleStatus('ongoing') })
+    expect(result.current.hasFilters).toBe(true)
+
+    act(() => result.current.clearFilters())
+    expect(result.current.contentTypes).toEqual([])
+    expect(result.current.statuses).toEqual([])
+    expect(result.current.hasFilters).toBe(false)
+    expect(result.current.page).toBe(1)
+  })
+
+  it('fetches with contentType and status params when filters active', async () => {
+    const { result } = renderHook(() => useLibrary())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    vi.clearAllMocks()
+    vi.mocked(api.listTitles).mockResolvedValue(mockPage as never)
+
+    act(() => { result.current.toggleContentType('manga'); result.current.toggleStatus('ongoing') })
+    await waitFor(() => expect(api.listTitles).toHaveBeenCalled())
+    expect(api.listTitles).toHaveBeenCalledWith(1, undefined, 'recent', ['manga'], ['ongoing'])
+  })
+
+  it('showFilters defaults false, setShowFilters toggles it', async () => {
+    const { result } = renderHook(() => useLibrary())
+    expect(result.current.showFilters).toBe(false)
+    act(() => result.current.setShowFilters(true))
+    expect(result.current.showFilters).toBe(true)
+  })
+
   it('polls every 2s when a manga is syncing', async () => {
     vi.useFakeTimers()
     const syncingPage = {
