@@ -2,7 +2,7 @@
 [![CI](https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ci.yml) [![GHCR](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml) [![Docs-site](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml)
 [![E2e](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml)
 
-**v0.1.5** · A self-hosted East Asian comics and novel manager, downloader, and reader for your home server. Supports manga, manhwa, manhua, and light novels from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
+**v0.1.6** · A self-hosted East Asian comics and novel manager, downloader, and reader for your home server. Supports manga, manhwa, manhua, novels, and hentai from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
 
 > ⚠️ **Port change (v0.1.3+)** — the host-exposed port is now **8282** (was 8080 in v0.1.2 and earlier). Update any firewall rules, bookmarks, or reverse proxy configs. The internal container port remains 8080 — only the host-side mapping changed.
 
@@ -12,7 +12,7 @@
 
 ## Features
 
-- **Discover** powered by [MangaUpdates](https://www.mangaupdates.com/) — consistent metadata (titles, covers, descriptions, tags, authors) from a single authoritative source; [E-Hentai](https://e-hentai.org/) for explicit titles
+- **Discover** — fan-out search across 6 authorities: MangaUpdates (manga), AniList (manhwa), MangaDex (manhua), NovelUpdates + WuxiaWorld (novels), nhentai (hentai). Results deduplicated by authority precedence; animated source-chip progress while searching
 - **Trending lanes** — Home screen shows 4 independent trending rows: Manga (MangaUpdates), Manhwa, Manhua, and Adult Manhwa (AniList); each lane caches independently
 - Title aliases from MangaUpdates associated names — improves cross-source matching for series with multiple romanisations
 - Chapters aggregated across all registered sources — completeness doesn't depend on any one source being up to date
@@ -75,7 +75,10 @@ All default sources compile into a single **plugin-host** container — no per-p
 | **Mangapill** | Manga | `plugins/mangapill/` | |
 | **MangaDex** | Manga, Manhwa, Manhua, One-shot | `plugins/mangadex/` | |
 | **Toonily** | Manhwa | `plugins/toonily/` | CF-protected — uses CloakBrowser |
+| **AsuraScans** | Manhwa | `plugins/asurascans/` | |
+| **Manga18fx** | Manhwa (explicit) | `plugins/manga18fx/` | `default_explicit=true` |
 | **NovelFull** | Novel | `plugins/novelfull/` | CF-protected — uses CloakBrowser |
+| **WuxiaWorld** | Novel | `plugins/wuxiaworld/` | Official API — no CF protection |
 | **nhentai** | Hentai doujinshi | `plugins/nhentai/` | CF-protected — uses CloakBrowser; explicit-only source |
 
 CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromium, source-level fingerprint patches). Plugin Host holds the CDP connection; plugins call `ctx.getBrowser()` via `PluginContext`.
@@ -88,7 +91,7 @@ CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromiu
 
 ### Source Plugin Protocol
 
-Plugins are **download-only backends**. Metadata (search, descriptions, covers, trending) comes from MangaUpdates for standard titles, or E-Hentai for explicit titles — plugins only need to serve chapter lists and page content.
+Plugins are **download-only backends**. Metadata (search, descriptions, covers, trending) comes from the discover fan-out authorities (MangaUpdates, AniList, MangaDex, NovelUpdates, WuxiaWorld, nhentai) — plugins only need to serve chapter lists and page content.
 
 Every plugin must implement:
 
