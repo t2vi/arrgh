@@ -150,7 +150,7 @@ public static class Discover
 
         if (sources.Count == 0) return;
 
-        var http = httpFactory.CreateClient();
+        var http = httpFactory.CreateClient("PluginHost");
         var normTarget = Media.NormalizeTitle(titleName);
 
         var aliases = await db.TitleAliases
@@ -209,6 +209,17 @@ public static class Discover
                 // Sync chapters (creates chapter rows + chapter_sources)
                 var chapterCount = await ChapterSync.SyncFromSourceAsync(db, http, pluginHostUrl, titleId, contentType, source.SourceKey!, sourceId);
                 await AppendSyncLogAsync(db, titleId, $"Synced {chapterCount} chapter(s) from {source.SourceKey}");
+            }
+            catch (TaskCanceledException)
+            {
+                // Timeout — CF-protected source without CloakBrowser, or plugin-host unreachable.
+                // Soft failure: log but do not create a sync warning (amber button).
+                await AppendSyncLogAsync(db, titleId, $"Source {source.SourceKey} timed out");
+            }
+            catch (HttpRequestException ex) when (ex.InnerException is System.Net.Sockets.SocketException)
+            {
+                // Connection refused — plugin-host down or source not deployed.
+                await AppendSyncLogAsync(db, titleId, $"Source {source.SourceKey} unreachable");
             }
             catch (Exception ex)
             {

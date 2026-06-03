@@ -12,6 +12,16 @@ const CLOAKBROWSER_WS_URL = process.env.CLOAKBROWSER_WS_URL ?? ''
 
 // ── CloakBrowser connection ───────────────────────────────────────────────────
 
+// Rewrite the host portion of a CDP WebSocket URL reported by /json/version to the
+// host from the configured CLOAKBROWSER_WS_URL. CloakBrowser self-reports 0.0.0.0 or
+// its internal container hostname — neither is reachable from outside. Using the
+// configured URL's host works for both local dev (localhost:3001) and Docker-to-Docker
+// (cloakbrowser:3000) without any special-casing.
+export function rewriteCdpHost(cdpWsUrl: string, configUrl: string): string {
+  const { host } = new URL(configUrl)
+  return cdpWsUrl.replace(/^ws:\/\/[^/]+/, `ws://${host}`)
+}
+
 let browser: Browser | null = null
 
 async function getBrowser(): Promise<Browser> {
@@ -20,12 +30,13 @@ async function getBrowser(): Promise<Browser> {
     throw new Error('CLOAKBROWSER_WS_URL is not set — CF-dependent plugins will not work')
   }
   console.log('[plugin-host] connecting to CloakBrowser…')
-  // Fetch WS URL from /json/version and rewrite the internal Docker hostname to localhost,
-  // so dev setups (plugin-host on host OS, CloakBrowser in Docker) work without DNS for container names.
+  // Fetch WS URL from /json/version and rewrite the host to match CLOAKBROWSER_WS_URL.
+  // CloakBrowser reports its own internal hostname in the WS URL (e.g. 0.0.0.0), which is
+  // unreachable from outside. Use the host from CLOAKBROWSER_WS_URL instead — this works for
+  // both local dev (localhost:3001) and Docker-to-Docker (cloakbrowser:3000).
   const versionRes = await fetch(`${CLOAKBROWSER_WS_URL}/json/version`)
   const { webSocketDebuggerUrl } = await versionRes.json() as { webSocketDebuggerUrl: string }
-  const port = new URL(CLOAKBROWSER_WS_URL).port || '80'
-  const wsUrl = webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://localhost:${port}`)
+  const wsUrl = rewriteCdpHost(webSocketDebuggerUrl, CLOAKBROWSER_WS_URL)
   browser = await chromium.connectOverCDP(wsUrl)
   browser.on('disconnected', () => {
     console.warn('[plugin-host] CloakBrowser disconnected — will reconnect on next request')

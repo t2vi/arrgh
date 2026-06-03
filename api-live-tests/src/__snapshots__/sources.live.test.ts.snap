@@ -16,6 +16,54 @@ exports[`sources > list matches snapshot 1`] = `
   {
     "content_types": [
       "manga",
+    ],
+    "enabled": true,
+    "name": "Mangapill",
+    "priority": 20,
+  },
+  {
+    "content_types": [
+      "manhwa",
+    ],
+    "enabled": true,
+    "name": "Toonily",
+    "priority": 30,
+  },
+  {
+    "content_types": [
+      "novel",
+    ],
+    "enabled": true,
+    "name": "NovelFull",
+    "priority": 40,
+  },
+  {
+    "content_types": [
+      "manhwa",
+    ],
+    "enabled": true,
+    "name": "Manga18fx",
+    "priority": 75,
+  },
+  {
+    "content_types": [
+      "hentai",
+    ],
+    "enabled": true,
+    "name": "nhentai",
+    "priority": 50,
+  },
+  {
+    "content_types": [
+      "manhwa",
+    ],
+    "enabled": true,
+    "name": "AsuraScans",
+    "priority": 110,
+  },
+  {
+    "content_types": [
+      "manga",
       "manhua",
       "one-shot",
     ],
@@ -28,56 +76,8 @@ exports[`sources > list matches snapshot 1`] = `
       "novel",
     ],
     "enabled": true,
-    "name": "NovelFull",
-    "priority": 40,
-  },
-  {
-    "content_types": [
-      "novel",
-    ],
-    "enabled": true,
     "name": "WuxiaWorld",
     "priority": 90,
-  },
-  {
-    "content_types": [
-      "manga",
-    ],
-    "enabled": true,
-    "name": "Mangapill",
-    "priority": 20,
-  },
-  {
-    "content_types": [
-      "manhwa",
-    ],
-    "enabled": true,
-    "name": "Manga18fx",
-    "priority": 75,
-  },
-  {
-    "content_types": [
-      "manhwa",
-    ],
-    "enabled": true,
-    "name": "AsuraScans",
-    "priority": 110,
-  },
-  {
-    "content_types": [
-      "manhwa",
-    ],
-    "enabled": true,
-    "name": "Toonily",
-    "priority": 30,
-  },
-  {
-    "content_types": [
-      "hentai",
-    ],
-    "enabled": true,
-    "name": "nhentai",
-    "priority": 50,
   },
 ]
 `;

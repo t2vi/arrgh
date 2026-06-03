@@ -85,35 +85,66 @@ export async function search(query: string): Promise<SearchItem[]> {
 }
 
 // ── Chapters ──────────────────────────────────────────────────────────────────
-// The wuxiaworld SPA lazy-loads chapter lists — no public bulk REST API.
-// We extract firstChapter from the embedded JSON state in the chapters page.
-// source_id format: "novelSlug/chapterSlug" → used to build the chapter URL.
+// WuxiaWorld chapter lists are loaded by the SPA via a private API — no public
+// bulk REST endpoint exists. We extract chapterInfo from the React Query state
+// embedded in the chapters page HTML.
+//
+// source_id format:
+//   chapter 1:   "novelSlug/chapterSlug"   — real slug (SSR-readable)
+//   chapters 2+: "novelSlug/chapter/{N}"   — numeric fallback; text may not load
+//                                             if WuxiaWorld returns a CSR-only page
+
+interface ChapterGroup {
+  id: number
+  order: number
+  title: string
+  fromChapterNumber: { units: number }
+  toChapterNumber: { units: number }
+  counts: { total: number }
+}
+
+interface ChapterInfo {
+  chapterCount?: { value: number }
+  firstChapter?: EmbeddedChapter
+  chapterGroups?: ChapterGroup[]
+}
 
 export async function chapters(novelSlug: string): Promise<ChapterItem[]> {
   const html = await getHtml(`${BASE}/novel/${novelSlug}/chapters`)
-  const firstChapter = extractEmbeddedChapter(html, 'firstChapter')
-  if (!firstChapter) return []
+  const chapterInfo = extractChapterInfo(html)
+  if (!chapterInfo || !chapterInfo.chapterGroups?.length) return []
 
-  return [{
-    source_id: `${novelSlug}/${firstChapter.slug}`,
-    number: firstChapter.offset ?? 1,
-    volume: null,
-    title: firstChapter.name ?? null,
-  }]
+  const { firstChapter, chapterGroups } = chapterInfo
+  const result: ChapterItem[] = []
+
+  // WuxiaWorld's fromChapterNumber uses an internal decimal format (units=1 for all groups)
+  // not sequential chapter numbers — use cumulative offset to guarantee unique chapter numbers.
+  let cumulative = 1
+  for (const group of chapterGroups) {
+    const count = group.counts.total
+    for (let i = 0; i < count; i++) {
+      const num = cumulative + i
+      const isFirst = num === 1 && firstChapter?.slug
+      result.push({
+        source_id: isFirst ? `${novelSlug}/${firstChapter!.slug}` : `${novelSlug}/chapter/${num}`,
+        number: num,
+        volume: group.order,
+        title: isFirst ? (firstChapter!.name ?? null) : null,
+      })
+    }
+    cumulative += count
+  }
+
+  return result
 }
 
-function extractEmbeddedChapter(html: string, key: string): EmbeddedChapter | null {
-  const marker = `"${key}":{`
-  const idx = html.indexOf(marker)
-  if (idx < 0) return null
-  const start = idx + marker.length - 1
-  let depth = 0; let end = start
-  for (let i = start; i < html.length; i++) {
-    if (html[i] === '{') depth++
-    else if (html[i] === '}') { depth--; if (depth === 0) { end = i + 1; break } }
-  }
+function extractChapterInfo(html: string): ChapterInfo | null {
+  const match = html.match(/window\.__REACT_QUERY_STATE__\s*=\s*(\{.*?\});\s*/s)
+  if (!match) return null
   try {
-    return JSON.parse(html.slice(start, end)) as EmbeddedChapter
+    const state = JSON.parse(match[1]) as { queries?: { queryKey?: unknown[]; state?: { data?: { item?: { chapterInfo?: ChapterInfo } } } }[] }
+    const novelQuery = state.queries?.find(q => Array.isArray(q.queryKey) && q.queryKey.includes('novel'))
+    return novelQuery?.state?.data?.item?.chapterInfo ?? null
   } catch {
     return null
   }

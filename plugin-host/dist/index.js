@@ -22,12 +22,14 @@ async function getBrowser() {
         throw new Error('CLOAKBROWSER_WS_URL is not set — CF-dependent plugins will not work');
     }
     console.log('[plugin-host] connecting to CloakBrowser…');
-    // Fetch WS URL from /json/version and rewrite the internal Docker hostname to localhost,
-    // so dev setups (plugin-host on host OS, CloakBrowser in Docker) work without DNS for container names.
+    // Fetch WS URL from /json/version and rewrite the host to match CLOAKBROWSER_WS_URL.
+    // CloakBrowser reports its own internal hostname in the WS URL (e.g. 0.0.0.0), which is
+    // unreachable from outside. Use the host from CLOAKBROWSER_WS_URL instead — this works for
+    // both local dev (localhost:3001) and Docker-to-Docker (cloakbrowser:3000).
     const versionRes = await fetch(`${CLOAKBROWSER_WS_URL}/json/version`);
     const { webSocketDebuggerUrl } = await versionRes.json();
-    const port = new URL(CLOAKBROWSER_WS_URL).port || '80';
-    const wsUrl = webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://localhost:${port}`);
+    const { host } = new URL(CLOAKBROWSER_WS_URL);
+    const wsUrl = webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://${host}`);
     browser = await playwright_core_1.chromium.connectOverCDP(wsUrl);
     browser.on('disconnected', () => {
         console.warn('[plugin-host] CloakBrowser disconnected — will reconnect on next request');

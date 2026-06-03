@@ -39,6 +39,9 @@ builder.Services.AddScoped<MangaDexMetaService>();
 builder.Services.AddScoped<NovelUpdatesService>();
 builder.Services.AddScoped<WuxiaWorldMetaService>();
 builder.Services.AddHttpClient();
+// Short timeout for plugin-host source matching — CF-protected plugins that lack CloakBrowser
+// can hang for the full 100 s default; 20 s is enough for healthy plugin responses.
+builder.Services.AddHttpClient("PluginHost", c => c.Timeout = TimeSpan.FromSeconds(20));
 builder.Services.AddHostedService<UpdateCheckerService>();
 builder.Services.AddHostedService<DownloaderService>();
 

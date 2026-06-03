@@ -459,6 +459,10 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `MatchSourcesAsync` → plugin returns hyphen-variant title ("Soeun" for "So-Eun") → still links source via fuzzy match | ✅ |
 | `MatchSourcesAsync` → plugin returns alias-matching title ("Everything Is Agreed" for alias "Everything Is Agreed Upon") → links source | ✅ |
 | `MatchSourcesAsync` → plugin returns completely unrelated title → warning logged, no source link created | ✅ |
+| `POST /discover/add` → explicit manga title → also queries nhentai sources in MatchSourcesAsync | ✅ |
+| `POST /discover/add` → non-explicit manga title → does NOT query nhentai | ✅ |
+| `MatchSourcesAsync` → plugin-host times out (TaskCanceledException) but another source succeeds → no sync warning | ✅ |
+| `MatchSourcesAsync` → all sources time out → sync warning set | ✅ |
 
 ### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ✅ ADR 0031
 
@@ -489,6 +493,10 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `FilterMuScope` keeps manga results | ✅ |
 | `FilterMuScope` keeps one-shot results | ✅ |
 | `FilterMuScope` mixed input → only manga/one-shot survive | ✅ |
+| `MergeFanOut` nhentai exact-match upgrades explicit manga result to hentai | ✅ |
+| `MergeFanOut` nhentai hit with longer MU title → not upgraded (different normalized titles) | ✅ |
+| `MergeFanOut` nhentai hit on non-explicit title → not upgraded (is_explicit guard) | ✅ |
+| `MergeFanOut` nhentai normalization applied (punctuation stripped, lowercase) | ✅ |
 
 ---
 
@@ -517,6 +525,9 @@ Vitest + supertest. `createApp(plugins, communityIds?)` exported from `index.ts`
 | `POST /plugins/install` → 400 when url missing | ✅ |
 | `DELETE /plugins/:id` → 403 for bundled plugin | ✅ |
 | `DELETE /plugins/:id` → 204 removes community plugin | ✅ |
+| `rewriteCdpHost` → rewrites 0.0.0.0 to localhost for local dev | ✅ |
+| `rewriteCdpHost` → rewrites internal hostname to Docker service name | ✅ |
+| `rewriteCdpHost` → preserves path after host rewrite | ✅ |
 
 ## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) ✅
 
@@ -556,7 +567,7 @@ HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked respo
 |---|---|---|
 | mangafire | search shape + field values, manhwa type, chapters w/ numbers, pages URLs | ✅ |
 | asurascans | search shape + slug extraction, status normalization, chapters, pages | ✅ |
-| wuxiaworld | search shape + API mapping, chapters + source_id, chapterText extraction | ✅ |
+| wuxiaworld | search shape + API mapping, chapters returns all from chapterGroups (count, ch1 real slug, ch2+ numeric source_id, volume from group order, empty fallback), chapterText extraction | ✅ |
 | manga18fx | search shape + slug extraction, chapters with numbers, pages URLs | ✅ |
 | manga18fx | chapters — sidebar/popular chapter links from other series NOT included (contamination regression) | ✅ |
 | manga18fx | search URL is `/search?q=` not `/?s=` (WordPress fallback regression) | ✅ |
@@ -661,6 +672,49 @@ await allure.owner('vinny')
 Failure categories: `allure-categories.json` at repo root — Product defects (failed), Test defects (broken), Skipped.
 
 Server tests (xUnit) appear under their class paths in the Suites view.
+
+---
+
+## API Live Tests (`api-live-tests/`)
+
+**Not in CI.** On-demand end-to-end validation hitting a real running server + plugin-host. Requires `API_USER`/`API_PASS` (or `API_TOKEN`). NH tests require CloakBrowser (`CLOAKBROWSER_WS_URL` set in plugin-host env).
+
+```bash
+cd api-live-tests
+API_USER=vinny API_PASS=... npm test          # all tests (44 total)
+API_USER=vinny API_PASS=... npm run test:update  # refresh discover snapshots
+```
+
+**File order** (enforced by `CliOrderSequencer` in `vitest.config.ts` — nhentai must run before long-running novel sync to keep CloakBrowser fresh):
+
+| File | What it tests |
+|---|---|
+| `library-flow-mangadex.live.test.ts` | 8-step manga flow: Berserk via MangaDex (no CF) |
+| `library-flow.live.test.ts` | 8-step hentai flow: KayaNetori via nhentai (CloakBrowser) |
+| `library-flow-manhwa.live.test.ts` | 8-step manhwa flow: Solo Leveling via AsuraScans (no CF) |
+| `library-flow-novel.live.test.ts` | 8-step novel flow: ISSTH via WuxiaWorld (official API); text endpoint; 120s sync timeout |
+| `sources.live.test.ts` | Sources list snapshot + nhentai=hentai assertion |
+| `discover.live.test.ts` | Discover search snapshots per content type (snapshot; update periodically) |
+
+**Library flow steps** (all 6 flows follow same 8-step pattern):
+
+| Step | What |
+|---|---|
+| 1 | discover returns a result for the content type |
+| 2 | add to library |
+| 3 | sync_status → ready |
+| 4 | chapters loaded with has_sources=true |
+| 5 | sync log contains source name + "Sync complete" |
+| 6 | queue chapter 1 for download |
+| 7 | download completes (status=done) |
+| 8 | chapter viewable (image 200 for manga/manhwa/hentai; text endpoint for novel) |
+
+| Flow | Authority | Status |
+|---|---|---|
+| manga | MangaDex | ✅ |
+| hentai | nhentai | ✅ |
+| manhwa | AsuraScans | ✅ |
+| novel | WuxiaWorld | ✅ |
 
 ---
 

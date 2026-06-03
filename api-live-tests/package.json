@@ -5,8 +5,8 @@
   "description": "API live snapshot tests — real HTTP calls to a running server; not run in CI",
   "type": "module",
   "scripts": {
-    "test": "vitest run src/library-flow-mangadex.live.test.ts src/library-flow.live.test.ts src/sources.live.test.ts src/discover.live.test.ts",
-    "test:update": "vitest run -u src/library-flow-mangadex.live.test.ts src/library-flow.live.test.ts src/sources.live.test.ts src/discover.live.test.ts",
+    "test": "vitest run src/library-flow-mangadex.live.test.ts src/library-flow.live.test.ts src/library-flow-manhwa.live.test.ts src/library-flow-novel.live.test.ts src/sources.live.test.ts src/discover.live.test.ts",
+    "test:update": "vitest run -u src/library-flow-mangadex.live.test.ts src/library-flow.live.test.ts src/library-flow-manhwa.live.test.ts src/library-flow-novel.live.test.ts src/sources.live.test.ts src/discover.live.test.ts",
     "test:watch": "vitest"
   },
   "devDependencies": {
