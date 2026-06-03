@@ -1,0 +1,40 @@
+{
+  "uuid": "27d0a2bb-4937-4766-86b5-31577c3f5d49",
+  "historyId": "ArrghServer.Tests.LogServiceTests#SetLevel_InvalidLevel_ReturnsFalse",
+  "name": "SetLevel_InvalidLevel_ReturnsFalse",
+  "fullName": "ArrghServer.Tests.LogServiceTests.SetLevel_InvalidLevel_ReturnsFalse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479309829,
+  "stop": 1780479309829,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_InvalidLevel_ReturnsFalse"
+    }
+  ]
+}

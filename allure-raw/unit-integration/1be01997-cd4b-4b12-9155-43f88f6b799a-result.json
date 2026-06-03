@@ -1,0 +1,40 @@
+{
+  "uuid": "1be01997-cd4b-4b12-9155-43f88f6b799a",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ValidReaderMode_Scroll_Valid",
+  "name": "ValidReaderMode_Scroll_Valid",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ValidReaderMode_Scroll_Valid",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479309873,
+  "stop": 1780479309873,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Validation"
+    },
+    {
+      "name": "story",
+      "value": "ValidReaderMode_Scroll_Valid"
+    }
+  ]
+}

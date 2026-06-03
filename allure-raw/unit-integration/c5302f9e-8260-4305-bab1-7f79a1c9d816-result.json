@@ -1,0 +1,40 @@
+{
+  "uuid": "c5302f9e-8260-4305-bab1-7f79a1c9d816",
+  "historyId": "ArrghServer.Tests.PluginsTests#InstallPlugin_BadGateway_WhenPluginHostFails",
+  "name": "InstallPlugin_BadGateway_WhenPluginHostFails",
+  "fullName": "ArrghServer.Tests.PluginsTests.InstallPlugin_BadGateway_WhenPluginHostFails",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479339372,
+  "stop": 1780479340064,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "InstallPlugin_BadGateway_WhenPluginHostFails"
+    }
+  ]
+}

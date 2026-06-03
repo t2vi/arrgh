@@ -1,0 +1,40 @@
+{
+  "uuid": "59936a9e-eafe-4805-b36e-73cefc71636e",
+  "historyId": "ArrghServer.Tests.ProgressTests#GetProgress_Unauthorized_NoToken",
+  "name": "GetProgress_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.ProgressTests.GetProgress_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479328622,
+  "stop": 1780479329011,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Reading Progress"
+    },
+    {
+      "name": "story",
+      "value": "GetProgress_Unauthorized_NoToken"
+    }
+  ]
+}

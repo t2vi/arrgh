@@ -1,0 +1,40 @@
+{
+  "uuid": "701113d5-4e01-4182-9585-08cee597965d",
+  "historyId": "ArrghServer.Tests.TitlesTests#GetTitle_ChaptersRead_IsolatedPerUser",
+  "name": "GetTitle_ChaptersRead_IsolatedPerUser",
+  "fullName": "ArrghServer.Tests.TitlesTests.GetTitle_ChaptersRead_IsolatedPerUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479358914,
+  "stop": 1780479359702,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "GetTitle_ChaptersRead_IsolatedPerUser"
+    }
+  ]
+}

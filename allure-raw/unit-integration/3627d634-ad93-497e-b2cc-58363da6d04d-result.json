@@ -1,0 +1,40 @@
+{
+  "uuid": "3627d634-ad93-497e-b2cc-58363da6d04d",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_UnprocessableEntity_InvalidReaderMode",
+  "name": "SaveSettings_UnprocessableEntity_InvalidReaderMode",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_UnprocessableEntity_InvalidReaderMode",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479328007,
+  "stop": 1780479328367,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Config"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_UnprocessableEntity_InvalidReaderMode"
+    }
+  ]
+}

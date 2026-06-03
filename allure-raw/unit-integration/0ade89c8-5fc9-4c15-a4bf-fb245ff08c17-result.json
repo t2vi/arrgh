@@ -1,0 +1,40 @@
+{
+  "uuid": "0ade89c8-5fc9-4c15-a4bf-fb245ff08c17",
+  "historyId": "ArrghServer.Tests.SourcesPatchTests#ListSources_ReturnsPriority_InResponse",
+  "name": "ListSources_ReturnsPriority_InResponse",
+  "fullName": "ArrghServer.Tests.SourcesPatchTests.ListSources_ReturnsPriority_InResponse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479335500,
+  "stop": 1780479336180,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesPatchTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesPatchTests"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_ReturnsPriority_InResponse"
+    }
+  ]
+}
