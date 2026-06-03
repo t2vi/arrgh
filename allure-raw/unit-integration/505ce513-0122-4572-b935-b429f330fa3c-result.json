@@ -1,0 +1,40 @@
+{
+  "uuid": "505ce513-0122-4572-b935-b429f330fa3c",
+  "historyId": "ArrghServer.Tests.ChaptersTests#GetChapterText_NotFound_Nonexistent",
+  "name": "GetChapterText_NotFound_Nonexistent",
+  "fullName": "ArrghServer.Tests.ChaptersTests.GetChapterText_NotFound_Nonexistent",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489942574,
+  "stop": 1780489943104,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterText_NotFound_Nonexistent"
+    }
+  ]
+}

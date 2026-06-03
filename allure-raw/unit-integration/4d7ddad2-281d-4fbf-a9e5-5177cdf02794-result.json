@@ -1,0 +1,40 @@
+{
+  "uuid": "4d7ddad2-281d-4fbf-a9e5-5177cdf02794",
+  "historyId": "ArrghServer.Tests.VersionTests#GetVersion_ReturnsCurrentVersion",
+  "name": "GetVersion_ReturnsCurrentVersion",
+  "fullName": "ArrghServer.Tests.VersionTests.GetVersion_ReturnsCurrentVersion",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489919903,
+  "stop": 1780489920320,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "VersionTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Version"
+    },
+    {
+      "name": "story",
+      "value": "GetVersion_ReturnsCurrentVersion"
+    }
+  ]
+}

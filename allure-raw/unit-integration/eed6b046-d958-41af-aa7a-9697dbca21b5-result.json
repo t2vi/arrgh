@@ -1,0 +1,40 @@
+{
+  "uuid": "eed6b046-d958-41af-aa7a-9697dbca21b5",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_StatusIsDownloading_NotInProgress_WhileProcessing",
+  "name": "Download_StatusIsDownloading_NotInProgress_WhileProcessing",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_StatusIsDownloading_NotInProgress_WhileProcessing",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489917303,
+  "stop": 1780489922405,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_StatusIsDownloading_NotInProgress_WhileProcessing"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "171dd6b2-fa40-47c2-a92a-92f575bacd52",
+  "historyId": "ArrghServer.Tests.AuthTests#PatchUser_UnprocessableEntity_InvalidRole",
+  "name": "PatchUser_UnprocessableEntity_InvalidRole",
+  "fullName": "ArrghServer.Tests.AuthTests.PatchUser_UnprocessableEntity_InvalidRole",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489945467,
+  "stop": 1780489946216,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "PatchUser_UnprocessableEntity_InvalidRole"
+    }
+  ]
+}

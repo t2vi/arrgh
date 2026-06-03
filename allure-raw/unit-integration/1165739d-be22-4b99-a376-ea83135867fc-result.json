@@ -1,0 +1,40 @@
+{
+  "uuid": "1165739d-be22-4b99-a376-ea83135867fc",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_NotFound_WhenNotOwned",
+  "name": "PatchTitle_NotFound_WhenNotOwned",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_NotFound_WhenNotOwned",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489971106,
+  "stop": 1780489971693,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_NotFound_WhenNotOwned"
+    }
+  ]
+}

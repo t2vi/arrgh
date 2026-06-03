@@ -1,0 +1,40 @@
+{
+  "uuid": "cf6e222a-ff3d-46e3-a2ac-d4481779b40d",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#Deduplicate_AuthorityWins_ForManhua",
+  "name": "Deduplicate_AuthorityWins_ForManhua",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.Deduplicate_AuthorityWins_ForManhua",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489911883,
+  "stop": 1780489911883,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "Deduplicate_AuthorityWins_ForManhua"
+    }
+  ]
+}

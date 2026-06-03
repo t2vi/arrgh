@@ -1,0 +1,40 @@
+{
+  "uuid": "e813116c-ccd0-4e0b-b858-1dcd126fc411",
+  "historyId": "ArrghServer.Tests.ProgressTests#UpdateProgress_IsolatedPerUser",
+  "name": "UpdateProgress_IsolatedPerUser",
+  "fullName": "ArrghServer.Tests.ProgressTests.UpdateProgress_IsolatedPerUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489927689,
+  "stop": 1780489928519,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Reading Progress"
+    },
+    {
+      "name": "story",
+      "value": "UpdateProgress_IsolatedPerUser"
+    }
+  ]
+}

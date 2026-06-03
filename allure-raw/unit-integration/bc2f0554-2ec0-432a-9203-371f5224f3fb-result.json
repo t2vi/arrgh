@@ -1,0 +1,40 @@
+{
+  "uuid": "bc2f0554-2ec0-432a-9203-371f5224f3fb",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_SecondSourceSucceeds_WhenFirstFails",
+  "name": "Download_SecondSourceSucceeds_WhenFirstFails",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_SecondSourceSucceeds_WhenFirstFails",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489925538,
+  "stop": 1780489928655,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_SecondSourceSucceeds_WhenFirstFails"
+    }
+  ]
+}

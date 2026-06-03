@@ -1,0 +1,40 @@
+{
+  "uuid": "6ba5ddcb-4bb9-401a-91d2-460d5ef8b2b5",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#DetectContentType_Avif",
+  "name": "DetectContentType_Avif",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.DetectContentType_Avif",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780489911878,
+  "stop": 1780489911878,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "DetectContentType_Avif"
+    }
+  ]
+}
