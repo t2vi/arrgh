@@ -1,6 +1,8 @@
 # ── Workspace deps (shared build-time install) ────────────────────────────────
+# Force amd64 for all build stages — JS bundles are platform-agnostic and
+# Node 22 crashes under QEMU arm64 emulation (illegal instruction in V8).
 
-FROM node:22-alpine AS deps
+FROM --platform=linux/amd64 node:22-alpine AS deps
 WORKDIR /build
 COPY package.json package-lock.json ./
 COPY plugins/mangadex/package.json     ./plugins/mangadex/
@@ -17,24 +19,32 @@ RUN npm ci
 
 # ── Build all plugin bundles ──────────────────────────────────────────────────
 
-FROM deps AS bundles
+FROM --platform=linux/amd64 deps AS bundles
 COPY plugins ./plugins
 RUN npm run build:plugins
 
 # ── Build plugin-host ─────────────────────────────────────────────────────────
 
-FROM deps AS host-build
+FROM --platform=linux/amd64 deps AS host-build
 COPY plugin-host/tsconfig.json ./plugin-host/
 COPY plugin-host/src           ./plugin-host/src
 WORKDIR /build/plugin-host
 RUN npm run build
 
+# ── Prod deps (standalone install for the runtime image) ─────────────────────
+# Run on amd64 to avoid QEMU crash. plugin-host deps are pure JS — amd64
+# node_modules work on arm64 at runtime.
+
+FROM --platform=linux/amd64 node:22-alpine AS prod-deps
+WORKDIR /app
+COPY plugin-host/package.json ./
+RUN npm install --omit=dev --ignore-scripts
+
 # ── Final image ───────────────────────────────────────────────────────────────
 
 FROM node:22-alpine
 WORKDIR /app
-COPY plugin-host/package.json ./
-RUN npm install --omit=dev --ignore-scripts
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=host-build /build/plugin-host/dist ./dist
 RUN mkdir -p bundles
 COPY --from=bundles /build/plugins/mangadex/bundles/mangadex.js         ./bundles/
