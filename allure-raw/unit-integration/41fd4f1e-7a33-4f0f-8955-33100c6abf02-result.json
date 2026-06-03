@@ -1,0 +1,40 @@
+{
+  "uuid": "41fd4f1e-7a33-4f0f-8955-33100c6abf02",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#GetChapterPage_ZipPage_ExtractsCorrectEntry",
+  "name": "GetChapterPage_ZipPage_ExtractsCorrectEntry",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.GetChapterPage_ZipPage_ExtractsCorrectEntry",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780475760514,
+  "stop": 1780475760599,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterPage_ZipPage_ExtractsCorrectEntry"
+    }
+  ]
+}
