@@ -1,0 +1,40 @@
+{
+  "uuid": "7a7f5b03-08f8-46fe-b7ed-29f8db61efd7",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_Expires_In30Days",
+  "name": "CreateToken_Expires_In30Days",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_Expires_In30Days",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477924020,
+  "stop": 1780477924020,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Token"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_Expires_In30Days"
+    }
+  ]
+}

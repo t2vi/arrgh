@@ -1,0 +1,40 @@
+{
+  "uuid": "d288bf88-fd14-4552-b1c5-4f1238defdf6",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_CancelsDownloading_InsteadOfDelete",
+  "name": "RemoveFromQueue_CancelsDownloading_InsteadOfDelete",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_CancelsDownloading_InsteadOfDelete",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477973088,
+  "stop": 1780477973656,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_CancelsDownloading_InsteadOfDelete"
+    }
+  ]
+}

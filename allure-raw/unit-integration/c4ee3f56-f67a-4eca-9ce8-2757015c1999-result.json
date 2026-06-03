@@ -1,0 +1,40 @@
+{
+  "uuid": "c4ee3f56-f67a-4eca-9ce8-2757015c1999",
+  "historyId": "ArrghServer.Tests.PluginsTests#GetIndex_ReturnsEntries",
+  "name": "GetIndex_ReturnsEntries",
+  "fullName": "ArrghServer.Tests.PluginsTests.GetIndex_ReturnsEntries",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477985574,
+  "stop": 1780477986035,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "GetIndex_ReturnsEntries"
+    }
+  ]
+}

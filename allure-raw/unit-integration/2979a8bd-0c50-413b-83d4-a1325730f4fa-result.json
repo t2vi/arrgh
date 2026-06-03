@@ -1,0 +1,40 @@
+{
+  "uuid": "2979a8bd-0c50-413b-83d4-a1325730f4fa",
+  "historyId": "ArrghServer.Tests.DefaultSeedingTests#Seeded_AsuraScans_Priority_IsLastAmongManhwaSources",
+  "name": "Seeded_AsuraScans_Priority_IsLastAmongManhwaSources",
+  "fullName": "ArrghServer.Tests.DefaultSeedingTests.Seeded_AsuraScans_Priority_IsLastAmongManhwaSources",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477992008,
+  "stop": 1780477992185,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DefaultSeedingTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "DefaultSeedingTests"
+    },
+    {
+      "name": "story",
+      "value": "Seeded_AsuraScans_Priority_IsLastAmongManhwaSources"
+    }
+  ]
+}

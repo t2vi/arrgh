@@ -1,0 +1,40 @@
+{
+  "uuid": "d73cc5e9-ee23-4f03-a1ce-4c58fc89a1e7",
+  "historyId": "ArrghServer.Tests.QueueTests#ClearCompleted_NoContent_DeletesDoneAndCancelledAndError",
+  "name": "ClearCompleted_NoContent_DeletesDoneAndCancelledAndError",
+  "fullName": "ArrghServer.Tests.QueueTests.ClearCompleted_NoContent_DeletesDoneAndCancelledAndError",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477976483,
+  "stop": 1780477977030,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "ClearCompleted_NoContent_DeletesDoneAndCancelledAndError"
+    }
+  ]
+}

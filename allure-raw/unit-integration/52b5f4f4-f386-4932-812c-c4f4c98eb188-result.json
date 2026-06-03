@@ -1,0 +1,40 @@
+{
+  "uuid": "52b5f4f4-f386-4932-812c-c4f4c98eb188",
+  "historyId": "ArrghServer.Tests.MigrationBootstrapTests#Bootstrap_EmptyHistoryTable_StillRepairsAndMigrateSucceeds",
+  "name": "Bootstrap_EmptyHistoryTable_StillRepairsAndMigrateSucceeds",
+  "fullName": "ArrghServer.Tests.MigrationBootstrapTests.Bootstrap_EmptyHistoryTable_StillRepairsAndMigrateSucceeds",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477925384,
+  "stop": 1780477925982,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MigrationBootstrapTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "MigrationBootstrapTests"
+    },
+    {
+      "name": "story",
+      "value": "Bootstrap_EmptyHistoryTable_StillRepairsAndMigrateSucceeds"
+    }
+  ]
+}

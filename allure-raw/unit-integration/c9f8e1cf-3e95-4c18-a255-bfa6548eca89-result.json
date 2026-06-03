@@ -1,0 +1,40 @@
+{
+  "uuid": "c9f8e1cf-3e95-4c18-a255-bfa6548eca89",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#RootDomainReferer_Subdomain_ExtractsRoot",
+  "name": "RootDomainReferer_Subdomain_ExtractsRoot",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.RootDomainReferer_Subdomain_ExtractsRoot",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477924097,
+  "stop": 1780477924097,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "RootDomainReferer_Subdomain_ExtractsRoot"
+    }
+  ]
+}

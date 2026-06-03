@@ -1,0 +1,40 @@
+{
+  "uuid": "b05812d2-c1b5-4566-8163-0c2600cbd312",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_Unauthorized_WithoutToken",
+  "name": "AddManga_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477997666,
+  "stop": 1780477997922,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_Unauthorized_WithoutToken"
+    }
+  ]
+}

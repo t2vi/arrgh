@@ -1,0 +1,40 @@
+{
+  "uuid": "e7144809-40c6-4760-bb57-f74c4fff6769",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#DetectContentType_Jpeg",
+  "name": "DetectContentType_Jpeg",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.DetectContentType_Jpeg",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477924084,
+  "stop": 1780477924084,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "DetectContentType_Jpeg"
+    }
+  ]
+}

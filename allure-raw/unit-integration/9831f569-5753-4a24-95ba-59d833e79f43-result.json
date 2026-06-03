@@ -1,0 +1,40 @@
+{
+  "uuid": "9831f569-5753-4a24-95ba-59d833e79f43",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddManga_ExplicitManga_AlsoQueriesNhentai",
+  "name": "AddManga_ExplicitManga_AlsoQueriesNhentai",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddManga_ExplicitManga_AlsoQueriesNhentai",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780477965678,
+  "stop": 1780477966411,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_ExplicitManga_AlsoQueriesNhentai"
+    }
+  ]
+}
