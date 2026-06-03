@@ -36,6 +36,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
 | Discover | `SearchRow` | render, is_explicit=true→18+ badge shown, is_explicit=false→no 18+ badge, tag-based inference blocked, loading state, In Library, cover/skeleton | ✅ |
 | Discover | `ContentTypeFilter` | render, hentai pill, novel pill, onChange (2 TDD ⬜) | 🟡 |
+| Discover | `SearchProgress` | searching: heading, skeletons, pills stagger in; completed: "Results from…" heading, no skeletons, all pills visible immediately, matched→green after stagger, unmatched→dimmed, dot green+no-pulse | ✅ |
 | Home | `useHome` | loads trending on mount, filters in-library, trendingLoading lifecycle | ✅ |
 | Home | `Cards` | render variants, title+author below cover, error→emoji, is_explicit=true→18+ pill shown (TrendingCard + LibraryCoverCard), is_explicit=false→no 18+ pill | ✅ |
 | Settings | `useSettings` | load, tab defaults, save, logout | ✅ |

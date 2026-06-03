@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, type SearchResult } from '@/api'
 import { ROUTES } from '@/lib/routes'
@@ -12,6 +12,10 @@ export interface DiscoverHandle {
   contentTypeFilter: string | undefined
   setContentTypeFilter: (v: string | undefined) => void
   isFetching: boolean
+  /** True for ~700ms after results arrive — show SearchProgress in completed state. */
+  showProgress: boolean
+  /** Sources that contributed results; defined only when showProgress is true. */
+  completedSources: Set<string> | undefined
   searchError: string | null
   addError: string | null
   addingId: string | null
@@ -35,10 +39,15 @@ export function useDiscover(): DiscoverHandle {
   const [searchError, setSearchError] = useState<string | null>(null)
   const [contentTypeFilter, setContentTypeFilterState] = useState<string | undefined>()
 
+  const [showProgress, setShowProgress] = useState(false)
+  const [completedSources, setCompletedSources] = useState<Set<string> | undefined>()
+  const prevFetching = useRef(false)
+
   useEffect(() => {
     if (!submitted) return
     setIsFetching(true)
     setSearchError(null)
+    setCompletedSources(undefined)
     setContentTypeFilterState(undefined)
     api.searchManga(submitted)
       .then((r) => { setData(r); setSearchError(null) })
@@ -52,6 +61,20 @@ export function useDiscover(): DiscoverHandle {
       })
       .finally(() => setIsFetching(false))
   }, [submitted])
+
+  // When fetch completes with results, briefly show the green-pill "done" state before
+  // revealing the results list — gives the user a clear signal which sources responded.
+  useEffect(() => {
+    if (prevFetching.current && !isFetching && data && data.length > 0) {
+      const sources = new Set(data.map((r) => r.source))
+      setCompletedSources(sources)
+      setShowProgress(true)
+      const t = setTimeout(() => setShowProgress(false), 700)
+      prevFetching.current = false
+      return () => clearTimeout(t)
+    }
+    prevFetching.current = isFetching
+  }, [isFetching, data])
 
   const availableTypes = useMemo<Set<string>>(() => {
     if (!data) return new Set()
@@ -95,7 +118,8 @@ export function useDiscover(): DiscoverHandle {
     query, setQuery,
     data, filteredData, availableTypes,
     contentTypeFilter, setContentTypeFilter,
-    isFetching, searchError,
+    isFetching, showProgress, completedSources,
+    searchError,
     addError, addingId, added,
     submit, handleAdd, navigate,
   }

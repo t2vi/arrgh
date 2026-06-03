@@ -45,9 +45,11 @@ export default function Discover() {
             </div>
           )}
 
-          {h.isFetching && <SearchProgress />}
+          {(h.isFetching || h.showProgress) && (
+            <SearchProgress completedSources={h.showProgress ? h.completedSources : undefined} />
+          )}
 
-          {h.data && !h.isFetching && (
+          {h.data && !h.isFetching && !h.showProgress && (
             <div className="space-y-3">
               <ContentTypeFilter
                 value={h.contentTypeFilter}
