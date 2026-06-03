@@ -106,6 +106,123 @@ public class TitlesTests
     }
 
     [Fact]
+    public async Task ListTitles_ContentTypeFilter_ReturnsOnlyMatchingTypes()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = Fake.AdminUser();
+        await Seed.UserAsync(db, user);
+
+        var manga = Fake.Title(); manga.ContentType = "manga";
+        var manhwa = Fake.Title(); manhwa.ContentType = "manhwa";
+        var novel = Fake.Title(); novel.ContentType = "novel";
+        await Seed.TitleAsync(db, user.Id, manga);
+        await Seed.TitleAsync(db, user.Id, manhwa);
+        await Seed.TitleAsync(db, user.Id, novel);
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement>("/api/titles?content_type=manga");
+        Assert.Equal(1, res.GetProperty("total").GetInt32());
+        Assert.Equal("manga", res.GetProperty("items")[0].GetProperty("content_type").GetString());
+    }
+
+    [Fact]
+    public async Task ListTitles_ContentTypeFilter_MultipleTypes()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = Fake.AdminUser();
+        await Seed.UserAsync(db, user);
+
+        var manga = Fake.Title(); manga.ContentType = "manga";
+        var manhwa = Fake.Title(); manhwa.ContentType = "manhwa";
+        var novel = Fake.Title(); novel.ContentType = "novel";
+        await Seed.TitleAsync(db, user.Id, manga);
+        await Seed.TitleAsync(db, user.Id, manhwa);
+        await Seed.TitleAsync(db, user.Id, novel);
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement>("/api/titles?content_type=manga,manhwa");
+        Assert.Equal(2, res.GetProperty("total").GetInt32());
+    }
+
+    [Fact]
+    public async Task ListTitles_StatusFilter_ReturnsOnlyMatchingStatus()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = Fake.AdminUser();
+        await Seed.UserAsync(db, user);
+
+        var ongoing = Fake.Title(); ongoing.Status = "ongoing";
+        var completed = Fake.Title(); completed.Status = "completed";
+        await Seed.TitleAsync(db, user.Id, ongoing);
+        await Seed.TitleAsync(db, user.Id, completed);
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement>("/api/titles?status=ongoing");
+        Assert.Equal(1, res.GetProperty("total").GetInt32());
+        Assert.Equal("ongoing", res.GetProperty("items")[0].GetProperty("status").GetString());
+    }
+
+    [Fact]
+    public async Task ListTitles_SortTitleAsc_ReturnsAlphabeticalOrder()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = Fake.AdminUser();
+        await Seed.UserAsync(db, user);
+
+        var t1 = Fake.Title(); t1.TitleName = "Zorro";
+        var t2 = Fake.Title(); t2.TitleName = "Akira";
+        var t3 = Fake.Title(); t3.TitleName = "Berserk";
+        await Seed.TitleAsync(db, user.Id, t1);
+        await Seed.TitleAsync(db, user.Id, t2);
+        await Seed.TitleAsync(db, user.Id, t3);
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement>("/api/titles?sort=title_asc");
+        var items = res.GetProperty("items");
+        Assert.Equal("Akira",   items[0].GetProperty("title").GetString());
+        Assert.Equal("Berserk", items[1].GetProperty("title").GetString());
+        Assert.Equal("Zorro",   items[2].GetProperty("title").GetString());
+    }
+
+    [Fact]
+    public async Task ListTitles_SortTitleDesc_ReturnsReverseAlphabeticalOrder()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = Fake.AdminUser();
+        await Seed.UserAsync(db, user);
+
+        var t1 = Fake.Title(); t1.TitleName = "Zorro";
+        var t2 = Fake.Title(); t2.TitleName = "Akira";
+        await Seed.TitleAsync(db, user.Id, t1);
+        await Seed.TitleAsync(db, user.Id, t2);
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement>("/api/titles?sort=title_desc");
+        var items = res.GetProperty("items");
+        Assert.Equal("Zorro", items[0].GetProperty("title").GetString());
+        Assert.Equal("Akira", items[1].GetProperty("title").GetString());
+    }
+
+    [Fact]
+    public async Task ListTitles_ContentTypeAndStatusCombined_FiltersCorrectly()
+    {
+        var (client, db) = NewFactory().CreateClientWithDb();
+        var user = Fake.AdminUser();
+        await Seed.UserAsync(db, user);
+
+        var match = Fake.Title(); match.ContentType = "manga"; match.Status = "ongoing";
+        var wrongStatus = Fake.Title(); wrongStatus.ContentType = "manga"; wrongStatus.Status = "completed";
+        var wrongType = Fake.Title(); wrongType.ContentType = "manhwa"; wrongType.Status = "ongoing";
+        await Seed.TitleAsync(db, user.Id, match);
+        await Seed.TitleAsync(db, user.Id, wrongStatus);
+        await Seed.TitleAsync(db, user.Id, wrongType);
+        Authorize(client, user);
+
+        var res = await client.GetFromJsonAsync<JsonElement>("/api/titles?content_type=manga&status=ongoing");
+        Assert.Equal(1, res.GetProperty("total").GetInt32());
+    }
+
+    [Fact]
     public async Task ListTitles_Unauthorized_NoToken()
     {
         var (client, _) = NewFactory().CreateClientWithDb();

@@ -1,11 +1,26 @@
 import { useNavigate } from 'react-router-dom'
-import { Search, ChevronDown, SlidersHorizontal, Plus } from 'lucide-react'
+import { Search, SlidersHorizontal, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/lib/routes'
 import { useLibrary } from './hooks/useLibrary'
 import { MangaCard } from './components/MangaCard'
 import { MangaGridSkeleton } from './components/MangaGridSkeleton'
+import { SortDropdown } from './components/SortDropdown'
+
+const CONTENT_TYPE_OPTIONS = [
+  { value: 'manga',   label: 'Manga' },
+  { value: 'manhwa',  label: 'Manhwa' },
+  { value: 'manhua',  label: 'Manhua' },
+  { value: 'novel',   label: 'Novel' },
+]
+
+const STATUS_OPTIONS = [
+  { value: 'ongoing',   label: 'Ongoing' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'hiatus',    label: 'Hiatus' },
+  { value: 'cancelled', label: 'Cancelled' },
+]
 
 export default function Library() {
   const navigate = useNavigate()
@@ -29,17 +44,68 @@ export default function Library() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-            <span className="text-muted-foreground">Sort by:</span>
-            Recently Added
-            <ChevronDown className="w-3 h-3 text-muted-foreground" />
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <SortDropdown value={h.sort} onChange={h.setSort} />
+          <Button
+            variant="outline"
+            size="sm"
+            className={`gap-1.5 text-xs ${h.hasFilters ? 'border-primary text-primary' : ''}`}
+            onClick={() => h.setShowFilters(!h.showFilters)}
+          >
             <SlidersHorizontal className="w-3 h-3" />
             Filters
+            {h.hasFilters && (
+              <span className="bg-primary text-primary-foreground rounded-full w-4 h-4 text-[10px] flex items-center justify-center leading-none">
+                {h.contentTypes.length + h.statuses.length}
+              </span>
+            )}
           </Button>
         </div>
       </header>
+
+      {h.showFilters && (
+        <div className="px-6 py-3 border-b border-border bg-muted/30 flex items-start gap-6 flex-wrap shrink-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground shrink-0">Type</span>
+            {CONTENT_TYPE_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => h.toggleContentType(value)}
+                className={`px-2.5 py-0.5 rounded-full text-xs border transition-colors ${
+                  h.contentTypes.includes(value)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground shrink-0">Status</span>
+            {STATUS_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => h.toggleStatus(value)}
+                className={`px-2.5 py-0.5 rounded-full text-xs border transition-colors ${
+                  h.statuses.includes(value)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {h.hasFilters && (
+            <button
+              onClick={h.clearFilters}
+              className="text-xs text-muted-foreground hover:text-foreground ml-auto self-center"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="flex-1 overflow-auto">
         <div className="p-6 space-y-5">
@@ -56,7 +122,7 @@ export default function Library() {
             <>
               {h.data.items.length === 0 && (
                 <p className="text-muted-foreground text-sm py-16 text-center">
-                  {h.search ? 'No results.' : 'Library is empty — discover manga to add some.'}
+                  {h.search || h.hasFilters ? 'No results.' : 'Library is empty — discover manga to add some.'}
                 </p>
               )}
 

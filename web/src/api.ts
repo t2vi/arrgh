@@ -241,10 +241,13 @@ export const api = {
   getContinueReading: () => get<ContinueItem[]>('/api/progress/continue'),
 
   // Titles
-  listTitles: (page = 1, search?: string) =>
+  listTitles: (page = 1, search?: string, sort?: string, contentTypes?: string[], statuses?: string[]) =>
     get<PaginatedTitle>('/api/titles', {
       page: String(page),
       ...(search ? { search } : {}),
+      ...(sort && sort !== 'recent' ? { sort } : {}),
+      ...(contentTypes?.length ? { content_type: contentTypes.join(',') } : {}),
+      ...(statuses?.length ? { status: statuses.join(',') } : {}),
     }),
 
   getTitle: (id: string) => get<Title>(`/api/titles/${id}`),

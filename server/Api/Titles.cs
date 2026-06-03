@@ -32,7 +32,10 @@ public static class Titles
         AppDbContext db,
         [FromQuery] int? page,
         [FromQuery] int? limit,
-        [FromQuery] string? search)
+        [FromQuery] string? search,
+        [FromQuery] string? sort,
+        [FromQuery] string? content_type,
+        [FromQuery] string? status)
     {
         var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var allowExplicit = principal.FindFirstValue("allow_explicit") == "true";
@@ -46,11 +49,28 @@ public static class Titles
         if (!string.IsNullOrEmpty(search))
             baseQuery = baseQuery.Where(m => EF.Functions.Like(m.TitleName, $"%{search}%"));
 
+        if (!string.IsNullOrEmpty(content_type))
+        {
+            var types = content_type.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            baseQuery = baseQuery.Where(m => types.Contains(m.ContentType));
+        }
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            var statuses = status.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            baseQuery = baseQuery.Where(m => statuses.Contains(m.Status));
+        }
+
         var total = await baseQuery.CountAsync();
 
-        var ordered = string.IsNullOrEmpty(search)
-            ? baseQuery.OrderByDescending(m => m.UpdatedAt)
-            : baseQuery.OrderBy(m => m.TitleName);
+        var effectiveSort = sort ?? (string.IsNullOrEmpty(search) ? "recent" : "title_asc");
+        var ordered = effectiveSort switch
+        {
+            "title_asc"  => baseQuery.OrderBy(m => m.TitleName),
+            "title_desc" => baseQuery.OrderByDescending(m => m.TitleName),
+            "year"       => (IQueryable<Title>)baseQuery.OrderByDescending(m => m.Year).ThenBy(m => m.TitleName),
+            _            => baseQuery.OrderByDescending(m => m.CreatedAt),
+        };
 
         var items = await ordered
             .Skip((p - 1) * l)
