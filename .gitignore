@@ -37,19 +37,20 @@ app/build/
 app/.packages
 app/pubspec.lock
 
-# ── Claude Code / dev-private (lives in gwarr-dev, symlinked) ──
-.agents/
-.claude/
+# ── Claude Code / dev-private (lives in arrgh-dev, symlinked) ──
+# No trailing slashes — symlinks are treated as files by git, trailing slash rules miss them
+.agents
+.claude
 docs/adr
 docs/agents
 CLAUDE.md
 CONTEXT.md
 CONTEXT.MD
-graphify-out/
+graphify-out
 skills-lock.json
 .understand-anything
-api-live-tests/
-live-tests/
+api-live-tests
+live-tests
 
 # ── General ──────────────────────────────────────────────────
 .DS_Store
