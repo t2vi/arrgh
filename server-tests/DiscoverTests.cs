@@ -210,7 +210,8 @@ public class DiscoverTests
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         var body = await res.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("My Hero Academia", body.GetProperty("title").GetString()); // qualifier stripped
-        Assert.Equal("syncing", body.GetProperty("sync_status").GetString());
+        // sync_status is "syncing" or "ready" — background task may complete before response is read
+        Assert.Contains(body.GetProperty("sync_status").GetString(), new[] { "syncing", "ready" });
 
         db.ChangeTracker.Clear();
         Assert.True(await db.UserTitles.AnyAsync(ut => ut.UserId == user.Id));
