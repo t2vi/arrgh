@@ -1,0 +1,40 @@
+{
+  "uuid": "ac22d569-5c6b-44bb-bc7a-018dee9b28a7",
+  "historyId": "ArrghServer.Tests.LogsTests#GetLevel_Unauthorized_WithoutToken",
+  "name": "GetLevel_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.LogsTests.GetLevel_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780485770877,
+  "stop": 1780485771334,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "GetLevel_Unauthorized_WithoutToken"
+    }
+  ]
+}
