@@ -1,0 +1,40 @@
+{
+  "uuid": "462d236d-d12a-4e34-a1fe-833110dc2f96",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_SortTitleAsc_ReturnsAlphabeticalOrder",
+  "name": "ListTitles_SortTitleAsc_ReturnsAlphabeticalOrder",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_SortTitleAsc_ReturnsAlphabeticalOrder",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780488184973,
+  "stop": 1780488185553,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_SortTitleAsc_ReturnsAlphabeticalOrder"
+    }
+  ]
+}
