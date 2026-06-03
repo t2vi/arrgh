@@ -695,12 +695,16 @@ public static class Discover
             var consumedNhentaiNorms = new HashSet<string>(StringComparer.Ordinal);
             foreach (var r in results)
             {
-                if (r.Source == "nhentai" || !r.IsExplicit) continue;
+                if (r.Source == "nhentai" || !r.IsExplicit || r.ContentType != "manga") continue;
                 var norm = Media.NormalizeTitle(r.Title);
-                if (!nhentaiNorms.Contains(norm)) continue;
+                // Match exact OR nhentai title is a word-boundary prefix of MU title
+                // (e.g. nhentai "kayanetori" matches MU "kayanetori kaya-nee series aizou ban")
+                var matchedNhentaiNorm = nhentaiNorms.FirstOrDefault(nh =>
+                    norm == nh || norm.StartsWith(nh + " ", StringComparison.Ordinal));
+                if (matchedNhentaiNorm is null) continue;
                 r.ContentType = "hentai";
                 r.IsExplicit = true;
-                consumedNhentaiNorms.Add(norm);
+                consumedNhentaiNorms.Add(matchedNhentaiNorm);
             }
             preDedup = results
                 .Where(r => !(r.Source == "nhentai" && consumedNhentaiNorms.Contains(Media.NormalizeTitle(r.Title))))
