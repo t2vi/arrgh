@@ -4,6 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [v0.1.7](docs/releases/v0.1.7.md) | 2026-06-03 | Library sort & filter, nhentai prefix upgrade, manhwa/novel hentai misclassification fix |
 | [v0.1.6](docs/releases/v0.1.6.md) | 2026-06-03 | Hentai source matching, WuxiaWorld all chapters, CloakBrowser Docker fix, CF timeout, discover progress UI, library-flow tests |
 | [v0.1.5](docs/releases/v0.1.5.md) | 2026-06-01 | Portainer/remote deploy 403 fix, CI port fix, migration bootstrap + schema repair for old DBs |
 | [v0.1.4](docs/releases/v0.1.4.md) | 2026-06-01 | asurascans fix (manhwa chapters, fixes #85), 18+ pills on home cards + trending, MU explicit detection, sync warning accuracy |

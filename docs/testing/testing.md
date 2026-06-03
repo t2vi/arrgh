@@ -501,7 +501,9 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `FilterMuScope` keeps one-shot results | ✅ |
 | `FilterMuScope` mixed input → only manga/one-shot survive | ✅ |
 | `MergeFanOut` nhentai exact-match upgrades explicit manga result to hentai | ✅ |
-| `MergeFanOut` nhentai hit with longer MU title → not upgraded (different normalized titles) | ✅ |
+| `MergeFanOut` nhentai short title is word-boundary prefix of MU full title → upgraded | ✅ |
+| `MergeFanOut` nhentai prefix with no word boundary (e.g. "Berserk" vs "Berserker") → not upgraded | ✅ |
+| `MergeFanOut` nhentai hit on explicit manhwa → not upgraded (content_type guard) | ✅ |
 | `MergeFanOut` nhentai hit on non-explicit title → not upgraded (is_explicit guard) | ✅ |
 | `MergeFanOut` nhentai normalization applied (punctuation stripped, lowercase) | ✅ |
 
