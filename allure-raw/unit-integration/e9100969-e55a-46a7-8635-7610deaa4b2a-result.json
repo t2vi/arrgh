@@ -1,0 +1,40 @@
+{
+  "uuid": "e9100969-e55a-46a7-8635-7610deaa4b2a",
+  "historyId": "ArrghServer.Tests.QueueTests#ClearCompleted_Forbidden_ForMember",
+  "name": "ClearCompleted_Forbidden_ForMember",
+  "fullName": "ArrghServer.Tests.QueueTests.ClearCompleted_Forbidden_ForMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479647834,
+  "stop": 1780479648557,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "ClearCompleted_Forbidden_ForMember"
+    }
+  ]
+}

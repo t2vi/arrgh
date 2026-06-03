@@ -1,0 +1,40 @@
+{
+  "uuid": "ca9e5e01-faa2-429c-a457-d22eb8ddd436",
+  "historyId": "ArrghServer.Tests.AuthTests#CreateUser_Forbidden_ForMember",
+  "name": "CreateUser_Forbidden_ForMember",
+  "fullName": "ArrghServer.Tests.AuthTests.CreateUser_Forbidden_ForMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780479677938,
+  "stop": 1780479678405,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "CreateUser_Forbidden_ForMember"
+    }
+  ]
+}
