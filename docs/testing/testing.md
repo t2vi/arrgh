@@ -31,7 +31,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Feature | File | Tests | Status |
 |---|---|---|---|
 | Login | `useLogin` | initial state, submit success/fail, loading cleared | ✅ |
-| Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll | ✅ |
+| Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll, sort default+setSort refetches, toggleContentType add/remove/resets page, toggleStatus add/remove, hasFilters, clearFilters, fetches with filter params, showFiltersl | ✅ |
 | Library | `MangaCard` | render, remove button, is_explicit=true→18+ pill shown, is_explicit=false→no 18+ pill | ✅ |
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
 | Discover | `SearchRow` | render, is_explicit=true→18+ badge shown, is_explicit=false→no 18+ badge, tag-based inference blocked, loading state, In Library, cover/skeleton | ✅ |
@@ -252,6 +252,12 @@ Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). R
 | `GET /titles` → hides explicit from non-explicit user | ✅ |
 | `GET /titles` → shows explicit to explicit user | ✅ |
 | `GET /titles` → search filters by title name | ✅ |
+| `GET /titles?content_type=manga` → returns only matching content type | ✅ |
+| `GET /titles?content_type=manga,manhwa` → multi-value content type filter | ✅ |
+| `GET /titles?status=ongoing` → returns only matching status | ✅ |
+| `GET /titles?sort=title_asc` → alphabetical ascending order | ✅ |
+| `GET /titles?sort=title_desc` → alphabetical descending order | ✅ |
+| `GET /titles?content_type=manga&status=ongoing` → combined filter | ✅ |
 | `GET /titles` → 401 no token | ✅ |
 | `GET /titles` → pagination limit and page offset | ✅ |
 | `GET /titles` → multi-user each sees only own library | ✅ |

@@ -22,6 +22,7 @@
 - Browse and install community plugins from the Settings UI
 - Download chapters to your server for offline reading
 - Real-time download progress with per-chapter percentage bars
+- **Library sort & filter** — sort by recently added, title A–Z/Z–A, or year; filter by content type (manga/manhwa/manhua/novel) and status (ongoing/completed/hiatus/cancelled); active filter count badge
 - Live sync progress — library card and title detail page show step-by-step sync status while building
 - Sync warnings — amber badge when a source couldn't be matched; re-sync to retry
 - Web reader (paged or scroll mode for comics; prose mode for novels)
