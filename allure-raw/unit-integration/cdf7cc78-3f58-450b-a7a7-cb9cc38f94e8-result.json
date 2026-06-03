@@ -1,0 +1,40 @@
+{
+  "uuid": "cdf7cc78-3f58-450b-a7a7-cb9cc38f94e8",
+  "historyId": "ArrghServer.Tests.LogServiceTests#RingBufferLogger_AtDebugGate_CapturesDebugEntry",
+  "name": "RingBufferLogger_AtDebugGate_CapturesDebugEntry",
+  "fullName": "ArrghServer.Tests.LogServiceTests.RingBufferLogger_AtDebugGate_CapturesDebugEntry",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780482083691,
+  "stop": 1780482083691,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "RingBufferLogger_AtDebugGate_CapturesDebugEntry"
+    }
+  ]
+}
