@@ -1,0 +1,40 @@
+{
+  "uuid": "f0bb343f-8a4e-4957-9c2e-889507e49b80",
+  "historyId": "ArrghServer.Tests.QueueTests#RemoveFromQueue_NotFound_NonexistentItem",
+  "name": "RemoveFromQueue_NotFound_NonexistentItem",
+  "fullName": "ArrghServer.Tests.QueueTests.RemoveFromQueue_NotFound_NonexistentItem",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780486801121,
+  "stop": 1780486802262,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "RemoveFromQueue_NotFound_NonexistentItem"
+    }
+  ]
+}

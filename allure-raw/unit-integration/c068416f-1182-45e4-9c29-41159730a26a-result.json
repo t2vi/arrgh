@@ -1,0 +1,40 @@
+{
+  "uuid": "c068416f-1182-45e4-9c29-41159730a26a",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#TitleMatches_AniListSynonymCloseEnough_Matches",
+  "name": "TitleMatches_AniListSynonymCloseEnough_Matches",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.TitleMatches_AniListSynonymCloseEnough_Matches",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780486769717,
+  "stop": 1780486769717,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "TitleMatches_AniListSynonymCloseEnough_Matches"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "cfeb66f5-76f5-4a77-ae04-009394de309d",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#IsExplicit_True_Parsed",
+  "name": "IsExplicit_True_Parsed",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.IsExplicit_True_Parsed",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780486769729,
+  "stop": 1780486769729,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Patch API"
+    },
+    {
+      "name": "story",
+      "value": "IsExplicit_True_Parsed"
+    }
+  ]
+}
