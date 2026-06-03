@@ -1,0 +1,40 @@
+{
+  "uuid": "296c1f99-c22c-4e63-86cc-3da3f112d75b",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ClampTrending_Boundary50_Valid",
+  "name": "ClampTrending_Boundary50_Valid",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ClampTrending_Boundary50_Valid",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481705425,
+  "stop": 1780481705425,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Validation"
+    },
+    {
+      "name": "story",
+      "value": "ClampTrending_Boundary50_Valid"
+    }
+  ]
+}

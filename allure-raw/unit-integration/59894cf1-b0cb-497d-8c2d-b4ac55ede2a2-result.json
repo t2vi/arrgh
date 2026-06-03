@@ -1,0 +1,40 @@
+{
+  "uuid": "59894cf1-b0cb-497d-8c2d-b4ac55ede2a2",
+  "historyId": "ArrghServer.Tests.SourcesTests#PatchSource_TogglesEnabled",
+  "name": "PatchSource_TogglesEnabled",
+  "fullName": "ArrghServer.Tests.SourcesTests.PatchSource_TogglesEnabled",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481760297,
+  "stop": 1780481760898,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "PatchSource_TogglesEnabled"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "07315c31-d7e3-4d44-bbfe-0106e07b28dd",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_CreatesTitleAndReturnsIt",
+  "name": "AddManga_CreatesTitleAndReturnsIt",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_CreatesTitleAndReturnsIt",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481749778,
+  "stop": 1780481750428,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_CreatesTitleAndReturnsIt"
+    }
+  ]
+}

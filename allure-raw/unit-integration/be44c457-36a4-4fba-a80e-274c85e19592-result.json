@@ -1,0 +1,40 @@
+{
+  "uuid": "be44c457-36a4-4fba-a80e-274c85e19592",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#ParseHtml_SingleResult_ExtractsFields",
+  "name": "ParseHtml_SingleResult_ExtractsFields",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.ParseHtml_SingleResult_ExtractsFields",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780481705461,
+  "stop": 1780481705461,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "ParseHtml_SingleResult_ExtractsFields"
+    }
+  ]
+}
