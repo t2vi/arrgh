@@ -1,0 +1,40 @@
+{
+  "uuid": "de48b8a5-ccf9-4bcb-aa92-1aa1c934bb9d",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#Deduplicate_AuthorityWins_ForManhwa",
+  "name": "Deduplicate_AuthorityWins_ForManhwa",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.Deduplicate_AuthorityWins_ForManhwa",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780528889949,
+  "stop": 1780528889949,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "Deduplicate_AuthorityWins_ForManhwa"
+    }
+  ]
+}

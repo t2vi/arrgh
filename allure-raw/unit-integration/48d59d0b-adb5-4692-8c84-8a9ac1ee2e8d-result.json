@@ -1,0 +1,40 @@
+{
+  "uuid": "48d59d0b-adb5-4692-8c84-8a9ac1ee2e8d",
+  "historyId": "ArrghServer.Tests.TrendingLaneTests#TrendingManga_Unauthorized_WithoutToken",
+  "name": "TrendingManga_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.TrendingLaneTests.TrendingManga_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1780528939486,
+  "stop": 1780528939939,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TrendingLaneTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Trending Lanes"
+    },
+    {
+      "name": "story",
+      "value": "TrendingManga_Unauthorized_WithoutToken"
+    }
+  ]
+}
