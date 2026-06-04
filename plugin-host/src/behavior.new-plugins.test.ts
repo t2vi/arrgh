@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 import * as asurascans   from '../../plugins/asurascans/src/index'
 import * as wuxiaworld   from '../../plugins/wuxiaworld/src/index'
+import { _clearSlugCache } from '../../plugins/wuxiaworld/src/wuxiaworld'
 import * as manga18fx    from '../../plugins/manga18fx/src/index'
 import { parseSearchHtml as nuParseSearchHtml } from '../../plugins/novelupdates/src/novelupdates'
 
@@ -27,7 +28,7 @@ function mockFetch(responses: Record<string, { ok?: boolean; text?: string; json
 }
 
 beforeEach(() => { vi.clearAllMocks() })
-afterEach(() => { vi.unstubAllGlobals() })
+afterEach(() => { vi.unstubAllGlobals(); _clearSlugCache() })
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AsuraScans
@@ -190,29 +191,37 @@ const WUXIA_SEARCH_JSON = {
 // Both groups use fromChapterNumber.units=1 — matching WuxiaWorld's real decimal format
 // where all groups report units=1 (chapters are sub-1.0 decimals internally).
 // The implementation must use cumulative numbering, not fromChapterNumber.units + i.
+// Chapters-overview page — has firstChapter slug + chapterGroups count (fast path)
 const WUXIA_CHAPTERS_HTML = `<html><body><script>
 window.__REACT_QUERY_STATE__ = {"queries":[{"queryKey":["novel","swallowed-star",null],"state":{"data":{"item":{
   "chapterInfo":{
-    "chapterCount":{"value":3},
-    "firstChapter":{"slug":"swallowed-star-chapter-1","name":"Chapter 1 — The Swift as Lightning Technique","offset":1},
+    "firstChapter":{"slug":"swallowed-star-chapter-1","name":"Chapter 1 — The Swift as Lightning Technique"},
     "chapterGroups":[
-      {"id":1,"title":"Volume 1","order":1,
-       "fromChapterNumber":{"units":1,"nanos":0},"toChapterNumber":{"units":1,"nanos":999999900},
-       "counts":{"total":2,"advance":0,"normal":2},"chapterList":[]},
-      {"id":2,"title":"Volume 2","order":2,
-       "fromChapterNumber":{"units":1,"nanos":0},"toChapterNumber":{"units":1,"nanos":999999900},
-       "counts":{"total":1,"advance":0,"normal":1},"chapterList":[]}
+      {"id":1,"title":"Volume 1","order":1,"counts":{"total":2,"advance":0,"normal":2},"chapterList":[]},
+      {"id":2,"title":"Volume 2","order":2,"counts":{"total":1,"advance":0,"normal":1},"chapterList":[]}
     ]
   }
 }}}}]};
 </script></body></html>`
 
-const WUXIA_CHAPTER_HTML = `
-<div class="chapter-content">
-  <p>Luo Feng, a young man living in Jiangnan base city…</p>
-  <p>He had awakened as a genetic warrior, able to breathe underwater.</p>
-</div>
-`
+// Individual chapter pages — each has SSR content.value + nextChapter slug
+function makeWuxiaChapterHtml(slug: string, name: string, content: string, nextSlug: string | null): string {
+  const next = nextSlug ? `{"slug":"${nextSlug}"}` : 'null'
+  return `<html><body><script>
+window.__REACT_QUERY_STATE__ = {"queries":[{"queryKey":["chapter","swallowed-star","${slug}",null],"state":{"data":{"item":{
+  "name":"${name}",
+  "content":{"value":"<p>${content}</p>"},
+  "relatedChapterInfo":{"nextChapter":${next}}
+}}}}]};
+</script></body></html>`
+}
+
+const WUXIA_CH1_HTML = makeWuxiaChapterHtml('swallowed-star-chapter-1', 'Chapter 1 — The Swift as Lightning Technique',
+  'Luo Feng, a young man living in Jiangnan base city…', 'swallowed-star-chapter-2')
+const WUXIA_CH2_HTML = makeWuxiaChapterHtml('swallowed-star-chapter-2', 'Chapter 2',
+  'The next day arrived quickly.', 'swallowed-star-chapter-3')
+const WUXIA_CH3_HTML = makeWuxiaChapterHtml('swallowed-star-chapter-3', 'Chapter 3',
+  'Finally the battle began.', null)
 
 describe('wuxiaworld — search', () => {
   it('returns array with required fields', async () => {
@@ -253,12 +262,11 @@ describe('wuxiaworld — search', () => {
 })
 
 describe('wuxiaworld — chapters', () => {
-  it('returns all chapters from chapterGroups count', async () => {
+  it('returns all chapters from chapterGroups count (fast path, 1 request)', async () => {
     vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
     const chapters = await wuxiaworld.chapters('swallowed-star')
     expect(Array.isArray(chapters)).toBe(true)
-    // fixture has chapterCount=3 across 2 groups (2+1)
-    expect(chapters.length).toBe(3)
+    expect(chapters.length).toBe(3) // fixture: 2 + 1
     for (const ch of chapters) {
       expect(ch).toHaveProperty('source_id')
       expect(ch).toHaveProperty('number')
@@ -266,25 +274,19 @@ describe('wuxiaworld — chapters', () => {
     }
   })
 
-  it('chapter 1 source_id uses real slug from firstChapter', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
-    const [ch1] = await wuxiaworld.chapters('swallowed-star')
-    expect(ch1.source_id).toBe('swallowed-star/swallowed-star-chapter-1')
-    expect(ch1.number).toBe(1)
-    expect(ch1.title).toBe('Chapter 1 — The Swift as Lightning Technique')
-  })
-
-  it('chapters 2+ use numeric source_id {novelSlug}/chapter/{N}', async () => {
+  it('ch.1 source_id uses real slug; ch.2+ use numeric placeholder', async () => {
     vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
     const chapters = await wuxiaworld.chapters('swallowed-star')
+    expect(chapters[0].source_id).toBe('swallowed-star/swallowed-star-chapter-1')
+    expect(chapters[0].number).toBe(1)
+    expect(chapters[0].title).toBe('Chapter 1 — The Swift as Lightning Technique')
     expect(chapters[1].source_id).toBe('swallowed-star/chapter/2')
     expect(chapters[2].source_id).toBe('swallowed-star/chapter/3')
   })
 
-  it('volume set to chapterGroup order', async () => {
+  it('volume matches chapterGroup order', async () => {
     vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTERS_HTML } }))
     const chapters = await wuxiaworld.chapters('swallowed-star')
-    // group 1 covers chapters 1-2 (order=1), group 2 covers chapter 3 (order=2)
     expect(chapters[0].volume).toBe(1)
     expect(chapters[1].volume).toBe(1)
     expect(chapters[2].volume).toBe(2)
@@ -299,17 +301,28 @@ describe('wuxiaworld — chapters', () => {
 })
 
 describe('wuxiaworld — chapterText', () => {
-  it('returns string content', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTER_HTML } }))
+  it('slug source_id: fetches content from SSR', async () => {
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CH1_HTML } }))
     const text = await wuxiaworld.chapterText('swallowed-star/swallowed-star-chapter-1')
     expect(typeof text).toBe('string')
-    expect(text.length).toBeGreaterThan(0)
+    expect(text).toContain('Luo Feng')
   })
 
-  it('extracts chapter text content', async () => {
-    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTER_HTML } }))
-    const text = await wuxiaworld.chapterText('swallowed-star/swallowed-star-chapter-1')
-    expect(text).toContain('Luo Feng')
+  it('numeric source_id: resolves slug via cache then fetches content', async () => {
+    // ch/2 needs: /chapters (firstChapter slug) + ch1 page (nextSlug=ch2) + ch2 page (content)
+    vi.stubGlobal('fetch', mockFetch({
+      '/chapters': { text: WUXIA_CHAPTERS_HTML },
+      'chapter-1': { text: WUXIA_CH1_HTML },
+      'chapter-2': { text: WUXIA_CH2_HTML },
+    }))
+    const text = await wuxiaworld.chapterText('swallowed-star/chapter/2')
+    expect(text).toContain('next day')
+  })
+
+  it('throws when content.value missing from SSR', async () => {
+    const noContentHtml = makeWuxiaChapterHtml('ch1', 'Ch1', '', null).replace('"content":{"value":"<p></p>"}', '"content":null')
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: noContentHtml } }))
+    await expect(wuxiaworld.chapterText('swallowed-star/swallowed-star-chapter-1')).rejects.toThrow()
   })
 
   it('throws on non-ok response', async () => {

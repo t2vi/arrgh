@@ -125,7 +125,7 @@ export default function Home() {
                 {h.recentUp.length > 0 && (
                   <section className="mt-8 px-6 space-y-4">
                     <h2 className="text-xl font-bold">Recently Updated</h2>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {h.recentUp.map((m) => (
                         <RecentCard key={m.id} manga={m} onClick={() => navigate(ROUTES.title(m.id))} />
                       ))}
@@ -166,7 +166,7 @@ export default function Home() {
       <button
         onClick={() => navigate(ROUTES.discover)}
         title="Discover manga"
-        className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl hover:opacity-90 transition-opacity z-10"
+        className="fixed bottom-20 md:bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl hover:opacity-90 transition-opacity z-10"
       >
         <Plus className="w-5 h-5" />
       </button>

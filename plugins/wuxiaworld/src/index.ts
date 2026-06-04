@@ -1,4 +1,6 @@
+import { setContext } from './wuxiaworld'
 import * as w from './wuxiaworld'
+import type { PluginContext } from './wuxiaworld'
 
 export const info = {
   id: 'wuxiaworld',
@@ -7,8 +9,8 @@ export const info = {
   content_types: ['novel'],
 }
 
-export function init(_ctx: unknown): void {
-  // Direct fetch — no browser needed
+export function init(ctx: PluginContext): void {
+  setContext(ctx)
 }
 
 export const search      = w.search

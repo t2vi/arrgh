@@ -1,9 +1,19 @@
-import * as cheerio from 'cheerio'
 import TurndownService from 'turndown'
 
 const BASE = 'https://www.wuxiaworld.com'
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
 const td = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
+
+// ── Plugin context (kept for interface compatibility) ─────────────────────────
+export interface PluginContext {
+  getBrowser: () => Promise<unknown>
+  logger: typeof console
+}
+let _ctx: PluginContext | null = null
+export function setContext(ctx: PluginContext): void { _ctx = ctx }
+void _ctx
+
+// ── Fetch helpers ─────────────────────────────────────────────────────────────
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { headers: { 'User-Agent': UA, 'Accept': 'application/json' } })
@@ -17,7 +27,7 @@ async function getHtml(url: string): Promise<string> {
   return res.text()
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Search types ──────────────────────────────────────────────────────────────
 
 interface WuxiaSearchItem {
   id: number
@@ -33,12 +43,6 @@ interface WuxiaSearchItem {
 
 interface WuxiaSearchResponse {
   items: WuxiaSearchItem[]
-}
-
-interface EmbeddedChapter {
-  slug: string
-  name?: string
-  offset?: number
 }
 
 export interface SearchItem {
@@ -84,42 +88,63 @@ export async function search(query: string): Promise<SearchItem[]> {
   }))
 }
 
-// ── Chapters ──────────────────────────────────────────────────────────────────
-// WuxiaWorld chapter lists are loaded by the SPA via a private API — no public
-// bulk REST endpoint exists. We extract chapterInfo from the React Query state
-// embedded in the chapters page HTML.
-//
-// source_id format:
-//   chapter 1:   "novelSlug/chapterSlug"   — real slug (SSR-readable)
-//   chapters 2+: "novelSlug/chapter/{N}"   — numeric fallback; text may not load
-//                                             if WuxiaWorld returns a CSR-only page
+// ── React Query SSR extraction ────────────────────────────────────────────────
+// WuxiaWorld embeds window.__REACT_QUERY_STATE__ = {...}; in page HTML.
+// The `;` at end of the assignment (never inside nested JSON) lets the lazy
+// regex stop at the right closing brace.
 
-interface ChapterGroup {
-  id: number
-  order: number
-  title: string
-  fromChapterNumber: { units: number }
-  toChapterNumber: { units: number }
-  counts: { total: number }
+function parseReactQueryState(html: string): Record<string, unknown> | null {
+  const m = html.match(/__REACT_QUERY_STATE__\s*=\s*(\{.*?\});\s*\n/s)
+  if (!m) return null
+  try { return JSON.parse(m[1]) as Record<string, unknown> } catch { return null }
 }
 
 interface ChapterInfo {
-  chapterCount?: { value: number }
-  firstChapter?: EmbeddedChapter
-  chapterGroups?: ChapterGroup[]
+  firstChapter?: { slug: string; name?: string }
+  chapterGroups?: { id: number; order: number; counts: { total: number } }[]
 }
+
+function extractChapterInfo(html: string): ChapterInfo | null {
+  const state = parseReactQueryState(html)
+  if (!state) return null
+  const queries = state.queries as { queryKey?: unknown[]; state?: { data?: { item?: { chapterInfo?: ChapterInfo } } } }[] | undefined
+  const novelQ = queries?.find(q => Array.isArray(q.queryKey) && q.queryKey.includes('novel'))
+  return novelQ?.state?.data?.item?.chapterInfo ?? null
+}
+
+interface ChapterSSRData {
+  content: string | null
+  nextSlug: string | null
+  title: string | null
+}
+
+function extractChapterSSR(html: string): ChapterSSRData | null {
+  const state = parseReactQueryState(html)
+  if (!state) return null
+  const queries = state.queries as { queryKey?: unknown[]; state?: { data?: { item?: Record<string, unknown> } } }[] | undefined
+  const q = queries?.find(q => Array.isArray(q.queryKey) && q.queryKey[0] === 'chapter')
+  const item = q?.state?.data?.item
+  if (!item) return null
+  const contentVal = (item.content as { value?: string } | null)?.value ?? null
+  const nextSlug = (item.relatedChapterInfo as { nextChapter?: { slug?: string } } | null)?.nextChapter?.slug ?? null
+  const title = (item.name as string | undefined) ?? null
+  return { content: contentVal, nextSlug, title }
+}
+
+// ── Chapters ──────────────────────────────────────────────────────────────────
+// Fast path: one request to /chapters page, read chapter counts from chapterGroups.
+// Ch.1 gets the real slug from firstChapter. Chapters 2+ get numeric placeholder
+// source_ids (novelSlug/chapter/N) that chapterText() resolves lazily via slug cache.
 
 export async function chapters(novelSlug: string): Promise<ChapterItem[]> {
   const html = await getHtml(`${BASE}/novel/${novelSlug}/chapters`)
-  const chapterInfo = extractChapterInfo(html)
-  if (!chapterInfo || !chapterInfo.chapterGroups?.length) return []
+  const info = extractChapterInfo(html)
+  if (!info || !info.chapterGroups?.length) return []
 
-  const { firstChapter, chapterGroups } = chapterInfo
+  const { firstChapter, chapterGroups } = info
   const result: ChapterItem[] = []
-
-  // WuxiaWorld's fromChapterNumber uses an internal decimal format (units=1 for all groups)
-  // not sequential chapter numbers — use cumulative offset to guarantee unique chapter numbers.
   let cumulative = 1
+
   for (const group of chapterGroups) {
     const count = group.counts.total
     for (let i = 0; i < count; i++) {
@@ -138,25 +163,65 @@ export async function chapters(novelSlug: string): Promise<ChapterItem[]> {
   return result
 }
 
-function extractChapterInfo(html: string): ChapterInfo | null {
-  const match = html.match(/window\.__REACT_QUERY_STATE__\s*=\s*(\{.*?\});\s*/s)
-  if (!match) return null
-  try {
-    const state = JSON.parse(match[1]) as { queries?: { queryKey?: unknown[]; state?: { data?: { item?: { chapterInfo?: ChapterInfo } } } }[] }
-    const novelQuery = state.queries?.find(q => Array.isArray(q.queryKey) && q.queryKey.includes('novel'))
-    return novelQuery?.state?.data?.item?.chapterInfo ?? null
-  } catch {
-    return null
+// ── Slug cache ────────────────────────────────────────────────────────────────
+// Chapters 2+ have numeric source_ids. To download them we need the real slug.
+// We traverse the linked list (relatedChapterInfo.nextChapter.slug) lazily and
+// cache results in memory. Sequential downloads are O(1) amortized: each download
+// extends the chain by one step and caches it for the next.
+//
+// Cache key: novelSlug → ordered array of slugs (index 0 = ch.1 slug)
+// The array grows as chapters are resolved. Thread-safety: Node.js is
+// single-threaded so array operations are atomic within a turn of the event loop.
+
+const slugChain = new Map<string, string[]>()
+export function _clearSlugCache(): void { slugChain.clear() }
+
+async function resolveSlug(novelSlug: string, targetNum: number): Promise<string> {
+  // Bootstrap: fetch ch.1 slug from the /chapters page SSR
+  if (!slugChain.has(novelSlug)) {
+    const html = await getHtml(`${BASE}/novel/${novelSlug}/chapters`)
+    const info = extractChapterInfo(html)
+    if (!info?.firstChapter?.slug) throw new Error(`wuxiaworld: no firstChapter for ${novelSlug}`)
+    slugChain.set(novelSlug, [info.firstChapter.slug])
   }
+
+  const chain = slugChain.get(novelSlug)!
+
+  // Traverse from current end until we reach targetNum
+  while (chain.length < targetNum) {
+    const currentSlug = chain[chain.length - 1]
+    const html = await getHtml(`${BASE}/novel/${novelSlug}/${currentSlug}`)
+    const data = extractChapterSSR(html)
+    if (!data?.nextSlug) throw new Error(`wuxiaworld: chain ended at ch.${chain.length} (target ${targetNum})`)
+    chain.push(data.nextSlug)
+  }
+
+  return chain[targetNum - 1]
 }
 
 // ── Chapter text ──────────────────────────────────────────────────────────────
-// source_id = "novelSlug/chapterSlug" → URL: /novel/novelSlug/chapterSlug
+// source_id formats:
+//   slug:    "novelSlug/chapterSlug"     → direct fetch, content in SSR
+//   numeric: "novelSlug/chapter/{N}"    → resolve real slug via cache, then fetch
+
+const NUMERIC_RE = /^([^/]+)\/chapter\/(\d+)$/
 
 export async function chapterText(chapterId: string): Promise<string> {
-  const url = `${BASE}/novel/${chapterId}`
+  let url = `${BASE}/novel/${chapterId}`
+
+  const m = chapterId.match(NUMERIC_RE)
+  if (m) {
+    const novelSlug = m[1]
+    const num = parseInt(m[2], 10)
+    const realSlug = await resolveSlug(novelSlug, num)
+    url = `${BASE}/novel/${novelSlug}/${realSlug}`
+  }
+
   const html = await getHtml(url)
-  const $ = cheerio.load(html)
-  const content = $('.chapter-content').first().html() || ''
-  return td.turndown(content).trim()
+  const data = extractChapterSSR(html)
+  if (data?.content) {
+    const text = td.turndown(data.content).trim()
+    if (text) return text
+  }
+  throw new Error(`wuxiaworld: no chapter content at ${url}`)
 }

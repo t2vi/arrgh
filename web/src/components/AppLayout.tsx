@@ -69,7 +69,7 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-full bg-background">
-      <aside className="w-52 shrink-0 flex flex-col border-r border-border bg-card/80 backdrop-blur-xl">
+      <aside className="hidden md:flex w-52 shrink-0 flex-col border-r border-border bg-card/80 backdrop-blur-xl">
         <div className="px-5 pt-5 pb-4">
           <h1 className="text-base font-bold leading-none">*ARRgh</h1>
           <p className="text-[11px] text-muted-foreground mt-1">Weeb Library</p>
@@ -129,9 +129,39 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* Extra bottom padding on mobile so content clears the bottom nav */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden pb-16 md:pb-0">
         <Outlet />
       </div>
+
+      {/* Bottom nav — mobile only */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 h-16 bg-card/90 backdrop-blur-xl border-t border-border flex items-center justify-around px-2 z-50">
+        {NAV_ITEMS.map(({ label, icon: Icon, path }) => {
+          const active = path === '/'
+            ? location.pathname === '/'
+            : location.pathname.startsWith(path)
+          return (
+            <button
+              key={path}
+              onClick={() => navigate(path)}
+              className={cn(
+                'flex flex-col items-center gap-1 flex-1 py-2 transition-colors',
+                active ? 'text-primary' : 'text-muted-foreground',
+              )}
+            >
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {path === ROUTES.queue && activeDownloads > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
+                    {activeDownloads}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] font-medium leading-none">{label}</span>
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }

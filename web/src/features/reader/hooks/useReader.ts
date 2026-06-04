@@ -56,7 +56,7 @@ export function useReader(): ReaderHandle {
     setNovelContent(null)
     setNovelError(false)
     api.getChapterText(chapterId)
-      .then((r) => setNovelContent(r.content))
+      .then((r) => r.content ? setNovelContent(r.content) : setNovelError(true))
       .catch(() => setNovelError(true))
   }, [chapterId, chapter?.chapter_format])
 

@@ -1,7 +1,6 @@
 import { Search, ChevronRight, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { useDiscover } from './hooks/useDiscover'
 import { SearchRow } from './components/SearchRow'
 import { SearchProgress } from './components/SearchProgress'
@@ -19,14 +18,14 @@ export default function Discover() {
         <h1 className="text-base font-semibold">Discover</h1>
       </header>
 
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
         <div className="p-4 space-y-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 className="pl-9"
-                placeholder="Search for manga, manhwa, manhua, novels, or hentai…"
+                placeholder="Search manga, manhwa, novels, hentai…"
                 value={h.query}
                 onChange={(e) => h.setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && h.submit()}
@@ -80,7 +79,7 @@ export default function Discover() {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

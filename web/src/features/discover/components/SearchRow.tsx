@@ -19,7 +19,7 @@ export function SearchRow({
   const isExplicit = result.is_explicit
 
   return (
-    <div className="flex gap-3 rounded-lg border border-border bg-card p-3">
+    <div className="flex gap-3 rounded-lg border border-border bg-card p-3 overflow-hidden">
       {coverSrc ? (
         <img
           src={coverSrc}
@@ -31,8 +31,8 @@ export function SearchRow({
         <div className="w-14 shrink-0 rounded aspect-[2/3] bg-muted animate-pulse" />
       )}
 
-      <div className="flex-1 min-w-0 space-y-1.5">
-        <p className="font-medium text-sm leading-tight line-clamp-2">{result.title}</p>
+      <div className="flex-1 min-w-0 overflow-hidden space-y-1.5">
+        <p className="font-medium text-sm leading-tight line-clamp-2 break-words">{result.title}</p>
 
         <div className="flex gap-1.5 flex-wrap items-center">
           <ContentTypePill type={result.content_type} />
@@ -45,15 +45,15 @@ export function SearchRow({
             <Badge variant="secondary" className="capitalize text-xs">{result.status}</Badge>
           )}
           {result.author && (
-            <span className="text-xs text-muted-foreground">{result.author}</span>
+            <span className="text-xs text-muted-foreground truncate">{result.author}</span>
           )}
           {result.year && (
-            <span className="text-xs text-muted-foreground">{result.year}</span>
+            <span className="text-xs text-muted-foreground shrink-0">{result.year}</span>
           )}
         </div>
 
         {result.description ? (
-          <p className="text-xs text-muted-foreground line-clamp-3">{result.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2 md:line-clamp-3 break-words">{result.description}</p>
         ) : (
           <div className="space-y-1 pt-0.5">
             <div className="h-2.5 w-full bg-muted rounded animate-pulse" />

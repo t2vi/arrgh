@@ -70,16 +70,14 @@ internal static class ChapterSync
             .Where(c => c.TitleId == titleId)
             .ToDictionaryAsync(c => c.Number);
 
-        // Seed chapter_sources (idempotent)
+        // Seed chapter_sources — insert new rows, update stale SourceIds (e.g. old numeric → real slug)
         var chapterIds = byNum.Values.Select(c => c.Id).ToList();
-        var existingSources = chapterIds.Count == 0
-            ? []
+        var existingSourceMap = chapterIds.Count == 0
+            ? new Dictionary<string, string>()
             : await db.ChapterSources
                 .Where(cs => chapterIds.Contains(cs.ChapterId) && cs.Source == source)
-                .Select(cs => cs.ChapterId)
-                .ToListAsync();
+                .ToDictionaryAsync(cs => cs.ChapterId, cs => cs.SourceId);
 
-        var existingPairs = existingSources.Select(id => (id, source)).ToHashSet();
         var pendingChapterIds = new HashSet<string>();
 
         foreach (var pc in pluginChapters)
@@ -88,16 +86,25 @@ internal static class ChapterSync
             if (!byNum.TryGetValue(num, out var ch)) continue;
             var srcId = pc.SourceId ?? pc.Id ?? "";
             if (string.IsNullOrEmpty(srcId)) continue;
-            if (existingPairs.Contains((ch.Id, source))) continue;
             if (!pendingChapterIds.Add(ch.Id)) continue; // skip duplicate chapter_id within this batch
 
-            db.ChapterSources.Add(new ChapterSource
+            if (existingSourceMap.TryGetValue(ch.Id, out var existingSourceId))
             {
-                Id = Guid.NewGuid().ToString(),
-                ChapterId = ch.Id,
-                Source = source,
-                SourceId = srcId,
-            });
+                if (existingSourceId != srcId)
+                    await db.ChapterSources
+                        .Where(cs => cs.ChapterId == ch.Id && cs.Source == source)
+                        .ExecuteUpdateAsync(s => s.SetProperty(cs => cs.SourceId, srcId));
+            }
+            else
+            {
+                db.ChapterSources.Add(new ChapterSource
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ChapterId = ch.Id,
+                    Source = source,
+                    SourceId = srcId,
+                });
+            }
         }
         await db.SaveChangesAsync();
         return pluginChapters.Count;

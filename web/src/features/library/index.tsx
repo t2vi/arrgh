@@ -28,8 +28,8 @@ export default function Library() {
 
   return (
     <>
-      <header className="flex items-center gap-4 px-6 py-3 border-b border-border shrink-0 bg-background/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="flex-1 max-w-sm">
+      <header className="flex items-center gap-2 px-3 md:px-6 py-3 border-b border-border shrink-0 bg-background/80 backdrop-blur-xl sticky top-0 z-10">
+        <div className="flex-1 min-w-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
@@ -41,8 +41,6 @@ export default function Library() {
           </div>
         </div>
 
-        <div className="flex-1" />
-
         <div className="flex items-center gap-2 shrink-0">
           <SortDropdown value={h.sort} onChange={h.setSort} />
           <Button
@@ -52,7 +50,7 @@ export default function Library() {
             onClick={() => h.setShowFilters(!h.showFilters)}
           >
             <SlidersHorizontal className="w-3 h-3" />
-            Filters
+            <span className="hidden sm:inline">Filters</span>
             {h.hasFilters && (
               <span className="bg-primary text-primary-foreground rounded-full w-4 h-4 text-[10px] flex items-center justify-center leading-none">
                 {h.contentTypes.length + h.statuses.length}
@@ -63,7 +61,7 @@ export default function Library() {
       </header>
 
       {h.showFilters && (
-        <div className="px-6 py-3 border-b border-border bg-muted/30 flex items-start gap-6 flex-wrap shrink-0">
+        <div className="px-3 md:px-6 py-3 border-b border-border bg-muted/30 flex items-start gap-4 flex-wrap shrink-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-muted-foreground shrink-0">Type</span>
             {CONTENT_TYPE_OPTIONS.map(({ value, label }) => (
@@ -108,7 +106,7 @@ export default function Library() {
       )}
 
       <div className="flex-1 overflow-auto">
-        <div className="p-6 space-y-5">
+        <div className="p-3 md:p-6 space-y-5">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">My Library</h2>
             <p className="text-sm text-muted-foreground mt-0.5">
@@ -126,7 +124,7 @@ export default function Library() {
                 </p>
               )}
 
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-5">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3 md:gap-5">
                 {h.data.items.map((m) => (
                   <MangaCard
                     key={m.id}
@@ -158,7 +156,7 @@ export default function Library() {
       <button
         onClick={() => navigate(ROUTES.discover)}
         title="Discover manga"
-        className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl hover:opacity-90 transition-opacity z-10"
+        className="fixed bottom-20 md:bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl hover:opacity-90 transition-opacity z-10"
       >
         <Plus className="w-5 h-5" />
       </button>

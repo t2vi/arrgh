@@ -153,6 +153,8 @@ public class DownloaderService(
         if (!res.IsSuccessStatusCode)
             throw new HttpRequestException($"GET {url} → {(int)res.StatusCode} {res.ReasonPhrase}");
         var text = await res.Content.ReadAsStringAsync(ct);
+        if (string.IsNullOrWhiteSpace(text))
+            throw new InvalidOperationException($"plugin returned empty text for {source}/{sourceId}");
 
         Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
         await File.WriteAllTextAsync(dest, text, ct);
