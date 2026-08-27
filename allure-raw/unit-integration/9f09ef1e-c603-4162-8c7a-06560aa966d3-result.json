@@ -1,0 +1,40 @@
+{
+  "uuid": "9f09ef1e-c603-4162-8c7a-06560aa966d3",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_Manhua_ChapterFormat_IsPages",
+  "name": "Sync_Manhua_ChapterFormat_IsPages",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_Manhua_ChapterFormat_IsPages",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787836738383,
+  "stop": 1787836743833,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_Manhua_ChapterFormat_IsPages"
+    }
+  ]
+}
