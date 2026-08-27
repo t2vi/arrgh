@@ -48,5 +48,12 @@ mkdir -p "$DownloadDir"
 # Start .NET API server in background
 dotnet /app/ArrghServer.dll &
 
+# Start Rust API server in background (ADR 0033 — serves migrated /api
+# prefixes on :3001; reads DatabasePath/PluginHostUrl/DownloadDir/JwtSecret
+# exported above, same as .NET). Absent in older images — guard on the binary.
+if [ -x /app/arrgh-server ]; then
+  RUST_BIND="127.0.0.1:3001" LOG_LEVEL="${LOG_LEVEL:-info}" /app/arrgh-server &
+fi
+
 # Start nginx in foreground (keeps the container alive)
 nginx -g "daemon off;"
