@@ -1,0 +1,40 @@
+{
+  "uuid": "ed0ec006-03a2-4113-9337-31a50a9f2d14",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapContentType_MapsManhwa",
+  "name": "MapContentType_MapsManhwa",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapContentType_MapsManhwa",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787810312273,
+  "stop": 1787810312274,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapContentType_MapsManhwa"
+    }
+  ]
+}
