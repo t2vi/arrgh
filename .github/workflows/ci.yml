@@ -131,6 +131,11 @@ jobs:
     if: always()
     permissions:
       contents: write
+    # Serialise every gh-pages writer (this job + e2e.yml) — they race on the
+    # same branch and the loser fails with non-fast-forward.
+    concurrency:
+      group: gh-pages-allure
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
 
