@@ -1,0 +1,40 @@
+{
+  "uuid": "8e245a51-9114-4680-a742-94fd15c40f09",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_TwoSources_SameChapterNumbers_OneChapterRow_TwoSourceLinks",
+  "name": "Sync_TwoSources_SameChapterNumbers_OneChapterRow_TwoSourceLinks",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_TwoSources_SameChapterNumbers_OneChapterRow_TwoSourceLinks",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787813531302,
+  "stop": 1787813532005,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_TwoSources_SameChapterNumbers_OneChapterRow_TwoSourceLinks"
+    }
+  ]
+}
