@@ -1,0 +1,40 @@
+{
+  "uuid": "4613a476-1f12-4214-8ad6-6b5b9b6b4b60",
+  "historyId": "ArrghServer.Tests.QueueTests#ListQueue_ReturnsItems_OrderedByCreatedAtDesc",
+  "name": "ListQueue_ReturnsItems_OrderedByCreatedAtDesc",
+  "fullName": "ArrghServer.Tests.QueueTests.ListQueue_ReturnsItems_OrderedByCreatedAtDesc",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787811988736,
+  "stop": 1787811989571,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "ListQueue_ReturnsItems_OrderedByCreatedAtDesc"
+    }
+  ]
+}

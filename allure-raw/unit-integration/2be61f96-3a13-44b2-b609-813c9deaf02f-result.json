@@ -1,0 +1,40 @@
+{
+  "uuid": "2be61f96-3a13-44b2-b609-813c9deaf02f",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_PagesEndpointError_ErrorMessageContainsUrl",
+  "name": "Download_PagesEndpointError_ErrorMessageContainsUrl",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_PagesEndpointError_ErrorMessageContainsUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787812017879,
+  "stop": 1787812021247,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_PagesEndpointError_ErrorMessageContainsUrl"
+    }
+  ]
+}

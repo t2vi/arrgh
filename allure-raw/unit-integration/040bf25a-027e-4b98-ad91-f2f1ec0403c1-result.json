@@ -1,0 +1,40 @@
+{
+  "uuid": "040bf25a-027e-4b98-ad91-f2f1ec0403c1",
+  "historyId": "ArrghServer.Tests.AuthTests#Login_Unauthorized_UnknownUser",
+  "name": "Login_Unauthorized_UnknownUser",
+  "fullName": "ArrghServer.Tests.AuthTests.Login_Unauthorized_UnknownUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787812045872,
+  "stop": 1787812046194,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Login_Unauthorized_UnknownUser"
+    }
+  ]
+}

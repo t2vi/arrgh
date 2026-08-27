@@ -1,0 +1,40 @@
+{
+  "uuid": "845ea82c-ebb2-40ac-88a9-6ef94bfded8d",
+  "historyId": "ArrghServer.Tests.AuthTests#Login_ReturnsToken_ValidCredentials",
+  "name": "Login_ReturnsToken_ValidCredentials",
+  "fullName": "ArrghServer.Tests.AuthTests.Login_ReturnsToken_ValidCredentials",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787812031119,
+  "stop": 1787812031845,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Login_ReturnsToken_ValidCredentials"
+    }
+  ]
+}

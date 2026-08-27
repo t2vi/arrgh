@@ -1,0 +1,40 @@
+{
+  "uuid": "cba79239-e144-4adb-8975-b215e82fcb1f",
+  "historyId": "ArrghServer.Tests.LogsTests#GetLogs_MemberCanAccess",
+  "name": "GetLogs_MemberCanAccess",
+  "fullName": "ArrghServer.Tests.LogsTests.GetLogs_MemberCanAccess",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787811993844,
+  "stop": 1787811994612,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "GetLogs_MemberCanAccess"
+    }
+  ]
+}

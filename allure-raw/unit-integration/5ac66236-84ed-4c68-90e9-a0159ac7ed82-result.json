@@ -1,0 +1,40 @@
+{
+  "uuid": "5ac66236-84ed-4c68-90e9-a0159ac7ed82",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#StripJpegIcc_TooShort_ReturnedUnchanged",
+  "name": "StripJpegIcc_TooShort_ReturnedUnchanged",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.StripJpegIcc_TooShort_ReturnedUnchanged",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787811968605,
+  "stop": 1787811968611,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "StripJpegIcc_TooShort_ReturnedUnchanged"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "883a08e2-2a42-42bd-be6e-4916217f256c",
+  "historyId": "ArrghServer.Tests.AuthTests#ListUsers_ReturnsAllUsers_ForAdmin",
+  "name": "ListUsers_ReturnsAllUsers_ForAdmin",
+  "fullName": "ArrghServer.Tests.AuthTests.ListUsers_ReturnsAllUsers_ForAdmin",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787812032084,
+  "stop": 1787812033670,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "ListUsers_ReturnsAllUsers_ForAdmin"
+    }
+  ]
+}

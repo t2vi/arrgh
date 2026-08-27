@@ -1,0 +1,40 @@
+{
+  "uuid": "b336b2b6-9dcc-4df4-89dd-a88255bd2802",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_PageChapter_SetsPageCount",
+  "name": "Download_PageChapter_SetsPageCount",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_PageChapter_SetsPageCount",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787812041841,
+  "stop": 1787812044953,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_PageChapter_SetsPageCount"
+    }
+  ]
+}

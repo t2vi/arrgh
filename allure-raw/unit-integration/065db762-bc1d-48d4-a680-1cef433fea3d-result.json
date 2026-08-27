@@ -1,0 +1,40 @@
+{
+  "uuid": "065db762-bc1d-48d4-a680-1cef433fea3d",
+  "historyId": "ArrghServer.Tests.AuthTests#PatchMe_UnprocessableEntity_ShortPassword",
+  "name": "PatchMe_UnprocessableEntity_ShortPassword",
+  "fullName": "ArrghServer.Tests.AuthTests.PatchMe_UnprocessableEntity_ShortPassword",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787812045493,
+  "stop": 1787812045872,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "PatchMe_UnprocessableEntity_ShortPassword"
+    }
+  ]
+}

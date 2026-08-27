@@ -1,0 +1,40 @@
+{
+  "uuid": "ec0619a9-9f84-421d-adf5-b556d1b53293",
+  "historyId": "ArrghServer.Tests.ProgressTests#ContinueReading_SkipsNotDownloadedChapters",
+  "name": "ContinueReading_SkipsNotDownloadedChapters",
+  "fullName": "ArrghServer.Tests.ProgressTests.ContinueReading_SkipsNotDownloadedChapters",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787811995043,
+  "stop": 1787811995768,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Reading Progress"
+    },
+    {
+      "name": "story",
+      "value": "ContinueReading_SkipsNotDownloadedChapters"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "61e02b87-3e97-4496-92b6-b85d2d2f7894",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_Unauthorized_NoToken",
+  "name": "ListTitles_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787811999899,
+  "stop": 1787812000279,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_Unauthorized_NoToken"
+    }
+  ]
+}

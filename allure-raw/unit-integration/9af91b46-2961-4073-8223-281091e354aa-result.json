@@ -1,0 +1,40 @@
+{
+  "uuid": "9af91b46-2961-4073-8223-281091e354aa",
+  "historyId": "ArrghServer.Tests.ProgressTests#ContinueReading_ReturnsTitlesWithUnreadChapters",
+  "name": "ContinueReading_ReturnsTitlesWithUnreadChapters",
+  "fullName": "ArrghServer.Tests.ProgressTests.ContinueReading_ReturnsTitlesWithUnreadChapters",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787811990305,
+  "stop": 1787811991045,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Reading Progress"
+    },
+    {
+      "name": "story",
+      "value": "ContinueReading_ReturnsTitlesWithUnreadChapters"
+    }
+  ]
+}

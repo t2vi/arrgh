@@ -1,0 +1,40 @@
+{
+  "uuid": "82a1b4a6-5637-43ca-81c1-b73265935036",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_WuxiaWorld_Deduped_ByNovelupdates_WhenBothReturn",
+  "name": "Search_WuxiaWorld_Deduped_ByNovelupdates_WhenBothReturn",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_WuxiaWorld_Deduped_ByNovelupdates_WhenBothReturn",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787812000279,
+  "stop": 1787812001346,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "Search_WuxiaWorld_Deduped_ByNovelupdates_WhenBothReturn"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "63b5666a-46fd-492e-8a55-e706bc59464b",
+  "historyId": "ArrghServer.Tests.TitlesTests#SyncTitle_SyncLogContainsSourceName",
+  "name": "SyncTitle_SyncLogContainsSourceName",
+  "fullName": "ArrghServer.Tests.TitlesTests.SyncTitle_SyncLogContainsSourceName",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787811997146,
+  "stop": 1787811998287,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "SyncTitle_SyncLogContainsSourceName"
+    }
+  ]
+}
