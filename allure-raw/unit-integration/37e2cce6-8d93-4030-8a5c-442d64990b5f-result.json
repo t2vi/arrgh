@@ -1,0 +1,40 @@
+{
+  "uuid": "37e2cce6-8d93-4030-8a5c-442d64990b5f",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddManga_WithMatchingExternalSource_CreatesChapters",
+  "name": "AddManga_WithMatchingExternalSource_CreatesChapters",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddManga_WithMatchingExternalSource_CreatesChapters",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1787810368731,
+  "stop": 1787810369457,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_WithMatchingExternalSource_CreatesChapters"
+    }
+  ]
+}
