@@ -46,7 +46,7 @@ export default function MangaDetail() {
             <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/75 to-background" />
           </div>
 
-          <div className="relative z-10 flex items-end gap-6 px-6 pt-10 pb-6 max-w-5xl mx-auto">
+          <div className="relative z-10 flex items-end gap-4 px-4 md:px-6 pt-10 pb-6 max-w-5xl mx-auto">
             <CoverImg coverUrl={manga.cover_url} mangaId={manga.id} />
 
             <div className="flex-1 min-w-0 pb-1 space-y-2.5">
@@ -83,7 +83,7 @@ export default function MangaDetail() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 pt-0.5">
+              <div className="flex items-center gap-2 pt-0.5 flex-wrap">
                 {h.resumeChapter && (
                   <Button
                     onClick={() => h.openOrQueue(h.resumeChapter!)}
@@ -170,11 +170,11 @@ export default function MangaDetail() {
       )}
 
       {/* ── Body ── */}
-      <div className="max-w-5xl w-full mx-auto px-6 py-6">
-        <div className="grid grid-cols-[1fr_272px] gap-6 items-start">
+      <div className="max-w-5xl w-full mx-auto px-4 md:px-6 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_272px] gap-6 items-start">
 
-          {/* Left: Synopsis + Chapters */}
-          <div className="space-y-6 min-w-0">
+          {/* Left: Synopsis + Chapters — below sidebar on mobile */}
+          <div className="space-y-6 min-w-0 order-2 md:order-1">
             {manga?.description && (
               <section>
                 <button
@@ -328,8 +328,8 @@ export default function MangaDetail() {
             </section>
           </div>
 
-          {/* Right: Sidebar */}
-          <div className="space-y-4">
+          {/* Right: Sidebar — first on mobile */}
+          <div className="space-y-4 order-1 md:order-2">
             {h.total > 0 && (
               <div className="rounded-lg bg-card border border-border p-4 space-y-3">
                 <div className="flex items-center justify-between">

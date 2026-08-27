@@ -37,20 +37,12 @@ app/build/
 app/.packages
 app/pubspec.lock
 
-# ── Claude Code / dev-private (lives in arrgh-dev, symlinked) ──
-# No trailing slashes — symlinks are treated as files by git, trailing slash rules miss them
-.agents
-.claude
-docs/adr
-docs/agents
-CLAUDE.md
-CONTEXT.md
+# ── Claude Code / dev-private ────────────────────────────────
+# AI/dev files kept out of this public repo. Real files on disk, mirrored to
+# the private repo t2vi/arrgh-dev via scripts/private-overlay.sh. The
+# managed block below is regenerated from .claude/private-overlay.conf.
 CONTEXT.MD
-graphify-out
-skills-lock.json
-.understand-anything
-api-live-tests
-live-tests
+.claude/settings.local.json
 
 # ── General ──────────────────────────────────────────────────
 .DS_Store
@@ -59,3 +51,23 @@ live-tests
 *.db-wal
 *.cbz
 habi.config.json
+
+
+
+# >>> private-overlay >>>
+# AI/dev files tracked in the private overlay (scripts/private-overlay.sh) — never public.
+# Regenerated from .claude/private-overlay.conf; edit that, not this block.
+.private.git/
+.private-tmp/
+CLAUDE.md
+CONTEXT.md
+skills-lock.json
+.agents
+.understand-anything
+graphify-out
+.claude
+docs/adr
+docs/agents
+api-live-tests
+live-tests
+# <<< private-overlay <<<
