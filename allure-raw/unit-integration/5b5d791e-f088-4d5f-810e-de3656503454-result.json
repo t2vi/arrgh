@@ -1,0 +1,40 @@
+{
+  "uuid": "5b5d791e-f088-4d5f-810e-de3656503454",
+  "historyId": "ArrghServer.Tests.LogServiceTests#SetLevel_ValidLevel_ReturnsTrueAndUpdates",
+  "name": "SetLevel_ValidLevel_ReturnsTrueAndUpdates",
+  "fullName": "ArrghServer.Tests.LogServiceTests.SetLevel_ValidLevel_ReturnsTrueAndUpdates",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345635,
+  "stop": 1789036345635,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "SetLevel_ValidLevel_ReturnsTrueAndUpdates"
+    }
+  ]
+}

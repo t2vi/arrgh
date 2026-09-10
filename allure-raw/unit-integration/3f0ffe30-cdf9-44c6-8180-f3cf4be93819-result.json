@@ -1,0 +1,40 @@
+{
+  "uuid": "3f0ffe30-cdf9-44c6-8180-f3cf4be93819",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;asurascans&quot;)",
+  "name": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;asurascans&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;asurascans&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036413544,
+  "stop": 1789036414108,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_AllPluginSources_SyncLogShowsSourceName(source: &quot;asurascans&quot;)"
+    }
+  ]
+}

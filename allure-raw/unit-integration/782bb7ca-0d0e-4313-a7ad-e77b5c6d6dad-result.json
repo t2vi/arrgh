@@ -1,0 +1,40 @@
+{
+  "uuid": "782bb7ca-0d0e-4313-a7ad-e77b5c6d6dad",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)",
+  "name": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345693,
+  "stop": 1789036345693,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;manhua&quot;)"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "29a2e9e8-db39-40b1-a6f2-0fd8326f3f11",
+  "historyId": "ArrghServer.Tests.QueueTests#ListQueue_ShowsExplicit_ForAdmin",
+  "name": "ListQueue_ShowsExplicit_ForAdmin",
+  "fullName": "ArrghServer.Tests.QueueTests.ListQueue_ShowsExplicit_ForAdmin",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036370909,
+  "stop": 1789036371613,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Queue API"
+    },
+    {
+      "name": "story",
+      "value": "ListQueue_ShowsExplicit_ForAdmin"
+    }
+  ]
+}

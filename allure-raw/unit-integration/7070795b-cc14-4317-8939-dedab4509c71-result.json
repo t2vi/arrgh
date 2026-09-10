@@ -1,0 +1,40 @@
+{
+  "uuid": "7070795b-cc14-4317-8939-dedab4509c71",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#Levenshtein_OneSub",
+  "name": "Levenshtein_OneSub",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.Levenshtein_OneSub",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345859,
+  "stop": 1789036345862,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "Levenshtein_OneSub"
+    }
+  ]
+}

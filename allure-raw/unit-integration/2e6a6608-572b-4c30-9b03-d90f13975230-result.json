@@ -1,0 +1,40 @@
+{
+  "uuid": "2e6a6608-572b-4c30-9b03-d90f13975230",
+  "historyId": "ArrghServer.Tests.AuthTests#Register_CreatesAdminAndReturnsToken",
+  "name": "Register_CreatesAdminAndReturnsToken",
+  "fullName": "ArrghServer.Tests.AuthTests.Register_CreatesAdminAndReturnsToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036360992,
+  "stop": 1789036361680,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Register_CreatesAdminAndReturnsToken"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "a8ed5bae-0ddf-4abf-9b47-a7ea0646eb09",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Search_MuResult_IsExplicitFalse_WhenNoAdultTags",
+  "name": "Search_MuResult_IsExplicitFalse_WhenNoAdultTags",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Search_MuResult_IsExplicitFalse_WhenNoAdultTags",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036415310,
+  "stop": 1789036415740,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "Search_MuResult_IsExplicitFalse_WhenNoAdultTags"
+    }
+  ]
+}

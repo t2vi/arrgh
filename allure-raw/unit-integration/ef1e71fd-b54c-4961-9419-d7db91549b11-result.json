@@ -1,0 +1,40 @@
+{
+  "uuid": "ef1e71fd-b54c-4961-9419-d7db91549b11",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;hentai&quot;)",
+  "name": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;hentai&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;hentai&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345692,
+  "stop": 1789036345692,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "FilterMuScope_Excludes_NonMangaTypes(contentType: &quot;hentai&quot;)"
+    }
+  ]
+}

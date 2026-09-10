@@ -1,0 +1,40 @@
+{
+  "uuid": "8714b52b-04ef-4e28-9920-ab1a39e9ec99",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#NormalizeTitle_StripsPunctuation",
+  "name": "NormalizeTitle_StripsPunctuation",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.NormalizeTitle_StripsPunctuation",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345787,
+  "stop": 1789036345787,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "NormalizeTitle_StripsPunctuation"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "60578bf8-f3df-4289-abcf-4ccd0131b2b7",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_DifferentUsers_DifferentTokens",
+  "name": "CreateToken_DifferentUsers_DifferentTokens",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_DifferentUsers_DifferentTokens",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345665,
+  "stop": 1789036345665,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Token"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_DifferentUsers_DifferentTokens"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "a376bc7c-707d-4dce-95e8-f7e99e7415c7",
+  "historyId": "ArrghServer.Tests.SettingsLogicTests#ParseBool_OtherString_ReturnsFalse",
+  "name": "ParseBool_OtherString_ReturnsFalse",
+  "fullName": "ArrghServer.Tests.SettingsLogicTests.ParseBool_OtherString_ReturnsFalse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345733,
+  "stop": 1789036345733,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Validation"
+    },
+    {
+      "name": "story",
+      "value": "ParseBool_OtherString_ReturnsFalse"
+    }
+  ]
+}

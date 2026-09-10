@@ -1,0 +1,40 @@
+{
+  "uuid": "13f34931-8220-40e1-b39b-b64d184e42a7",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Search_ReturnsMappedResults",
+  "name": "Search_ReturnsMappedResults",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Search_ReturnsMappedResults",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036419342,
+  "stop": 1789036419801,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "Search_ReturnsMappedResults"
+    }
+  ]
+}

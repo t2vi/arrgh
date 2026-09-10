@@ -1,0 +1,40 @@
+{
+  "uuid": "2fb49921-7ed8-43c9-8ced-34aa8c30d27d",
+  "historyId": "ArrghServer.Tests.TitlesTests#RemoveTitle_NoContent_WhenOwned",
+  "name": "RemoveTitle_NoContent_WhenOwned",
+  "fullName": "ArrghServer.Tests.TitlesTests.RemoveTitle_NoContent_WhenOwned",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036398140,
+  "stop": 1789036398968,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "RemoveTitle_NoContent_WhenOwned"
+    }
+  ]
+}

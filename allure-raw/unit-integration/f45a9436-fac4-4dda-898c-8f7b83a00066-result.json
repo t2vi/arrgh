@@ -1,0 +1,40 @@
+{
+  "uuid": "f45a9436-fac4-4dda-898c-8f7b83a00066",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#KnownNorms_NoDuplicates",
+  "name": "KnownNorms_NoDuplicates",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.KnownNorms_NoDuplicates",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345777,
+  "stop": 1789036345778,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "KnownNorms_NoDuplicates"
+    }
+  ]
+}

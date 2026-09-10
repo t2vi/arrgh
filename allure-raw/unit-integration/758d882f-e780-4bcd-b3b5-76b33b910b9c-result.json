@@ -1,0 +1,40 @@
+{
+  "uuid": "758d882f-e780-4bcd-b3b5-76b33b910b9c",
+  "historyId": "ArrghServer.Tests.ChaptersTests#ListChapters_ReturnsChaptersOrderedByNumber",
+  "name": "ListChapters_ReturnsChaptersOrderedByNumber",
+  "fullName": "ArrghServer.Tests.ChaptersTests.ListChapters_ReturnsChaptersOrderedByNumber",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036402185,
+  "stop": 1789036402772,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "ListChapters_ReturnsChaptersOrderedByNumber"
+    }
+  ]
+}

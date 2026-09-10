@@ -1,0 +1,40 @@
+{
+  "uuid": "be08625c-4a00-47a4-be46-33f22ced17c0",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#SourceMatching_NoAliasMatch_NoSourceLink",
+  "name": "SourceMatching_NoAliasMatch_NoSourceLink",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.SourceMatching_NoAliasMatch_NoSourceLink",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036395450,
+  "stop": 1789036396229,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "SourceMatching_NoAliasMatch_NoSourceLink"
+    }
+  ]
+}

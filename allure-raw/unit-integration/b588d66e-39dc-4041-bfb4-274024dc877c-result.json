@@ -1,0 +1,40 @@
+{
+  "uuid": "b588d66e-39dc-4041-bfb4-274024dc877c",
+  "historyId": "ArrghServer.Tests.AuthTokenTests#CreateToken_WrongSecret_Rejected",
+  "name": "CreateToken_WrongSecret_Rejected",
+  "fullName": "ArrghServer.Tests.AuthTokenTests.CreateToken_WrongSecret_Rejected",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036345664,
+  "stop": 1789036345664,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTokenTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Token"
+    },
+    {
+      "name": "story",
+      "value": "CreateToken_WrongSecret_Rejected"
+    }
+  ]
+}

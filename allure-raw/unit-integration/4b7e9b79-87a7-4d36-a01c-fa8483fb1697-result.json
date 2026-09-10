@@ -1,0 +1,40 @@
+{
+  "uuid": "4b7e9b79-87a7-4d36-a01c-fa8483fb1697",
+  "historyId": "ArrghServer.Tests.AuthTests#DeleteUser_Forbidden_CannotDeleteSelf",
+  "name": "DeleteUser_Forbidden_CannotDeleteSelf",
+  "fullName": "ArrghServer.Tests.AuthTests.DeleteUser_Forbidden_CannotDeleteSelf",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036356067,
+  "stop": 1789036356707,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "DeleteUser_Forbidden_CannotDeleteSelf"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "d9b9b81c-5a2e-4d62-82bc-a03695940c40",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Search_ReturnsEmptyList_WhenMuFails",
+  "name": "Search_ReturnsEmptyList_WhenMuFails",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Search_ReturnsEmptyList_WhenMuFails",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036414108,
+  "stop": 1789036414514,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "Search_ReturnsEmptyList_WhenMuFails"
+    }
+  ]
+}

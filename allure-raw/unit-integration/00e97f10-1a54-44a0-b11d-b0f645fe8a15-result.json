@@ -1,0 +1,40 @@
+{
+  "uuid": "00e97f10-1a54-44a0-b11d-b0f645fe8a15",
+  "historyId": "ArrghServer.Tests.AuthTests#Status_NoSetupNeeded_AfterRegister",
+  "name": "Status_NoSetupNeeded_AfterRegister",
+  "fullName": "ArrghServer.Tests.AuthTests.Status_NoSetupNeeded_AfterRegister",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036372771,
+  "stop": 1789036373587,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "AuthTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Auth"
+    },
+    {
+      "name": "epic",
+      "value": "Auth"
+    },
+    {
+      "name": "feature",
+      "value": "Auth API"
+    },
+    {
+      "name": "story",
+      "value": "Status_NoSetupNeeded_AfterRegister"
+    }
+  ]
+}

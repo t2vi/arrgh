@@ -1,0 +1,40 @@
+{
+  "uuid": "d1cd9e63-abda-4d3f-89fc-8738a94b3321",
+  "historyId": "ArrghServer.Tests.TitlesTests#RemoveTitle_DoesNotDeleteTitle_WhenOtherUserStillHasIt",
+  "name": "RemoveTitle_DoesNotDeleteTitle_WhenOtherUserStillHasIt",
+  "fullName": "ArrghServer.Tests.TitlesTests.RemoveTitle_DoesNotDeleteTitle_WhenOtherUserStillHasIt",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789036382048,
+  "stop": 1789036382942,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "RemoveTitle_DoesNotDeleteTitle_WhenOtherUserStillHasIt"
+    }
+  ]
+}
