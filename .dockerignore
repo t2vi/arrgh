@@ -1,0 +1,16 @@
+# Keep the build context small — none of this is needed by any Dockerfile stage.
+.git
+**/node_modules
+server/target
+server/bin
+server/obj
+server-tests
+web/dist
+e2e
+api-tests
+api-live-tests
+allure-report
+allure-results
+**/*.db
+**/*.db-shm
+**/*.db-wal

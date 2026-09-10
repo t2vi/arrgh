@@ -1,3 +1,11 @@
+# ── Stage 0: Build the Rust API server (ADR 0033 — strangler-fig on :3001) ────
+FROM rust:1-slim AS rust-server-builder
+
+WORKDIR /build
+COPY server/Cargo.toml server/Cargo.lock ./
+COPY server/src ./src
+RUN cargo build --release --bin arrgh-server
+
 # ── Stage 1: Build the .NET API server ───────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS server-builder
 
@@ -24,6 +32,9 @@ COPY docker/nginx.conf /etc/nginx/sites-available/default
 
 # .NET server publish output
 COPY --from=server-builder /publish /app
+
+# Rust server binary (ADR 0033) — runs alongside .NET during the migration
+COPY --from=rust-server-builder /build/target/release/arrgh-server /app/arrgh-server
 
 # Bundled plugin index (default when PluginIndexUrl not overridden)
 COPY plugin-index/index.json /app/plugin-index.json
