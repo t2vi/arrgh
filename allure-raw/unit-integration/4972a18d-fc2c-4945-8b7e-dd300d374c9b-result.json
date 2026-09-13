@@ -1,0 +1,40 @@
+{
+  "uuid": "4972a18d-fc2c-4945-8b7e-dd300d374c9b",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#NormalizeTitle_CollapseMultipleSpaces",
+  "name": "NormalizeTitle_CollapseMultipleSpaces",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.NormalizeTitle_CollapseMultipleSpaces",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789300136354,
+  "stop": 1789300136354,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "NormalizeTitle_CollapseMultipleSpaces"
+    }
+  ]
+}

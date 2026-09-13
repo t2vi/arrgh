@@ -1,0 +1,40 @@
+{
+  "uuid": "7b6374fb-236c-4992-b8a3-6f1b2c309465",
+  "historyId": "ArrghServer.Tests.TitlesTests#GetTitle_IsLocal_TrueWhenNoSources",
+  "name": "GetTitle_IsLocal_TrueWhenNoSources",
+  "fullName": "ArrghServer.Tests.TitlesTests.GetTitle_IsLocal_TrueWhenNoSources",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789300174897,
+  "stop": 1789300175354,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "GetTitle_IsLocal_TrueWhenNoSources"
+    }
+  ]
+}

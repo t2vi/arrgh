@@ -1,0 +1,40 @@
+{
+  "uuid": "7f6ac5e1-e451-4595-9efa-3e2a79c723ff",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#ReaderMode_Absent_IsNull",
+  "name": "ReaderMode_Absent_IsNull",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.ReaderMode_Absent_IsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789300136193,
+  "stop": 1789300136197,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Patch API"
+    },
+    {
+      "name": "story",
+      "value": "ReaderMode_Absent_IsNull"
+    }
+  ]
+}

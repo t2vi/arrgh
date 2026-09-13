@@ -1,0 +1,40 @@
+{
+  "uuid": "a35092d9-5939-442b-8978-c422e43ee448",
+  "historyId": "ArrghServer.Tests.ChaptersTests#GetChapterText_NotFound_WhenFileGone",
+  "name": "GetChapterText_NotFound_WhenFileGone",
+  "fullName": "ArrghServer.Tests.ChaptersTests.GetChapterText_NotFound_WhenFileGone",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789300157321,
+  "stop": 1789300158241,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterText_NotFound_WhenFileGone"
+    }
+  ]
+}

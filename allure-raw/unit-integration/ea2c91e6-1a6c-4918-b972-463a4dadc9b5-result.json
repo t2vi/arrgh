@@ -1,0 +1,40 @@
+{
+  "uuid": "ea2c91e6-1a6c-4918-b972-463a4dadc9b5",
+  "historyId": "ArrghServer.Tests.TitlesTests#ListTitles_EmptyLibrary_ReturnsEmptyPage",
+  "name": "ListTitles_EmptyLibrary_ReturnsEmptyPage",
+  "fullName": "ArrghServer.Tests.TitlesTests.ListTitles_EmptyLibrary_ReturnsEmptyPage",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789300175354,
+  "stop": 1789300175884,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "ListTitles_EmptyLibrary_ReturnsEmptyPage"
+    }
+  ]
+}
