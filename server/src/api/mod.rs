@@ -5,14 +5,21 @@ use crate::state::AppState;
 
 pub mod auth;
 pub mod logs;
+pub mod progress;
 pub mod settings;
 pub mod sources;
+pub mod titles;
 pub mod users;
 pub mod version;
 
 /// The full `/api` router. One `.nest` per route group; groups land phase by
 /// phase (ADR 0033). Anything not nested here is still served by the .NET
 /// process via nginx until its phase ships.
+///
+/// `titles` + `progress` (S4 #126) are wired here but **not yet flipped in
+/// `docker/nginx.conf`** — see `src/titles.rs`'s module doc for why (chapter
+/// sync isn't ported until S5). The router exists so the Rust integration
+/// tests can exercise the real handlers ahead of the nginx flip.
 pub fn router(state: AppState) -> Router {
     Router::new()
         .nest("/api/version", version::routes())
@@ -21,6 +28,8 @@ pub fn router(state: AppState) -> Router {
         .nest("/api/users", users::routes())
         .nest("/api/settings", settings::routes())
         .nest("/api/sources", sources::routes())
+        .nest("/api/titles", titles::routes())
+        .nest("/api/progress", progress::routes())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }

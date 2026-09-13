@@ -18,7 +18,12 @@ pub async fn connect_db(database_path: &str) -> anyhow::Result<SqlitePool> {
         .filename(database_path)
         .create_if_missing(true)
         .journal_mode(SqliteJournalMode::Wal)
-        .busy_timeout(Duration::from_millis(5000));
+        .busy_timeout(Duration::from_millis(5000))
+        // S4 (#126): RemoveTitle relies on the schema's ON DELETE CASCADE
+        // (title -> chapters/title_sources/title_aliases/sync_log/
+        // sync_warnings/user_titles/user_title_settings/read_progress) —
+        // SQLite only enforces FKs, cascade included, when this is on.
+        .foreign_keys(true);
 
     Ok(SqlitePoolOptions::new().connect_with(opts).await?)
 }
