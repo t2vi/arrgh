@@ -6,11 +6,15 @@ use http_body_util::BodyExt;
 use tower::ServiceExt; // oneshot
 
 use arrgh_server::config::Config;
+use arrgh_server::logs::LogBuffer;
 use arrgh_server::state::AppState;
 
 fn test_state() -> AppState {
     // Config::from_env with nothing set → all defaults, no panic.
-    AppState::new(Config::from_env().expect("default config"))
+    AppState::new(
+        Config::from_env().expect("default config"),
+        LogBuffer::new("info"),
+    )
 }
 
 #[tokio::test]

@@ -13,6 +13,7 @@ pub enum AppError {
     Forbidden,
     BadRequest(String),
     Conflict(String),
+    UnprocessableEntity(String),
     /// Anything unexpected — logged at error, returned as a bare 500.
     Internal(anyhow::Error),
 }
@@ -27,6 +28,7 @@ impl IntoResponse for AppError {
             AppError::Forbidden => (StatusCode::FORBIDDEN, "forbidden".to_string()),
             AppError::BadRequest(m) => (StatusCode::BAD_REQUEST, m),
             AppError::Conflict(m) => (StatusCode::CONFLICT, m),
+            AppError::UnprocessableEntity(m) => (StatusCode::UNPROCESSABLE_ENTITY, m),
             AppError::Internal(e) => {
                 tracing::error!(error = ?e, "internal error");
                 (

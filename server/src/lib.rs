@@ -1,41 +1,54 @@
 //! *ARRgh server (Rust). See ADR 0033.
 //!
 //! S0 skeleton: config + tracing + error type + one real endpoint
-//! (`GET /api/version`). Every other `/api/*` group arrives one phase at a
-//! time (#123–#131) and nginx flips its prefix here once its Hurl +
-//! integration tests are green.
+//! (`GET /api/version`). S1 (#123) adds the log ring buffer. Every other
+//! `/api/*` group arrives one phase at a time (#124–#131) and nginx flips
+//! its prefix here once its Hurl + integration tests are green.
 
 pub mod api;
+pub mod auth;
 pub mod config;
 pub mod error;
+pub mod logs;
 pub mod state;
 
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 use tokio::net::TcpListener;
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{fmt, EnvFilter, Layer};
 
 use crate::config::Config;
+use crate::logs::{LogBuffer, LogBufferLayer};
 use crate::state::AppState;
 
-/// Initialise tracing from `LOG_LEVEL` (debug|info|warn|error), matching the
-/// .NET server's console behaviour. `/api/logs` (S1, #123) will add the
-/// in-memory ring-buffer layer this reads from.
-pub fn init_tracing() {
-    let level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "info".into());
-    let filter = EnvFilter::try_new(format!("arrgh_server={level},tower_http={level},info"))
-        .unwrap_or_else(|_| EnvFilter::new("info"));
+/// Initialise tracing: console output gated by `LOG_LEVEL` (fixed at boot,
+/// matching the .NET server's console behaviour) plus the `/api/logs` ring
+/// buffer, whose gate is independently adjustable at runtime.
+pub fn init_tracing(level: &str, buffer: Arc<LogBuffer>) {
+    let console_filter =
+        EnvFilter::try_new(format!("arrgh_server={level},tower_http={level},info"))
+            .unwrap_or_else(|_| EnvFilter::new("info"));
+
+    let registry = tracing_subscriber::registry()
+        .with(fmt::layer().with_filter(console_filter))
+        .with(LogBufferLayer::new(buffer));
+
     // ok() — a second init in tests is not an error worth aborting for
-    let _ = fmt().with_env_filter(filter).try_init();
+    let _ = registry.try_init();
 }
 
 /// Build the app and serve until SIGINT/SIGTERM.
 pub async fn run() -> anyhow::Result<()> {
-    init_tracing();
-
     let config = Config::from_env()?;
+    let level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "info".into());
+    let log_buffer = LogBuffer::new(&level);
+    init_tracing(&level, log_buffer.clone());
+
     let addr: SocketAddr = config.bind;
-    let state = AppState::new(config);
+    let state = AppState::new(config, log_buffer);
 
     let listener = TcpListener::bind(addr).await?;
     tracing::info!(%addr, "arrgh-server listening");

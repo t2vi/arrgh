@@ -3,6 +3,7 @@ use tower_http::trace::TraceLayer;
 
 use crate::state::AppState;
 
+pub mod logs;
 pub mod version;
 
 /// The full `/api` router. One `.nest` per route group; groups land phase by
@@ -11,6 +12,7 @@ pub mod version;
 pub fn router(state: AppState) -> Router {
     Router::new()
         .nest("/api/version", version::routes())
+        .nest("/api/logs", logs::routes())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }
