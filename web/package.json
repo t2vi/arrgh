@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@radix-ui/react-scroll-area": "^1.2.10",
-    "@radix-ui/react-slot": "^1.2.4",
     "@types/marked": "^5.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -32,13 +31,13 @@
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "@vitest/coverage-v8": "^2.0.0",
+    "allure-vitest": "^2.15.1",
     "jsdom": "^29.1.1",
     "sass": "^1.99.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.8",
-    "vitest": "^2.0.0",
-    "@vitest/coverage-v8": "^2.0.0",
-    "allure-vitest": "^2.15.1"
+    "vitest": "^2.0.0"
   }
 }
