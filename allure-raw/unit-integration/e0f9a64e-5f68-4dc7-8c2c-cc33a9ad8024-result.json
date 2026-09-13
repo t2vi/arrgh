@@ -1,0 +1,40 @@
+{
+  "uuid": "e0f9a64e-5f68-4dc7-8c2c-cc33a9ad8024",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_NovelUpdatesNovel_HasSourceNovelupdates",
+  "name": "Search_NovelUpdatesNovel_HasSourceNovelupdates",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_NovelUpdatesNovel_HasSourceNovelupdates",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789297643610,
+  "stop": 1789297643959,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "Search_NovelUpdatesNovel_HasSourceNovelupdates"
+    }
+  ]
+}

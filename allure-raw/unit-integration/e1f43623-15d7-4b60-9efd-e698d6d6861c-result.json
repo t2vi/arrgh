@@ -1,0 +1,40 @@
+{
+  "uuid": "e1f43623-15d7-4b60-9efd-e698d6d6861c",
+  "historyId": "ArrghServer.Tests.MigrationBootstrapTests#Bootstrap_PartialSchemaDb_AddsNullableColumns_AndSaveChangesSucceeds",
+  "name": "Bootstrap_PartialSchemaDb_AddsNullableColumns_AndSaveChangesSucceeds",
+  "fullName": "ArrghServer.Tests.MigrationBootstrapTests.Bootstrap_PartialSchemaDb_AddsNullableColumns_AndSaveChangesSucceeds",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789297633652,
+  "stop": 1789297633792,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MigrationBootstrapTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "MigrationBootstrapTests"
+    },
+    {
+      "name": "story",
+      "value": "Bootstrap_PartialSchemaDb_AddsNullableColumns_AndSaveChangesSucceeds"
+    }
+  ]
+}

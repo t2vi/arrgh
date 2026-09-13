@@ -1,0 +1,40 @@
+{
+  "uuid": "b17a7383-af78-4efa-8b35-db1b20126b23",
+  "historyId": "ArrghServer.Tests.ChaptersTests#GetChapterText_BadRequest_WhenNotTextFormat",
+  "name": "GetChapterText_BadRequest_WhenNotTextFormat",
+  "fullName": "ArrghServer.Tests.ChaptersTests.GetChapterText_BadRequest_WhenNotTextFormat",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789297691353,
+  "stop": 1789297691924,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "GetChapterText_BadRequest_WhenNotTextFormat"
+    }
+  ]
+}

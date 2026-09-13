@@ -1,0 +1,40 @@
+{
+  "uuid": "4d4f88fe-caf7-417c-bbe5-c965ffab6f7d",
+  "historyId": "ArrghServer.Tests.TitlesTests#PatchTitle_Forbidden_IsExplicit_ForMember",
+  "name": "PatchTitle_Forbidden_IsExplicit_ForMember",
+  "fullName": "ArrghServer.Tests.TitlesTests.PatchTitle_Forbidden_IsExplicit_ForMember",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789297671023,
+  "stop": 1789297672060,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "PatchTitle_Forbidden_IsExplicit_ForMember"
+    }
+  ]
+}

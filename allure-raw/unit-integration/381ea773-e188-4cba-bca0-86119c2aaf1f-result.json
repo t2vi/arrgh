@@ -1,0 +1,40 @@
+{
+  "uuid": "381ea773-e188-4cba-bca0-86119c2aaf1f",
+  "historyId": "ArrghServer.Tests.SourcesPatchTests#PatchSource_CanUpdatePriority",
+  "name": "PatchSource_CanUpdatePriority",
+  "fullName": "ArrghServer.Tests.SourcesPatchTests.PatchSource_CanUpdatePriority",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789297673228,
+  "stop": 1789297674408,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesPatchTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "SourcesPatchTests"
+    },
+    {
+      "name": "story",
+      "value": "PatchSource_CanUpdatePriority"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "0128195c-52a0-484f-827b-cb5ac72890d4",
+  "historyId": "ArrghServer.Tests.QueueLogicTests#IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse",
+  "name": "IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse",
+  "fullName": "ArrghServer.Tests.QueueLogicTests.IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789297632023,
+  "stop": 1789297632032,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "QueueLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Access Control"
+    },
+    {
+      "name": "story",
+      "value": "IsAllowedExplicit_True_WhenAdmin_EvenIfFlagFalse"
+    }
+  ]
+}
