@@ -1,0 +1,40 @@
+{
+  "uuid": "3d323927-e0e8-4da7-91c1-949e0f2a756d",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_LogsZeroChapterCount_WhenPluginReturnsEmpty",
+  "name": "Sync_LogsZeroChapterCount_WhenPluginReturnsEmpty",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_LogsZeroChapterCount_WhenPluginReturnsEmpty",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789280272127,
+  "stop": 1789280273847,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_LogsZeroChapterCount_WhenPluginReturnsEmpty"
+    }
+  ]
+}

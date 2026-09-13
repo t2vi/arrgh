@@ -1,0 +1,40 @@
+{
+  "uuid": "2e81d9f5-94c5-4cab-a786-6f27ae11bd8c",
+  "historyId": "ArrghServer.Tests.TitlesTests#RefreshMetadata_Returns202_ForAniListTitle_WithNoMangaupdatesId",
+  "name": "RefreshMetadata_Returns202_ForAniListTitle_WithNoMangaupdatesId",
+  "fullName": "ArrghServer.Tests.TitlesTests.RefreshMetadata_Returns202_ForAniListTitle_WithNoMangaupdatesId",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789280281428,
+  "stop": 1789280282229,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "RefreshMetadata_Returns202_ForAniListTitle_WithNoMangaupdatesId"
+    }
+  ]
+}

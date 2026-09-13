@@ -1,0 +1,40 @@
+{
+  "uuid": "4e0c3c5e-3706-4561-a467-fcd30b8c2224",
+  "historyId": "ArrghServer.Tests.PluginsLogicTests#FetchIndex_ReadsFileUrl",
+  "name": "FetchIndex_ReadsFileUrl",
+  "fullName": "ArrghServer.Tests.PluginsLogicTests.FetchIndex_ReadsFileUrl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789280249019,
+  "stop": 1789280249058,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Server"
+    },
+    {
+      "name": "epic",
+      "value": "Server"
+    },
+    {
+      "name": "feature",
+      "value": "PluginsLogicTests"
+    },
+    {
+      "name": "story",
+      "value": "FetchIndex_ReadsFileUrl"
+    }
+  ]
+}

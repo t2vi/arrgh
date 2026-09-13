@@ -1,0 +1,40 @@
+{
+  "uuid": "67dddba9-25da-4db5-b28d-614922b90528",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#ReaderMode_JsonNull_BehaviorDocumented",
+  "name": "ReaderMode_JsonNull_BehaviorDocumented",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.ReaderMode_JsonNull_BehaviorDocumented",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789280249120,
+  "stop": 1789280249126,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Patch API"
+    },
+    {
+      "name": "story",
+      "value": "ReaderMode_JsonNull_BehaviorDocumented"
+    }
+  ]
+}

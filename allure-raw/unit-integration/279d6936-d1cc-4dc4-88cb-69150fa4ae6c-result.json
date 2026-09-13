@@ -1,0 +1,40 @@
+{
+  "uuid": "279d6936-d1cc-4dc4-88cb-69150fa4ae6c",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_Manhwa_ChapterFormat_IsPages",
+  "name": "Sync_Manhwa_ChapterFormat_IsPages",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_Manhwa_ChapterFormat_IsPages",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789280312790,
+  "stop": 1789280318745,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_Manhwa_ChapterFormat_IsPages"
+    }
+  ]
+}

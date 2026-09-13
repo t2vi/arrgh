@@ -1,0 +1,40 @@
+{
+  "uuid": "8c22a5ab-7a5f-40d9-a2bf-1af684ab2c0e",
+  "historyId": "ArrghServer.Tests.MediaLogicTests#RootDomainReferer_PreservesScheme",
+  "name": "RootDomainReferer_PreservesScheme",
+  "fullName": "ArrghServer.Tests.MediaLogicTests.RootDomainReferer_PreservesScheme",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789280249146,
+  "stop": 1789280249146,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "MediaLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Media"
+    },
+    {
+      "name": "story",
+      "value": "RootDomainReferer_PreservesScheme"
+    }
+  ]
+}
