@@ -1,49 +1,19 @@
 //! S1 parity check for `/api/logs`. Mirrors `api-tests/tests/logs.hurl`.
 
+mod common;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use http_body_util::BodyExt;
-use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::Serialize;
 use tower::ServiceExt; // oneshot
 
-use arrgh_server::config::Config;
-use arrgh_server::logs::LogBuffer;
-use arrgh_server::state::AppState;
-
-const SECRET: &str = "test-jwt-secret-for-logs-integration!!";
-
-fn test_state() -> AppState {
-    let config = Config {
-        jwt_secret: Some(SECRET.into()),
-        ..Config::from_env().expect("default config")
-    };
-    AppState::new(config, LogBuffer::new("info"))
-}
-
-#[derive(Serialize)]
-struct TestClaims<'a> {
-    #[serde(rename = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")]
-    role: &'a str,
-    exp: usize,
-}
-
 fn token(role: &str) -> String {
-    let claims = TestClaims {
-        role,
-        exp: 9_999_999_999,
-    };
-    encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(SECRET.as_bytes()),
-    )
-    .unwrap()
+    arrgh_server::auth::create_token("user-1", "tester", role, false, common::JWT_SECRET).unwrap()
 }
 
 #[tokio::test]
 async fn list_requires_auth() {
-    let app = arrgh_server::api::router(test_state());
+    let app = arrgh_server::api::router(common::build_state().await);
     let res = app
         .oneshot(Request::get("/api/logs").body(Body::empty()).unwrap())
         .await
@@ -53,7 +23,7 @@ async fn list_requires_auth() {
 
 #[tokio::test]
 async fn list_returns_array_with_valid_token() {
-    let app = arrgh_server::api::router(test_state());
+    let app = arrgh_server::api::router(common::build_state().await);
     let res = app
         .oneshot(
             Request::get("/api/logs")
@@ -72,7 +42,7 @@ async fn list_returns_array_with_valid_token() {
 
 #[tokio::test]
 async fn set_level_requires_admin() {
-    let app = arrgh_server::api::router(test_state());
+    let app = arrgh_server::api::router(common::build_state().await);
     let res = app
         .oneshot(
             Request::patch("/api/logs/level")
@@ -89,7 +59,7 @@ async fn set_level_requires_admin() {
 
 #[tokio::test]
 async fn set_level_admin_roundtrip() {
-    let app = arrgh_server::api::router(test_state());
+    let app = arrgh_server::api::router(common::build_state().await);
 
     let res = app
         .clone()
@@ -120,7 +90,7 @@ async fn set_level_admin_roundtrip() {
 
 #[tokio::test]
 async fn set_level_rejects_unknown_value() {
-    let app = arrgh_server::api::router(test_state());
+    let app = arrgh_server::api::router(common::build_state().await);
     let res = app
         .oneshot(
             Request::patch("/api/logs/level")

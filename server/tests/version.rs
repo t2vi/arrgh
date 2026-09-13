@@ -1,25 +1,15 @@
 //! S0 parity check for `GET /api/version`. Mirrors `api-tests/version.hurl`.
 
+mod common;
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use http_body_util::BodyExt;
 use tower::ServiceExt; // oneshot
 
-use arrgh_server::config::Config;
-use arrgh_server::logs::LogBuffer;
-use arrgh_server::state::AppState;
-
-fn test_state() -> AppState {
-    // Config::from_env with nothing set → all defaults, no panic.
-    AppState::new(
-        Config::from_env().expect("default config"),
-        LogBuffer::new("info"),
-    )
-}
-
 #[tokio::test]
 async fn version_returns_current_and_no_update() {
-    let app = arrgh_server::api::router(test_state());
+    let app = arrgh_server::api::router(common::build_state().await);
 
     let res = app
         .oneshot(Request::get("/api/version").body(Body::empty()).unwrap())
@@ -38,7 +28,7 @@ async fn version_returns_current_and_no_update() {
 
 #[tokio::test]
 async fn version_reports_update_when_cache_has_newer() {
-    let state = test_state();
+    let state = common::build_state().await;
     state
         .update
         .set("9.9.9", "https://example.test/releases/9.9.9");

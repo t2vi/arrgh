@@ -11,6 +11,7 @@ pub mod config;
 pub mod error;
 pub mod logs;
 pub mod state;
+pub mod users;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -22,7 +23,7 @@ use tracing_subscriber::{fmt, EnvFilter, Layer};
 
 use crate::config::Config;
 use crate::logs::{LogBuffer, LogBufferLayer};
-use crate::state::AppState;
+use crate::state::{connect_db, AppState};
 
 /// Initialise tracing: console output gated by `LOG_LEVEL` (fixed at boot,
 /// matching the .NET server's console behaviour) plus the `/api/logs` ring
@@ -48,7 +49,8 @@ pub async fn run() -> anyhow::Result<()> {
     init_tracing(&level, log_buffer.clone());
 
     let addr: SocketAddr = config.bind;
-    let state = AppState::new(config, log_buffer);
+    let db = connect_db(&config.database_path).await?;
+    let state = AppState::new(config, log_buffer, db);
 
     let listener = TcpListener::bind(addr).await?;
     tracing::info!(%addr, "arrgh-server listening");
