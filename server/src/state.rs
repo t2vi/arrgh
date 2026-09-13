@@ -1,7 +1,27 @@
 use std::sync::{Arc, RwLock};
+use std::time::Duration;
+
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
+use sqlx::SqlitePool;
 
 use crate::config::Config;
 use crate::logs::LogBuffer;
+
+/// Connects to the same SQLite file the .NET server's EF migrations own —
+/// in production .NET always creates/migrates it before Rust ever gets
+/// traffic, so `create_if_missing` is just a defensive no-op there; tests
+/// rely on it to spin up an isolated temp-file DB. WAL + a busy timeout
+/// match ADR 0033's S0 plan for safe concurrent access from both servers
+/// during the strangler-fig.
+pub async fn connect_db(database_path: &str) -> anyhow::Result<SqlitePool> {
+    let opts = SqliteConnectOptions::new()
+        .filename(database_path)
+        .create_if_missing(true)
+        .journal_mode(SqliteJournalMode::Wal)
+        .busy_timeout(Duration::from_millis(5000));
+
+    Ok(SqlitePoolOptions::new().connect_with(opts).await?)
+}
 
 /// Shared, cheaply-cloneable app state handed to every handler.
 #[derive(Clone)]
@@ -9,15 +29,17 @@ pub struct AppState {
     pub config: Arc<Config>,
     pub update: Arc<UpdateCache>,
     pub logs: Arc<LogBuffer>,
-    // S2 (#124) adds `db: sqlx::SqlitePool` here.
+    // SqlitePool is internally Arc-backed — cheap to clone as-is.
+    pub db: SqlitePool,
 }
 
 impl AppState {
-    pub fn new(config: Config, logs: Arc<LogBuffer>) -> Self {
+    pub fn new(config: Config, logs: Arc<LogBuffer>, db: SqlitePool) -> Self {
         Self {
             config: Arc::new(config),
             update: Arc::new(UpdateCache::default()),
             logs,
+            db,
         }
     }
 }
