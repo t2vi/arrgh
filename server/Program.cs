@@ -30,6 +30,7 @@ builder.Services.AddSingleton(logService);
 builder.Logging.AddProvider(new RingBufferLoggerProvider(logService));
 
 // Version / update checker
+builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<UpdateCache>();
 builder.Services.AddSingleton<PageCacheService>();
 builder.Services.AddSingleton<TrendingCacheService>();
