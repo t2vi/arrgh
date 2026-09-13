@@ -43,6 +43,96 @@ CREATE TABLE IF NOT EXISTS external_sources (
     source_key TEXT,
     default_explicit INTEGER NOT NULL
 );
+
+-- S4 (#126) — titles/progress schema, verified against
+-- Migrations/20260529064158_InitialSchema.cs.
+CREATE TABLE IF NOT EXISTS titles (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    cover_url TEXT,
+    status TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    author TEXT,
+    year INTEGER,
+    tags TEXT,
+    sync_status TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    auto_download INTEGER,
+    reader_mode TEXT,
+    download_dir TEXT,
+    is_explicit INTEGER NOT NULL,
+    mangaupdates_id TEXT,
+    local_path TEXT
+);
+
+CREATE TABLE IF NOT EXISTS chapters (
+    id TEXT NOT NULL PRIMARY KEY,
+    title_id TEXT NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+    title TEXT,
+    number REAL NOT NULL,
+    volume REAL,
+    local_path TEXT,
+    page_count INTEGER NOT NULL,
+    downloaded INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    is_new INTEGER NOT NULL,
+    chapter_format TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sync_log (
+    id TEXT NOT NULL PRIMARY KEY,
+    title_id TEXT NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sync_warnings (
+    id TEXT NOT NULL PRIMARY KEY,
+    title_id TEXT NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+    plugin_id TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS title_aliases (
+    id TEXT NOT NULL PRIMARY KEY,
+    title_id TEXT NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+    alias TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS title_sources (
+    id TEXT NOT NULL PRIMARY KEY,
+    title_id TEXT NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+    source TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    discovered_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_title_settings (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title_id TEXT NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+    reader_mode TEXT,
+    PRIMARY KEY (user_id, title_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_titles (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title_id TEXT NOT NULL REFERENCES titles(id) ON DELETE CASCADE,
+    added_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, title_id)
+);
+
+CREATE TABLE IF NOT EXISTS read_progress (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    chapter_id TEXT NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    current_page INTEGER NOT NULL,
+    completed INTEGER NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS IX_read_progress_user_id_chapter_id ON read_progress (user_id, chapter_id);
 "#;
 
 pub async fn build_state() -> AppState {
@@ -99,6 +189,129 @@ pub fn token_for(user: &arrgh_server::users::UserRow) -> String {
         JWT_SECRET,
     )
     .unwrap()
+}
+
+/// Timestamp for seeded rows — monotonic enough across sequential awaited
+/// inserts within one test for ORDER BY created_at to be deterministic.
+fn now_str() -> String {
+    use time::macros::format_description;
+    time::OffsetDateTime::now_utc()
+        .format(&format_description!(
+            "[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:6]"
+        ))
+        .unwrap()
+}
+
+/// Inserts a title row directly, returning its id. Defaults: status
+/// "ongoing", sync_status "ready", content_type "manga", not explicit.
+pub async fn seed_title(state: &AppState, title: &str, is_explicit: bool) -> String {
+    let id = uuid::Uuid::new_v4().to_string();
+    let now = now_str();
+    sqlx::query(
+        "INSERT INTO titles (id, title, status, created_at, updated_at, sync_status, content_type, is_explicit) \
+         VALUES (?, ?, 'ongoing', ?, ?, 'ready', 'manga', ?)",
+    )
+    .bind(&id)
+    .bind(title)
+    .bind(&now)
+    .bind(&now)
+    .bind(is_explicit)
+    .execute(&state.db)
+    .await
+    .unwrap();
+    id
+}
+
+/// Adds `user_id` as an owner of `title_id` (`user_titles` row).
+pub async fn seed_user_title(state: &AppState, user_id: &str, title_id: &str) {
+    sqlx::query("INSERT INTO user_titles (user_id, title_id, added_at) VALUES (?, ?, ?)")
+        .bind(user_id)
+        .bind(title_id)
+        .bind(now_str())
+        .execute(&state.db)
+        .await
+        .unwrap();
+}
+
+/// Inserts a chapter row, returning its id. `downloaded` defaults false.
+pub async fn seed_chapter(
+    state: &AppState,
+    title_id: &str,
+    number: f64,
+    downloaded: bool,
+) -> String {
+    let id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO chapters (id, title_id, number, page_count, downloaded, created_at, is_new, chapter_format) \
+         VALUES (?, ?, ?, 0, ?, ?, 0, 'cbz')",
+    )
+    .bind(&id)
+    .bind(title_id)
+    .bind(number)
+    .bind(downloaded)
+    .bind(now_str())
+    .execute(&state.db)
+    .await
+    .unwrap();
+    id
+}
+
+pub async fn mark_new(state: &AppState, chapter_id: &str) {
+    sqlx::query("UPDATE chapters SET is_new = 1 WHERE id = ?")
+        .bind(chapter_id)
+        .execute(&state.db)
+        .await
+        .unwrap();
+}
+
+pub async fn mark_read(state: &AppState, user_id: &str, chapter_id: &str) {
+    sqlx::query(
+        "INSERT INTO read_progress (id, user_id, chapter_id, current_page, completed, updated_at) \
+         VALUES (?, ?, ?, 0, 1, ?)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(user_id)
+    .bind(chapter_id)
+    .bind(now_str())
+    .execute(&state.db)
+    .await
+    .unwrap();
+}
+
+pub async fn add_title_source(state: &AppState, title_id: &str, source: &str) {
+    sqlx::query(
+        "INSERT INTO title_sources (id, title_id, source, source_id, discovered_at) VALUES (?, ?, ?, 'src-1', ?)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(title_id)
+    .bind(source)
+    .bind(now_str())
+    .execute(&state.db)
+    .await
+    .unwrap();
+}
+
+pub async fn add_sync_warning(state: &AppState, title_id: &str) {
+    sqlx::query(
+        "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at) VALUES (?, ?, 'plugin-1', 'warn', ?)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(title_id)
+    .bind(now_str())
+    .execute(&state.db)
+    .await
+    .unwrap();
+}
+
+pub async fn add_sync_log(state: &AppState, title_id: &str, message: &str) {
+    sqlx::query("INSERT INTO sync_log (id, title_id, message, created_at) VALUES (?, ?, ?, ?)")
+        .bind(uuid::Uuid::new_v4().to_string())
+        .bind(title_id)
+        .bind(message)
+        .bind(now_str())
+        .execute(&state.db)
+        .await
+        .unwrap();
 }
 
 /// Inserts an external source row directly, returning its id.

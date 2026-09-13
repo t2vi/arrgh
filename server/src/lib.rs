@@ -10,9 +10,11 @@ pub mod auth;
 pub mod config;
 pub mod error;
 pub mod logs;
+pub mod progress;
 pub mod settings;
 pub mod sources;
 pub mod state;
+pub mod titles;
 pub mod users;
 
 use std::net::SocketAddr;

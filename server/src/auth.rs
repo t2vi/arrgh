@@ -28,6 +28,17 @@ pub struct Claims {
     pub user_id: String,
     #[serde(rename = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")]
     pub role: String,
+    /// A `Claim` value is always a string on the wire (`"true"`/`"false"`) —
+    /// see the module doc. Added in S4 (#126) for the titles explicit filter.
+    #[serde(default, deserialize_with = "bool_from_str")]
+    pub allow_explicit: bool,
+}
+
+fn bool_from_str<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(String::deserialize(deserializer)? == "true")
 }
 
 impl Claims {
@@ -144,6 +155,7 @@ mod tests {
         let claims = Claims {
             user_id: "user-2".into(),
             role: "member".into(),
+            allow_explicit: false,
         };
         assert!(matches!(claims.require_admin(), Err(AppError::Forbidden)));
     }
