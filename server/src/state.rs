@@ -1,20 +1,23 @@
 use std::sync::{Arc, RwLock};
 
 use crate::config::Config;
+use crate::logs::LogBuffer;
 
 /// Shared, cheaply-cloneable app state handed to every handler.
 #[derive(Clone)]
 pub struct AppState {
     pub config: Arc<Config>,
     pub update: Arc<UpdateCache>,
+    pub logs: Arc<LogBuffer>,
     // S2 (#124) adds `db: sqlx::SqlitePool` here.
 }
 
 impl AppState {
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: Config, logs: Arc<LogBuffer>) -> Self {
         Self {
             config: Arc::new(config),
             update: Arc::new(UpdateCache::default()),
+            logs,
         }
     }
 }
