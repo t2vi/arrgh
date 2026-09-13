@@ -1,0 +1,40 @@
+{
+  "uuid": "d8ae5dd5-aa59-4239-a5d1-a1f3238a1a93",
+  "historyId": "ArrghServer.Tests.SettingsTests#SaveSettings_Idempotent_OverwritesSameKey",
+  "name": "SaveSettings_Idempotent_OverwritesSameKey",
+  "fullName": "ArrghServer.Tests.SettingsTests.SaveSettings_Idempotent_OverwritesSameKey",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277122760,
+  "stop": 1789277123091,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SettingsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Config"
+    },
+    {
+      "name": "story",
+      "value": "SaveSettings_Idempotent_OverwritesSameKey"
+    }
+  ]
+}

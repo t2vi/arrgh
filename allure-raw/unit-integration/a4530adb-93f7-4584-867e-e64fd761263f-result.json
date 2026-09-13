@@ -1,0 +1,40 @@
+{
+  "uuid": "a4530adb-93f7-4584-867e-e64fd761263f",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#Search_AniListManhwa_HasSourceAnilist",
+  "name": "Search_AniListManhwa_HasSourceAnilist",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.Search_AniListManhwa_HasSourceAnilist",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277163949,
+  "stop": 1789277164507,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "Search_AniListManhwa_HasSourceAnilist"
+    }
+  ]
+}

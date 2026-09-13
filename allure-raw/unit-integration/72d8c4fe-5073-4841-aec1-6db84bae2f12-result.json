@@ -1,0 +1,40 @@
+{
+  "uuid": "72d8c4fe-5073-4841-aec1-6db84bae2f12",
+  "historyId": "ArrghServer.Tests.PatchTitleBodyTests#EmptyObject_AllFieldsNull",
+  "name": "EmptyObject_AllFieldsNull",
+  "fullName": "ArrghServer.Tests.PatchTitleBodyTests.EmptyObject_AllFieldsNull",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277112410,
+  "stop": 1789277112411,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PatchTitleBodyTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Patch API"
+    },
+    {
+      "name": "story",
+      "value": "EmptyObject_AllFieldsNull"
+    }
+  ]
+}

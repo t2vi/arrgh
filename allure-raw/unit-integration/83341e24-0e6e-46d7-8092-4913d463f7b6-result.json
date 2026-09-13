@@ -1,0 +1,40 @@
+{
+  "uuid": "83341e24-0e6e-46d7-8092-4913d463f7b6",
+  "historyId": "ArrghServer.Tests.ProgressTests#ListTitleProgress_ReturnsProgressForUser",
+  "name": "ListTitleProgress_ReturnsProgressForUser",
+  "fullName": "ArrghServer.Tests.ProgressTests.ListTitleProgress_ReturnsProgressForUser",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277156014,
+  "stop": 1789277156514,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ProgressTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Reading Progress"
+    },
+    {
+      "name": "story",
+      "value": "ListTitleProgress_ReturnsProgressForUser"
+    }
+  ]
+}

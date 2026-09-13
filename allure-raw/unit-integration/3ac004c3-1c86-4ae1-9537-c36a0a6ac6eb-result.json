@@ -1,0 +1,40 @@
+{
+  "uuid": "3ac004c3-1c86-4ae1-9537-c36a0a6ac6eb",
+  "historyId": "ArrghServer.Tests.PluginsTests#GetIndex_Unauthorized_WithoutToken",
+  "name": "GetIndex_Unauthorized_WithoutToken",
+  "fullName": "ArrghServer.Tests.PluginsTests.GetIndex_Unauthorized_WithoutToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277144414,
+  "stop": 1789277144813,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "GetIndex_Unauthorized_WithoutToken"
+    }
+  ]
+}

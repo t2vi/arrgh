@@ -1,0 +1,40 @@
+{
+  "uuid": "a3017697-d053-4711-baa1-30c9317a678b",
+  "historyId": "ArrghServer.Tests.LogServiceTests#Append_EvictsOldestWhenCapacityExceeded",
+  "name": "Append_EvictsOldestWhenCapacityExceeded",
+  "fullName": "ArrghServer.Tests.LogServiceTests.Append_EvictsOldestWhenCapacityExceeded",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277112452,
+  "stop": 1789277112452,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "Append_EvictsOldestWhenCapacityExceeded"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "7e9a1fc4-8955-4d45-8fc0-7cff66de5d7e",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#KnownNorms_EnablesExactMatchForSiteResult",
+  "name": "KnownNorms_EnablesExactMatchForSiteResult",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.KnownNorms_EnablesExactMatchForSiteResult",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277112425,
+  "stop": 1789277112425,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "KnownNorms_EnablesExactMatchForSiteResult"
+    }
+  ]
+}

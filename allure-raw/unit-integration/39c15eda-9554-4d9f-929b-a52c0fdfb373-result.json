@@ -1,0 +1,40 @@
+{
+  "uuid": "39c15eda-9554-4d9f-929b-a52c0fdfb373",
+  "historyId": "ArrghServer.Tests.DiscoverTests#Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData",
+  "name": "Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData",
+  "fullName": "ArrghServer.Tests.DiscoverTests.Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789277150523,
+  "stop": 1789277151121,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "Trending_ReturnsEmptyList_WhenMuFails_AndNoCachedData"
+    }
+  ]
+}
