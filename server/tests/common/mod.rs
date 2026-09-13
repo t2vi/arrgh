@@ -24,6 +24,25 @@ CREATE TABLE IF NOT EXISTS users (
     allow_explicit INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS IX_users_username ON users (username);
+
+CREATE TABLE IF NOT EXISTS server_settings (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS external_sources (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    base_url TEXT NOT NULL,
+    api_key TEXT,
+    content_types TEXT NOT NULL,
+    enabled INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    is_community INTEGER NOT NULL,
+    priority INTEGER NOT NULL,
+    source_key TEXT,
+    default_explicit INTEGER NOT NULL
+);
 "#;
 
 pub async fn build_state() -> AppState {
@@ -80,4 +99,27 @@ pub fn token_for(user: &arrgh_server::users::UserRow) -> String {
         JWT_SECRET,
     )
     .unwrap()
+}
+
+/// Inserts an external source row directly, returning its id.
+pub async fn seed_source(
+    state: &AppState,
+    name: &str,
+    base_url: &str,
+    content_types: &str,
+    api_key: Option<&str>,
+) -> String {
+    let id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO external_sources (id, name, base_url, api_key, content_types, enabled, created_at, is_community, priority, default_explicit) VALUES (?, ?, ?, ?, ?, 1, datetime('now'), 0, 100, 0)",
+    )
+    .bind(&id)
+    .bind(name)
+    .bind(base_url)
+    .bind(api_key)
+    .bind(content_types)
+    .execute(&state.db)
+    .await
+    .unwrap();
+    id
 }

@@ -10,6 +10,8 @@ pub mod auth;
 pub mod config;
 pub mod error;
 pub mod logs;
+pub mod settings;
+pub mod sources;
 pub mod state;
 pub mod users;
 

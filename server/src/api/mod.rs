@@ -5,6 +5,8 @@ use crate::state::AppState;
 
 pub mod auth;
 pub mod logs;
+pub mod settings;
+pub mod sources;
 pub mod users;
 pub mod version;
 
@@ -17,6 +19,8 @@ pub fn router(state: AppState) -> Router {
         .nest("/api/logs", logs::routes())
         .nest("/api/auth", auth::routes())
         .nest("/api/users", users::routes())
+        .nest("/api/settings", settings::routes())
+        .nest("/api/sources", sources::routes())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }
