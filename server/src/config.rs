@@ -11,6 +11,8 @@ pub struct Config {
     pub database_path: String,
     /// Node plugin host base URL (`PluginHostUrl`).
     pub plugin_host_url: String,
+    /// Bundled plugin index location (`PluginIndexUrl`) — `file://` or `http(s)://`.
+    pub plugin_index_url: String,
     /// Metadata authority base URLs (ADR 0031, S6 #128). Real hosts by
     /// default; overridable so tests can point them at one local mock
     /// server — `reqwest::Client` can't be intercepted by host like .NET's
@@ -40,6 +42,7 @@ impl Config {
             bind,
             database_path: env_or("DatabasePath", "arrgh.db"),
             plugin_host_url: env_or("PluginHostUrl", "http://localhost:4000"),
+            plugin_index_url: env_or("PluginIndexUrl", "file:///app/plugin-index.json"),
             download_dir: env_or("DownloadDir", "./downloads"),
             mangaupdates_url: env_or(
                 "MANGAUPDATES_URL",
