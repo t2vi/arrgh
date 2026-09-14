@@ -9,9 +9,9 @@
 //! (S5 #127); Discover's `AddManga`/`MatchSourcesAsync` DB access
 //! (insert/dedup/alias helpers below) lives here since it's all `titles`-
 //! table shaped, called from `crate::discover` and `src/api/discover.rs`
-//! (S6 #128). `/api/titles` itself still stays off Rust in nginx (see
-//! `docker/nginx.conf`) — it shares hot tables with `chapters`/`progress`/
-//! `queue` and the ADR moves that block together, waiting on S7.
+//! (S6 #128). `/api/titles` flips together with `chapters`/`progress`/
+//! `queue` in `docker/nginx.conf` — they share hot tables and the ADR
+//! moved that block as one unit once S7 (#129) landed.
 
 use serde::Serialize;
 use sqlx::{FromRow, SqlitePool};
