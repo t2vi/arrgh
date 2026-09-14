@@ -36,6 +36,9 @@ pub struct AppState {
     pub logs: Arc<LogBuffer>,
     // SqlitePool is internally Arc-backed — cheap to clone as-is.
     pub db: SqlitePool,
+    // reqwest::Client is internally Arc-backed (connection pool) — cheap to clone as-is.
+    // Used for plugin-host calls (chapter-sync S5, Discover S6, downloader S7).
+    pub http: reqwest::Client,
 }
 
 impl AppState {
@@ -45,6 +48,7 @@ impl AppState {
             update: Arc::new(UpdateCache::default()),
             logs,
             db,
+            http: reqwest::Client::new(),
         }
     }
 }

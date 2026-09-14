@@ -6,14 +6,11 @@
 //! in `Titles.cs`/`Progress.cs` reads or writes it; it's Discover's (S6) and
 //! Media's (S8) cache table.
 //!
-//! `sync_from_source` is a stub that always errors — chapter-sync (S5) and
-//! Discover re-match (S6) aren't ported yet, same "not wired until its
-//! dependency lands" precedent as S3's `add_source` 502. The orchestration
-//! around it (status transitions, sync log entries) is real and fully
-//! ported; only the actual network fetch is deferred. Because of that,
-//! `/api/titles` is NOT flipped to Rust in nginx this phase (see
-//! `docker/nginx.conf`) — sync would silently stop working in production
-//! otherwise. It flips once S5-S7 land, per ADR 0033's "moves as a
+//! Chapter-sync itself (the plugin-host fetch) now lives in `crate::chapters`
+//! (S5 #127) — `src/api/titles.rs`'s sync handler calls it directly, this
+//! module no longer has a `sync_from_source` stub. Discover re-match (S6)
+//! is still unported, so `/api/titles` stays off Rust in nginx (see
+//! `docker/nginx.conf`) until S6-S7 land too, per ADR 0033's "moves as a
 //! contiguous block" note for the titles/chapters/progress/queue tables.
 
 use serde::Serialize;
@@ -433,13 +430,6 @@ pub async fn title_source_links(
         .bind(title_id)
         .fetch_all(pool)
         .await
-}
-
-/// Stub — chapter-sync (S5) isn't ported yet, so every source always
-/// "fails" with a clear message. Orchestration (log entries, final status)
-/// around this is real; only the fetch itself is deferred. See module doc.
-pub async fn sync_from_source(_source: &str, _source_id: &str) -> anyhow::Result<u32> {
-    anyhow::bail!("chapter-sync not yet ported (ADR 0033 S5)")
 }
 
 #[cfg(test)]
