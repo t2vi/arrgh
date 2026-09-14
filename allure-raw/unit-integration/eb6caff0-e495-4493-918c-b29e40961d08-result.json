@@ -1,0 +1,40 @@
+{
+  "uuid": "eb6caff0-e495-4493-918c-b29e40961d08",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#MapContentType(input: &quot;Manhwa&quot;, expected: &quot;manhwa&quot;)",
+  "name": "MapContentType(input: &quot;Manhwa&quot;, expected: &quot;manhwa&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.MapContentType(input: &quot;Manhwa&quot;, expected: &quot;manhwa&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789378010687,
+  "stop": 1789378010687,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "MapContentType(input: &quot;Manhwa&quot;, expected: &quot;manhwa&quot;)"
+    }
+  ]
+}
