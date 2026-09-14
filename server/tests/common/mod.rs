@@ -207,6 +207,16 @@ pub async fn build_downloader_state(plugin_host_url: &str, download_dir: &str) -
     .await
 }
 
+/// Points `plugin_index_url` + `plugin_host_url` at test-local values (S9
+/// #131 plugin install/delete tests).
+pub async fn build_plugins_state(plugin_index_url: &str, plugin_host_url: &str) -> AppState {
+    build_state_with(|c| {
+        c.plugin_index_url = plugin_index_url.to_string();
+        c.plugin_host_url = plugin_host_url.to_string();
+    })
+    .await
+}
+
 async fn build_state_with(configure: impl FnOnce(&mut Config)) -> AppState {
     let db_path = std::env::temp_dir().join(format!("arrgh-rust-test-{}.db", uuid::Uuid::new_v4()));
     let db_path = db_path.to_str().unwrap().to_string();

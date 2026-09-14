@@ -15,6 +15,7 @@ pub mod error;
 pub mod logs;
 pub mod media;
 pub mod metadata;
+pub mod plugins;
 pub mod progress;
 pub mod queue;
 pub mod settings;
