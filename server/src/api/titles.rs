@@ -1,12 +1,12 @@
 //! `/api/titles` — port of `Api/Titles.cs` (ADR 0033, S4 #126). Not yet
 //! flipped in `docker/nginx.conf` — see `crate::titles`'s module doc.
 //!
-//! `sync` and `refresh_metadata` spawn a background task that mirrors the
-//! .NET orchestration (status transitions, sync log entries) exactly, but
-//! the actual chapter-sync fetch (S5) and Discover re-match / MangaUpdates
-//! alias refresh (S6) aren't ported — `sync_from_source` always errors, and
-//! `refresh_metadata`'s background task just resets `sync_status` to
-//! `"ready"`, matching .NET's own already-stubbed `ReMatchSourcesAsync`.
+//! `sync` spawns a background task that mirrors the .NET orchestration
+//! (status transitions, sync log entries) exactly, and since S5 (#127) the
+//! chapter-sync fetch itself is real too (`crate::chapters::sync_from_source`).
+//! `refresh_metadata`'s background task still just resets `sync_status` to
+//! `"ready"` — Discover re-match / MangaUpdates alias refresh (S6) aren't
+//! ported, matching .NET's own already-stubbed `ReMatchSourcesAsync`.
 
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::auth::Claims;
+use crate::chapters;
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
 use crate::titles;
@@ -327,7 +328,7 @@ async fn sync_title(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> AppResult<StatusCode> {
-    titles::owned_content_type(&state.db, &claims.user_id, &id)
+    let content_type = titles::owned_content_type(&state.db, &claims.user_id, &id)
         .await?
         .ok_or(AppError::NotFound)?;
     let links = titles::title_source_links(&state.db, &id).await?;
@@ -339,11 +340,23 @@ async fn sync_title(
     titles::clear_sync_log(&state.db, &id).await?;
 
     let db = state.db.clone();
+    let http = state.http.clone();
+    let plugin_host_url = state.config.plugin_host_url.clone();
     tokio::spawn(async move {
         let mut any_error = false;
         for (source, source_id) in &links {
             titles::append_sync_log(&db, &id, &format!("Syncing from {source}…")).await;
-            match titles::sync_from_source(source, source_id).await {
+            match chapters::sync_from_source(
+                &db,
+                &http,
+                &plugin_host_url,
+                &id,
+                &content_type,
+                source,
+                source_id,
+            )
+            .await
+            {
                 Ok(count) => {
                     titles::append_sync_log(
                         &db,

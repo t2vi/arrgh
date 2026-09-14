@@ -133,15 +133,44 @@ CREATE TABLE IF NOT EXISTS read_progress (
     updated_at TEXT NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS IX_read_progress_user_id_chapter_id ON read_progress (user_id, chapter_id);
+
+-- S5 (#127) — chapter_sources + download_queue.
+CREATE TABLE IF NOT EXISTS chapter_sources (
+    id TEXT NOT NULL PRIMARY KEY,
+    chapter_id TEXT NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    source TEXT NOT NULL,
+    source_id TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS IX_chapter_sources_chapter_id_source ON chapter_sources (chapter_id, source);
+
+CREATE TABLE IF NOT EXISTS download_queue (
+    id TEXT NOT NULL PRIMARY KEY,
+    chapter_id TEXT NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    manga_title TEXT NOT NULL,
+    chapter_num REAL NOT NULL,
+    status TEXT NOT NULL,
+    error TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    pages_downloaded INTEGER NOT NULL,
+    pages_total INTEGER NOT NULL,
+    queued_by TEXT REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS IX_download_queue_chapter_id ON download_queue (chapter_id);
 "#;
 
 pub async fn build_state() -> AppState {
+    build_state_with_plugin_host("http://localhost:4000").await
+}
+
+pub async fn build_state_with_plugin_host(plugin_host_url: &str) -> AppState {
     let db_path = std::env::temp_dir().join(format!("arrgh-rust-test-{}.db", uuid::Uuid::new_v4()));
     let db_path = db_path.to_str().unwrap().to_string();
 
     let config = Config {
         jwt_secret: Some(JWT_SECRET.into()),
         database_path: db_path.clone(),
+        plugin_host_url: plugin_host_url.to_string(),
         ..Config::from_env().expect("default config")
     };
 
@@ -158,6 +187,29 @@ pub async fn build_state() -> AppState {
     }
 
     AppState::new(config, LogBuffer::new("info"), db)
+}
+
+/// Spins up a throwaway HTTP server that always answers with `body` (200) or
+/// a 500 when `fail` is set — stands in for plugin-host's chapters endpoint
+/// in chapter-sync tests. Returns its base URL. Outlives the test (detached
+/// task on an isolated ephemeral port); the process exits at test-binary end.
+pub async fn start_mock_plugin_host(body: &'static str, fail: bool) -> String {
+    use axum::http::StatusCode;
+    use axum::response::IntoResponse;
+
+    let app = axum::Router::new().fallback(move || async move {
+        if fail {
+            (StatusCode::INTERNAL_SERVER_ERROR, "boom").into_response()
+        } else {
+            (StatusCode::OK, [("content-type", "application/json")], body).into_response()
+        }
+    });
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    format!("http://{addr}")
 }
 
 /// Inserts a user directly (bypassing the API) for tests that need one to
@@ -273,6 +325,44 @@ pub async fn mark_read(state: &AppState, user_id: &str, chapter_id: &str) {
     .bind(user_id)
     .bind(chapter_id)
     .bind(now_str())
+    .execute(&state.db)
+    .await
+    .unwrap();
+}
+
+pub async fn add_chapter_source(state: &AppState, chapter_id: &str, source: &str) {
+    sqlx::query(
+        "INSERT INTO chapter_sources (id, chapter_id, source, source_id) VALUES (?, ?, ?, ?)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(chapter_id)
+    .bind(source)
+    .bind(uuid::Uuid::new_v4().to_string())
+    .execute(&state.db)
+    .await
+    .unwrap();
+}
+
+/// Seeds an errored `download_queue` row for `chapter_id`, for the
+/// re-queue-on-retry test.
+pub async fn seed_errored_queue_item(
+    state: &AppState,
+    chapter_id: &str,
+    manga_title: &str,
+    chapter_num: f64,
+) {
+    let now = now_str();
+    sqlx::query(
+        "INSERT INTO download_queue \
+             (id, chapter_id, manga_title, chapter_num, status, error, created_at, updated_at, pages_downloaded, pages_total) \
+         VALUES (?, ?, ?, ?, 'error', 'timeout', ?, ?, 0, 0)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(chapter_id)
+    .bind(manga_title)
+    .bind(chapter_num)
+    .bind(&now)
+    .bind(&now)
     .execute(&state.db)
     .await
     .unwrap();
