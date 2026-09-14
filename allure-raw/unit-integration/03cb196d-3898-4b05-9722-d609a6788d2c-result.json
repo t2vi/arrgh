@@ -1,0 +1,40 @@
+{
+  "uuid": "03cb196d-3898-4b05-9722-d609a6788d2c",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#StripHtml_Trims",
+  "name": "StripHtml_Trims",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.StripHtml_Trims",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389167865,
+  "stop": 1789389167865,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "StripHtml_Trims"
+    }
+  ]
+}

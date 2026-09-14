@@ -1,0 +1,40 @@
+{
+  "uuid": "26e359d7-ae21-43ac-b011-ccb0b8bd7845",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#MergeFanOut_NhentaiHit_NormalizationApplied",
+  "name": "MergeFanOut_NhentaiHit_NormalizationApplied",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.MergeFanOut_NhentaiHit_NormalizationApplied",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389167969,
+  "stop": 1789389167970,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "MergeFanOut_NhentaiHit_NormalizationApplied"
+    }
+  ]
+}

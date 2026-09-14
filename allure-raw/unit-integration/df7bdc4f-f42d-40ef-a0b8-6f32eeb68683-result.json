@@ -1,0 +1,40 @@
+{
+  "uuid": "df7bdc4f-f42d-40ef-a0b8-6f32eeb68683",
+  "historyId": "ArrghServer.Tests.LogServiceTests#RingBufferLogger_EntryHasCorrectFields",
+  "name": "RingBufferLogger_EntryHasCorrectFields",
+  "fullName": "ArrghServer.Tests.LogServiceTests.RingBufferLogger_EntryHasCorrectFields",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389167902,
+  "stop": 1789389167906,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "LogServiceTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Logs"
+    },
+    {
+      "name": "story",
+      "value": "RingBufferLogger_EntryHasCorrectFields"
+    }
+  ]
+}

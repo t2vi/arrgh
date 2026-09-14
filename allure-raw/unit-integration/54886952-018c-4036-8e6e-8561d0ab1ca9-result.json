@@ -1,0 +1,40 @@
+{
+  "uuid": "54886952-018c-4036-8e6e-8561d0ab1ca9",
+  "historyId": "ArrghServer.Tests.DiscoverLogicTests#Levenshtein_SameString_IsZero",
+  "name": "Levenshtein_SameString_IsZero",
+  "fullName": "ArrghServer.Tests.DiscoverLogicTests.Levenshtein_SameString_IsZero",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389167853,
+  "stop": 1789389167853,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Logic"
+    },
+    {
+      "name": "story",
+      "value": "Levenshtein_SameString_IsZero"
+    }
+  ]
+}

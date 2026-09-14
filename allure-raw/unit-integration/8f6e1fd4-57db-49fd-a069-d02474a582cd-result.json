@@ -1,0 +1,40 @@
+{
+  "uuid": "8f6e1fd4-57db-49fd-a069-d02474a582cd",
+  "historyId": "ArrghServer.Tests.PluginsTests#DeletePlugin_NoContent_RemovesSource",
+  "name": "DeletePlugin_NoContent_RemovesSource",
+  "fullName": "ArrghServer.Tests.PluginsTests.DeletePlugin_NoContent_RemovesSource",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389218042,
+  "stop": 1789389219379,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "PluginsTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Plugins"
+    },
+    {
+      "name": "story",
+      "value": "DeletePlugin_NoContent_RemovesSource"
+    }
+  ]
+}

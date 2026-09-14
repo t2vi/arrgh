@@ -1,0 +1,40 @@
+{
+  "uuid": "12f94986-d6db-4497-8a5c-6d9996c1c8fb",
+  "historyId": "ArrghServer.Tests.DiscoverTests#AddManga_IsExplicitFalse_DoesNotOverrideHentaiContentType",
+  "name": "AddManga_IsExplicitFalse_DoesNotOverrideHentaiContentType",
+  "fullName": "ArrghServer.Tests.DiscoverTests.AddManga_IsExplicitFalse_DoesNotOverrideHentaiContentType",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389199561,
+  "stop": 1789389200844,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Search + Add"
+    },
+    {
+      "name": "story",
+      "value": "AddManga_IsExplicitFalse_DoesNotOverrideHentaiContentType"
+    }
+  ]
+}

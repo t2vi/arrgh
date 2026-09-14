@@ -1,0 +1,40 @@
+{
+  "uuid": "24ac4d83-b04f-41eb-867a-fa6494e6a47b",
+  "historyId": "ArrghServer.Tests.TitlesTests#RefreshMetadata_Returns404_WhenTitleNotOwned",
+  "name": "RefreshMetadata_Returns404_WhenTitleNotOwned",
+  "fullName": "ArrghServer.Tests.TitlesTests.RefreshMetadata_Returns404_WhenTitleNotOwned",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389237970,
+  "stop": 1789389238685,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "RefreshMetadata_Returns404_WhenTitleNotOwned"
+    }
+  ]
+}

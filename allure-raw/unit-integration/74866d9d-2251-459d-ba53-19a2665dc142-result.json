@@ -1,0 +1,40 @@
+{
+  "uuid": "74866d9d-2251-459d-ba53-19a2665dc142",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutLogicTests#FilterMuScope_Keeps_MangaTypes(contentType: &quot;manga&quot;)",
+  "name": "FilterMuScope_Keeps_MangaTypes(contentType: &quot;manga&quot;)",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutLogicTests.FilterMuScope_Keeps_MangaTypes(contentType: &quot;manga&quot;)",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789389167955,
+  "stop": 1789389167956,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "unit"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutLogicTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out Logic"
+    },
+    {
+      "name": "story",
+      "value": "FilterMuScope_Keeps_MangaTypes(contentType: &quot;manga&quot;)"
+    }
+  ]
+}
