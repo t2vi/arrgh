@@ -13,6 +13,7 @@ pub mod discover;
 pub mod downloader;
 pub mod error;
 pub mod logs;
+pub mod media;
 pub mod metadata;
 pub mod progress;
 pub mod queue;

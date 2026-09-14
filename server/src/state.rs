@@ -35,11 +35,12 @@ pub struct AppState {
     pub config: Arc<Config>,
     pub update: Arc<UpdateCache>,
     pub trending: Arc<TrendingCache>,
+    pub page_cache: Arc<PageCache>,
     pub logs: Arc<LogBuffer>,
     // SqlitePool is internally Arc-backed — cheap to clone as-is.
     pub db: SqlitePool,
     // reqwest::Client is internally Arc-backed (connection pool) — cheap to clone as-is.
-    // Used for plugin-host calls (chapter-sync S5, Discover S6, downloader S7).
+    // Used for plugin-host calls (chapter-sync S5, Discover S6, downloader S7, media S8).
     pub http: reqwest::Client,
 }
 
@@ -49,6 +50,7 @@ impl AppState {
             config: Arc::new(config),
             update: Arc::new(UpdateCache::default()),
             trending: Arc::new(TrendingCache::default()),
+            page_cache: Arc::new(PageCache::default()),
             logs,
             db,
             http: reqwest::Client::new(),
@@ -128,5 +130,51 @@ impl TrendingCache {
         if let Some((fetched_at, _)) = self.inner.write().unwrap().get_mut(lane) {
             *fetched_at = Instant::now() - TRENDING_TTL - Duration::from_secs(1);
         }
+    }
+}
+
+/// Per-chapter cache of resolved page URLs (ADR 0033, S8 #130). Port of
+/// `PageCacheService` — 300s TTL, plain miss-on-expiry (unlike
+/// `TrendingCache` there's no stale-serve fallback; `ServePage` re-fetches
+/// on miss).
+type PageUrl = (String, Option<String>);
+
+#[derive(Default)]
+pub struct PageCache {
+    inner: RwLock<HashMap<String, (Instant, Vec<PageUrl>)>>,
+}
+
+const PAGE_CACHE_TTL: Duration = Duration::from_secs(300);
+
+impl PageCache {
+    pub fn get(&self, chapter_id: &str) -> Option<Vec<PageUrl>> {
+        let guard = self.inner.read().unwrap();
+        let (fetched_at, pages) = guard.get(chapter_id)?;
+        (fetched_at.elapsed() < PAGE_CACHE_TTL).then(|| pages.clone())
+    }
+
+    pub fn set(&self, chapter_id: &str, pages: Vec<PageUrl>) {
+        self.inner
+            .write()
+            .unwrap()
+            .insert(chapter_id.to_string(), (Instant::now(), pages));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn page_cache_miss_on_empty() {
+        assert!(PageCache::default().get("key").is_none());
+    }
+
+    #[test]
+    fn page_cache_hit_after_set() {
+        let cache = PageCache::default();
+        let pages = vec![("https://example.com/1.jpg".to_string(), None)];
+        cache.set("key", pages.clone());
+        assert_eq!(cache.get("key"), Some(pages));
     }
 }
