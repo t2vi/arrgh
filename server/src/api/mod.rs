@@ -7,6 +7,7 @@ pub mod auth;
 pub mod chapters;
 pub mod discover;
 pub mod logs;
+pub mod media;
 pub mod progress;
 pub mod queue;
 pub mod settings;
@@ -21,8 +22,8 @@ pub mod version;
 ///
 /// `titles`/`progress`/`chapters`/`queue` (S4 #126, S5 #127, S7 #129) flip
 /// together in `docker/nginx.conf` now that all four are green — see
-/// `src/titles.rs`'s module doc. `discover` (S6 #128) flipped earlier as
-/// its own self-contained gate per the ADR.
+/// `src/titles.rs`'s module doc. `discover` (S6 #128) and `media` (S8
+/// #130) are each their own self-contained gate.
 pub fn router(state: AppState) -> Router {
     Router::new()
         .nest("/api/version", version::routes())
@@ -36,6 +37,7 @@ pub fn router(state: AppState) -> Router {
         .nest("/api/chapters", chapters::routes())
         .nest("/api/discover", discover::routes())
         .nest("/api/queue", queue::routes())
+        .nest("/api/media", media::routes())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }

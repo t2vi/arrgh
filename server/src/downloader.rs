@@ -250,6 +250,21 @@ enum PageUrl {
     },
 }
 
+/// Parses a plugin-host `/chapter/{id}/pages` response body — each element
+/// is either a bare URL string or `{url, referer}`. Shared with
+/// `crate::media`'s live (non-downloaded) page serving, which hits the
+/// same endpoint shape.
+pub(crate) fn parse_page_urls(json: &[u8]) -> serde_json::Result<Vec<(String, Option<String>)>> {
+    let raw: Vec<PageUrl> = serde_json::from_slice(json)?;
+    Ok(raw
+        .into_iter()
+        .map(|p| match p {
+            PageUrl::Bare(u) => (u, None),
+            PageUrl::WithReferer { url, referer } => (url, referer),
+        })
+        .collect())
+}
+
 async fn download_cbz(
     http: &reqwest::Client,
     plugin_host_url: &str,
@@ -273,14 +288,8 @@ async fn download_cbz(
     if !res.status().is_success() {
         anyhow::bail!("GET {url} -> {}", res.status());
     }
-    let raw: Vec<PageUrl> = res.json().await?;
-    let pages: Vec<(String, Option<String>)> = raw
-        .into_iter()
-        .map(|p| match p {
-            PageUrl::Bare(u) => (u, None),
-            PageUrl::WithReferer { url, referer } => (url, referer),
-        })
-        .collect();
+    let bytes = res.bytes().await?;
+    let pages = parse_page_urls(&bytes)?;
 
     if pages.is_empty() {
         anyhow::bail!("source returned 0 pages for chapter {source_id}");
