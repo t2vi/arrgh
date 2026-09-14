@@ -1,0 +1,40 @@
+{
+  "uuid": "a575bd52-86e6-4ed4-857c-9c26f8c91c86",
+  "historyId": "ArrghServer.Tests.ChapterSyncTests#Sync_Novel_ChapterFormat_IsText",
+  "name": "Sync_Novel_ChapterFormat_IsText",
+  "fullName": "ArrghServer.Tests.ChapterSyncTests.Sync_Novel_ChapterFormat_IsText",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789428518201,
+  "stop": 1789428523981,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChapterSyncTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapter Sync"
+    },
+    {
+      "name": "story",
+      "value": "Sync_Novel_ChapterFormat_IsText"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "20f562d6-0143-4cc6-8124-5dc185e3803f",
+  "historyId": "ArrghServer.Tests.DiscoverFanOutTests#AddTitle_SourceTimeout_NoSyncWarning_WhenOtherSourceSucceeds",
+  "name": "AddTitle_SourceTimeout_NoSyncWarning_WhenOtherSourceSucceeds",
+  "fullName": "ArrghServer.Tests.DiscoverFanOutTests.AddTitle_SourceTimeout_NoSyncWarning_WhenOtherSourceSucceeds",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789428516028,
+  "stop": 1789428516699,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DiscoverFanOutTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Discover"
+    },
+    {
+      "name": "epic",
+      "value": "Discover"
+    },
+    {
+      "name": "feature",
+      "value": "Fan-Out"
+    },
+    {
+      "name": "story",
+      "value": "AddTitle_SourceTimeout_NoSyncWarning_WhenOtherSourceSucceeds"
+    }
+  ]
+}

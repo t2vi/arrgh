@@ -1,0 +1,40 @@
+{
+  "uuid": "bdd08eb1-122c-483b-a101-be2ffeef232f",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_NoChapterSources_SetsError",
+  "name": "Download_NoChapterSources_SetsError",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_NoChapterSources_SetsError",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789428518223,
+  "stop": 1789428521306,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_NoChapterSources_SetsError"
+    }
+  ]
+}

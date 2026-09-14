@@ -1,0 +1,40 @@
+{
+  "uuid": "df7fea0c-3aee-488d-9220-d4d31ea4eec5",
+  "historyId": "ArrghServer.Tests.DownloaderTests#Download_PageChapter_SetsLocalPath",
+  "name": "Download_PageChapter_SetsLocalPath",
+  "fullName": "ArrghServer.Tests.DownloaderTests.Download_PageChapter_SetsLocalPath",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789428508971,
+  "stop": 1789428512049,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "DownloaderTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Queue"
+    },
+    {
+      "name": "epic",
+      "value": "Queue"
+    },
+    {
+      "name": "feature",
+      "value": "Download"
+    },
+    {
+      "name": "story",
+      "value": "Download_PageChapter_SetsLocalPath"
+    }
+  ]
+}
