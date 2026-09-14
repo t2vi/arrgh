@@ -3,8 +3,10 @@
 # sees .cs. At S10 (#132) the .NET files are deleted and this stays.
 #
 # ponytail: single crate for now (lib + bin). The ADR's arrgh-core /
-# arrgh-metadata split lands when there's actually a second crate's worth of
-# code to move (S4 / S6), not before.
+# arrgh-metadata split floats S4/S6 as candidate checkpoints; S6 (six
+# metadata clients, src/metadata/) is here and still doesn't clear the bar —
+# no reuse target outside this binary, so a workspace split is pure ceremony.
+# Revisit if a second consumer of arrgh-metadata ever shows up.
 [package]
 name = "arrgh-server"
 version = "0.1.7"          # single source of truth for GET /api/version
@@ -36,6 +38,7 @@ uuid = { version = "1", features = ["v4"] }
 # rustls, not native-tls/openssl — keeps the static-binary goal (ADR 0033).
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 urlencoding = "2"
+futures = "0.3"
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

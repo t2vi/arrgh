@@ -64,7 +64,9 @@ CREATE TABLE IF NOT EXISTS titles (
     download_dir TEXT,
     is_explicit INTEGER NOT NULL,
     mangaupdates_id TEXT,
-    local_path TEXT
+    local_path TEXT,
+    metadata_source TEXT,
+    metadata_source_id TEXT
 );
 
 CREATE TABLE IF NOT EXISTS chapters (
@@ -157,6 +159,19 @@ CREATE TABLE IF NOT EXISTS download_queue (
     queued_by TEXT REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS IX_download_queue_chapter_id ON download_queue (chapter_id);
+
+-- S6 (#128) — cover-cache table for Discover.
+CREATE TABLE IF NOT EXISTS title_meta (
+    title_key TEXT NOT NULL PRIMARY KEY,
+    cover_local_path TEXT,
+    cover_cdn_url TEXT,
+    description TEXT,
+    tags TEXT,
+    chapter_count INTEGER NOT NULL,
+    source TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    fetched_at TEXT NOT NULL
+);
 "#;
 
 pub async fn build_state() -> AppState {
@@ -164,15 +179,34 @@ pub async fn build_state() -> AppState {
 }
 
 pub async fn build_state_with_plugin_host(plugin_host_url: &str) -> AppState {
+    build_state_with(|c| c.plugin_host_url = plugin_host_url.to_string()).await
+}
+
+/// Points every Discover metadata-authority URL (S6 #128) at one mock
+/// server's base URL — good enough for tests that only care about one or
+/// two authorities succeeding; the rest simply have nothing to match and
+/// fail closed via `SafeSearch`-equivalent handling.
+pub async fn build_discover_state(mock_url: &str) -> AppState {
+    build_state_with(|c| {
+        c.plugin_host_url = mock_url.to_string();
+        c.mangaupdates_url = mock_url.to_string();
+        c.anilist_url = mock_url.to_string();
+        c.mangadex_meta_url = mock_url.to_string();
+        c.wuxiaworld_meta_url = mock_url.to_string();
+    })
+    .await
+}
+
+async fn build_state_with(configure: impl FnOnce(&mut Config)) -> AppState {
     let db_path = std::env::temp_dir().join(format!("arrgh-rust-test-{}.db", uuid::Uuid::new_v4()));
     let db_path = db_path.to_str().unwrap().to_string();
 
-    let config = Config {
+    let mut config = Config {
         jwt_secret: Some(JWT_SECRET.into()),
         database_path: db_path.clone(),
-        plugin_host_url: plugin_host_url.to_string(),
         ..Config::from_env().expect("default config")
     };
+    configure(&mut config);
 
     let db = connect_db(&db_path).await.expect("connect test db");
     for stmt in USERS_SCHEMA
@@ -204,6 +238,36 @@ pub async fn start_mock_plugin_host(body: &'static str, fail: bool) -> String {
             (StatusCode::OK, [("content-type", "application/json")], body).into_response()
         }
     });
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    format!("http://{addr}")
+}
+
+/// Like `start_mock_plugin_host` but path-routes `/{source}/search` and
+/// `/{source}/manga/{id}/chapters` to different canned bodies — needed for
+/// `discover::match_sources` (S6 #128), which hits both shapes in one flow.
+pub async fn start_mock_source_match_host(
+    search_body: &'static str,
+    chapters_body: &'static str,
+) -> String {
+    use axum::response::IntoResponse;
+
+    let app = axum::Router::new()
+        .route(
+            "/{source}/search",
+            axum::routing::get(move || async move {
+                ([("content-type", "application/json")], search_body).into_response()
+            }),
+        )
+        .route(
+            "/{source}/manga/{id}/chapters",
+            axum::routing::get(move || async move {
+                ([("content-type", "application/json")], chapters_body).into_response()
+            }),
+        );
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     tokio::spawn(async move {
@@ -272,6 +336,25 @@ pub async fn seed_title(state: &AppState, title: &str, is_explicit: bool) -> Str
     .await
     .unwrap();
     id
+}
+
+pub async fn set_mangaupdates_id(state: &AppState, title_id: &str, mu_id: &str) {
+    sqlx::query("UPDATE titles SET mangaupdates_id = ? WHERE id = ?")
+        .bind(mu_id)
+        .bind(title_id)
+        .execute(&state.db)
+        .await
+        .unwrap();
+}
+
+pub async fn set_metadata_source(state: &AppState, title_id: &str, source: &str, source_id: &str) {
+    sqlx::query("UPDATE titles SET metadata_source = ?, metadata_source_id = ? WHERE id = ?")
+        .bind(source)
+        .bind(source_id)
+        .bind(title_id)
+        .execute(&state.db)
+        .await
+        .unwrap();
 }
 
 /// Adds `user_id` as an owner of `title_id` (`user_titles` row).
@@ -402,6 +485,30 @@ pub async fn add_sync_log(state: &AppState, title_id: &str, message: &str) {
         .execute(&state.db)
         .await
         .unwrap();
+}
+
+/// Like `seed_source` but sets `source_key` too — required for Discover's
+/// `match_sources` (S6 #128), which only considers sources with a non-null
+/// `source_key`.
+pub async fn seed_source_with_key(
+    state: &AppState,
+    name: &str,
+    source_key: &str,
+    content_types: &str,
+) -> String {
+    let id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO external_sources (id, name, base_url, content_types, enabled, created_at, is_community, priority, source_key, default_explicit) \
+         VALUES (?, ?, 'http://example.com', ?, 1, datetime('now'), 0, 100, ?, 0)",
+    )
+    .bind(&id)
+    .bind(name)
+    .bind(content_types)
+    .bind(source_key)
+    .execute(&state.db)
+    .await
+    .unwrap();
+    id
 }
 
 /// Inserts an external source row directly, returning its id.

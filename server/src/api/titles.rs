@@ -1,12 +1,15 @@
 //! `/api/titles` — port of `Api/Titles.cs` (ADR 0033, S4 #126). Not yet
 //! flipped in `docker/nginx.conf` — see `crate::titles`'s module doc.
 //!
-//! `sync` spawns a background task that mirrors the .NET orchestration
-//! (status transitions, sync log entries) exactly, and since S5 (#127) the
-//! chapter-sync fetch itself is real too (`crate::chapters::sync_from_source`).
-//! `refresh_metadata`'s background task still just resets `sync_status` to
-//! `"ready"` — Discover re-match / MangaUpdates alias refresh (S6) aren't
-//! ported, matching .NET's own already-stubbed `ReMatchSourcesAsync`.
+//! `sync` and `refresh_metadata` both spawn background tasks that mirror the
+//! .NET orchestration (status transitions, sync log entries) exactly, and
+//! the network legs are real too: chapter-sync since S5 #127
+//! (`crate::chapters::sync_from_source`), and Discover re-match + MU alias
+//! refresh since S6 #128 (`crate::discover::match_sources`,
+//! `crate::metadata::mangaupdates::series_detail`). `patch_title`'s
+//! content_type-change branch still just resets `sync_status` to `"ready"`
+//! without re-matching sources — matches .NET's own already-stubbed
+//! `ReMatchSourcesAsync`, which has the identical TODO.
 
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
@@ -38,7 +41,7 @@ pub fn routes() -> Router<AppState> {
 }
 
 #[derive(Serialize)]
-struct TitleDto {
+pub(crate) struct TitleDto {
     id: String,
     title: String,
     description: Option<String>,
@@ -405,11 +408,48 @@ async fn refresh_metadata(
 
     titles::clear_sync_warnings(&state.db, &id).await?;
     titles::clear_sync_log(&state.db, &id).await?;
+
+    // MU metadata + alias refresh — only for MU-sourced titles (S6 #128).
+    if let Some(mu_id_str) = titles::get_mangaupdates_id(&state.db, &id).await? {
+        if let Ok(mu_id) = mu_id_str.parse::<u64>() {
+            if let Ok(Some(series)) = crate::metadata::mangaupdates::series_detail(
+                &state.http,
+                &state.config.mangaupdates_url,
+                mu_id,
+            )
+            .await
+            {
+                if let Some(cover) = &series.cover_url {
+                    titles::set_cover_url_if_absent(&state.db, &id, cover).await?;
+                }
+                if !series.associated_names.is_empty() {
+                    titles::clear_title_aliases(&state.db, &id).await?;
+                    for alias in &series.associated_names {
+                        titles::insert_title_alias(&state.db, &id, alias).await?;
+                    }
+                }
+            }
+        }
+    }
+
     titles::update_sync_status(&state.db, &id, "syncing").await?;
 
     let db = state.db.clone();
+    let http = state.http.clone();
+    let plugin_host_url = state.config.plugin_host_url.clone();
     tokio::spawn(async move {
-        // Discover fan-out + MangaUpdates alias refresh not ported yet (S6).
+        if let Some(t) = titles::fetch_title(&db, &id, "").await.ok().flatten() {
+            crate::discover::match_sources(
+                &db,
+                &http,
+                &plugin_host_url,
+                &id,
+                &t.title,
+                &t.content_type,
+                t.is_explicit,
+            )
+            .await;
+        }
         let _ = titles::update_sync_status(&db, &id, "ready").await;
     });
 

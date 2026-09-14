@@ -5,6 +5,7 @@ use crate::state::AppState;
 
 pub mod auth;
 pub mod chapters;
+pub mod discover;
 pub mod logs;
 pub mod progress;
 pub mod settings;
@@ -19,9 +20,9 @@ pub mod version;
 ///
 /// `titles` + `progress` + `chapters` (S4 #126 / S5 #127) are wired here but
 /// **not yet flipped in `docker/nginx.conf`** — see `src/titles.rs`'s module
-/// doc for why (Discover re-match isn't ported until S6, and the block
-/// includes `queue`/S7 too). The router exists so the Rust integration tests
-/// can exercise the real handlers ahead of the nginx flip.
+/// doc for why (the ADR's titles/chapters/progress/queue block waits on
+/// S7). `discover` (S6 #128) is the exception — it's its own self-contained
+/// gate per the ADR and flips as soon as it's green.
 pub fn router(state: AppState) -> Router {
     Router::new()
         .nest("/api/version", version::routes())
@@ -33,6 +34,7 @@ pub fn router(state: AppState) -> Router {
         .nest("/api/titles", titles::routes())
         .nest("/api/progress", progress::routes())
         .nest("/api/chapters", chapters::routes())
+        .nest("/api/discover", discover::routes())
         .layer(TraceLayer::new_for_http())
         .with_state(state)
 }
