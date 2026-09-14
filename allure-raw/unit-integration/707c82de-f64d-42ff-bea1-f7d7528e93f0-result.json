@@ -1,0 +1,40 @@
+{
+  "uuid": "707c82de-f64d-42ff-bea1-f7d7528e93f0",
+  "historyId": "ArrghServer.Tests.SourcesTests#ListSources_Unauthorized_NoToken",
+  "name": "ListSources_Unauthorized_NoToken",
+  "fullName": "ArrghServer.Tests.SourcesTests.ListSources_Unauthorized_NoToken",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789385199889,
+  "stop": 1789385200303,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_Unauthorized_NoToken"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "uuid": "670c4f6e-3aa4-4d86-88fe-5a1efdb4c466",
+  "historyId": "ArrghServer.Tests.TitlesTests#RefreshMetadata_ClearsSyncWarnings",
+  "name": "RefreshMetadata_ClearsSyncWarnings",
+  "fullName": "ArrghServer.Tests.TitlesTests.RefreshMetadata_ClearsSyncWarnings",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789385170318,
+  "stop": 1789385171201,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "TitlesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Titles"
+    },
+    {
+      "name": "story",
+      "value": "RefreshMetadata_ClearsSyncWarnings"
+    }
+  ]
+}

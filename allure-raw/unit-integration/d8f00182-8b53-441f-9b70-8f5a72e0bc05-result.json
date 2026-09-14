@@ -1,0 +1,40 @@
+{
+  "uuid": "d8f00182-8b53-441f-9b70-8f5a72e0bc05",
+  "historyId": "ArrghServer.Tests.SourcesTests#ListSources_ReturnsEmpty_WhenNone",
+  "name": "ListSources_ReturnsEmpty_WhenNone",
+  "fullName": "ArrghServer.Tests.SourcesTests.ListSources_ReturnsEmpty_WhenNone",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789385198726,
+  "stop": 1789385199296,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_ReturnsEmpty_WhenNone"
+    }
+  ]
+}

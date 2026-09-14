@@ -1,0 +1,40 @@
+{
+  "uuid": "e94ad2fc-4292-40d9-bb46-c6295b61e11b",
+  "historyId": "ArrghServer.Tests.ChaptersTests#QueueDownload_Accepted_WhenEligible",
+  "name": "QueueDownload_Accepted_WhenEligible",
+  "fullName": "ArrghServer.Tests.ChaptersTests.QueueDownload_Accepted_WhenEligible",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789385201057,
+  "stop": 1789385201626,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "ChaptersTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Library"
+    },
+    {
+      "name": "epic",
+      "value": "Library"
+    },
+    {
+      "name": "feature",
+      "value": "Chapters"
+    },
+    {
+      "name": "story",
+      "value": "QueueDownload_Accepted_WhenEligible"
+    }
+  ]
+}
