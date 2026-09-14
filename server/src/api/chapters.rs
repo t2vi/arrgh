@@ -1,6 +1,6 @@
-//! `/api/chapters` — port of `Api/Chapters.cs` (ADR 0033, S5 #127). Not yet
-//! flipped in `docker/nginx.conf` — moves as a block with `titles`/
-//! `progress`/`queue` once S5–S7 all land (see `crate::titles`'s module doc).
+//! `/api/chapters` — port of `Api/Chapters.cs` (ADR 0033, S5 #127). Flipped
+//! in `docker/nginx.conf` as a block with `titles`/`progress`/`queue` now
+//! that S7 (#129) landed (see `crate::titles`'s module doc).
 //!
 //! `VerifyDownloadsAsync` (pruning `downloaded=1` rows whose file vanished)
 //! is a no-op TODO stub on the .NET side too — nothing to port yet.

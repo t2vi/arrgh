@@ -10,10 +10,12 @@ pub mod auth;
 pub mod chapters;
 pub mod config;
 pub mod discover;
+pub mod downloader;
 pub mod error;
 pub mod logs;
 pub mod metadata;
 pub mod progress;
+pub mod queue;
 pub mod settings;
 pub mod sources;
 pub mod state;
@@ -58,6 +60,13 @@ pub async fn run() -> anyhow::Result<()> {
     let addr: SocketAddr = config.bind;
     let db = connect_db(&config.database_path).await?;
     let state = AppState::new(config, log_buffer, db);
+
+    tokio::spawn(downloader::run_loop(
+        state.db.clone(),
+        state.http.clone(),
+        state.config.plugin_host_url.clone(),
+        state.config.download_dir.clone(),
+    ));
 
     let listener = TcpListener::bind(addr).await?;
     tracing::info!(%addr, "arrgh-server listening");

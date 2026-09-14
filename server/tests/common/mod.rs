@@ -197,6 +197,16 @@ pub async fn build_discover_state(mock_url: &str) -> AppState {
     .await
 }
 
+/// Points `plugin_host_url` + `download_dir` at test-local values (S7 #129
+/// downloader tests — need a mock plugin-host and a throwaway download dir).
+pub async fn build_downloader_state(plugin_host_url: &str, download_dir: &str) -> AppState {
+    build_state_with(|c| {
+        c.plugin_host_url = plugin_host_url.to_string();
+        c.download_dir = download_dir.to_string();
+    })
+    .await
+}
+
 async fn build_state_with(configure: impl FnOnce(&mut Config)) -> AppState {
     let db_path = std::env::temp_dir().join(format!("arrgh-rust-test-{}.db", uuid::Uuid::new_v4()));
     let db_path = db_path.to_str().unwrap().to_string();
@@ -505,6 +515,37 @@ pub async fn seed_source_with_key(
     .bind(name)
     .bind(content_types)
     .bind(source_key)
+    .execute(&state.db)
+    .await
+    .unwrap();
+    id
+}
+
+/// Inserts a `download_queue` row with an arbitrary status/owner, returning
+/// its id — for S7 (#129) queue-management tests (cancel/remove/ownership).
+pub async fn seed_queue_item(
+    state: &AppState,
+    chapter_id: &str,
+    manga_title: &str,
+    chapter_num: f64,
+    status: &str,
+    queued_by: Option<&str>,
+) -> String {
+    let id = uuid::Uuid::new_v4().to_string();
+    let now = now_str();
+    sqlx::query(
+        "INSERT INTO download_queue \
+             (id, chapter_id, manga_title, chapter_num, status, created_at, updated_at, pages_downloaded, pages_total, queued_by) \
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?)",
+    )
+    .bind(&id)
+    .bind(chapter_id)
+    .bind(manga_title)
+    .bind(chapter_num)
+    .bind(status)
+    .bind(&now)
+    .bind(&now)
+    .bind(queued_by)
     .execute(&state.db)
     .await
     .unwrap();
