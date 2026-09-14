@@ -1,0 +1,40 @@
+{
+  "uuid": "05a9194d-1065-433a-b6cc-e9bd78e73391",
+  "historyId": "ArrghServer.Tests.SourcesTests#ListSources_HasApiKey_True_WhenApiKeySet",
+  "name": "ListSources_HasApiKey_True_WhenApiKeySet",
+  "fullName": "ArrghServer.Tests.SourcesTests.ListSources_HasApiKey_True_WhenApiKeySet",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1789384191963,
+  "stop": 1789384193331,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "integration"
+    },
+    {
+      "name": "tag",
+      "value": "Server"
+    },
+    {
+      "name": "suite",
+      "value": "SourcesTests"
+    },
+    {
+      "name": "parentSuite",
+      "value": "Settings"
+    },
+    {
+      "name": "epic",
+      "value": "Settings"
+    },
+    {
+      "name": "feature",
+      "value": "Sources"
+    },
+    {
+      "name": "story",
+      "value": "ListSources_HasApiKey_True_WhenApiKeySet"
+    }
+  ]
+}
