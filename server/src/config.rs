@@ -11,6 +11,14 @@ pub struct Config {
     pub database_path: String,
     /// Node plugin host base URL (`PluginHostUrl`).
     pub plugin_host_url: String,
+    /// Metadata authority base URLs (ADR 0031, S6 #128). Real hosts by
+    /// default; overridable so tests can point them at one local mock
+    /// server — `reqwest::Client` can't be intercepted by host like .NET's
+    /// fake `HttpMessageHandler` was, so the base URL itself is the seam.
+    pub mangaupdates_url: String,
+    pub anilist_url: String,
+    pub mangadex_meta_url: String,
+    pub wuxiaworld_meta_url: String,
     /// Download target dir (`DownloadDir`).
     pub download_dir: String,
     /// JWT signing secret (`JwtSecret`). Required from S2 on; optional now.
@@ -33,6 +41,13 @@ impl Config {
             database_path: env_or("DatabasePath", "arrgh.db"),
             plugin_host_url: env_or("PluginHostUrl", "http://localhost:4000"),
             download_dir: env_or("DownloadDir", "./downloads"),
+            mangaupdates_url: env_or(
+                "MANGAUPDATES_URL",
+                crate::metadata::mangaupdates::DEFAULT_BASE,
+            ),
+            anilist_url: env_or("ANILIST_URL", crate::metadata::anilist::DEFAULT_ENDPOINT),
+            mangadex_meta_url: env_or("MANGADEX_META_URL", crate::metadata::mangadex::DEFAULT_BASE),
+            wuxiaworld_meta_url: env_or("WUXIAWORLD_META_URL", "https://www.wuxiaworld.com"),
             jwt_secret,
         })
     }

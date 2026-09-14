@@ -1,5 +1,6 @@
+use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use sqlx::SqlitePool;
@@ -33,6 +34,7 @@ pub async fn connect_db(database_path: &str) -> anyhow::Result<SqlitePool> {
 pub struct AppState {
     pub config: Arc<Config>,
     pub update: Arc<UpdateCache>,
+    pub trending: Arc<TrendingCache>,
     pub logs: Arc<LogBuffer>,
     // SqlitePool is internally Arc-backed — cheap to clone as-is.
     pub db: SqlitePool,
@@ -46,6 +48,7 @@ impl AppState {
         Self {
             config: Arc::new(config),
             update: Arc::new(UpdateCache::default()),
+            trending: Arc::new(TrendingCache::default()),
             logs,
             db,
             http: reqwest::Client::new(),
@@ -85,6 +88,45 @@ impl UpdateCache {
         match &*self.inner.read().unwrap() {
             Some(r) if r.version != current => (Some(r.version.clone()), Some(r.html_url.clone())),
             _ => (None, None),
+        }
+    }
+}
+
+/// Per-lane TTL cache for Discover's trending endpoints (ADR 0032, S6 #128).
+/// Port of `TrendingCacheService` — one keyed slot per lane
+/// (`manga`/`manhwa`/`manhua`/`adult-manhwa`), 1-hour freshness, stale
+/// entries kept (not evicted) so a failed refetch can still serve something.
+#[derive(Default)]
+pub struct TrendingCache {
+    inner: RwLock<HashMap<String, (Instant, Vec<crate::discover::DiscoverResult>)>>,
+}
+
+const TRENDING_TTL: Duration = Duration::from_secs(3600);
+
+impl TrendingCache {
+    pub fn get_fresh(&self, lane: &str) -> Option<Vec<crate::discover::DiscoverResult>> {
+        let guard = self.inner.read().unwrap();
+        let (fetched_at, results) = guard.get(lane)?;
+        (fetched_at.elapsed() < TRENDING_TTL).then(|| results.clone())
+    }
+
+    pub fn get_stale(&self, lane: &str) -> Option<Vec<crate::discover::DiscoverResult>> {
+        self.inner.read().unwrap().get(lane).map(|(_, r)| r.clone())
+    }
+
+    pub fn set(&self, lane: &str, results: Vec<crate::discover::DiscoverResult>) {
+        self.inner
+            .write()
+            .unwrap()
+            .insert(lane.to_string(), (Instant::now(), results));
+    }
+
+    /// Backdates an existing entry past the TTL without discarding it — port
+    /// of `TrendingCacheService.ExpireForTest`, for exercising the
+    /// stale-serves-on-failure path in tests.
+    pub fn expire_for_test(&self, lane: &str) {
+        if let Some((fetched_at, _)) = self.inner.write().unwrap().get_mut(lane) {
+            *fetched_at = Instant::now() - TRENDING_TTL - Duration::from_secs(1);
         }
     }
 }

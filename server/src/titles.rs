@@ -2,16 +2,16 @@
 //! `user_title_settings`/`sync_log`/`sync_warnings` access (ADR 0033, S4
 //! #126). Port of the data half of `Api/Titles.cs`. No sqlx migrations —
 //! same deferral as `users.rs`/`sources.rs`: .NET's EF migrations still own
-//! the schema until cutover (S10). `title_meta` isn't touched here — nothing
-//! in `Titles.cs`/`Progress.cs` reads or writes it; it's Discover's (S6) and
-//! Media's (S8) cache table.
+//! the schema until cutover (S10). `title_meta` (the cover-cache table)
+//! isn't touched here — that's `crate::discover`'s (S6 #128).
 //!
-//! Chapter-sync itself (the plugin-host fetch) now lives in `crate::chapters`
-//! (S5 #127) — `src/api/titles.rs`'s sync handler calls it directly, this
-//! module no longer has a `sync_from_source` stub. Discover re-match (S6)
-//! is still unported, so `/api/titles` stays off Rust in nginx (see
-//! `docker/nginx.conf`) until S6-S7 land too, per ADR 0033's "moves as a
-//! contiguous block" note for the titles/chapters/progress/queue tables.
+//! Chapter-sync itself (the plugin-host fetch) lives in `crate::chapters`
+//! (S5 #127); Discover's `AddManga`/`MatchSourcesAsync` DB access
+//! (insert/dedup/alias helpers below) lives here since it's all `titles`-
+//! table shaped, called from `crate::discover` and `src/api/discover.rs`
+//! (S6 #128). `/api/titles` itself still stays off Rust in nginx (see
+//! `docker/nginx.conf`) — it shares hot tables with `chapters`/`progress`/
+//! `queue` and the ADR moves that block together, waiting on S7.
 
 use serde::Serialize;
 use sqlx::{FromRow, SqlitePool};
@@ -84,6 +84,23 @@ pub async fn get_title(
         .bind(id)
         .bind(user_id)
         .bind(allow_explicit as i64)
+        .fetch_optional(pool)
+        .await
+}
+
+/// Unfiltered fetch by id — no ownership or explicit gate. Port of
+/// `Titles.FetchTitleAsync`, used by Discover's `AddManga` to return the
+/// just-created/updated title regardless of explicit status.
+pub async fn fetch_title(
+    pool: &SqlitePool,
+    id: &str,
+    user_id: &str,
+) -> sqlx::Result<Option<TitleListItem>> {
+    let sql = format!("{TITLE_SELECT} WHERE t.id = ?");
+    sqlx::query_as(&sql)
+        .bind(user_id)
+        .bind(user_id)
+        .bind(id)
         .fetch_optional(pool)
         .await
 }
@@ -249,6 +266,25 @@ pub async fn get_content_type(pool: &SqlitePool, id: &str) -> sqlx::Result<Optio
         .bind(id)
         .fetch_optional(pool)
         .await
+}
+
+pub async fn get_mangaupdates_id(pool: &SqlitePool, id: &str) -> sqlx::Result<Option<String>> {
+    sqlx::query_scalar::<_, Option<String>>("SELECT mangaupdates_id FROM titles WHERE id = ?")
+        .bind(id)
+        .fetch_optional(pool)
+        .await
+        .map(|o| o.flatten())
+}
+
+/// Only writes when the column is currently `NULL` — mirrors
+/// `RefreshMetadata`'s `if (title.CoverUrl is null) title.CoverUrl = ...`.
+pub async fn set_cover_url_if_absent(pool: &SqlitePool, id: &str, v: &str) -> sqlx::Result<()> {
+    sqlx::query("UPDATE titles SET cover_url = ? WHERE id = ? AND cover_url IS NULL")
+        .bind(v)
+        .bind(id)
+        .execute(pool)
+        .await?;
+    Ok(())
 }
 
 /// `true` if a `user_titles` row was actually deleted (caller maps absence to 404).
@@ -430,6 +466,267 @@ pub async fn title_source_links(
         .bind(title_id)
         .fetch_all(pool)
         .await
+}
+
+/// Best-effort — mirrors `AppendSyncWarningAsync`, which swallows every
+/// error so a logging failure never breaks source-matching.
+pub async fn append_sync_warning(
+    pool: &SqlitePool,
+    title_id: &str,
+    plugin_id: &str,
+    message: &str,
+) {
+    let _ = sqlx::query(
+        "INSERT INTO sync_warnings (id, title_id, plugin_id, message, created_at) VALUES (?, ?, ?, ?, ?)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(title_id)
+    .bind(plugin_id)
+    .bind(message)
+    .bind(ef_timestamp_now())
+    .execute(pool)
+    .await;
+}
+
+pub async fn has_any_source_link(pool: &SqlitePool, title_id: &str) -> sqlx::Result<bool> {
+    let n: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM title_sources WHERE title_id = ?")
+        .bind(title_id)
+        .fetch_one(pool)
+        .await?;
+    Ok(n > 0)
+}
+
+pub async fn has_title_source_for(
+    pool: &SqlitePool,
+    title_id: &str,
+    source: &str,
+) -> sqlx::Result<bool> {
+    let n: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM title_sources WHERE title_id = ? AND source = ?")
+            .bind(title_id)
+            .bind(source)
+            .fetch_one(pool)
+            .await?;
+    Ok(n > 0)
+}
+
+pub async fn insert_title_source(
+    pool: &SqlitePool,
+    title_id: &str,
+    source: &str,
+    source_id: &str,
+) -> sqlx::Result<()> {
+    sqlx::query(
+        "INSERT INTO title_sources (id, title_id, source, source_id, discovered_at) VALUES (?, ?, ?, ?, ?)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(title_id)
+    .bind(source)
+    .bind(source_id)
+    .bind(ef_timestamp_now())
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+pub async fn list_title_aliases(pool: &SqlitePool, title_id: &str) -> sqlx::Result<Vec<String>> {
+    sqlx::query_scalar("SELECT alias FROM title_aliases WHERE title_id = ?")
+        .bind(title_id)
+        .fetch_all(pool)
+        .await
+}
+
+pub async fn clear_title_aliases(pool: &SqlitePool, title_id: &str) -> sqlx::Result<()> {
+    sqlx::query("DELETE FROM title_aliases WHERE title_id = ?")
+        .bind(title_id)
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
+pub async fn insert_title_alias(
+    pool: &SqlitePool,
+    title_id: &str,
+    alias: &str,
+) -> sqlx::Result<()> {
+    sqlx::query("INSERT INTO title_aliases (id, title_id, alias) VALUES (?, ?, ?)")
+        .bind(uuid::Uuid::new_v4().to_string())
+        .bind(title_id)
+        .bind(alias)
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
+// ── Discover / AddManga (S6 #128) ───────────────────────────────────────────
+
+pub async fn find_id_by_metadata_source(
+    pool: &SqlitePool,
+    metadata_source: &str,
+    metadata_source_id: &str,
+) -> sqlx::Result<Option<String>> {
+    sqlx::query_scalar("SELECT id FROM titles WHERE metadata_source = ? AND metadata_source_id = ?")
+        .bind(metadata_source)
+        .bind(metadata_source_id)
+        .fetch_optional(pool)
+        .await
+}
+
+pub async fn find_id_by_mangaupdates_id(
+    pool: &SqlitePool,
+    mu_id: &str,
+) -> sqlx::Result<Option<String>> {
+    sqlx::query_scalar("SELECT id FROM titles WHERE mangaupdates_id = ?")
+        .bind(mu_id)
+        .fetch_optional(pool)
+        .await
+}
+
+/// User-scoped variant of `find_id_by_metadata_source` — feeds
+/// `CheckInLibraryAsync`'s 1st tier (unlike `AddManga`'s dedup check, which
+/// is deliberately global across users).
+pub async fn find_owned_id_by_metadata_source(
+    pool: &SqlitePool,
+    user_id: &str,
+    metadata_source: &str,
+    metadata_source_id: &str,
+) -> sqlx::Result<Option<String>> {
+    sqlx::query_scalar(
+        "SELECT t.id FROM titles t \
+         WHERE t.metadata_source = ? AND t.metadata_source_id = ? \
+         AND EXISTS(SELECT 1 FROM user_titles ut WHERE ut.user_id = ? AND ut.title_id = t.id)",
+    )
+    .bind(metadata_source)
+    .bind(metadata_source_id)
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+}
+
+/// User-scoped variant of `find_id_by_mangaupdates_id` — feeds
+/// `CheckInLibraryAsync`'s 2nd (legacy) tier.
+pub async fn find_owned_id_by_mangaupdates_id(
+    pool: &SqlitePool,
+    user_id: &str,
+    mu_id: &str,
+) -> sqlx::Result<Option<String>> {
+    sqlx::query_scalar(
+        "SELECT t.id FROM titles t WHERE t.mangaupdates_id = ? \
+         AND EXISTS(SELECT 1 FROM user_titles ut WHERE ut.user_id = ? AND ut.title_id = t.id)",
+    )
+    .bind(mu_id)
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+}
+
+/// Merge new metadata into an existing title without clobbering what's
+/// already there — mirrors the `?? ` (coalesce) `ExecuteUpdateAsync` in
+/// `AddManga`.
+pub async fn coalesce_update_title(
+    pool: &SqlitePool,
+    id: &str,
+    description: Option<&str>,
+    author: Option<&str>,
+    year: Option<i64>,
+    tags: Option<&str>,
+) -> sqlx::Result<()> {
+    sqlx::query(
+        "UPDATE titles SET \
+             description = COALESCE(description, ?), \
+             author      = COALESCE(author, ?), \
+             year        = COALESCE(year, ?), \
+             tags        = COALESCE(tags, ?) \
+         WHERE id = ?",
+    )
+    .bind(description)
+    .bind(author)
+    .bind(year)
+    .bind(tags)
+    .bind(id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+pub struct NewTitle<'a> {
+    pub id: &'a str,
+    pub mangaupdates_id: Option<&'a str>,
+    pub metadata_source: Option<&'a str>,
+    pub metadata_source_id: Option<&'a str>,
+    pub title: &'a str,
+    pub description: Option<&'a str>,
+    pub cover_url: Option<&'a str>,
+    pub status: &'a str,
+    pub author: Option<&'a str>,
+    pub year: Option<i64>,
+    pub tags: Option<&'a str>,
+    pub content_type: &'a str,
+    pub is_explicit: bool,
+}
+
+pub async fn insert_title(pool: &SqlitePool, t: &NewTitle<'_>) -> sqlx::Result<()> {
+    let now = ef_timestamp_now();
+    sqlx::query(
+        "INSERT INTO titles \
+             (id, mangaupdates_id, metadata_source, metadata_source_id, title, description, \
+              cover_url, status, author, year, tags, sync_status, content_type, is_explicit, \
+              created_at, updated_at) \
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)",
+    )
+    .bind(t.id)
+    .bind(t.mangaupdates_id)
+    .bind(t.metadata_source)
+    .bind(t.metadata_source_id)
+    .bind(t.title)
+    .bind(t.description)
+    .bind(t.cover_url)
+    .bind(t.status)
+    .bind(t.author)
+    .bind(t.year)
+    .bind(t.tags)
+    .bind(t.content_type)
+    .bind(t.is_explicit)
+    .bind(&now)
+    .bind(&now)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+/// Idempotent — no-ops if `user_id` already owns `title_id`.
+pub async fn insert_user_title_if_absent(
+    pool: &SqlitePool,
+    user_id: &str,
+    title_id: &str,
+) -> sqlx::Result<()> {
+    sqlx::query("INSERT OR IGNORE INTO user_titles (user_id, title_id, added_at) VALUES (?, ?, ?)")
+        .bind(user_id)
+        .bind(title_id)
+        .bind(ef_timestamp_now())
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
+/// `(id, title)` for every title of `content_type` owned by `user_id` —
+/// feeds Discover's normalized-title library check (3rd tier of
+/// `CheckInLibraryAsync`; done in Rust rather than SQL since normalization
+/// isn't expressible as a SQL predicate).
+pub async fn list_owned_by_content_type(
+    pool: &SqlitePool,
+    user_id: &str,
+    content_type: &str,
+) -> sqlx::Result<Vec<(String, String)>> {
+    sqlx::query_as(
+        "SELECT t.id, t.title FROM titles t \
+         WHERE t.content_type = ? AND EXISTS(SELECT 1 FROM user_titles ut WHERE ut.user_id = ? AND ut.title_id = t.id)",
+    )
+    .bind(content_type)
+    .bind(user_id)
+    .fetch_all(pool)
+    .await
 }
 
 #[cfg(test)]
