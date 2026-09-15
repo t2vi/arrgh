@@ -39,6 +39,6 @@ describe('App shell', () => {
     router.navigate(ROUTES.login, { replace: true })
     render(App)
 
-    expect(screen.queryByText('*ARRgh')).not.toBeInTheDocument()
+    expect(document.querySelector('[data-nav]')).not.toBeInTheDocument()
   })
 })
