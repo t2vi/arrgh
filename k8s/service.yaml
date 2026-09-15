@@ -1,0 +1,17 @@
+# ClusterIP by default — bring your own Ingress, or switch type below for
+# direct external access on a home cluster. See docs/deploy/kubernetes.md.
+apiVersion: v1
+kind: Service
+metadata:
+  name: arrgh
+spec:
+  selector:
+    app: arrgh
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+  # To expose without an Ingress controller, e.g. on k3s:
+  #   type: NodePort
+  # or, if your cluster has a LoadBalancer implementation (e.g. MetalLB):
+  #   type: LoadBalancer

@@ -63,6 +63,26 @@ Migrations run automatically on startup. No manual DB steps needed.
 
 ---
 
+## Portainer
+
+Deploy the same Compose stack through Portainer's UI instead of the CLI: **Stacks → Add stack → Repository**, pointing at this repo's `docker-compose.yml`, or paste the file into the Web editor. Same image, same env vars — set them through Portainer's Environment variables editor.
+
+See [docs/deploy/portainer.md](docs/deploy/portainer.md) for the full walkthrough.
+
+---
+
+## Kubernetes
+
+Best-effort, community-supported — not exercised by this project's CI. Example manifests (`k8s/`) run a single replica with a persistent volume for the database and downloads directory (SQLite is single-writer, so this isn't horizontally scalable).
+
+```bash
+kubectl apply -f k8s/
+```
+
+See [docs/deploy/kubernetes.md](docs/deploy/kubernetes.md) for storage/replica rationale and ingress notes.
+
+---
+
 ## Sources
 
 *ARRgh! uses a plugin system for content sources. Each source is an HTTP server implementing the Source Plugin Protocol.

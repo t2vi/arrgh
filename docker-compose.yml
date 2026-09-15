@@ -1,6 +1,6 @@
 services:
   arrgh:
-    build: .
+    image: ghcr.io/t2vi/arrgh:latest
     restart: unless-stopped
     ports:
       - "8282:8080"

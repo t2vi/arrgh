@@ -1,0 +1,45 @@
+# Example only — best-effort/community-supported, not exercised by this
+# project's CI. See docs/deploy/kubernetes.md.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arrgh
+spec:
+  # SQLite is single-writer — do not scale this beyond 1 replica.
+  # See docs/deploy/kubernetes.md and specs/010-readme-deployment-guide/research.md.
+  replicas: 1
+  strategy:
+    # Avoid two pods ever holding the SQLite file at once during a rollout.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: arrgh
+  template:
+    metadata:
+      labels:
+        app: arrgh
+    spec:
+      containers:
+        - name: arrgh
+          image: ghcr.io/t2vi/arrgh:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: arrgh-config
+          # Uncomment to set JWT_SECRET from a Secret instead of letting the
+          # container auto-generate one at boot (auto-generated = sessions
+          # reset on every restart):
+          # env:
+          #   - name: JWT_SECRET
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: arrgh-secret
+          #         key: jwt-secret
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: arrgh-data
