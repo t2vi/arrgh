@@ -45,11 +45,11 @@ jobs:
         working-directory: plugins/fixture
         run: npm install --omit=dev
 
-      - name: Pre-pull MCR base images (retry on transient 403)
+      - name: Pre-pull base images (retry on transient failure)
         run: |
           for i in 1 2 3; do
-            docker pull mcr.microsoft.com/dotnet/aspnet:10.0 && \
-            docker pull mcr.microsoft.com/dotnet/sdk:10.0 && break
+            docker pull rust:1-slim-bookworm && \
+            docker pull debian:bookworm-slim && break
             echo "Attempt $i failed, retrying in 20s…" && sleep 20
           done
 

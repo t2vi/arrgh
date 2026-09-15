@@ -2,12 +2,6 @@
 //! fan-out/dedup; ADR 0032 trending lanes). E-Hentai is dead code in .NET
 //! (superseded by nhentai) and isn't ported — see `crate::metadata`'s module
 //! doc.
-//!
-//! Unlike titles/progress/chapters, Discover doesn't share hot tables with
-//! that S4-S7 block (it *creates* titles/chapters via `AddManga`, but reads
-//! nothing back through routes still on .NET) — the ADR calls it out as its
-//! own self-contained gate, so `/api/discover` flips in `docker/nginx.conf`
-//! as soon as this phase is green, without waiting for S7.
 
 use axum::extract::{Query, State};
 use axum::routing::get;

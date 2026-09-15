@@ -17,14 +17,9 @@ pub mod titles;
 pub mod users;
 pub mod version;
 
-/// The full `/api` router. One `.nest` per route group; groups land phase by
-/// phase (ADR 0033). Anything not nested here is still served by the .NET
-/// process via nginx until its phase ships.
-///
-/// `titles`/`progress`/`chapters`/`queue` (S4 #126, S5 #127, S7 #129) flip
-/// together in `docker/nginx.conf` now that all four are green — see
-/// `src/titles.rs`'s module doc. `discover` (S6 #128), `media` (S8 #130)
-/// and `plugins` (S9 #131) are each their own self-contained gate.
+/// The full `/api` router — every route group is here as of S10 (#132);
+/// `docker/nginx.conf` proxies all of `/api/` to this server unconditionally
+/// (the .NET process this used to share duty with is gone).
 pub fn router(state: AppState) -> Router {
     Router::new()
         .nest("/api/version", version::routes())

@@ -35,7 +35,7 @@ e2e, Docker, version bump, release notes). Then:
 
 ```bash
 git checkout -b chore/release-vX.Y.Z main
-# bump <Version> in server/ArrghServer.csproj, add docs/releases/vX.Y.Z.md,
+# bump [package] version in server/Cargo.toml, add docs/releases/vX.Y.Z.md,
 # add CHANGELOG.md row
 git push -u origin chore/release-vX.Y.Z
 gh pr create --base main --title "release vX.Y.Z"
@@ -45,7 +45,7 @@ git tag -a vX.Y.Z -m "vX.Y.Z"
 git push origin vX.Y.Z
 ```
 
-Version source of truth is `server/ArrghServer.csproj` `<Version>` —
+Version source of truth is `server/Cargo.toml`'s `[package] version` —
 `GET /api/version` reads it at runtime, the UI shows it dynamically. There
 is no root `VERSION` file (OAIKit's template uses one; *ARRgh does not).
 

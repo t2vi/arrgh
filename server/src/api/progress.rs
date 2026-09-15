@@ -1,6 +1,4 @@
-//! `/api/progress` — port of `Api/Progress.cs` (ADR 0033, S4 #126). Not yet
-//! flipped in `docker/nginx.conf` — see `crate::titles`'s module doc (moves
-//! as a contiguous block with `titles`).
+//! `/api/progress` — port of `Api/Progress.cs` (ADR 0033, S4 #126).
 
 use axum::extract::{Path, State};
 use axum::routing::get;

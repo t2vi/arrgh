@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- .NET 10 SDK — https://dotnet.microsoft.com/download
+- Rust toolchain — https://rustup.rs (or a prebuilt binary — see Build)
 - Node.js 22+
 - nginx (or any static file server)
 
@@ -11,7 +11,8 @@
 ```bash
 # API server
 cd server
-dotnet publish -c Release -o /opt/arrgh/server
+cargo build --release
+cp target/release/arrgh-server /opt/arrgh/arrgh-server
 
 # Web UI
 cd ../web
@@ -30,7 +31,7 @@ DownloadDir=/var/lib/arrgh/downloads
 PluginHostUrl=http://localhost:4000
 PluginIndexUrl=file:///opt/arrgh/plugin-index.json
 JwtSecret=<generate with: openssl rand -base64 48>
-ASPNETCORE_URLS=http://127.0.0.1:3000
+RUST_BIND=127.0.0.1:3001
 LOG_LEVEL=info
 ```
 
@@ -44,7 +45,7 @@ After=network.target
 [Service]
 User=arrgh
 EnvironmentFile=/etc/arrgh/env
-ExecStart=/usr/bin/dotnet /opt/arrgh/server/ArrghServer.dll
+ExecStart=/opt/arrgh/arrgh-server
 Restart=on-failure
 StateDirectory=arrgh
 
@@ -58,27 +59,21 @@ cp plugin-index/index.json /opt/arrgh/plugin-index.json
 systemctl enable --now arrgh
 ```
 
+The server creates and migrates its own SQLite schema on first boot (`server/migrations/`, run via `sqlx migrate` — see `CLAUDE.md`'s Database Migrations section) and seeds the 9 bundled sources (MangaDex, Mangapill, Toonily, NovelFull, nhentai, MangaFire, Manga18fx, WuxiaWorld, AsuraScans) pointed at `PluginHostUrl` — no separate DB setup step, and no action needed to register the bundled sources. Set `SeedDefaultSources=false` to skip that seed (e.g. a DB restored from another instance that already has sources).
+
 ## Source plugins
 
-*ARRgh ships with bundled sources (MangaDex, Mangapill, etc.) served by `plugin-host`. To register them, set `PLUGIN_URLS` to the plugin-host base URL.
+*ARRgh ships with bundled sources served by `plugin-host`, auto-registered on first boot (see above). To add a community plugin, either:
 
-**Option A — auto-register at startup** (recommended)
+**Option A — via the UI** (recommended)
 
-Add to `/etc/arrgh/env`:
+Settings → Sources → Install a plugin from the index. Calls `POST /api/plugins/install`, which fetches the plugin bundle through `plugin-host` and registers it — no restart needed.
 
-```
-PLUGIN_URLS=http://localhost:4000
-```
-
-Restart the server. Each URL in `PLUGIN_URLS` is probed on boot and inserted into the DB if not already present — idempotent across restarts.
-
-**Option B — register at runtime via the UI**
+**Option B — register a source directly**
 
 1. Start plugin-host: `cd plugin-host && npm start`
 2. Open *ARRgh → Settings → Sources → Add*
 3. Enter the plugin's base URL (e.g. `http://localhost:4000`)
-
-No server restart needed — the registry updates immediately.
 
 ---
 
@@ -92,7 +87,7 @@ server {
     index index.html;
 
     location /api/ {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:3001;
         proxy_read_timeout 300s;
     }
 

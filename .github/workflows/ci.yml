@@ -8,54 +8,12 @@ on:
 
 jobs:
   # ── Layer 1: Unit tests ────────────────────────────────────────────────────
-
-  unit-server:
-    name: Unit — Server (.NET)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server-tests
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.x'
-
-      - name: Restore
-        run: dotnet restore
-
-      - name: Setup Node (for trx-to-allure)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Unit tests
-        run: dotnet test --filter "Category=Unit" --logger "trx;LogFileName=unit-results.trx" --results-directory .
-
-      - name: Integration tests
-        run: dotnet test --filter "Category=Integration" --logger "trx;LogFileName=integration-results.trx" --results-directory .
-
-      - name: Convert TRX → Allure
-        if: always()
-        run: |
-          node trx-to-allure.mjs unit-results.trx        allure-results unit
-          node trx-to-allure.mjs integration-results.trx allure-results integration
-
-      - name: Upload TRX results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dotnet-test-results
-          path: server-tests/*.trx
-
-      - name: Upload Allure results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: allure-results-dotnet
-          path: server-tests/allure-results
+  #
+  # Server (Rust) has its own workflow — .github/workflows/rust.yml — since
+  # S0 (#122), gated on `server/**` changes; it isn't Allure-wired (no JUnit
+  # output from `cargo test` yet, unlike .NET's TRX → trx-to-allure.mjs
+  # path), so it doesn't feed `report` below. Known gap, tracked separately
+  # from the S10 (#132) cutover that removed the .NET job this replaced.
 
   unit-web:
     name: Unit — Web (Node)
@@ -127,7 +85,7 @@ jobs:
   report:
     name: Allure Report
     runs-on: ubuntu-latest
-    needs: [unit-server, unit-web]
+    needs: [unit-web]
     if: always()
     permissions:
       contents: write

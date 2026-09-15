@@ -2,9 +2,6 @@
 .git
 **/node_modules
 server/target
-server/bin
-server/obj
-server-tests
 web/dist
 e2e
 api-tests

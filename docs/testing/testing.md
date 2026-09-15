@@ -4,7 +4,7 @@ Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential 
 
 **Frameworks**
 - Web unit: Vitest + @testing-library/react + `allure-vitest@^2.x` (must stay v2 — v3 incompatible with vitest v2)
-- Server unit + integration: .NET xUnit (`Category=Unit` / `Category=Integration`)
+- Server unit + integration: Rust — `#[cfg(test)]` unit tests inline per module, `server/tests/*.rs` integration tests
 - API: Hurl — `.hurl` files, JUnit XML → `junit-to-allure.mjs` → Allure JSON with `layer=api`
 - E2e: Playwright + allure-playwright (Docker Compose test stack + Fixture Plugin)
 
@@ -76,436 +76,47 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 
 ---
 
-## .NET Server — Downloader Unit (`DownloaderTests.cs`)
+## Rust Server — Unit (`#[cfg(test)]`, inline)
 
-| Case | Status |
+Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run with `cargo test` (or `cargo test --lib` for unit tests only). Ported from the equivalent xUnit `*LogicTests.cs`/`*Tests.cs` unit-tagged classes (ADR 0033, S1–S10); one deliberate scope cut and one mechanism change from the .NET original:
+
+- **E-Hentai dropped as an authority** — dead code in .NET (zero live references), superseded by nhentai (`discover.rs`'s `AUTHORITY_ORDER`, `designated_authority`). `Discover.cs`'s `SearchCandidates`/`KnownNorms` (novel-title fuzzy-match helpers) were likewise unreachable and not ported.
+- **`MigrationBootstrapTests.cs` → `tests/schema_bootstrap.rs`** — the mechanism changed (EF `__EFMigrationsHistory` class migrations → `sqlx migrate` + idempotent baseline SQL, S10 #132), so these are new tests for the new mechanism, not a line-for-line port. See `src/state.rs`'s `connect_db` module doc.
+
+| Module | Covers |
 |---|---|
-| Queue item status set to `"downloading"` (not `"in_progress"`) when tick claims it | ✅ |
-| Successful download → queue item `status="done"`, chapter `downloaded=true` | ✅ |
-| Source returns 502 on pages endpoint → queue item `status="error"` | ✅ |
-| Source returns 400 on single image → queue item `status="error"` with URL in message | ✅ |
-| Empty pages list → queue item `status="error"` | ✅ |
-| Text chapter → `.md` file written, queue item `status="done"` | ✅ |
-| Text chapter source 502 → queue item `status="error"` with URL in message | ✅ |
-| User-Agent header sent on all HTTP requests | ✅ |
-| Multiple sources — first fails, second succeeds → `status="done"` | ✅ |
-| No chapter_sources → queue item `status="error"` ("no chapter sources") | ✅ |
+| `auth.rs` | JWT create/verify roundtrip, wrong-secret rejection, `require_admin`, bcrypt hash roundtrip + cross-compat against a live .NET-issued hash |
+| `state.rs` | `UpdateCache` get/set/clear, `PageCache` get/set, `TrendingCache` |
+| `logs.rs` | Level parsing, ring buffer eviction |
+| `queue.rs` | `is_allowed_explicit` |
+| `settings.rs` | Numeric/bool parsing, trending clamp, reader-mode validation |
+| `media.rs` | `detect_content_type`, `strip_jpeg_icc`, `is_image`, `root_domain_referer`, `get_chapter_page` (dir + cbz) |
+| `discover.rs` | `normalize_title`, `designated_authority`, `deduplicate`, `merge_fan_out` (incl. nhentai word-boundary upgrade), `title_matches`/`levenshtein`, `strip_search_qualifier`, `is_hentai_tag`, `filter_mu_scope` |
+| `metadata/*.rs` | Per-authority response mapping (MangaUpdates, AniList, MangaDex, WuxiaWorld) |
+| `plugins.rs` | `fetch_index` (file:// + missing-file) |
+| `sources.rs` | `seed_defaults_if_empty` |
+| `update_checker.rs` | GitHub release JSON → `(version, html_url)` parsing |
+| `api/titles.rs`'s `patch_body_tests` | `PatchBody`'s tri-state `Option<Option<T>>` parsing for `reader_mode`/`download_dir` — absent vs. explicit `null` vs. a value are all distinguishable (an improvement over .NET's `JsonElement?`, which couldn't tell "absent" from "null" cleanly; see the module's doc comment) |
 
 ---
 
+## Rust Server — Integration (`server/tests/*.rs`)
 
-## .NET Server — Unit (xUnit, `server-tests/`)
+`tower::ServiceExt::oneshot` against `arrgh_server::api::router(state)`, isolated temp-file SQLite per test (`tests/common::build_state()` runs the real `server/migrations/`, so test and production schema can't drift). Run with `cargo test`.
 
-Framework: xUnit + `WebApplicationFactory` (integration) / plain xUnit (unit). Run with `dotnet test --filter "Category=Unit"`.
-
-### Auth tokens (`AuthTokenTests.cs`) ✅
-
-| Case | Status |
+| File | Covers |
 |---|---|
-| Admin claims preserved through `CreateToken` → `ValidateToken` roundtrip | ✅ |
-| Member role + `allow_explicit=false` preserved through roundtrip | ✅ |
-| Wrong secret → validation rejected | ✅ |
-| Token expires in 30 days | ✅ |
-| Different users produce different tokens | ✅ |
-| Same inputs produce different tokens (timestamp-based) | ✅ |
-
-### UpdateCache (`UpdateCacheTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GetIfNewer` empty cache → both fields null | ✅ |
-| `GetIfNewer` same version as current → both null (suppresses false "update available") | ✅ |
-| `GetIfNewer` newer version → returns version + URL | ✅ |
-| `Clear` after set → both null | ✅ |
-
-### LogService (`LogServiceTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `ParseLevel` valid levels (trace/debug/info/warn/error, case-insensitive) | ✅ |
-| `ParseLevel` unknown level → null | ✅ |
-| `LevelToString` all four levels produce expected strings | ✅ |
-| `SetLevel` valid level → true + updates `CurrentLevel` | ✅ |
-| `SetLevel` invalid level → false | ✅ |
-| `SetLevel` normalises to uppercase | ✅ |
-| `GetRecent` empty buffer → empty list | ✅ |
-| `GetRecent` returns last N entries | ✅ |
-| `Append` evicts oldest entry when capacity exceeded | ✅ |
-
-### MigrationBootstrap (`MigrationBootstrapTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| Pre-migration DB (tables exist, no `__EFMigrationsHistory`) → `Bootstrap` creates history → `Migrate()` succeeds | ✅ |
-| Partial-schema DB (old Rust DB missing `default_explicit` etc.) → Bootstrap patches columns → `SaveChanges()` succeeds | ✅ |
-| Empty history table (previous crash left `__EFMigrationsHistory` empty) → Bootstrap repairs → `Migrate()` succeeds | ✅ |
-| Fresh DB (no tables) → `Bootstrap` is no-op → `Migrate()` handles it normally | ✅ |
-| Already-migrated DB → `Bootstrap` is idempotent → `Migrate()` is no-op | ✅ |
-
-### PatchTitleBody (`PatchTitleBodyTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `auto_download: true` / `false` parsed | ✅ |
-| `auto_download` absent → null (no-op) | ✅ |
-| `reader_mode` string → `HasValue=true` | ✅ |
-| `reader_mode` absent → null | ✅ |
-| `reader_mode: null` JSON null — known limitation documented (indistinguishable from absent) | ✅ |
-| `is_explicit: true` parsed | ✅ |
-| `content_type: "manga"` parsed | ✅ |
-| `content_type` absent → null | ✅ |
-| Multiple fields all parsed together | ✅ |
-| Empty object → all fields null | ✅ |
-
-### Queue logic (`QueueLogicTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `IsAllowedExplicit` — `allow_explicit=true` → true | ✅ |
-| `IsAllowedExplicit` — member without flag → false | ✅ |
-| `IsAllowedExplicit` — admin with flag=false → true | ✅ |
-| `IsAllowedExplicit` — admin with flag=true → true | ✅ |
-| `IsAllowedExplicit` — null role + flag=false → false | ✅ |
-| `IsAllowedExplicit` — null role + flag=true → true | ✅ |
-
-### Settings logic (`SettingsLogicTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `ParseLong` valid string, null, invalid string | ✅ |
-| `ParseBool` "true", "false", null, other string | ✅ |
-| `ClampTrending` below 1 → 1; above 50 → 50; within range passes; boundary values | ✅ |
-| `ValidReaderMode` "paged" / "scroll" valid; other / empty invalid | ✅ |
-
-### Media helpers (`MediaLogicTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `DetectContentType` — JPEG / PNG / WebP / GIF / AVIF magic bytes | ✅ |
-| `DetectContentType` — too short / empty / unknown bytes → null | ✅ |
-| `StripJpegIcc` — non-JPEG passed through unchanged | ✅ |
-| `StripJpegIcc` — too-short data passed through unchanged | ✅ |
-| `StripJpegIcc` — JPEG without ICC passes through | ✅ |
-| `StripJpegIcc` — APP2 ICC_PROFILE segment stripped | ✅ |
-| `IsImage` — known extensions (jpg, jpeg, PNG, webp, avif) → true | ✅ |
-| `IsImage` — non-image (txt, cbz, no-ext, html) → false | ✅ |
-| `RootDomainReferer` — subdomain extracts root; apex unchanged; invalid → empty; scheme preserved; empty → empty | ✅ |
-| `NormalizeTitle` — replaces non-alphanumeric with spaces; collapses spaces; lowercase; strips punctuation | ✅ |
-| `GetChapterPage` — missing path → null; directory reads correct file; directory out of range → null | ✅ |
-| `GetChapterPage` — CBZ extracts correct entry; CBZ out of range → null | ✅ |
-| `PageCacheService` — miss on empty; hit after set | ✅ |
-
-### Discover helpers (`DiscoverLogicTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `TitleMatches` — exact; both empty; small typo; novel-suffix vs bare site result | ✅ |
-| `TitleMatches` — unrelated titles → false | ✅ |
-| `Levenshtein` — same string = 0; empty vs non-empty = length; one substitution | ✅ |
-| `StripSearchQualifier` — strips `(Novel)` / `(Manga)`; no suffix → null; mid-string paren → null; only paren → null; long suffix → null | ✅ |
-| `SearchCandidates` — stripped form first; no duplicates; aliases also stripped | ✅ |
-| `KnownNorms` — includes stripped variant; no duplicates; end-to-end novel title matches site result | ✅ |
-| `IsHentaiTag` — "hentai" → true; "adult" alone → false; case-insensitive; null/empty → false | ✅ |
-| `MangaUpdatesService.MapContentType` — Manhwa/manhua/Novel/Light Novel/Web Novel/Manga/null | ✅ |
-| `MangaUpdatesService.StripHtml` — removes tags; plain text unchanged; trims whitespace | ✅ |
-| `MangaUpdatesService.ParseFlexULong` — number; string; null → null | ✅ |
-| `MangaUpdatesService.MapSeries` — full record (SeriesId, Title, Description, CoverUrl, ContentType, Status, Year, Author, Tags) | ✅ |
-| `MangaUpdatesService.MapSeries` — string `series_id` parsed to ulong | ✅ |
-| `NovelUpdatesService.ParseHtml` — single result extracts title, slug, status, cover | ✅ |
-| `NovelUpdatesService.ParseHtml` — empty HTML → empty list | ✅ |
-| `NovelUpdatesService.ParseHtml` — multiple results parsed | ✅ |
-| `NovelUpdatesService.ParseHtml` — Ongoing status maps correctly | ✅ |
-
----
-
-## .NET Server — Integration (HTTP stack, `server-tests/`)
-
-`WebApplicationFactory` + isolated file-based SQLite per test. Run with `dotnet test --filter "Category=Integration"`.
-
-### Auth (`AuthTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /status` → `needs_setup=true` when no users | ✅ |
-| `GET /status` → `needs_setup=false` after first register | ✅ |
-| `POST /register` → creates admin + returns token | ✅ |
-| `POST /register` → 403 when users already exist | ✅ |
-| `POST /register` → 422 short password / empty username | ✅ |
-| `POST /login` → token for valid credentials | ✅ |
-| `POST /login` → 401 wrong password / unknown user | ✅ |
-| `GET /me` → current user | ✅ |
-| `GET /me` → 401 no token | ✅ |
-| `GET /users` → 403 for member | ✅ |
-| `GET /users` → returns all users for admin | ✅ |
-| `POST /users` → 201 valid member; 403 for member; 409 duplicate username | ✅ |
-| `PATCH /me` → changes password or allow_explicit (both optional); returns 200 + updated user; 422 short password | ✅ |
-| `PATCH /users/:id` → updates role / allow_explicit; 422 invalid role; 404 nonexistent | ✅ |
-| `DELETE /users/:id` → 204 success; 404 nonexistent; 403 cannot delete self; 403 for member | ✅ |
-
-### Titles (`TitlesTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /titles` → empty page for empty library | ✅ |
-| `GET /titles` → returns only owned titles | ✅ |
-| `GET /titles` → excludes other users' library | ✅ |
-| `GET /titles` → hides explicit from non-explicit user | ✅ |
-| `GET /titles` → shows explicit to explicit user | ✅ |
-| `GET /titles` → search filters by title name | ✅ |
-| `GET /titles?content_type=manga` → returns only matching content type | ✅ |
-| `GET /titles?content_type=manga,manhwa` → multi-value content type filter | ✅ |
-| `GET /titles?status=ongoing` → returns only matching status | ✅ |
-| `GET /titles?sort=title_asc` → alphabetical ascending order | ✅ |
-| `GET /titles?sort=title_desc` → alphabetical descending order | ✅ |
-| `GET /titles?content_type=manga&status=ongoing` → combined filter | ✅ |
-| `GET /titles` → 401 no token | ✅ |
-| `GET /titles` → pagination limit and page offset | ✅ |
-| `GET /titles` → multi-user each sees only own library | ✅ |
-| `GET /titles/:id` → returns owned title with chapter stats | ✅ |
-| `GET /titles/:id` → 404 not owned / nonexistent | ✅ |
-| `GET /titles/:id` → `chapters_read` isolated per user | ✅ |
-| `GET /titles/:id` → `is_local=true` when no title_sources; `is_local=false` when sources exist | ✅ |
-| `GET /titles/:id` → `has_sync_warnings=true` when warning exists | ✅ |
-| `GET /titles/new-releases` → returns new chapters for owned titles only | ✅ |
-| `GET /titles/new-releases` → excludes explicit from non-explicit user | ✅ |
-| `DELETE /titles/:id` → 204; does not delete when other user still has it; deletes when last user | ✅ |
-| `DELETE /titles/:id` → 404 not owned | ✅ |
-| `PATCH /titles/:id` → updates auto_download; sets reader mode (paged/scroll) | ✅ |
-| `PATCH /titles/:id` → 403 is_explicit for member; 422 invalid reader mode / content type | ✅ |
-| `PATCH /titles/:id` → admin can set is_explicit | ✅ |
-| `PATCH /titles/:id` → 404 not owned | ✅ |
-| `GET /titles/:id/sync-log` → returns entries in ASC order; 404 not owned | ✅ |
-| `POST /titles/:id/sync` → 202 when source links exist; 404 no source links; 404 not owned | ✅ |
-| `POST /titles/:id/sync` → sync log contains `"Synced N chapter(s) from {source}"` | ✅ |
-| `POST /titles/:id/sync` → sync log contains `"Synced 0 chapter(s)"` when plugin returns empty | ✅ |
-
-### Chapters (`ChaptersTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /chapters/:titleId` → ordered by number | ✅ |
-| `GET /chapters/:titleId` → empty when no chapters | ✅ |
-| `GET /chapters/:titleId` → `has_sources=true` when chapter_source exists | ✅ |
-| `GET /chapters/:titleId` → `has_sources=false` when no chapter_source | ✅ |
-| `GET /chapters/:titleId` → hides explicit title from non-allowed user | ✅ |
-| `GET /chapters/:titleId` → shows explicit title to allowed user | ✅ |
-| `GET /chapters/:titleId` → 401 no token | ✅ |
-| `GET /chapters/:chapterId` → returns chapter | ✅ |
-| `GET /chapters/:chapterId` → 404 nonexistent / explicit hidden from user | ✅ |
-| `GET /chapters/:chapterId/text` → 400 when not text format | ✅ |
-| `GET /chapters/:chapterId/text` → 404 when not downloaded | ✅ |
-
-### Progress (`ProgressTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /progress/:titleId` → returns progress for user | ✅ |
-| `GET /progress/:titleId` → empty when no progress | ✅ |
-| `GET /progress/:titleId` → isolated per user | ✅ |
-| `GET /progress/:chapterId/chapter` → returns progress | ✅ |
-| `GET /progress/:chapterId/chapter` → 404 when no progress | ✅ |
-| `GET /progress/:chapterId/chapter` → 401 no token | ✅ |
-| `PUT /progress/:chapterId` → creates when not exists | ✅ |
-| `PUT /progress/:chapterId` → updates when already exists | ✅ |
-| `PUT /progress/:chapterId` → isolated per user | ✅ |
-| `GET /progress/continue-reading` → returns titles with unread chapters | ✅ |
-| `GET /progress/continue-reading` → empty when nothing started | ✅ |
-| `GET /progress/continue-reading` → empty when all chapters read | ✅ |
-
-### Queue (`QueueTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /queue` → items ordered by created_at DESC | ✅ |
-| `GET /queue` → empty when no items | ✅ |
-| `GET /queue` → hides explicit items from non-explicit member | ✅ |
-| `GET /queue` → shows explicit items to admin | ✅ |
-| `GET /queue` → 401 no token | ✅ |
-| `GET /queue/:titleId` → items for title ordered by chapter number | ✅ |
-| `GET /queue/:titleId` → empty when no items for title | ✅ |
-| `DELETE /queue/completed` → deletes done + cancelled + error items | ✅ |
-| `DELETE /queue/completed` → 403 for member | ✅ |
-| `DELETE /queue/:id` → 204 deletes pending item | ✅ |
-| `DELETE /queue/:id` → cancels `"downloading"` item instead of deleting (renamed from "in_progress") | ✅ |
-| Seeded mangadex `ContentTypes` does NOT include `"manhwa"` (dedicated sources only) | ✅ |
-| Seeded toonily/asurascans have `"manhwa"` in `ContentTypes` | ✅ |
-| Seeded mangafire has `"manhwa"` in `ContentTypes` | ✅ |
-| Seeded manga18fx has `"manhwa"` content type, `default_explicit=true`, enabled | ✅ |
-| `DELETE /queue/:id` → 404 nonexistent | ✅ |
-
-### Settings (`SettingsTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /settings` → defaults when nothing saved | ✅ |
-| `GET /settings` → no auth required | ✅ |
-| `POST /settings` → updates and returns new values | ✅ |
-| `POST /settings` → partial update changes only specified fields | ✅ |
-| `POST /settings` → idempotent (overwrites same key) | ✅ |
-| `POST /settings` → 422 invalid reader_mode | ✅ |
-| `POST /settings` → clamps `trending_per_source` to [1, 50] | ✅ |
-| `POST /settings` → ignores empty download_dir | ✅ |
-| `POST /settings` → trims download_dir whitespace | ✅ |
-| `POST /settings` → no auth required | ✅ |
-
-### Sources (`SourcesTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /sources` → empty when none | ✅ |
-| `GET /sources` → returns sources with content_types array | ✅ |
-| `GET /sources` → returns `priority` field | ✅ |
-| `GET /sources` → `has_api_key=true` when API key set | ✅ |
-| `GET /sources` → 401 no token | ✅ |
-| `POST /sources` → 403 for member | ✅ |
-| `POST /sources` → 502 (plugin host not ported yet) | ✅ |
-| `PATCH /sources/:id` → toggles enabled | ✅ |
-| `PATCH /sources/:id` → updates priority | ✅ |
-| `PATCH /sources/:id` → 404 nonexistent | ✅ |
-| `PATCH /sources/:id` → 403 for member | ✅ |
-| `DELETE /sources/:id` → 204 when exists | ✅ |
-| `DELETE /sources/:id` → 404 nonexistent | ✅ |
-| `DELETE /sources/:id` → 403 for member | ✅ |
-| Seeded asurascans priority is last (highest number) among all manhwa sources | ✅ |
-
-### Plugins (`PluginsTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /plugins/index` → returns entries from index | ✅ |
-| `GET /plugins/index` → 401 without token | ✅ |
-| `GET /plugins/index` → member can access | ✅ |
-| `POST /plugins/install` → 401 without token; 403 for member | ✅ |
-| `POST /plugins/install` → 404 unknown plugin | ✅ |
-| `POST /plugins/install` → 422 no download URL | ✅ |
-| `POST /plugins/install` → 409 when already installed | ✅ |
-| `POST /plugins/install` → 502 when plugin-host fails | ✅ |
-| `POST /plugins/install` → 201 on success | ✅ |
-| `DELETE /plugins/:id` → 401 without token; 403 for member | ✅ |
-| `DELETE /plugins/:id` → 404 unknown | ✅ |
-| `DELETE /plugins/:id` → 403 non-community source | ✅ |
-| `DELETE /plugins/:id` → 204 removes source | ✅ |
-| `FetchIndex` → reads file:// URL | ✅ |
-| `FetchIndex` → missing file → null | ✅ |
-
-### Logs (`LogsTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /logs` → empty array on fresh buffer | ✅ |
-| `GET /logs` → 401 without token | ✅ |
-| `GET /logs` → member can access | ✅ |
-| `GET /logs/level` → returns default INFO level | ✅ |
-| `GET /logs/level` → 401 without token | ✅ |
-| `PATCH /logs/level` → admin updates level | ✅ |
-| `PATCH /logs/level` → level persists across requests | ✅ |
-| `PATCH /logs/level` → 403 for member | ✅ |
-| `PATCH /logs/level` → 401 without token | ✅ |
-| `PATCH /logs/level` → 422 invalid level | ✅ |
-
-### Version (`VersionTests.cs`) ✅
-
-| Case | Status |
-|---|---|
-| `GET /version` → returns current version | ✅ |
-| `GET /version` → no auth required | ✅ |
-| `GET /version` → no update available → latest + url are null | ✅ |
-| `GET /version` → update available → returns latest version + URL | ✅ |
-
-### Discover (`DiscoverTests.cs`) 🟡
-
-| Case | Status |
-|---|---|
-| `GET /discover` → 401 without token | ✅ |
-| `GET /discover` → 502 when MangaUpdates fails | ✅ |
-| `GET /discover` → returns mapped results with `in_library=false` | ✅ |
-| `GET /discover` → `in_library=true` when title already in library | ✅ |
-| `GET /discover` → MU result with "Adult" genre → `is_explicit=true` in response | ✅ |
-| `GET /discover` → MU result with no adult genres → `is_explicit=false` in response | ✅ |
-| `GET /discover/trending` → 401 without token | ✅ |
-| `GET /discover/trending` → 502 when MU fails and no cached data | ✅ |
-| `GET /discover/trending` → serves stale cache when MU fails | ✅ |
-| `POST /discover/add` → 401 without token | ✅ |
-| `POST /discover/add` → creates title with qualifier stripped + returns `sync_status=syncing` | ✅ |
-| `POST /discover/add` → duplicate MU ID subscribes user and returns existing title | ✅ |
-| `POST /discover/add` → explicit tags → `is_explicit=true` | ✅ |
-| `POST /discover/add` → `is_explicit=true` field stores `IsExplicit=true` for manhwa (no hentai tags) | ✅ |
-| `POST /discover/add` → `is_explicit=false` does not suppress hentai `content_type` detection | ✅ |
-
-### Discover Fan-Out — Integration (`DiscoverFanOutTests.cs`) ✅ ADR 0031
-
-`FanOutDiscoverFactory` routes HTTP by hostname to all 5 metadata authority fakes.
-
-| Case | Status |
-|---|---|
-| `GET /discover` → MU manga result has `source="mangaupdates"` | ✅ |
-| `GET /discover` → AniList manhwa result has `source="anilist"` | ✅ |
-| `GET /discover` → MangaDex manhua result has `source="mangadex"` | ✅ |
-| `GET /discover` → NovelUpdates novel result has `source="novelupdates"` | ✅ |
-| `GET /discover` → E-Hentai result excluded for non-explicit user | ✅ |
-| `GET /discover` → E-Hentai result included for explicit user | ✅ |
-| `GET /discover` → dedup: AniList wins for manhwa when MU also returns it | ✅ |
-| `GET /discover` → result order: MU before AniList | ✅ |
-| `GET /discover` → partial failure (AniList 500) → 200 with other results | ✅ |
-| `GET /discover` → all authorities fail → 502 | ✅ |
-| `GET /discover` → `in_library=true` by normalized title + content_type (no `mangaupdates_id`) | ✅ |
-| `POST /discover/add` → `source="anilist"` stores `metadata_source="anilist"` | ✅ |
-| `POST /discover/add` → `mangaupdates_id` only (backward compat) → stores `metadata_source="mangaupdates"` | ✅ |
-| `POST /discover/add` → same `source+source_id` twice → deduplicated to one title row | ✅ |
-| `GET /discover` → MU novel result excluded even when NovelUpdates returns nothing | ✅ |
-| `GET /discover` → MU manhwa result excluded (MU is manga-authority only; ADR 0031) | ✅ |
-| `GET /discover` → WuxiaWorld novel result appears with `source="wuxiaworld"` | ✅ |
-| `GET /discover` → WuxiaWorld deduped: NovelUpdates wins when both return same novel | ✅ |
-| `GET /discover` → WuxiaWorld novels appear even when NovelUpdates fails (CF blocked) | ✅ |
-| `POST /discover/add` → novel (`source="novelupdates"`) → sync log does NOT say "Fetching metadata from MangaUpdates" | ✅ |
-| `POST /discover/add` → manga (`source="mangaupdates"`) → sync log says "Fetching metadata from MangaUpdates" | ✅ |
-| `POST /discover/add` → manga with matching `external_sources` → creates `title_sources` rows | ✅ |
-| `POST /discover/add` → no matching `external_sources` → no `title_sources` rows | ✅ |
-| `POST /discover/add` → `source="anilist"` → AniList synonyms stored as `TitleAliases` + sync log contains "synonym" | ✅ |
-| `POST /discover/add` → `source="anilist"`, empty synonyms → sync reaches "ready", zero aliases stored | ✅ |
-| `MatchSourcesAsync` → plugin returns hyphen-variant title ("Soeun" for "So-Eun") → still links source via fuzzy match | ✅ |
-| `MatchSourcesAsync` → plugin returns alias-matching title ("Everything Is Agreed" for alias "Everything Is Agreed Upon") → links source | ✅ |
-| `MatchSourcesAsync` → plugin returns completely unrelated title → warning logged, no source link created | ✅ |
-| `POST /discover/add` → explicit manga title → also queries nhentai sources in MatchSourcesAsync | ✅ |
-| `POST /discover/add` → non-explicit manga title → does NOT query nhentai | ✅ |
-| `MatchSourcesAsync` → plugin-host times out (TaskCanceledException) but another source succeeds → no sync warning | ✅ |
-| `MatchSourcesAsync` → all sources time out → sync warning set | ✅ |
-
-### Discover Fan-Out — Unit (`DiscoverFanOutLogicTests.cs`) ✅ ADR 0031
-
-| Case | Status |
-|---|---|
-| `DesignatedAuthority("manga")` → `"mangaupdates"` | ✅ |
-| `DesignatedAuthority("manhwa")` → `"anilist"` | ✅ |
-| `DesignatedAuthority("manhua")` → `"mangadex"` | ✅ |
-| `DesignatedAuthority("novel")` → `"novelupdates"` | ✅ |
-| `DesignatedAuthority("hentai")` → `"ehentai"` | ✅ |
-| `DesignatedAuthority("unknown")` → `"mangaupdates"` (fallback) | ✅ |
-| `Deduplicate` no conflict → returns all | ✅ |
-| `Deduplicate` AniList wins for manhwa | ✅ |
-| `Deduplicate` MangaDex wins for manhua | ✅ |
-| `Deduplicate` same title, different content_type → not deduped | ✅ |
-| `Deduplicate` normalized title comparison (extra whitespace) | ✅ |
-| `AuthorityOrder` MU before AniList | ✅ |
-| `AuthorityOrder` AniList before MangaDex | ✅ |
-| `AuthorityOrder` MangaDex before NovelUpdates | ✅ |
-| `AuthorityOrder` NovelUpdates before WuxiaWorld | ✅ |
-| `AuthorityOrder` WuxiaWorld before E-Hentai | ✅ |
-| `MergeFanOut` ordered by authority | ✅ |
-| `MergeFanOut` deduplicates before sorting | ✅ |
-| `FilterMuScope` excludes novel results | ✅ |
-| `FilterMuScope` excludes manhwa results | ✅ |
-| `FilterMuScope` excludes manhua results | ✅ |
-| `FilterMuScope` excludes hentai results | ✅ |
-| `FilterMuScope` keeps manga results | ✅ |
-| `FilterMuScope` keeps one-shot results | ✅ |
-| `FilterMuScope` mixed input → only manga/one-shot survive | ✅ |
-| `MergeFanOut` nhentai exact-match upgrades explicit manga result to hentai | ✅ |
-| `MergeFanOut` nhentai short title is word-boundary prefix of MU full title → upgraded | ✅ |
-| `MergeFanOut` nhentai prefix with no word boundary (e.g. "Berserk" vs "Berserker") → not upgraded | ✅ |
-| `MergeFanOut` nhentai hit on explicit manhwa → not upgraded (content_type guard) | ✅ |
-| `MergeFanOut` nhentai hit on non-explicit title → not upgraded (is_explicit guard) | ✅ |
-| `MergeFanOut` nhentai normalization applied (punctuation stripped, lowercase) | ✅ |
+| `auth.rs`, `users.rs` | Register/login/me/status, user CRUD, role + allow_explicit gating |
+| `titles.rs`, `progress.rs` | Library list/filter/sort/paginate, title detail, PATCH, sync trigger + log, continue-reading |
+| `chapters.rs`, `chapter_sync.rs` | Chapter list/detail/text, plugin-host chapter fetch + dedup |
+| `queue.rs` | List/filter, admin-only clear-completed, owner-or-admin remove-or-cancel |
+| `downloader.rs` | Background worker: cbz/text download, multi-source priority fallback, `"downloading"` status while in flight, error messages include the failing URL, User-Agent header sent |
+| `settings.rs`, `sources.rs` | KV settings CRUD + validation, source list/patch/delete, seeded bundled-source content types |
+| `plugins.rs` | Index fetch, admin-gated install (404/409/422/502/201) and delete (404/403/204) |
+| `media.rs` | Covered by `media.rs`'s unit tests + a manual smoke check (no dedicated integration file — no auth on this route group to exercise) |
+| `logs.rs`, `version.rs` | Log buffer read + level PATCH, version + update-available reporting |
+| `discover.rs` | Fan-out search across all authorities (dedup, ordering, partial-failure tolerance, nhentai upgrade), trending lanes (TTL + stale-serve), add-to-library, `match_sources` (fuzzy title match, alias match, per-source timeout/error handling, sync warnings) |
+| `schema_bootstrap.rs` | Fresh DB gets full schema; a DB missing `metadata_source`/`metadata_source_id` (pre-dates that column) gets patched; reconnecting to an already-migrated DB is a no-op |
 
 ---
 
@@ -603,7 +214,7 @@ Out-of-process HTTP tests against the running server. Catches: middleware orderi
 | `tests/queue.hurl` | list empty, clear completed idempotent, remove unknown → 404 | ✅ |
 | `tests/logs.hurl` | GET logs, GET level, PATCH level → debug → restore info | ✅ |
 
-**Note**: Discover endpoints excluded from API layer — calls real external APIs. Covered by .NET integration tests with mocked HTTP.
+**Note**: Discover endpoints excluded from API layer — calls real external APIs. Covered by Rust integration tests with mocked HTTP (`server/tests/discover.rs`).
 
 **Local run** (requires docker-compose.test.yml stack running):
 ```bash
@@ -680,7 +291,7 @@ await allure.owner('vinny')
 
 Failure categories: `allure-categories.json` at repo root — Product defects (failed), Test defects (broken), Skipped.
 
-Server tests (xUnit) appear under their class paths in the Suites view.
+Server (Rust) tests are not yet Allure-wired — see CLAUDE.md's Testing section for why (no JUnit output from `cargo test`) — so they don't appear in the Suites view.
 
 ---
 
@@ -769,10 +380,10 @@ CLOAK_WS_URL=ws://localhost:3000 npm test
 ## Running tests
 
 ```bash
-# .NET server — unit first (faster, fail-fast), then integration
-cd server-tests && dotnet test --filter "Category=Unit"
-cd server-tests && dotnet test --filter "Category=Integration"
-cd server-tests && dotnet test              # all at once (local dev only)
+# Rust server — unit (#[cfg(test)]) + integration together
+cd server && cargo test
+cd server && cargo clippy --all-targets
+cd server && cargo fmt --check
 
 # Web
 cd web && npm test

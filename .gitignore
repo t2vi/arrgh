@@ -1,14 +1,9 @@
-# ── Server (.NET) ─────────────────────────────────────────────
-server/bin/
-server/obj/
+# ── Server (Rust) ─────────────────────────────────────────────
 server/*.db
 server/*.db-shm
 server/*.db-wal
 server/.env
 server/downloads/
-server-tests/bin/
-server-tests/obj/
-server-tests/*.db
 
 # ── Web (React + Vite) ───────────────────────────────────────
 web/node_modules/

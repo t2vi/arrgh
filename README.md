@@ -118,7 +118,7 @@ Plugins can be written in any language. See `plugins/mangadex/` (API-backed) and
 
 ```
 arrgh/
-├── server/          # .NET 9 / ASP.NET Core API server
+├── server/          # Rust / axum API server
 ├── web/             # React + TypeScript SPA
 ├── plugin-host/     # Node.js plugin host (loads compiled plugin bundles)
 └── plugins/         # Plugin source bundles (esbuild → single .js)
@@ -130,7 +130,7 @@ arrgh/
     └── manga18fx/
 ```
 
-- **Backend**: .NET 10, ASP.NET Core, EF Core (SQLite)
+- **Backend**: Rust, axum, sqlx (SQLite)
 - **Frontend**: React 18, TypeScript, Vite, Tailwind
 - **Plugins**: Node.js bundles loaded by plugin-host; CF-protected sources use CloakBrowser via CDP
 
@@ -142,7 +142,7 @@ Issues and PRs are welcome. A few things to know:
 
 - This is a personal project — I may be slow to review, but I do look at everything
 - Check open issues before starting large features; comment to claim one
-- Run `dotnet test` (server) and `npm test` (web) before submitting
+- Run `cargo test` (server) and `npm test` (web) before submitting
 - Follow the existing code style — see `CLAUDE.md` for dev setup
 
 No CLA, no process overhead. Just open a PR.
