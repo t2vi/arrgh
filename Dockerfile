@@ -7,13 +7,13 @@ COPY server/src ./src
 COPY server/migrations ./migrations
 RUN cargo build --release --bin arrgh-server
 
-# ── Stage 1: Build the React web app ─────────────────────────────────────────
+# ── Stage 1: Build the Svelte web app (ADR 0033 — sole frontend as of F6) ─────
 FROM node:22-slim AS web-builder
 
-WORKDIR /build/web
-COPY web/package.json web/package-lock.json ./
+WORKDIR /build/web-svelte
+COPY web-svelte/package.json web-svelte/package-lock.json ./
 RUN npm ci
-COPY web/ ./
+COPY web-svelte/ ./
 RUN npm run build
 
 # ── Stage 2: Final image — nginx + the Rust binary ────────────────────────────
@@ -33,7 +33,7 @@ COPY --from=rust-server-builder /build/target/release/arrgh-server /app/arrgh-se
 COPY plugin-index/index.json /app/plugin-index.json
 
 # Web assets
-COPY --from=web-builder /build/web/dist /var/www/arrgh
+COPY --from=web-builder /build/web-svelte/dist /var/www/arrgh
 
 # Startup: launch the Rust server + nginx
 COPY docker/entrypoint.sh /entrypoint.sh

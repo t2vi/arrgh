@@ -119,7 +119,7 @@ Plugins can be written in any language. See `plugins/mangadex/` (API-backed) and
 ```
 arrgh/
 ├── server/          # Rust / axum API server
-├── web/             # React + TypeScript SPA
+├── web-svelte/      # Svelte 5 + TypeScript SPA
 ├── plugin-host/     # Node.js plugin host (loads compiled plugin bundles)
 └── plugins/         # Plugin source bundles (esbuild → single .js)
     ├── mangadex/
@@ -131,7 +131,7 @@ arrgh/
 ```
 
 - **Backend**: Rust, axum, sqlx (SQLite)
-- **Frontend**: React 18, TypeScript, Vite, Tailwind
+- **Frontend**: Svelte 5 (runes), TypeScript, Vite, Tailwind
 - **Plugins**: Node.js bundles loaded by plugin-host; CF-protected sources use CloakBrowser via CDP
 
 ---
