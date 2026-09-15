@@ -2,7 +2,7 @@
 .git
 **/node_modules
 server/target
-web/dist
+web-svelte/dist
 e2e
 api-tests
 api-live-tests

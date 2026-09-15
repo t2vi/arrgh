@@ -23,7 +23,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-arrgh-${{ hashFiles('web/package-lock.json', 'Dockerfile') }}
+          key: ${{ runner.os }}-buildx-arrgh-${{ hashFiles('web-svelte/package-lock.json', 'Dockerfile') }}
           restore-keys: ${{ runner.os }}-buildx-arrgh-
 
       - name: Setup Node

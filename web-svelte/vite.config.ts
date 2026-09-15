@@ -21,6 +21,15 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/test-setup.ts'],
+    setupFiles: ['allure-vitest/setup', './src/test-setup.ts'],
+    reporters: process.env.CI
+      ? [['allure-vitest/reporter', { resultsDir: './allure-results' }], 'verbose']
+      : ['verbose'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
+      exclude: ['src/test-setup.ts', 'src/lib/components/ui/**'],
+    },
   },
 })

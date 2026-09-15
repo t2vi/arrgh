@@ -5,12 +5,6 @@ server/*.db-wal
 server/.env
 server/downloads/
 
-# ── Web (React + Vite) ───────────────────────────────────────
-web/node_modules/
-web/dist/
-web/allure-results/
-web/coverage/
-
 # ── Workspace ────────────────────────────────────────────────
 node_modules/
 
@@ -20,9 +14,6 @@ plugins/*/bundles/
 plugins/*/dist/
 plugins/*/.env
 plugin-host/bundles/
-web/.env
-web/.env.local
-web/tsconfig.*.tsbuildinfo
 
 # ── Viewer (Flutter) ─────────────────────────────────────────
 app/.dart_tool/

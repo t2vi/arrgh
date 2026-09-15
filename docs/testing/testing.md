@@ -3,7 +3,7 @@
 Strategy: four-layer pyramid (Unit → Integration → API → E2e), sequential in CI, all reporting to Allure at `/test-reports/`. See `docs/adr/0012-testing-strategy.md`.
 
 **Frameworks**
-- Web unit: Vitest + @testing-library/react + `allure-vitest@^2.x` (must stay v2 — v3 incompatible with vitest v2)
+- Web unit: `web-svelte/` — Vitest 5 + @testing-library/svelte + `allure-vitest@^3.x` (ADR 0033 F6 cutover from the React app in `web/`, deleted; v3 required here — Vitest 5's `onTestRunEnd` hook, not the v2 `onFinished` the old React app pinned)
 - Server unit + integration: Rust — `#[cfg(test)]` unit tests inline per module, `server/tests/*.rs` integration tests
 - API: Hurl — `.hurl` files, JUnit XML → `junit-to-allure.mjs` → Allure JSON with `layer=api`
 - E2e: Playwright + allure-playwright (Docker Compose test stack + Fixture Plugin)
@@ -278,7 +278,7 @@ The fixture responds to `/:source/search`, `/:source/manga/:id/chapters`, `/:sou
 
 ## Allure tagging
 
-Every web test automatically receives `layer=UI` and `tag=Web` via `beforeEach` in `web/src/test-setup.ts`.
+Every web test automatically receives `layer=UI` and `tag=Web` via `beforeEach` in `web-svelte/src/test-setup.ts`.
 
 To tag a specific test or suite further, call inside `beforeEach` or at the top of a test:
 
@@ -386,8 +386,8 @@ cd server && cargo clippy --all-targets
 cd server && cargo fmt --check
 
 # Web
-cd web && npm test
-cd web && npm run test:coverage   # with coverage
+cd web-svelte && npm test
+cd web-svelte && npm run test:coverage   # with coverage
 
 # Plugin host (routing + plugin contract)
 cd plugin-host && npm test

@@ -15,10 +15,10 @@ cargo build --release
 cp target/release/arrgh-server /opt/arrgh/arrgh-server
 
 # Web UI
-cd ../web
+cd ../web-svelte
 npm ci
 npm run build
-# output at web/dist/
+# output at web-svelte/dist/
 ```
 
 ## Server setup
@@ -98,6 +98,6 @@ server {
 ```
 
 ```bash
-cp -r web/dist /var/www/arrgh
+cp -r web-svelte/dist /var/www/arrgh
 nginx -t && systemctl reload nginx
 ```
