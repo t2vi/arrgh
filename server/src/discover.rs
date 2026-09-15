@@ -542,7 +542,14 @@ pub async fn match_sources(
                     title_id,
                     &format!("Error syncing from {source_key}: {e}"),
                 )
-                .await
+                .await;
+                titles::append_sync_warning(
+                    pool,
+                    title_id,
+                    source_key,
+                    &format!("Chapter sync failed: {e}"),
+                )
+                .await;
             }
         }
     }
