@@ -1,0 +1,15 @@
+# Single volume backing both the SQLite DB file and the downloads directory —
+# mirrors the single `arrgh_data` named volume in docker-compose.yml.
+# ReadWriteOnce because the app runs single-replica (see deployment.yaml).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: arrgh-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # Adjust to your library size — this just needs to be big enough for
+      # the SQLite DB plus every downloaded chapter you keep.
+      storage: 20Gi

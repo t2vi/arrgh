@@ -1,0 +1,16 @@
+# Non-secret runtime config for the arrgh container.
+# Same variable names as docker-compose.yml — see docs/deploy/docker-compose.md
+# for the full reference and docs/deploy/kubernetes.md for this file's contract.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arrgh-config
+data:
+  DATABASE_URL: "sqlite:///data/arrgh.db"
+  DOWNLOAD_DIR: "/data/downloads"
+  # These examples deploy only the main `arrgh` app (see docs/deploy/kubernetes.md).
+  # Point this at wherever your plugin-host is reachable from inside the cluster —
+  # e.g. a Service fronting a plugin-host Deployment you add yourself, or an
+  # external host if you're running plugin-host outside the cluster.
+  PLUGIN_URLS: "http://plugin-host.example:4000"
+  LOG_LEVEL: "info"
