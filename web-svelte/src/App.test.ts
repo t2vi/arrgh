@@ -9,10 +9,14 @@ describe('App shell', () => {
     router.navigate(ROUTES.home, { replace: true })
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({ current: '1.2.3', latest: null, release_url: null }),
+      vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = input.toString()
+        const body = url.includes('/api/version')
+          ? { current: '1.2.3', latest: null, release_url: null }
+          : url.includes('/api/titles')
+            ? { items: [], total: 0, page: 1, limit: 20 }
+            : []
+        return Promise.resolve({ ok: true, status: 200, json: async () => body })
       }),
     )
   })
