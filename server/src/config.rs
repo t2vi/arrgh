@@ -13,6 +13,10 @@ pub struct Config {
     pub plugin_host_url: String,
     /// Bundled plugin index location (`PluginIndexUrl`) — `file://` or `http(s)://`.
     pub plugin_index_url: String,
+    /// Seed the 9 bundled `external_sources` on first boot unless explicitly
+    /// disabled (`SeedDefaultSources=false`) — tests use this to start from
+    /// an empty table. Port of `Program.cs`'s inline seed block.
+    pub seed_default_sources: bool,
     /// Metadata authority base URLs (ADR 0031, S6 #128). Real hosts by
     /// default; overridable so tests can point them at one local mock
     /// server — `reqwest::Client` can't be intercepted by host like .NET's
@@ -43,6 +47,7 @@ impl Config {
             database_path: env_or("DatabasePath", "arrgh.db"),
             plugin_host_url: env_or("PluginHostUrl", "http://localhost:4000"),
             plugin_index_url: env_or("PluginIndexUrl", "file:///app/plugin-index.json"),
+            seed_default_sources: env_or("SeedDefaultSources", "true") != "false",
             download_dir: env_or("DownloadDir", "./downloads"),
             mangaupdates_url: env_or(
                 "MANGAUPDATES_URL",

@@ -1,6 +1,4 @@
-//! `/api/queue` — port of `Api/Queue.cs` (ADR 0033, S7 #129). Flips
-//! nginx together with `titles`/`chapters`/`progress` — see
-//! `crate::titles`'s module doc; this phase completes that block.
+//! `/api/queue` — port of `Api/Queue.cs` (ADR 0033, S7 #129).
 
 use axum::extract::{Path, State};
 use axum::http::StatusCode;

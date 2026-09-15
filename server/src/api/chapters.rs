@@ -1,9 +1,7 @@
-//! `/api/chapters` — port of `Api/Chapters.cs` (ADR 0033, S5 #127). Flipped
-//! in `docker/nginx.conf` as a block with `titles`/`progress`/`queue` now
-//! that S7 (#129) landed (see `crate::titles`'s module doc).
+//! `/api/chapters` — port of `Api/Chapters.cs` (ADR 0033, S5 #127).
 //!
 //! `VerifyDownloadsAsync` (pruning `downloaded=1` rows whose file vanished)
-//! is a no-op TODO stub on the .NET side too — nothing to port yet.
+//! was a no-op TODO stub on the .NET side too — nothing to port.
 
 use axum::extract::{Path, State};
 use axum::http::StatusCode;

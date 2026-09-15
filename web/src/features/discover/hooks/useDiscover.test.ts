@@ -110,7 +110,7 @@ describe('useDiscover', () => {
     expect(result.current.added.get('al-999')).toBe('manga-anilist')
   })
 
-  // addTitle must send source + source_id so .NET can route to the correct metadata store
+  // addTitle must send source + source_id so the server can route to the correct metadata store
   it('addTitle is called with source field', async () => {
     vi.mocked(api.addTitle).mockResolvedValue({ id: 'manga-1' } as never)
     const { result } = renderHook(() => useDiscover(), { wrapper })

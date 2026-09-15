@@ -8,12 +8,21 @@ use sqlx::SqlitePool;
 use crate::config::Config;
 use crate::logs::LogBuffer;
 
-/// Connects to the same SQLite file the .NET server's EF migrations own —
-/// in production .NET always creates/migrates it before Rust ever gets
-/// traffic, so `create_if_missing` is just a defensive no-op there; tests
-/// rely on it to spin up an isolated temp-file DB. WAL + a busy timeout
-/// match ADR 0033's S0 plan for safe concurrent access from both servers
-/// during the strangler-fig.
+/// Connects to the SQLite file and brings its schema up to date.
+///
+/// Through S9 this only opened the file — .NET's EF migrations owned the
+/// schema. As of S10 (#132) .NET is gone, so this runs `server/migrations/`
+/// via `sqlx migrate` on every boot. `0001_baseline.sql` is written
+/// entirely as `CREATE TABLE/INDEX IF NOT EXISTS`, so it's a safe no-op
+/// against a database an old .NET build already fully migrated — sqlx
+/// still records it as applied (with its own checksum) the first time,
+/// same as it would for a genuinely fresh database. No manual
+/// `_sqlx_migrations` stamping needed; idempotent SQL makes that
+/// unnecessary. The one thing `IF NOT EXISTS` can't paper over is a
+/// database frozen *before* EF's `AddMetadataSourceColumns` migration ever
+/// ran (missing columns on an existing `titles` table) — vanishingly
+/// unlikely for a live instance but cheap to guard, so
+/// `ensure_metadata_source_columns` runs first.
 pub async fn connect_db(database_path: &str) -> anyhow::Result<SqlitePool> {
     let opts = SqliteConnectOptions::new()
         .filename(database_path)
@@ -26,7 +35,35 @@ pub async fn connect_db(database_path: &str) -> anyhow::Result<SqlitePool> {
         // SQLite only enforces FKs, cascade included, when this is on.
         .foreign_keys(true);
 
-    Ok(SqlitePoolOptions::new().connect_with(opts).await?)
+    let pool = SqlitePoolOptions::new().connect_with(opts).await?;
+    ensure_metadata_source_columns(&pool).await?;
+    sqlx::migrate!("./migrations").run(&pool).await?;
+    Ok(pool)
+}
+
+async fn ensure_metadata_source_columns(pool: &SqlitePool) -> anyhow::Result<()> {
+    let has_titles: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='titles')",
+    )
+    .fetch_one(pool)
+    .await?;
+    if !has_titles {
+        return Ok(()); // fresh DB — 0001_baseline.sql creates titles with both columns already
+    }
+
+    for column in ["metadata_source", "metadata_source_id"] {
+        let has_column: bool = sqlx::query_scalar(&format!(
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info('titles') WHERE name = '{column}')"
+        ))
+        .fetch_one(pool)
+        .await?;
+        if !has_column {
+            sqlx::query(&format!("ALTER TABLE titles ADD COLUMN {column} TEXT"))
+                .execute(pool)
+                .await?;
+        }
+    }
+    Ok(())
 }
 
 /// Shared, cheaply-cloneable app state handed to every handler.
@@ -176,5 +213,39 @@ mod tests {
         let pages = vec![("https://example.com/1.jpg".to_string(), None)];
         cache.set("key", pages.clone());
         assert_eq!(cache.get("key"), Some(pages));
+    }
+
+    #[test]
+    fn update_cache_get_if_newer_empty_returns_nones() {
+        let cache = UpdateCache::default();
+        assert_eq!(cache.get_if_newer("1.0.0"), (None, None));
+    }
+
+    #[test]
+    fn update_cache_get_if_newer_same_version_returns_nones() {
+        let cache = UpdateCache::default();
+        cache.set("1.2.3", "https://github.com/t2vi/arrgh/releases/tag/v1.2.3");
+        assert_eq!(cache.get_if_newer("1.2.3"), (None, None));
+    }
+
+    #[test]
+    fn update_cache_get_if_newer_newer_version_returns_version_and_url() {
+        let cache = UpdateCache::default();
+        cache.set("2.0.0", "https://github.com/t2vi/arrgh/releases/tag/v2.0.0");
+        assert_eq!(
+            cache.get_if_newer("1.0.0"),
+            (
+                Some("2.0.0".to_string()),
+                Some("https://github.com/t2vi/arrgh/releases/tag/v2.0.0".to_string())
+            )
+        );
+    }
+
+    #[test]
+    fn update_cache_clear_after_set_returns_nones() {
+        let cache = UpdateCache::default();
+        cache.set("2.0.0", "https://example.com");
+        cache.clear();
+        assert_eq!(cache.get_if_newer("1.0.0"), (None, None));
     }
 }

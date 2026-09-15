@@ -10,7 +10,7 @@ npm install
 npm run dev
 ```
 
-UI at `http://localhost:5173`. Requires the server running at `localhost:3000` (Vite proxy handles `/api` forwarding).
+UI at `http://localhost:5173`. Requires the server running at `localhost:3001` (`cd server && cargo run` — Vite proxy handles `/api` forwarding).
 
 ## Build
 

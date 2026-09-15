@@ -1,9 +1,6 @@
-//! *ARRgh server (Rust). See ADR 0033.
-//!
-//! S0 skeleton: config + tracing + error type + one real endpoint
-//! (`GET /api/version`). S1 (#123) adds the log ring buffer. Every other
-//! `/api/*` group arrives one phase at a time (#124–#131) and nginx flips
-//! its prefix here once its Hurl + integration tests are green.
+//! *ARRgh server (Rust). See ADR 0033. Sole backend as of S10 (#132) —
+//! every `/api/*` group is here, `server/migrations/` owns the schema, and
+//! this module seeds the bundled sources on a fresh install.
 
 pub mod api;
 pub mod auth;
@@ -22,6 +19,7 @@ pub mod settings;
 pub mod sources;
 pub mod state;
 pub mod titles;
+pub mod update_checker;
 pub mod users;
 
 use std::net::SocketAddr;
@@ -61,6 +59,9 @@ pub async fn run() -> anyhow::Result<()> {
 
     let addr: SocketAddr = config.bind;
     let db = connect_db(&config.database_path).await?;
+    if config.seed_default_sources {
+        sources::seed_defaults_if_empty(&db, &config.plugin_host_url).await?;
+    }
     let state = AppState::new(config, log_buffer, db);
 
     tokio::spawn(downloader::run_loop(
@@ -68,6 +69,11 @@ pub async fn run() -> anyhow::Result<()> {
         state.http.clone(),
         state.config.plugin_host_url.clone(),
         state.config.download_dir.clone(),
+    ));
+    tokio::spawn(update_checker::run_loop(
+        state.db.clone(),
+        state.http.clone(),
+        state.update.clone(),
     ));
 
     let listener = TcpListener::bind(addr).await?;

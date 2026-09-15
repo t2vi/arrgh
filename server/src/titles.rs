@@ -1,17 +1,14 @@
 //! `titles` + `title_sources`/`title_aliases`/`user_titles`/
 //! `user_title_settings`/`sync_log`/`sync_warnings` access (ADR 0033, S4
-//! #126). Port of the data half of `Api/Titles.cs`. No sqlx migrations —
-//! same deferral as `users.rs`/`sources.rs`: .NET's EF migrations still own
-//! the schema until cutover (S10). `title_meta` (the cover-cache table)
-//! isn't touched here — that's `crate::discover`'s (S6 #128).
+//! #126). Port of the data half of `Api/Titles.cs`. `title_meta` (the
+//! cover-cache table) isn't touched here — that's `crate::discover`'s (S6
+//! #128).
 //!
 //! Chapter-sync itself (the plugin-host fetch) lives in `crate::chapters`
 //! (S5 #127); Discover's `AddManga`/`MatchSourcesAsync` DB access
 //! (insert/dedup/alias helpers below) lives here since it's all `titles`-
 //! table shaped, called from `crate::discover` and `src/api/discover.rs`
-//! (S6 #128). `/api/titles` flips together with `chapters`/`progress`/
-//! `queue` in `docker/nginx.conf` — they share hot tables and the ADR
-//! moved that block as one unit once S7 (#129) landed.
+//! (S6 #128).
 
 use serde::Serialize;
 use sqlx::{FromRow, SqlitePool};
@@ -348,11 +345,13 @@ pub async fn update_auto_download(pool: &SqlitePool, id: &str, v: bool) -> sqlx:
     Ok(())
 }
 
+/// `reader_mode: None` clears it back to the title's default — a PATCH
+/// body sending `"reader_mode": null` (vs. omitting the key) maps here.
 pub async fn upsert_reader_mode(
     pool: &SqlitePool,
     user_id: &str,
     title_id: &str,
-    reader_mode: &str,
+    reader_mode: Option<&str>,
 ) -> sqlx::Result<()> {
     sqlx::query(
         "INSERT INTO user_title_settings (user_id, title_id, reader_mode) VALUES (?, ?, ?) \

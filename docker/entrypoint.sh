@@ -1,7 +1,9 @@
 #!/bin/sh
 set -e
 
-# ── Map legacy env vars to .NET config keys (backward compat) ────────────────
+# ── Map friendly/legacy env vars to the config keys src/config.rs reads ──────
+# (PascalCase names predate the Rust rewrite but are kept as the public
+# contract — self-hosted users' existing env files keep working unchanged.)
 # DATABASE_URL=sqlite:///data/arrgh.db → DatabasePath=/data/arrgh.db
 if [ -n "$DATABASE_URL" ] && [ -z "$DatabasePath" ]; then
   export DatabasePath="${DATABASE_URL#sqlite:///}"
@@ -31,29 +33,16 @@ fi
 
 export PluginIndexUrl="${PluginIndexUrl:-file:///app/plugin-index.json}"
 
-# LOG_LEVEL=debug|info|warn|error (default: info)
-# Controls both the docker console output and the in-app log viewer.
-case "${LOG_LEVEL:-info}" in
-  debug) export Logging__LogLevel__Default="Debug" ;;
-  warn)  export Logging__LogLevel__Default="Warning" ;;
-  error) export Logging__LogLevel__Default="Error" ;;
-  *)     export Logging__LogLevel__Default="Information" ;;
-esac
-
-export ASPNETCORE_URLS="http://127.0.0.1:3000"
-export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Production}"
+# LOG_LEVEL=debug|info|warn|error (default: info) — controls both the
+# docker console output and the in-app log viewer; read directly by the
+# Rust binary, no translation needed.
 
 mkdir -p "$DownloadDir"
 
-# Start .NET API server in background
-dotnet /app/ArrghServer.dll &
-
-# Start Rust API server in background (ADR 0033 — serves migrated /api
-# prefixes on :3001; reads DatabasePath/PluginHostUrl/DownloadDir/JwtSecret
-# exported above, same as .NET). Absent in older images — guard on the binary.
-if [ -x /app/arrgh-server ]; then
-  RUST_BIND="127.0.0.1:3001" LOG_LEVEL="${LOG_LEVEL:-info}" /app/arrgh-server &
-fi
+# Start the Rust API server in background (ADR 0033 — sole backend as of
+# S10 #132; reads DatabasePath/PluginHostUrl/DownloadDir/JwtSecret/
+# PluginIndexUrl exported above).
+RUST_BIND="127.0.0.1:3001" LOG_LEVEL="${LOG_LEVEL:-info}" /app/arrgh-server &
 
 # Start nginx in foreground (keeps the container alive)
 nginx -g "daemon off;"

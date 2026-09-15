@@ -1,19 +1,13 @@
-# ── Stage 0: Build the Rust API server (ADR 0033 — strangler-fig on :3001) ────
-FROM rust:1-slim AS rust-server-builder
+# ── Stage 0: Build the Rust API server (ADR 0033 — sole backend as of S10) ────
+FROM rust:1-slim-bookworm AS rust-server-builder
 
 WORKDIR /build
 COPY server/Cargo.toml server/Cargo.lock ./
 COPY server/src ./src
+COPY server/migrations ./migrations
 RUN cargo build --release --bin arrgh-server
 
-# ── Stage 1: Build the .NET API server ───────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS server-builder
-
-WORKDIR /build
-COPY server/ .
-RUN dotnet publish -c Release -o /publish --no-self-contained
-
-# ── Stage 2: Build the React web app ─────────────────────────────────────────
+# ── Stage 1: Build the React web app ─────────────────────────────────────────
 FROM node:22-slim AS web-builder
 
 WORKDIR /build/web
@@ -22,18 +16,17 @@ RUN npm ci
 COPY web/ ./
 RUN npm run build
 
-# ── Stage 3: Final image — nginx + .NET runtime ───────────────────────────────
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
+# ── Stage 2: Final image — nginx + the Rust binary ────────────────────────────
+# debian:bookworm-slim to match rust:1-slim-bookworm's glibc — the binary is
+# dynamically linked (rustls avoids needing OpenSSL, but not libc).
+FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y nginx ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# nginx: serve web on :8080, proxy /api/* to .NET on :3000
+# nginx: serve web on :8080, proxy /api/* to the Rust server
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 
-# .NET server publish output
-COPY --from=server-builder /publish /app
-
-# Rust server binary (ADR 0033) — runs alongside .NET during the migration
+# Rust server binary (ADR 0033)
 COPY --from=rust-server-builder /build/target/release/arrgh-server /app/arrgh-server
 
 # Bundled plugin index (default when PluginIndexUrl not overridden)
@@ -42,7 +35,7 @@ COPY plugin-index/index.json /app/plugin-index.json
 # Web assets
 COPY --from=web-builder /build/web/dist /var/www/arrgh
 
-# Startup: launch .NET server + nginx
+# Startup: launch the Rust server + nginx
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

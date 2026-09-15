@@ -1,5 +1,4 @@
-//! `/api/titles` — port of `Api/Titles.cs` (ADR 0033, S4 #126). Not yet
-//! flipped in `docker/nginx.conf` — see `crate::titles`'s module doc.
+//! `/api/titles` — port of `Api/Titles.cs` (ADR 0033, S4 #126).
 //!
 //! `sync` and `refresh_metadata` both spawn background tasks that mirror the
 //! .NET orchestration (status transitions, sync log entries) exactly, and
@@ -249,11 +248,25 @@ async fn remove_title(
 
 const VALID_CONTENT_TYPES: [&str; 4] = ["manga", "manhwa", "manhua", "novel"];
 
+/// Tri-state: key absent → `None` (leave untouched); `null` → `Some(None)`
+/// (clear); a value → `Some(Some(v))`. Matches .NET's `JsonElement?` +
+/// `HasValue`/`ValueKind` check for `reader_mode`/`download_dir` — a plain
+/// `Option<String>` can't distinguish "omitted" from "explicitly null".
+fn deserialize_some<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    Deserialize::deserialize(deserializer).map(Some)
+}
+
 #[derive(Deserialize)]
 struct PatchBody {
     auto_download: Option<bool>,
-    reader_mode: Option<String>,
-    download_dir: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_some")]
+    reader_mode: Option<Option<String>>,
+    #[serde(default, deserialize_with = "deserialize_some")]
+    download_dir: Option<Option<String>>,
     is_explicit: Option<bool>,
     cover_url: Option<String>,
     content_type: Option<String>,
@@ -274,15 +287,17 @@ async fn patch_title(
         titles::update_auto_download(&state.db, &id, v).await?;
     }
 
-    if let Some(rm) = &body.reader_mode {
-        if rm != "paged" && rm != "scroll" {
-            return Err(AppError::UnprocessableEntity("invalid reader_mode".into()));
+    if let Some(rm_opt) = &body.reader_mode {
+        if let Some(rm) = rm_opt {
+            if rm != "paged" && rm != "scroll" {
+                return Err(AppError::UnprocessableEntity("invalid reader_mode".into()));
+            }
         }
-        titles::upsert_reader_mode(&state.db, &claims.user_id, &id, rm).await?;
+        titles::upsert_reader_mode(&state.db, &claims.user_id, &id, rm_opt.as_deref()).await?;
     }
 
-    if let Some(dir) = &body.download_dir {
-        titles::update_download_dir(&state.db, &id, Some(dir)).await?;
+    if let Some(dir_opt) = &body.download_dir {
+        titles::update_download_dir(&state.db, &id, dir_opt.as_deref()).await?;
     }
 
     if let Some(v) = body.is_explicit {
@@ -454,4 +469,94 @@ async fn refresh_metadata(
     });
 
     Ok(StatusCode::ACCEPTED)
+}
+
+#[cfg(test)]
+mod patch_body_tests {
+    use super::PatchBody;
+
+    fn parse(json: &str) -> PatchBody {
+        serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn auto_download_true_parsed() {
+        assert_eq!(parse(r#"{"auto_download":true}"#).auto_download, Some(true));
+    }
+
+    #[test]
+    fn auto_download_false_parsed() {
+        assert_eq!(
+            parse(r#"{"auto_download":false}"#).auto_download,
+            Some(false)
+        );
+    }
+
+    #[test]
+    fn auto_download_absent_is_none() {
+        assert_eq!(parse("{}").auto_download, None);
+    }
+
+    #[test]
+    fn reader_mode_string_is_some_some() {
+        assert_eq!(
+            parse(r#"{"reader_mode":"scroll"}"#).reader_mode,
+            Some(Some("scroll".to_string()))
+        );
+    }
+
+    #[test]
+    fn reader_mode_absent_is_none() {
+        assert_eq!(parse("{}").reader_mode, None);
+    }
+
+    #[test]
+    fn reader_mode_explicit_null_is_some_none() {
+        // Unlike .NET's JsonElement? (where null and absent both leave
+        // HasValue reporting differently but collapse to the same "clear"
+        // ambiguity documented in ReaderMode_JsonNull_BehaviorDocumented),
+        // Rust's Option<Option<T>> tells them apart cleanly — see
+        // `deserialize_some`'s doc comment.
+        assert_eq!(parse(r#"{"reader_mode":null}"#).reader_mode, Some(None));
+    }
+
+    #[test]
+    fn is_explicit_true_parsed() {
+        assert_eq!(parse(r#"{"is_explicit":true}"#).is_explicit, Some(true));
+    }
+
+    #[test]
+    fn content_type_parsed() {
+        assert_eq!(
+            parse(r#"{"content_type":"manga"}"#).content_type,
+            Some("manga".to_string())
+        );
+    }
+
+    #[test]
+    fn content_type_absent_is_none() {
+        assert_eq!(parse("{}").content_type, None);
+    }
+
+    #[test]
+    fn multiple_fields_all_parsed() {
+        let b = parse(
+            r#"{"auto_download":true,"reader_mode":"paged","is_explicit":false,"content_type":"manhwa"}"#,
+        );
+        assert_eq!(b.auto_download, Some(true));
+        assert_eq!(b.reader_mode, Some(Some("paged".to_string())));
+        assert_eq!(b.is_explicit, Some(false));
+        assert_eq!(b.content_type, Some("manhwa".to_string()));
+    }
+
+    #[test]
+    fn empty_object_all_fields_none() {
+        let b = parse("{}");
+        assert_eq!(b.auto_download, None);
+        assert_eq!(b.reader_mode, None);
+        assert_eq!(b.download_dir, None);
+        assert_eq!(b.is_explicit, None);
+        assert_eq!(b.cover_url, None);
+        assert_eq!(b.content_type, None);
+    }
 }
