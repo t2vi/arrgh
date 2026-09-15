@@ -15,6 +15,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/svelte": "^5.4.2",
+    "@testing-library/user-event": "^14.6.7",
     "@tsconfig/svelte": "^5.0.8",
     "@types/node": "^24.13.3",
     "jsdom": "^29.1.1",
@@ -28,6 +29,7 @@
   "dependencies": {
     "@lucide/svelte": "^1.46.0",
     "clsx": "^2.1.1",
+    "marked": "^18.0.13",
     "tailwind-merge": "^3.7.0"
   }
 }
