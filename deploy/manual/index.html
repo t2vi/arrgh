@@ -12,10 +12,10 @@
 <span class="line"><span style="color:#61AFEF">cp</span><span style="color:#98C379"> target/release/arrgh-server</span><span style="color:#98C379"> /opt/arrgh/arrgh-server</span></span>
 <span class="line"></span>
 <span class="line"><span style="color:#7F848E;font-style:italic"># Web UI</span></span>
-<span class="line"><span style="color:#56B6C2">cd</span><span style="color:#98C379"> ../web</span></span>
+<span class="line"><span style="color:#56B6C2">cd</span><span style="color:#98C379"> ../web-svelte</span></span>
 <span class="line"><span style="color:#61AFEF">npm</span><span style="color:#98C379"> ci</span></span>
 <span class="line"><span style="color:#61AFEF">npm</span><span style="color:#98C379"> run</span><span style="color:#98C379"> build</span></span>
-<span class="line"><span style="color:#7F848E;font-style:italic"># output at web/dist/</span></span></code></pre>
+<span class="line"><span style="color:#7F848E;font-style:italic"># output at web-svelte/dist/</span></span></code></pre>
 <h2 id="server-setup">Server setup</h2>
 <p>Create <code>/etc/arrgh/env</code>:</p>
 <pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>DatabasePath=/var/lib/arrgh/arrgh.db</span></span>
@@ -70,5 +70,5 @@
 <span class="line"><span style="color:#C678DD">        try_files </span><span style="color:#ABB2BF">$</span><span style="color:#E06C75">uri</span><span style="color:#ABB2BF"> $</span><span style="color:#E06C75">uri</span><span style="color:#ABB2BF">/ /index.html;</span></span>
 <span class="line"><span style="color:#ABB2BF">    }</span></span>
 <span class="line"><span style="color:#ABB2BF">}</span></span></code></pre>
-<pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#61AFEF">cp</span><span style="color:#D19A66"> -r</span><span style="color:#98C379"> web/dist</span><span style="color:#98C379"> /var/www/arrgh</span></span>
+<pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#61AFEF">cp</span><span style="color:#D19A66"> -r</span><span style="color:#98C379"> web-svelte/dist</span><span style="color:#98C379"> /var/www/arrgh</span></span>
 <span class="line"><span style="color:#61AFEF">nginx</span><span style="color:#D19A66"> -t</span><span style="color:#ABB2BF"> &#x26;&#x26; </span><span style="color:#61AFEF">systemctl</span><span style="color:#98C379"> reload</span><span style="color:#98C379"> nginx</span></span></code></pre>  </article> </div>  </main> <footer class="border-t border-border mt-20 py-8"> <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground"> <span><span class="text-primary font-bold">*ARRgh!</span> — self-hosted East Asian comics & novel manager</span> <div class="flex items-center gap-4"> <a href="https://github.com/t2vi/arrgh" class="hover:text-foreground transition-colors">GitHub</a> <a href="/arrgh/test-reports" class="hover:text-foreground transition-colors">Test Reports ↗</a> </div> </div> </footer> </body></html>
