@@ -108,6 +108,6 @@
   </div>
 
   <p class="text-xs text-muted-foreground">
-    {visible.length} entries · refreshes every 3s · set <span class="font-mono">RUST_LOG</span> env var to change stdout level
+    {visible.length} entries · refreshes every 3s · set <span class="font-mono">LOG_LEVEL</span> env var to change stdout level
   </p>
 </div>

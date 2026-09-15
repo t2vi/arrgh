@@ -6,7 +6,7 @@
 # showed up across S0-S9. Revisit if a second consumer does.
 [package]
 name = "arrgh-server"
-version = "0.1.7"          # single source of truth for GET /api/version
+version = "1.0.0"          # single source of truth for GET /api/version
 edition = "2021"
 license = "MIT"
 publish = false
