@@ -9,7 +9,7 @@ export interface Title {
   author: string | null
   year: number | null
   tags: string | null
-  sync_status: string
+  sync_status: 'syncing' | 'ready' | 'error'
   content_type: string
   auto_download: boolean | null
   reader_mode: string | null

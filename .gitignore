@@ -40,6 +40,8 @@ habi.config.json
 
 
 
+
+
 # >>> private-overlay >>>
 # AI/dev files tracked in the private overlay (scripts/private-overlay.sh) — never public.
 # Regenerated from .claude/private-overlay.conf; edit that, not this block.
@@ -52,8 +54,11 @@ skills-lock.json
 .understand-anything
 graphify-out
 .claude
+.specify
+specs
 docs/adr
 docs/agents
+docs/workflows
 api-live-tests
 live-tests
 # <<< private-overlay <<<
