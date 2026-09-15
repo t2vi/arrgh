@@ -5,10 +5,13 @@
   const VARIANTS = {
     default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
     outline: 'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
+    secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
+    ghost: 'hover:bg-accent hover:text-accent-foreground',
   }
   const SIZES = {
     default: 'h-9 px-4 py-2',
     sm: 'h-7 rounded-md px-3 text-xs',
+    icon: 'h-9 w-9',
   }
 
   let {
