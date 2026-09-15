@@ -5,8 +5,11 @@
   import { cn } from './utils'
   import { router } from './router.svelte'
   import { ROUTES } from './routes'
+  import { setupDpadNav } from './dpadNav'
 
   let { children }: { children: Snippet } = $props()
+
+  $effect(() => setupDpadNav())
 
   let version = $state<VersionInfo | null>(null)
   api.getVersion().then((v) => (version = v)).catch(() => {})
