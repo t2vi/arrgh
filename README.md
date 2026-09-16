@@ -165,6 +165,17 @@ Issues and PRs are welcome. A few things to know:
 - Run `cargo test` (server) and `npm test` (web) before submitting
 - Follow the existing code style — see `CLAUDE.md` for dev setup
 
+### Local development (quick start)
+
+```bash
+./scripts/dev-up.sh
+```
+
+Starts the Rust API server, Vite web server, plugin-host, and CloakBrowser (for CF-protected
+sources) together, `Ctrl-C` stops all four. Requires Rust, Node.js, and Docker or podman already
+installed, with `plugin-host`/`web-svelte` dependencies installed once (`npm install` in each).
+For running/restarting one service individually instead, see `CLAUDE.md`'s Dev Workflow section.
+
 No CLA, no process overhead. Just open a PR.
 
 ---

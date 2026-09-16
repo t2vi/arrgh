@@ -15,4 +15,4 @@ services:
       context: docker/cloakbrowser-server
       dockerfile: Dockerfile
     ports:
-      - "3001:3000"
+      - "3002:3000"   # not 3001 — collides with the Rust dev server's own RUST_BIND default
