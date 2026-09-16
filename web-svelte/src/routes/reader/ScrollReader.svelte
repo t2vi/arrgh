@@ -28,8 +28,16 @@
   let containerEl: HTMLDivElement | undefined = $state()
   let seen = -1
 
+  // Applies the saved reading position exactly once per chapter, when it first opens.
+  // Gated on the chapter actually changing (not on the effect merely re-running) —
+  // onScroll below reports the page the user is currently viewing back up through
+  // onPageSeen, which flows back in as `initialPage`; an effect that treated every
+  // `initialPage` change as "apply it" would re-force scrollTop on every scroll,
+  // fighting the user (GH #172).
+  let lastAppliedChapterId: string | undefined
   $effect(() => {
-    if (initialPage <= 0 || !containerEl) return
+    if (initialPage <= 0 || !containerEl || chapterId === lastAppliedChapterId) return
+    lastAppliedChapterId = chapterId
     containerEl.scrollTop = initialPage * 500
   })
 
