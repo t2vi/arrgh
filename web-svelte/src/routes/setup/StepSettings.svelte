@@ -15,7 +15,7 @@
     download_workers: 2,
     index_interval_hours: 6,
     auto_download: false,
-    reader_mode: 'paged',
+    reader_mode: 'scroll',
     download_dir: './downloads',
     trending_per_source: 5,
     check_for_updates: false,

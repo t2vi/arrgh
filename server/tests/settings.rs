@@ -36,7 +36,7 @@ async fn get_settings_returns_defaults_when_nothing_saved() {
     assert_eq!(body["download_workers"], 2);
     assert_eq!(body["index_interval_hours"], 6);
     assert_eq!(body["auto_download"], false);
-    assert_eq!(body["reader_mode"], "paged");
+    assert_eq!(body["reader_mode"], "scroll");
     assert_eq!(body["trending_per_source"], 5);
     assert_eq!(body["check_for_updates"], false);
 }
