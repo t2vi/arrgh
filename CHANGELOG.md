@@ -4,6 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [v1.1.0](docs/releases/v1.1.0.md) | 2026-09-17 | Scroll mode now the default reader mode, scroll-reader page-1 trap fix, undownloaded chapter-nav blank-page fix, Portainer/K8s deployment docs, local dev port-collision fix + one-command startup script |
 | [v1.0.0](docs/releases/v1.0.0.md) | 2026-09-15 | Full backend rewrite .NET→Rust (S0–S10), full frontend rewrite React→Svelte 5 (F0–F6), sync-warning bug fix, log viewer env var fix |
 | [v0.1.7](docs/releases/v0.1.7.md) | 2026-06-03 | Library sort & filter, nhentai prefix upgrade, manhwa/novel hentai misclassification fix |
 | [v0.1.6](docs/releases/v0.1.6.md) | 2026-06-03 | Hentai source matching, WuxiaWorld all chapters, CloakBrowser Docker fix, CF timeout, discover progress UI, library-flow tests |
