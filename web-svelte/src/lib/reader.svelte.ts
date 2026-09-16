@@ -16,6 +16,10 @@ export class ReaderStore {
   chapters = $state<Chapter[]>([])
   novelContent = $state<string | null>(null)
   novelError = $state(false)
+  chapterDownloading = $state(false)
+  chapterUnavailable = $state(false)
+  #pollingChapterId: string | undefined
+  #downloadAttempts = 0
 
   get chapterId() {
     return this.#chapterId
@@ -60,6 +64,69 @@ export class ReaderStore {
       api.getChapter(id).then((c) => (this.chapter = c)).catch(() => {})
       api.getProgress(id).then((p) => (this.#readProgress = p)).catch(() => {})
       api.getSettings().then((s) => (this.#settings = s)).catch(() => {})
+    })
+
+    // Every path that lands the reader on a chapter routes through `this.chapter`
+    // being set above — so this is the one place to catch "opened an undownloaded
+    // chapter" regardless of how we got here (footer Prev/Next, a direct link,
+    // back/forward), not just the footer buttons that originally surfaced this
+    // (GH #175). Triggers the download once per chapter, then re-fetches on a
+    // timer until it's ready; re-assigning `this.chapter` re-runs this effect,
+    // which is what advances the poll without a separate loop.
+    $effect(() => {
+      const id = this.#chapterId
+      const ch = this.chapter
+      if (!id || !ch || ch.id !== id) return
+
+      if (id !== this.#pollingChapterId) {
+        this.#pollingChapterId = id
+        this.#downloadAttempts = 0
+      }
+
+      if (!ch.has_sources) {
+        this.chapterDownloading = false
+        this.chapterUnavailable = true
+        return
+      }
+      if (ch.downloaded) {
+        this.chapterDownloading = false
+        this.chapterUnavailable = false
+        return
+      }
+
+      const MAX_ATTEMPTS = 30 // 2s cadence → ~1 minute bound before giving up
+      if (this.#downloadAttempts >= MAX_ATTEMPTS) {
+        this.chapterDownloading = false
+        this.chapterUnavailable = true
+        return
+      }
+
+      this.chapterDownloading = true
+      this.chapterUnavailable = false
+      if (this.#downloadAttempts === 0) {
+        api.downloadChapter(id).catch(() => {})
+      }
+
+      let cancelled = false
+      const timer = setTimeout(() => {
+        if (cancelled) return
+        this.#downloadAttempts++
+        api
+          .getChapter(id)
+          .then((c) => {
+            if (cancelled || id !== this.#chapterId) return
+            this.chapter = c
+          })
+          .catch(() => {
+            if (cancelled) return
+            this.chapterDownloading = false
+            this.chapterUnavailable = true
+          })
+      }, 2000)
+      return () => {
+        cancelled = true
+        clearTimeout(timer)
+      }
     })
 
     $effect(() => {

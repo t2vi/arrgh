@@ -28,8 +28,8 @@
 
   const atStart = $derived(page === 0)
 
-  const prevAction = $derived(atStart && prevChapter ? () => router.navigate(ROUTES.reader(prevChapter.id)) : atStart ? null : onPrevPage)
-  const nextAction = $derived(atEnd && nextChapter ? () => router.navigate(ROUTES.reader(nextChapter.id)) : atEnd ? null : onNextPage)
+  const prevAction = $derived(atStart && prevChapter?.has_sources ? () => router.navigate(ROUTES.reader(prevChapter.id)) : atStart ? null : onPrevPage)
+  const nextAction = $derived(atEnd && nextChapter?.has_sources ? () => router.navigate(ROUTES.reader(nextChapter.id)) : atEnd ? null : onNextPage)
   const prevLabel = $derived(atStart && prevChapter ? 'Prev Ch.' : 'Prev')
   const nextLabel = $derived(atEnd && nextChapter ? 'Next Ch.' : 'Next')
 </script>
@@ -49,8 +49,8 @@
     <Button
       variant="outline"
       size="sm"
-      disabled={!prevChapter}
-      onclick={() => prevChapter && router.navigate(ROUTES.reader(prevChapter.id))}
+      disabled={!prevChapter?.has_sources}
+      onclick={() => prevChapter?.has_sources && router.navigate(ROUTES.reader(prevChapter.id))}
       class="gap-1"
     >
       <ChevronLeft class="w-3 h-3" /> Prev Ch.
@@ -58,8 +58,8 @@
     <Button
       variant="outline"
       size="sm"
-      disabled={!nextChapter}
-      onclick={() => nextChapter && router.navigate(ROUTES.reader(nextChapter.id))}
+      disabled={!nextChapter?.has_sources}
+      onclick={() => nextChapter?.has_sources && router.navigate(ROUTES.reader(nextChapter.id))}
       class="gap-1"
     >
       Next Ch. <ChevronRight class="w-3 h-3" />

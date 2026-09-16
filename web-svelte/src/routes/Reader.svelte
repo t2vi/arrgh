@@ -65,7 +65,18 @@
 
     <ProgressBar value={store.progress} />
 
-    {#if store.isNovel}
+    {#if store.chapterDownloading}
+      <div class="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
+        <LoaderCircle class="w-8 h-8 animate-spin text-muted-foreground/60" />
+        <p class="text-muted-foreground text-sm">Downloading chapter…</p>
+      </div>
+    {:else if store.chapterUnavailable}
+      <div class="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
+        <p class="text-muted-foreground text-sm">Chapter unavailable.</p>
+        <p class="text-muted-foreground/60 text-xs">No source to download this chapter from, or the download failed.</p>
+        <button onclick={() => window.history.back()} class="mt-2 text-sm text-primary hover:underline">Go back</button>
+      </div>
+    {:else if store.isNovel}
       {#if store.novelContent != null}
         <NovelReader
           content={store.novelContent}
