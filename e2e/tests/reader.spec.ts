@@ -83,6 +83,13 @@ async function downloadAndOpenReader(page: import('@playwright/test').Page, titl
   return chapterId
 }
 
+// Explicit, since which mode a chapter opens in by default is itself a setting
+// (specs/014-scrollview-default-manga) — don't assume paged or scroll ambiently.
+async function ensureMode(page: import('@playwright/test').Page, target: 'paged' | 'scroll') {
+  const toggle = page.getByTitle(target === 'paged' ? 'Switch to paged' : 'Switch to scroll')
+  if (await toggle.isVisible().catch(() => false)) await toggle.click()
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 test.describe('Reader — zoom control', () => {
@@ -115,6 +122,7 @@ test.describe('Reader — zoom control', () => {
 
   test('selecting 150% sets image max-width to 1200px', async ({ page }) => {
     await downloadAndOpenReader(page, titleId)
+    await ensureMode(page, 'paged')
     await page.getByTitle('Zoom').click()
     await page.getByRole('button', { name: '150%', exact: true }).click()
 
@@ -129,6 +137,7 @@ test.describe('Reader — zoom control', () => {
 
   test('selecting 50% sets image max-width to 400px', async ({ page }) => {
     await downloadAndOpenReader(page, titleId)
+    await ensureMode(page, 'paged')
     await page.getByTitle('Zoom').click()
     await page.getByRole('button', { name: '50%', exact: true }).click()
 
@@ -171,9 +180,7 @@ test.describe('Reader — scroll mode zoom', () => {
 
   test('zoom applies max-width in scroll reader', async ({ page }) => {
     await downloadAndOpenReader(page, titleId)
-
-    // Switch to scroll mode
-    await page.getByTitle('Switch to scroll').click()
+    await ensureMode(page, 'scroll')
 
     // Apply 75% zoom
     await page.getByTitle('Zoom').click()

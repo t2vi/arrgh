@@ -64,6 +64,9 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Reader | `useImageZoom` | reads stored value from localStorage | ✅ |
 | Reader | `useImageZoom` | falls back to 100 for invalid stored value | ✅ |
 | Reader | `useImageZoom` | apply updates state and persists to localStorage | ✅ |
+| Reader | `ScrollReader` | applies saved resume position once on chapter open; later page-seen updates don't re-force scrollTop (GH #172 regression) | ✅ |
+| Reader | `ReaderStore` | triggers download + `chapterDownloading` for an undownloaded, sourced chapter; clears once poll reports downloaded; never downloads/marks unavailable a sourceless chapter; skips an already-downloaded chapter (GH #175) | ✅ |
+| Reader | `ReaderFooter` | paged mode Prev/Next page + chapter-boundary crossing (label/nav swap, disabled at ends); scroll/novel mode chapter buttons disabled with no adjacent chapter, navigate on click | ✅ |
 | Setup | `useSetup` | starts on step 1 | ✅ |
 | Setup | `useSetup` | goToStep2 advances to step 2 | ✅ |
 | Setup | `useSetup` | valid token → redirects to home (setup already complete) | ✅ |
