@@ -33,7 +33,7 @@ async fn read_settings(state: &AppState) -> AppResult<AppSettingsDto> {
         download_workers: settings::parse_long(get("download_workers"), 2),
         index_interval_hours: settings::parse_long(get("index_interval_hours"), 6),
         auto_download: settings::parse_bool(get("auto_download"), false),
-        reader_mode: get("reader_mode").unwrap_or("paged").to_string(),
+        reader_mode: get("reader_mode").unwrap_or("scroll").to_string(),
         download_dir: get("download_dir")
             .map(str::to_string)
             .unwrap_or_else(|| state.config.download_dir.clone()),

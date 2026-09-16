@@ -26,7 +26,7 @@ export class ReaderStore {
   }
 
   get effectiveMode(): 'paged' | 'scroll' {
-    return this.#modeOverride ?? ((this.manga?.reader_mode as 'paged' | 'scroll' | null) ?? this.#settings?.reader_mode ?? 'paged')
+    return this.#modeOverride ?? ((this.manga?.reader_mode as 'paged' | 'scroll' | null) ?? this.#settings?.reader_mode ?? 'scroll')
   }
 
   get total() {
