@@ -214,6 +214,12 @@ const WUXIA_CHAPTER_HTML = `
 </div>
 `
 
+// A chapter-page fallback URL (chapters 2+, GH #173) can serve a client-side-rendered-only
+// shell — the container div exists server-side but never gets populated without JS.
+const WUXIA_CHAPTER_CSR_HTML = `
+<div class="chapter-content"></div>
+`
+
 describe('wuxiaworld — search', () => {
   it('returns array with required fields', async () => {
     vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { json: WUXIA_SEARCH_JSON } }))
@@ -315,6 +321,11 @@ describe('wuxiaworld — chapterText', () => {
   it('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { ok: false } }))
     await expect(wuxiaworld.chapterText('test/test-chapter-1')).rejects.toThrow()
+  })
+
+  it('throws on empty/near-empty content (CSR-fallback page)', async () => {
+    vi.stubGlobal('fetch', mockFetch({ 'wuxiaworld': { text: WUXIA_CHAPTER_CSR_HTML } }))
+    await expect(wuxiaworld.chapterText('swallowed-star/chapter/2')).rejects.toThrow()
   })
 })
 

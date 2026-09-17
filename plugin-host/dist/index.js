@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.rewriteCdpHost = rewriteCdpHost;
 exports.createApp = createApp;
 const express_1 = __importDefault(require("express"));
 const fs_1 = __importDefault(require("fs"));
@@ -14,6 +15,15 @@ const COMMUNITY_BUNDLES_DIR = process.env.COMMUNITY_BUNDLES_DIR ?? path_1.defaul
 const LANGS = (process.env.LANGUAGES ?? 'en').split(',').map((s) => s.trim()).filter(Boolean);
 const CLOAKBROWSER_WS_URL = process.env.CLOAKBROWSER_WS_URL ?? '';
 // ── CloakBrowser connection ───────────────────────────────────────────────────
+// Rewrite the host portion of a CDP WebSocket URL reported by /json/version to the
+// host from the configured CLOAKBROWSER_WS_URL. CloakBrowser self-reports 0.0.0.0 or
+// its internal container hostname — neither is reachable from outside. Using the
+// configured URL's host works for both local dev (localhost:3001) and Docker-to-Docker
+// (cloakbrowser:3000) without any special-casing.
+function rewriteCdpHost(cdpWsUrl, configUrl) {
+    const { host } = new URL(configUrl);
+    return cdpWsUrl.replace(/^ws:\/\/[^/]+/, `ws://${host}`);
+}
 let browser = null;
 async function getBrowser() {
     if (browser?.isConnected())
@@ -28,8 +38,7 @@ async function getBrowser() {
     // both local dev (localhost:3001) and Docker-to-Docker (cloakbrowser:3000).
     const versionRes = await fetch(`${CLOAKBROWSER_WS_URL}/json/version`);
     const { webSocketDebuggerUrl } = await versionRes.json();
-    const { host } = new URL(CLOAKBROWSER_WS_URL);
-    const wsUrl = webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://${host}`);
+    const wsUrl = rewriteCdpHost(webSocketDebuggerUrl, CLOAKBROWSER_WS_URL);
     browser = await playwright_core_1.chromium.connectOverCDP(wsUrl);
     browser.on('disconnected', () => {
         console.warn('[plugin-host] CloakBrowser disconnected — will reconnect on next request');

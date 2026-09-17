@@ -158,5 +158,10 @@ export async function chapterText(chapterId: string): Promise<string> {
   const html = await getHtml(url)
   const $ = cheerio.load(html)
   const content = $('.chapter-content').first().html() || ''
-  return td.turndown(content).trim()
+  const result = td.turndown(content).trim()
+  // A chapter-page fallback URL (chapters 2+) can serve a client-side-rendered-only shell —
+  // .chapter-content exists but is never populated without JS. Treat that the same as a fetch
+  // failure instead of silently returning empty content (GH #173).
+  if (result.length <= 30) throw new Error(`empty chapter content for ${chapterId} (possible CSR-only page)`)
+  return result
 }
