@@ -515,6 +515,33 @@ pub async fn clear_sync_warnings(pool: &SqlitePool, title_id: &str) -> sqlx::Res
     Ok(())
 }
 
+/// Deletes the title's `title_sources` and its chapters' `chapter_sources`
+/// rows for every source not in `keep` (GH #211). Chapters themselves stay.
+pub async fn prune_source_links(
+    pool: &SqlitePool,
+    title_id: &str,
+    keep: &[String],
+) -> sqlx::Result<()> {
+    let not_in = if keep.is_empty() {
+        String::new()
+    } else {
+        format!(" AND source NOT IN ({})", vec!["?"; keep.len()].join(","))
+    };
+    let sql_t = format!("DELETE FROM title_sources WHERE title_id = ?{not_in}");
+    let sql_c = format!(
+        "DELETE FROM chapter_sources WHERE chapter_id IN \
+         (SELECT id FROM chapters WHERE title_id = ?){not_in}"
+    );
+    for sql in [sql_t, sql_c] {
+        let mut q = sqlx::query(&sql).bind(title_id);
+        for k in keep {
+            q = q.bind(k);
+        }
+        q.execute(pool).await?;
+    }
+    Ok(())
+}
+
 pub async fn title_source_links(
     pool: &SqlitePool,
     title_id: &str,

@@ -445,3 +445,24 @@ async fn queue_download_unauthorized_no_token() {
     let (status, _) = send(&app, "POST", "/api/chapters/any/download", None).await;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
+
+// spec: 032/FR-011 (#211)
+#[tokio::test]
+async fn list_chapters_not_found_when_title_not_in_callers_library() {
+    let state = common::build_state().await;
+    let owner = common::seed_user(&state, "owner", "admin", true).await;
+    let other = common::seed_user(&state, "other", "member", true).await;
+    let t = common::seed_title(&state, "Naruto", false).await;
+    common::seed_user_title(&state, &owner.id, &t).await;
+    common::seed_chapter(&state, &t, 1.0, false).await;
+    let app = arrgh_server::api::router(state);
+
+    let (status, _) = send(
+        &app,
+        "GET",
+        &format!("/api/chapters/title/{t}"),
+        Some(&common::token_for(&other)),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

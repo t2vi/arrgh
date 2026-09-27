@@ -489,3 +489,19 @@ pub async fn seed_source(
     .unwrap();
     id
 }
+
+/// Registers an enabled `external_sources` row (`source_key` = `key`).
+pub async fn seed_external_source(state: &AppState, key: &str, content_types: &str, priority: i64) {
+    sqlx::query(
+        "INSERT INTO external_sources (id, name, base_url, content_types, enabled, created_at, is_community, priority, source_key, default_explicit) \
+         VALUES (?, ?, 'http://x', ?, 1, datetime('now'), 0, ?, ?, 0)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(key)
+    .bind(content_types)
+    .bind(priority)
+    .bind(key)
+    .execute(&state.db)
+    .await
+    .unwrap();
+}

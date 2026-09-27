@@ -661,3 +661,88 @@ async fn refresh_metadata_clears_sync_warnings_and_returns_202() {
         .unwrap();
     assert_eq!(warnings, 0);
 }
+
+// ── #211: content type changes ───────────────────────────────────────────
+
+// spec: 032/FR-004
+#[tokio::test]
+async fn patch_title_admin_can_set_hentai_content_type() {
+    let state = common::build_state().await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let t = common::seed_title(&state, "Some Doujin", true).await;
+    common::seed_user_title(&state, &admin.id, &t).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (status, _) = send(
+        &app,
+        "PATCH",
+        &format!("/api/titles/{t}"),
+        Some(&token),
+        Some(json!({ "content_type": "hentai" })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (_, body) = send(&app, "GET", &format!("/api/titles/{t}"), Some(&token), None).await;
+    assert_eq!(body["content_type"], "hentai");
+}
+
+// spec: 032/FR-004
+#[tokio::test]
+async fn patch_content_type_drops_sources_that_dont_serve_the_new_type() {
+    let mock = common::start_mock_plugin_host("[]", true).await;
+    let state = common::build_state_with_plugin_host(&mock).await;
+    common::seed_external_source(&state, "mangadex", "manga,manhua", 10).await;
+    common::seed_external_source(&state, "novelfull", "novel", 40).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let t = common::seed_title(&state, "Mislabelled", false).await;
+    common::seed_user_title(&state, &admin.id, &t).await;
+    common::add_title_source(&state, &t, "mangadex").await;
+    common::add_title_source(&state, &t, "novelfull").await;
+    let c = common::seed_chapter(&state, &t, 1.0, false).await;
+    common::add_chapter_source(&state, &c, "mangadex").await;
+    common::add_chapter_source(&state, &c, "novelfull").await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (status, _) = send(
+        &app,
+        "PATCH",
+        &format!("/api/titles/{t}"),
+        Some(&token),
+        Some(json!({ "content_type": "novel" })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    loop {
+        let st: String = sqlx::query_scalar("SELECT sync_status FROM titles WHERE id = ?")
+            .bind(&t)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+        if st == "ready" {
+            break;
+        }
+        assert!(
+            std::time::Instant::now() < deadline,
+            "re-match never finished"
+        );
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+    }
+    let title_srcs: Vec<String> =
+        sqlx::query_scalar("SELECT source FROM title_sources WHERE title_id = ? ORDER BY source")
+            .bind(&t)
+            .fetch_all(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(title_srcs, vec!["novelfull"]);
+    let chapter_srcs: Vec<String> =
+        sqlx::query_scalar("SELECT source FROM chapter_sources WHERE chapter_id = ?")
+            .bind(&c)
+            .fetch_all(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(chapter_srcs, vec!["novelfull"]);
+}

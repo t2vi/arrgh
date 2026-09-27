@@ -2,7 +2,7 @@
   import { api } from '../../lib/api'
   import { cn } from '../../lib/utils'
 
-  const CONTENT_TYPES = ['manga', 'manhwa', 'manhua', 'novel'] as const
+  const CONTENT_TYPES = ['manga', 'manhwa', 'manhua', 'novel', 'hentai'] as const
 
   let { mangaId, value }: { mangaId: string; value: string } = $props()
 
