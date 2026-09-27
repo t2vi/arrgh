@@ -6,6 +6,13 @@ use sqlx::{FromRow, SqlitePool};
 use time::macros::format_description;
 use time::OffsetDateTime;
 
+/// `download_queue.status` values (GH #162). The column stays TEXT.
+pub const STATUS_PENDING: &str = "pending";
+pub const STATUS_DOWNLOADING: &str = "downloading";
+pub const STATUS_DONE: &str = "done";
+pub const STATUS_ERROR: &str = "error";
+pub const STATUS_CANCELLED: &str = "cancelled";
+
 fn ef_timestamp_now() -> String {
     let fmt =
         format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:6]");
@@ -59,7 +66,10 @@ pub async fn list_for_title(
 }
 
 pub async fn clear_completed(pool: &SqlitePool) -> sqlx::Result<()> {
-    sqlx::query("DELETE FROM download_queue WHERE status IN ('done', 'cancelled', 'error')")
+    sqlx::query("DELETE FROM download_queue WHERE status IN (?, ?, ?)")
+        .bind(STATUS_DONE)
+        .bind(STATUS_CANCELLED)
+        .bind(STATUS_ERROR)
         .execute(pool)
         .await?;
     Ok(())
@@ -81,15 +91,16 @@ pub async fn get_ownership(pool: &SqlitePool, id: &str) -> sqlx::Result<Option<Q
 /// Deletes the item unless it's `downloading`, in which case it's
 /// soft-cancelled instead (mirrors `Api/Queue.cs`'s `RemoveFromQueue`).
 pub async fn remove_or_cancel(pool: &SqlitePool, id: &str) -> sqlx::Result<()> {
-    let deleted =
-        sqlx::query("DELETE FROM download_queue WHERE id = ? AND status != 'downloading'")
-            .bind(id)
-            .execute(pool)
-            .await?
-            .rows_affected();
+    let deleted = sqlx::query("DELETE FROM download_queue WHERE id = ? AND status != ?")
+        .bind(id)
+        .bind(STATUS_DOWNLOADING)
+        .execute(pool)
+        .await?
+        .rows_affected();
 
     if deleted == 0 {
-        sqlx::query("UPDATE download_queue SET status = 'cancelled', updated_at = ? WHERE id = ?")
+        sqlx::query("UPDATE download_queue SET status = ?, updated_at = ? WHERE id = ?")
+            .bind(STATUS_CANCELLED)
             .bind(ef_timestamp_now())
             .bind(id)
             .execute(pool)
@@ -102,7 +113,7 @@ pub async fn remove_or_cancel(pool: &SqlitePool, id: &str) -> sqlx::Result<()> {
 /// `allow_explicit` flag — pure, directly unit-testable (port of
 /// `Queue.cs`'s `IsAllowedExplicit` overload).
 pub fn is_allowed_explicit(role: &str, allow_explicit: bool) -> bool {
-    allow_explicit || role == "admin"
+    allow_explicit || role == crate::users::ROLE_ADMIN
 }
 
 #[cfg(test)]

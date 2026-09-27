@@ -63,15 +63,15 @@ async fn register(
     let id = uuid::Uuid::new_v4().to_string();
     let username = body.username.trim();
     let hash = auth::hash_password(&body.password)?;
-    users::insert(&state.db, &id, username, &hash, "admin", true).await?;
+    users::insert(&state.db, &id, username, &hash, users::ROLE_ADMIN, true).await?;
 
     let secret = jwt_secret(&state)?;
-    let token = auth::create_token(&id, username, "admin", true, secret)?;
+    let token = auth::create_token(&id, username, users::ROLE_ADMIN, true, secret)?;
     Ok(Json(AuthResponse {
         token,
         username: username.to_string(),
         user_id: id,
-        role: "admin".into(),
+        role: users::ROLE_ADMIN.into(),
         allow_explicit: true,
     }))
 }

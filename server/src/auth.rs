@@ -42,8 +42,12 @@ where
 }
 
 impl Claims {
+    pub fn is_admin(&self) -> bool {
+        self.role == crate::users::ROLE_ADMIN
+    }
+
     pub fn require_admin(&self) -> Result<(), AppError> {
-        if self.role == "admin" {
+        if self.is_admin() {
             Ok(())
         } else {
             Err(AppError::Forbidden)

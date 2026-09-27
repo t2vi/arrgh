@@ -83,7 +83,7 @@ async fn remove(
         .await?
         .ok_or(AppError::NotFound)?;
 
-    let is_admin = claims.role == "admin";
+    let is_admin = claims.is_admin();
     if !is_admin && item.queued_by.as_deref() != Some(claims.user_id.as_str()) {
         return Err(AppError::Forbidden);
     }

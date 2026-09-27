@@ -93,7 +93,7 @@ async fn get_chapter_text(
         .await?
         .ok_or(AppError::NotFound)?;
 
-    if info.chapter_format != "text" {
+    if info.chapter_format != crate::content::FORMAT_TEXT {
         return Err(AppError::BadRequest("not a text chapter".into()));
     }
     if !info.downloaded {

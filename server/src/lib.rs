@@ -6,6 +6,7 @@ pub mod api;
 pub mod auth;
 pub mod chapters;
 pub mod config;
+pub mod content;
 pub mod discover;
 pub mod downloader;
 pub mod error;

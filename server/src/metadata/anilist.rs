@@ -278,15 +278,15 @@ pub(crate) fn map_entry(item: &Value) -> Option<AniListSeries> {
 
 pub(crate) fn map_content_type(format: Option<&str>, country: Option<&str>) -> String {
     match format.map(|f| f.to_uppercase()).as_deref() {
-        Some("MANHWA") => "manhwa",
-        Some("MANHUA") => "manhua",
+        Some("MANHWA") => crate::content::MANHWA,
+        Some("MANHUA") => crate::content::MANHUA,
         Some("MANGA") => match country {
-            Some("KR") => "manhwa",
-            Some("CN") | Some("TW") => "manhua",
-            _ => "manga",
+            Some("KR") => crate::content::MANHWA,
+            Some("CN") | Some("TW") => crate::content::MANHUA,
+            _ => crate::content::MANGA,
         },
-        Some("ONE_SHOT") => "manga",
-        Some("NOVEL") | Some("LIGHT_NOVEL") => "novel",
+        Some("ONE_SHOT") => crate::content::MANGA,
+        Some("NOVEL") | Some("LIGHT_NOVEL") => crate::content::NOVEL,
         _ => "other",
     }
     .to_string()

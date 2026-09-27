@@ -757,7 +757,7 @@ pub async fn insert_title(pool: &SqlitePool, t: &NewTitle<'_>) -> sqlx::Result<(
              (id, mangaupdates_id, metadata_source, metadata_source_id, title, description, \
               cover_url, status, author, year, tags, sync_status, content_type, is_explicit, \
               created_at, updated_at) \
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'syncing', ?, ?, ?, ?)",
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(t.id)
     .bind(t.mangaupdates_id)
@@ -770,6 +770,7 @@ pub async fn insert_title(pool: &SqlitePool, t: &NewTitle<'_>) -> sqlx::Result<(
     .bind(t.author)
     .bind(t.year)
     .bind(t.tags)
+    .bind(SYNC_SYNCING)
     .bind(t.content_type)
     .bind(t.is_explicit)
     .bind(&now)

@@ -97,6 +97,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `logs.rs` | Level parsing, ring buffer eviction |
 | `queue.rs` | `is_allowed_explicit` |
 | `settings.rs` | Numeric/bool parsing, trending clamp, reader-mode validation |
+| `content.rs` (GH #163) | `chapter_format_for`: novels → text, every other content type → pages |
 | `media.rs` | `detect_content_type`, `strip_jpeg_icc`, `is_image`, `root_domain_referer`, `get_chapter_page` (dir + cbz) |
 | `discover.rs` | `normalize_title`, `designated_authority`, `deduplicate`, `merge_fan_out` (incl. nhentai word-boundary upgrade), `title_matches`/`levenshtein`, `strip_search_qualifier`, `is_hentai_tag`, `filter_mu_scope`, Royal Road authority order + NU-wins dedup (spec 019) ✅ |
 | `metadata/*.rs` | Per-authority response mapping (MangaUpdates, AniList, MangaDex, WuxiaWorld, Royal Road — spec 019 ✅) |

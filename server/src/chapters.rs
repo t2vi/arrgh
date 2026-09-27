@@ -136,21 +136,24 @@ pub async fn queue_download(
     sqlx::query(
         "INSERT INTO download_queue \
              (id, chapter_id, manga_title, chapter_num, status, pages_downloaded, pages_total, created_at, updated_at, queued_by) \
-         VALUES (?, ?, ?, ?, 'pending', 0, 0, ?, ?, ?) \
+         VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?) \
          ON CONFLICT(chapter_id) DO UPDATE SET \
-             status = 'pending', \
+             status = excluded.status, \
              error = NULL, \
              queued_by = excluded.queued_by, \
              updated_at = excluded.updated_at \
-         WHERE download_queue.status IN ('error', 'cancelled')",
+         WHERE download_queue.status IN (?, ?)",
     )
     .bind(uuid::Uuid::new_v4().to_string())
     .bind(chapter_id)
     .bind(manga_title)
     .bind(chapter_num)
+    .bind(crate::queue::STATUS_PENDING)
     .bind(&now)
     .bind(&now)
     .bind(queued_by)
+    .bind(crate::queue::STATUS_ERROR)
+    .bind(crate::queue::STATUS_CANCELLED)
     .execute(pool)
     .await?;
     Ok(())
@@ -272,11 +275,7 @@ pub async fn sync_from_source(
         return Ok(0);
     }
 
-    let fmt = if content_type == "novel" {
-        "text"
-    } else {
-        "pages"
-    };
+    let fmt = crate::content::chapter_format_for(content_type);
     let now = ef_timestamp_now();
 
     reconcile_renumbered(pool, title_id, source, &plugin_chapters).await?;
