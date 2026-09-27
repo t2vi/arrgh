@@ -109,6 +109,14 @@ CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromiu
 
 ### Adding a source
 
+The quickest way is a bundle plugin. Create a repo from
+**[arrgh-plugin-template](https://github.com/t2vi/arrgh-plugin-template)**: it has the
+[plugin SDK](https://github.com/t2vi/arrgh-plugin-sdk) (types, `arrgh-plugin build`, contract tests),
+CI, and a release workflow that publishes `<id>.js`, its sha256, and the entry to add to
+`plugin-index/index.json`.
+
+Or run your own HTTP server:
+
 1. Write an HTTP server implementing the Source Plugin Protocol
 2. Run it (locally or as a Docker service)
 3. Register it: **Settings → Sources → Add** (or set `PLUGIN_URLS` for auto-registration on startup)
