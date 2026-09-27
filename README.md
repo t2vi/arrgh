@@ -100,7 +100,7 @@ All default sources compile into a single **plugin-host** container — no per-p
 | **NovelFull** | Novel | `plugins/novelfull/` | CF-protected — uses CloakBrowser |
 | **NovelFull.net** | Novel | `plugins/novelfullnet/` | novelfull.net — same site, different catalog (e.g. The Primal Hunter); CF-protected — uses CloakBrowser |
 | **WuxiaWorld** | Novel | `plugins/wuxiaworld/` | Official API — no CF protection |
-| **Royal Road** | Novel (English originals) | `plugins/royalroad/` | Direct fetch — no CF protection; also a Discover authority |
+| **Royal Road** | Novel (English originals) | [`t2vi/arrgh-plugin-royalroad`](https://github.com/t2vi/arrgh-plugin-royalroad) | Direct fetch — no CF protection; also a Discover authority. First plugin split into its own repo (spec 031 phase C); `plugins/royalroad/` here is only the image's bundled fallback |
 | **nhentai** | Hentai doujinshi | `plugins/nhentai/` | Direct API, CloakBrowser fallback when challenged; explicit-only source |
 
 `plugins/novelupdates/` is not a download source — it backs the NovelUpdates Discover authority.
