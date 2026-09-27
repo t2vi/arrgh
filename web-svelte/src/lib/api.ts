@@ -106,9 +106,31 @@ export interface PluginIndexEntry {
   description: string | null
   version: string
   download_url: string | null
+  sha256?: string | null
+  protocol?: number
   bundled: boolean | null
   default_explicit: boolean
   content_types: string[]
+}
+
+/** One plugin's loaded vs catalog state (`GET /api/plugins`, spec 031). */
+export interface PluginStatus {
+  id: string
+  name: string
+  /** null = not loaded, or loaded but reports no version */
+  loaded_version: string | null
+  origin: 'bundled' | 'downloaded' | null
+  has_bundled: boolean
+  catalog_version: string | null
+  update_available: boolean
+  blocked_reason: string | null
+}
+
+export interface PluginStatusList {
+  /** null = no catalog could be read */
+  catalog: 'live' | 'fallback' | null
+  host_protocol: number | null
+  plugins: PluginStatus[]
 }
 
 // ——— Token storage ———
@@ -183,7 +205,11 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
     body: body != null ? JSON.stringify(body) : undefined,
   })
   handle401(res.status)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  if (!res.ok) {
+    // Keep the status first (callers match on it); append the server's reason when it gave one.
+    const reason = await res.json().then((b) => b?.error, () => undefined)
+    throw new Error(`${res.status} ${reason || res.statusText}`)
+  }
   if (res.status === 204 || res.status === 202 || res.status === 201) return undefined as T
   return res.json() as Promise<T>
 }
@@ -381,6 +407,9 @@ export const api = {
   listPluginIndex: () => get<PluginIndexEntry[]>('/api/plugins/index'),
   installPlugin: (plugin_id: string) => post<void>('/api/plugins/install', { plugin_id }),
   deletePlugin: (plugin_id: string) => del(`/api/plugins/${encodeURIComponent(plugin_id)}`),
+  listPlugins: () => get<PluginStatusList>('/api/plugins'),
+  updatePlugin: (plugin_id: string) => post<void>(`/api/plugins/${encodeURIComponent(plugin_id)}/update`),
+  revertPlugin: (plugin_id: string) => post<void>(`/api/plugins/${encodeURIComponent(plugin_id)}/revert`),
 
   // Logs (admin only)
   getLogs: (limit = 200) => get<LogEntry[]>('/api/logs', { limit: String(limit) }),

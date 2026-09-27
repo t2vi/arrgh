@@ -5,13 +5,11 @@ const scaffold = `// my-source/index.ts
 import type { PluginInfo, SearchResult, Chapter, PageList } from '../plugin-host/src/types'
 
 export const info: PluginInfo = {
+  id: 'my-source',
   name: 'My Source',
-  version: '1.0.0',
-  base_url: 'https://my-source.com',
-  content_types: ['manga'],
-  has_api_key: false,
-  is_community: true,
+  version: '1.0.0',          // shown in Settings as the loaded version
   default_explicit: false,
+  content_types: ['manga'],
 }
 
 export async function search(q: string): Promise<SearchResult[]> {
@@ -55,7 +53,7 @@ npm run build   # esbuild → dist/index.js
       <tr><th>Endpoint</th><th>Required</th><th>Description</th></tr>
     </thead>
     <tbody>
-      <tr><td><code>GET /info</code></td><td>Yes</td><td>Plugin metadata — <code>id</code>, <code>name</code>, <code>content_types</code>, <code>default_explicit</code></td></tr>
+      <tr><td><code>GET /info</code></td><td>Yes</td><td>Plugin metadata — <code>id</code>, <code>name</code>, <code>version</code>, <code>content_types</code>, <code>default_explicit</code></td></tr>
       <tr><td><code>GET /manga/:source_id/chapters</code></td><td>Yes</td><td>Chapter list for a title</td></tr>
       <tr><td><code>GET /chapter/:source_id/pages</code></td><td>Yes (comics)</td><td>Image URLs for a chapter</td></tr>
       <tr><td><code>GET /chapter/:source_id/text</code></td><td>Yes (novels)</td><td>Markdown text for a novel chapter</td></tr>
@@ -81,4 +79,6 @@ npm run build   # esbuild → dist/index.js
   <h2>Distributing via the plugin index</h2>
 
   <p>Community plugins can be listed in the <a href="https://github.com/t2vi/arrgh/blob/main/plugin-index/index.json" target="_blank" rel="noopener noreferrer">plugin index</a> so users can browse and install them from Settings. Open a PR to add your plugin.</p>
+
+  <p>An entry needs a <code>download_url</code> (the release's <code>.js</code> bundle), its <code>sha256</code> and the <code>protocol</code> version it was built for (currently <code>1</code>). The plugin host downloads the bundle, rejects it unless the checksum matches, and loads it without a restart. To ship a fix, publish a new release and bump <code>version</code>, <code>download_url</code> and <code>sha256</code> in the index. Admins then see an <strong>Update</strong> button, and <strong>Revert</strong> returns to the version bundled with *ARRgh.</p>
 </DocsLayout>

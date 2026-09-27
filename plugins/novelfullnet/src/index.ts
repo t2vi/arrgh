@@ -4,6 +4,7 @@ import type { PluginContext } from './novelfullnet'
 
 export const info = {
   id: 'novelfullnet',
+  version: '1.0.0',
   name: 'NovelFull.net',
   default_explicit: false,
   content_types: ['novel'],

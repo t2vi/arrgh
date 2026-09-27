@@ -2,6 +2,7 @@ import * as rr from './royalroad'
 
 export const info = {
   id: 'royalroad',
+  version: '1.0.0',
   name: 'Royal Road',
   default_explicit: false,
   content_types: ['novel'],

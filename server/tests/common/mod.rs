@@ -64,11 +64,67 @@ pub async fn build_downloader_state(plugin_host_url: &str, download_dir: &str) -
 /// Points `plugin_index_url` + `plugin_host_url` at test-local values (S9
 /// #131 plugin install/delete tests).
 pub async fn build_plugins_state(plugin_index_url: &str, plugin_host_url: &str) -> AppState {
+    build_plugins_state_with_fallback(
+        plugin_index_url,
+        "file:///nonexistent/fallback.json",
+        plugin_host_url,
+    )
+    .await
+}
+
+/// Live catalog URL + the image-copy fallback (spec 031 FR-002).
+pub async fn build_plugins_state_with_fallback(
+    plugin_index_url: &str,
+    fallback_url: &str,
+    plugin_host_url: &str,
+) -> AppState {
     build_state_with(|c| {
         c.plugin_index_url = plugin_index_url.to_string();
+        c.plugin_index_fallback_url = fallback_url.to_string();
         c.plugin_host_url = plugin_host_url.to_string();
     })
     .await
+}
+
+/// A request a recording mock received: `(method, path, JSON body or Null)`.
+pub type Recorded = std::sync::Arc<std::sync::Mutex<Vec<(String, String, serde_json::Value)>>>;
+
+/// `start_mock_routes`, keyed by `"METHOD /path"`, and recording every request —
+/// for plugin-host install/revert calls where the forwarded body matters.
+pub async fn start_recording_mock(
+    routes: &'static [(&'static str, u16, &'static str)],
+) -> (String, Recorded) {
+    use axum::body::Bytes;
+    use axum::http::{Method, StatusCode, Uri};
+    use axum::response::IntoResponse;
+
+    let seen: Recorded = Default::default();
+    let log = seen.clone();
+    let app = axum::Router::new().fallback(move |method: Method, uri: Uri, body: Bytes| {
+        let log = log.clone();
+        async move {
+            let json = serde_json::from_slice(&body).unwrap_or(serde_json::Value::Null);
+            log.lock()
+                .unwrap()
+                .push((method.to_string(), uri.path().to_string(), json));
+            let key = format!("{method} {}", uri.path());
+            match routes.iter().find(|(k, _, _)| *k == key) {
+                Some((_, status, body)) => (
+                    StatusCode::from_u16(*status).unwrap(),
+                    [("content-type", "application/json")],
+                    *body,
+                )
+                    .into_response(),
+                None => StatusCode::NOT_FOUND.into_response(),
+            }
+        }
+    });
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    (format!("http://{addr}"), seen)
 }
 
 async fn build_state_with(configure: impl FnOnce(&mut Config)) -> AppState {

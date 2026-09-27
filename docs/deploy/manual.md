@@ -29,7 +29,7 @@ Create `/etc/arrgh/env`:
 DatabasePath=/var/lib/arrgh/arrgh.db
 DownloadDir=/var/lib/arrgh/downloads
 PluginHostUrl=http://localhost:4000
-PluginIndexUrl=file:///opt/arrgh/plugin-index.json
+PluginIndexFallbackUrl=file:///opt/arrgh/plugin-index.json   # used when the live catalog (PluginIndexUrl, GitHub main by default) is unreachable
 JwtSecret=<generate with: openssl rand -base64 48>
 RUST_BIND=127.0.0.1:3001
 LOG_LEVEL=info

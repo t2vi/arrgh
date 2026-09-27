@@ -4,6 +4,7 @@ const LANGS = (process.env.LANGUAGES ?? 'en').split(',').map((s) => s.trim()).fi
 
 export const info = {
   id: 'mangadex',
+  version: '1.0.0',
   name: 'MangaDex',
   default_explicit: false,
   content_types: ['manga', 'manhwa', 'manhua', 'one-shot'],

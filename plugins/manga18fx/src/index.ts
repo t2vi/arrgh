@@ -5,6 +5,7 @@ export function init(ctx: PluginContext): void { setContext(ctx) }
 
 export const info = {
   id: 'manga18fx',
+  version: '1.0.0',
   name: 'Manga18fx',
   default_explicit: true,
   content_types: ['manhwa'],

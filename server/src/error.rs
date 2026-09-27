@@ -16,6 +16,8 @@ pub enum AppError {
     UnprocessableEntity(String),
     /// All upstream authorities failed (Discover fan-out — ADR 0031).
     BadGateway,
+    /// An upstream (plugin-host) failed and said why — 502 with its reason.
+    Upstream(String),
     /// Anything unexpected — logged at error, returned as a bare 500.
     Internal(anyhow::Error),
 }
@@ -32,6 +34,7 @@ impl IntoResponse for AppError {
             AppError::Conflict(m) => (StatusCode::CONFLICT, m),
             AppError::UnprocessableEntity(m) => (StatusCode::UNPROCESSABLE_ENTITY, m),
             AppError::BadGateway => (StatusCode::BAD_GATEWAY, "bad gateway".to_string()),
+            AppError::Upstream(m) => (StatusCode::BAD_GATEWAY, m),
             AppError::Internal(e) => {
                 tracing::error!(error = ?e, "internal error");
                 (

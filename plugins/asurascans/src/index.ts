@@ -4,6 +4,7 @@ import * as a from './asurascans'
 
 export const info = {
   id: 'asurascans',
+  version: '1.0.0',
   name: 'AsuraScans',
   default_explicit: false,
   content_types: ['manhwa'],

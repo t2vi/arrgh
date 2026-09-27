@@ -5,6 +5,8 @@
     "description": "The world's largest manga aggregator. Free, no CF protection.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -20,6 +22,8 @@
     "description": "Korean webtoons (manhwa). Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -32,6 +36,8 @@
     "description": "Web novel translations. Returns chapter text (no page images). Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -44,6 +50,8 @@
     "description": "novelfull.net \u2014 same site as NovelFull on another domain, with a different catalog (e.g. The Primal Hunter). Returns chapter text. Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -56,6 +64,8 @@
     "description": "English-original web fiction (LitRPG, progression fantasy). Returns chapter text. Direct fetch \u2014 no CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -68,6 +78,8 @@
     "description": "Fast manga reader with cover proxy support.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -80,6 +92,8 @@
     "description": "Hentai doujin galleries (English only). Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": true,
     "content_types": [
@@ -92,6 +106,8 @@
     "description": "Popular manhwa scanlation site (AsuraComic). No CF protection.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -104,6 +120,8 @@
     "description": "Premier English translation site for Chinese web novels. Has official API.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
@@ -116,6 +134,8 @@
     "description": "Manhwa aggregator with both explicit and non-explicit titles. No CF protection.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": true,
     "content_types": [
@@ -128,6 +148,8 @@
     "description": "Metadata authority for all novel types. Cloudflare-protected \u2014 requires CloakBrowser.",
     "version": "1.0.0",
     "download_url": null,
+    "sha256": null,
+    "protocol": 1,
     "bundled": true,
     "default_explicit": false,
     "content_types": [
