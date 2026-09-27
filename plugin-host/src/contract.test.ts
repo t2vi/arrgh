@@ -194,4 +194,14 @@ describe('plugins report their own version (spec 031)', () => {
       expect(e.protocol, e.id).toBeGreaterThanOrEqual(1)
     }
   })
+
+  // spec: 031/FR-013
+  it('every entry with a download_url has a 64-hex sha256 and a protocol', () => {
+    const withDownload = index.filter((e) => (e as { download_url?: string | null }).download_url)
+    expect(withDownload.length).toBeGreaterThan(0)
+    for (const e of withDownload) {
+      expect(e.sha256, e.id).toMatch(/^[0-9a-f]{64}$/)
+      expect(e.protocol, e.id).toBeGreaterThanOrEqual(1)
+    }
+  })
 })
