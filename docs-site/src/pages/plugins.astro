@@ -1,48 +1,55 @@
 ---
 import DocsLayout from '@/layouts/DocsLayout.astro'
 
-const scaffold = `// my-source/index.ts
-import type { PluginInfo, SearchResult, Chapter, PageList } from '../plugin-host/src/types'
+const scaffold = `// src/index.ts — package name: arrgh-plugin-my-source
+import type { ChapterResult, PluginContext, PluginInfo, SearchResult } from 'arrgh-plugin-sdk'
+import { version } from '../package.json'
 
 export const info: PluginInfo = {
   id: 'my-source',
   name: 'My Source',
-  version: '1.0.0',          // shown in Settings as the loaded version
+  version,                   // from package.json — shown in Settings as the loaded version
   default_explicit: false,
   content_types: ['manga'],
 }
 
-export async function search(q: string): Promise<SearchResult[]> {
-  // fetch from source, return normalised results
+let ctx: PluginContext | undefined
+export function init(c: PluginContext) { ctx = c }
+
+export async function search(query: string): Promise<SearchResult[]> {
+  // fetch from the source → [{ id, title }]
 }
 
-export async function chapters(sourceId: string): Promise<Chapter[]> {
-  // ...
+export async function chapters(id: string, langs: string[]): Promise<ChapterResult[]> {
+  // → [{ id, number, volume?, title? }]
 }
 
-export async function pages(sourceId: string, chapterId: string): Promise<PageList> {
-  // ...
+export async function pages(chapterId: string): Promise<string[]> {
+  // → image URLs in reading order (novel sources export chapterText instead)
 }`
 
-const browserSnippet = `import { getBrowser } from '../plugin-host/src/browser'
-
-const browser = await getBrowser()
+const browserSnippet = `// ctx comes from init(ctx); getBrowser() is a Playwright Browser (CloakBrowser over CDP)
+const browser = await ctx!.getBrowser()
 const page = await browser.newPage()
 await page.goto(url)
 const html = await page.content()`
 
-const buildSnippet = `# Build your plugin
-cd my-source
-npm run build   # esbuild → dist/index.js
+const buildSnippet = `npm test            # contract + parser tests (fixtures captured from the live site)
+npm run build       # → dist/<id>.js + dist/<id>.js.sha256
 
-# Install into arrgh via Settings → Sources → Add custom source
-# URL: http://your-plugin-host:port`
+# Try it: copy dist/<id>.js into plugin-host's community folder (hot-loaded),
+# then register the source under Settings → Sources.
+
+# Release: bump package.json, tag vX.Y.Z → the release workflow publishes the bundle,
+# its sha256 and the plugin-index entry to paste into a PR on t2vi/arrgh.`
 ---
 
 <DocsLayout title="Plugin Development" section="plugins">
   <h1>Plugin Development</h1>
 
   <p>*ARRgh!'s source plugins are esbuild-bundled TypeScript modules that implement a simple HTTP API. The plugin host loads them and proxies requests from the Rust server.</p>
+
+  <p><strong>Start from <a href="https://github.com/t2vi/arrgh-plugin-template" target="_blank" rel="noopener noreferrer">arrgh-plugin-template</a>.</strong> It wires in the <a href="https://github.com/t2vi/arrgh-plugin-sdk" target="_blank" rel="noopener noreferrer">plugin SDK</a> (protocol types, <code>arrgh-plugin build</code>, contract tests) and includes CI plus a release workflow that publishes the bundle, its sha256 and the catalog entry.</p>
 
   <h2>Plugin protocol</h2>
 
