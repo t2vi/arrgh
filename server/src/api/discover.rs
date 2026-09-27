@@ -24,6 +24,7 @@ use crate::auth::Claims;
 use crate::discover::{self, DiscoverResult};
 use crate::error::{AppError, AppResult};
 use crate::metadata;
+use crate::settings;
 use crate::state::AppState;
 use crate::titles;
 
@@ -555,7 +556,10 @@ async fn trending_manga(
     let results = enrich_and_check_library(
         &state.db,
         &claims.user_id,
-        cached.into_iter().take(6).collect(),
+        cached
+            .into_iter()
+            .take(settings::trending_per_source(&state.db).await)
+            .collect(),
     )
     .await?;
     Ok(Json(results))
@@ -597,7 +601,10 @@ async fn trending_manhwa(
     let results = enrich_and_check_library(
         &state.db,
         &claims.user_id,
-        cached.into_iter().take(6).collect(),
+        cached
+            .into_iter()
+            .take(settings::trending_per_source(&state.db).await)
+            .collect(),
     )
     .await?;
     Ok(Json(results))
@@ -611,7 +618,10 @@ async fn trending_manhua(
     let results = enrich_and_check_library(
         &state.db,
         &claims.user_id,
-        cached.into_iter().take(6).collect(),
+        cached
+            .into_iter()
+            .take(settings::trending_per_source(&state.db).await)
+            .collect(),
     )
     .await?;
     Ok(Json(results))
@@ -628,7 +638,10 @@ async fn trending_adult_manhwa(
     let results = enrich_and_check_library(
         &state.db,
         &claims.user_id,
-        cached.into_iter().take(6).collect(),
+        cached
+            .into_iter()
+            .take(settings::trending_per_source(&state.db).await)
+            .collect(),
     )
     .await?;
     Ok(Json(results))

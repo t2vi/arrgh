@@ -173,3 +173,33 @@ async fn save_settings_no_auth_required() {
     .await;
     assert_eq!(status, StatusCode::OK);
 }
+
+// spec: 007/FR-001b
+#[tokio::test]
+async fn effective_download_dir_prefers_saved_setting_over_env() {
+    let state = common::build_state().await;
+    let env_dir = "/env/downloads";
+    assert_eq!(
+        arrgh_server::settings::effective_download_dir(&state.db, env_dir).await,
+        env_dir
+    );
+    arrgh_server::settings::set(&state.db, arrgh_server::settings::DOWNLOAD_DIR, "")
+        .await
+        .unwrap();
+    assert_eq!(
+        arrgh_server::settings::effective_download_dir(&state.db, env_dir).await,
+        env_dir,
+        "empty value counts as unset"
+    );
+    arrgh_server::settings::set(
+        &state.db,
+        arrgh_server::settings::DOWNLOAD_DIR,
+        "/nas/manga",
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        arrgh_server::settings::effective_download_dir(&state.db, env_dir).await,
+        "/nas/manga"
+    );
+}

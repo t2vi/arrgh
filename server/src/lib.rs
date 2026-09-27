@@ -53,7 +53,7 @@ pub fn init_tracing(level: &str, buffer: Arc<LogBuffer>) {
 
 /// Build the app and serve until SIGINT/SIGTERM.
 pub async fn run() -> anyhow::Result<()> {
-    let config = Config::from_env()?;
+    let mut config = Config::from_env()?;
     let level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "info".into());
     let log_buffer = LogBuffer::new(&level);
     init_tracing(&level, log_buffer.clone());
@@ -63,6 +63,8 @@ pub async fn run() -> anyhow::Result<()> {
     if config.seed_default_sources {
         sources::seed_defaults_if_empty(&db, &config.plugin_host_url).await?;
     }
+    // Settings → "Library path" overrides the DownloadDir env var (read at boot only).
+    config.download_dir = settings::effective_download_dir(&db, &config.download_dir).await;
     let state = AppState::new(config, log_buffer, db);
 
     tokio::spawn(downloader::run_loop(

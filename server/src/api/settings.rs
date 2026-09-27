@@ -43,10 +43,13 @@ async fn read_settings(state: &AppState) -> AppResult<AppSettingsDto> {
             settings::DEFAULT_AUTO_DOWNLOAD,
         ),
         reader_mode: get("reader_mode").unwrap_or("scroll").to_string(),
-        download_dir: get("download_dir")
+        download_dir: get(settings::DOWNLOAD_DIR)
             .map(str::to_string)
             .unwrap_or_else(|| state.config.download_dir.clone()),
-        trending_per_source: settings::parse_long(get("trending_per_source"), 5),
+        trending_per_source: settings::parse_long(
+            get(settings::TRENDING_PER_SOURCE),
+            settings::DEFAULT_TRENDING_PER_SOURCE,
+        ),
         check_for_updates: settings::parse_bool(get("check_for_updates"), false),
     })
 }
@@ -96,13 +99,13 @@ async fn save_settings(
     if let Some(v) = &body.download_dir {
         let trimmed = v.trim();
         if !trimmed.is_empty() {
-            settings::set(&state.db, "download_dir", trimmed).await?;
+            settings::set(&state.db, settings::DOWNLOAD_DIR, trimmed).await?;
         }
     }
     if let Some(v) = body.trending_per_source {
         settings::set(
             &state.db,
-            "trending_per_source",
+            settings::TRENDING_PER_SOURCE,
             &settings::clamp_trending(v).to_string(),
         )
         .await?;

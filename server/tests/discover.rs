@@ -266,8 +266,9 @@ async fn trending_manga_serves_stale_cache_when_fails() {
     assert_eq!(arr[0]["title"], "Cached Title");
 }
 
+// spec: 007/FR-001c, 004/FR-009
 #[tokio::test]
-async fn trending_manga_caps_at_six() {
+async fn trending_lane_size_follows_trending_per_source() {
     let mock = common::start_mock_plugin_host("boom", true).await;
     let state = common::build_discover_state(&mock).await;
     let admin = common::seed_user(&state, "admin", "admin", true).await;
@@ -283,19 +284,31 @@ async fn trending_manga_caps_at_six() {
         })
         .collect();
     state.trending.set("manga", cached);
+    let db = state.db.clone();
 
     let token = common::token_for(&admin);
     let app = arrgh_server::api::router(state);
+    let lane_len = |app: axum::Router, token: String| async move {
+        let (_, body) = send(
+            &app,
+            "GET",
+            "/api/discover/trending/manga",
+            Some(&token),
+            None,
+        )
+        .await;
+        body.as_array().unwrap().len()
+    };
 
-    let (_, body) = send(
-        &app,
-        "GET",
-        "/api/discover/trending/manga",
-        Some(&token),
-        None,
-    )
-    .await;
-    assert_eq!(body.as_array().unwrap().len(), 6);
+    assert_eq!(
+        lane_len(app.clone(), token.clone()).await,
+        5,
+        "default trending_per_source"
+    );
+    arrgh_server::settings::set(&db, arrgh_server::settings::TRENDING_PER_SOURCE, "3")
+        .await
+        .unwrap();
+    assert_eq!(lane_len(app, token).await, 3);
 }
 
 #[tokio::test]
