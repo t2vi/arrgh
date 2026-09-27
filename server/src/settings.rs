@@ -18,6 +18,28 @@ pub const MAX_INDEX_INTERVAL_HOURS: i64 = 24;
 /// Global auto-download default; a title's own `auto_download` overrides it.
 pub const AUTO_DOWNLOAD: &str = "auto_download";
 pub const DEFAULT_AUTO_DOWNLOAD: bool = false;
+/// "Library path" — where downloads (and the cover/meta cache) live. Read once at boot,
+/// where it overrides the `DownloadDir` env var ("Restart required" in the UI).
+pub const DOWNLOAD_DIR: &str = "download_dir";
+/// Results shown per trending lane (each lane is fed by one source).
+pub const TRENDING_PER_SOURCE: &str = "trending_per_source";
+pub const DEFAULT_TRENDING_PER_SOURCE: i64 = 5;
+
+/// Saved `download_dir` if set and non-empty, else the env/config default.
+pub async fn effective_download_dir(pool: &SqlitePool, env_default: &str) -> String {
+    get(pool, DOWNLOAD_DIR)
+        .await
+        .ok()
+        .flatten()
+        .filter(|v| !v.trim().is_empty())
+        .unwrap_or_else(|| env_default.to_string())
+}
+
+/// Current trending lane size (`trending_per_source`, clamped like on save).
+pub async fn trending_per_source(pool: &SqlitePool) -> usize {
+    let raw = get(pool, TRENDING_PER_SOURCE).await.ok().flatten();
+    clamp_trending(parse_long(raw.as_deref(), DEFAULT_TRENDING_PER_SOURCE)) as usize
+}
 
 pub async fn get(pool: &SqlitePool, key: &str) -> sqlx::Result<Option<String>> {
     sqlx::query_scalar("SELECT value FROM server_settings WHERE key = ?")

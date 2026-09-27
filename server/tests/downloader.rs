@@ -503,11 +503,13 @@ async fn peak_concurrency(workers: i64) -> i64 {
     peak
 }
 
+// spec: 005/FR-014
 #[tokio::test]
 async fn download_workers_2_runs_two_items_concurrently() {
     assert_eq!(peak_concurrency(2).await, 2);
 }
 
+// spec: 005/FR-014
 #[tokio::test]
 async fn download_workers_1_runs_items_one_at_a_time() {
     assert_eq!(peak_concurrency(1).await, 1);

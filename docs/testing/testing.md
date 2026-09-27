@@ -22,6 +22,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 |---|---|---|
 | `components/SegmentedControl` | render, onChange | ✅ |
 | `components/Toggle` | render, onChange | ✅ |
+| `indexHtml.test.ts` (GH #205) | `index.html` links the arrgh favicon set + manifest + theme-color and `public/` ships them; no Vite scaffold icons | ✅ |
 | `components/NumberStepper` | render, onChange | ✅ |
 | `components/SettingRow` | render | ✅ |
 | `lib/utils` (cn) | class merging | ✅ |
@@ -126,7 +127,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `plugins.rs` | Index fetch, admin-gated install (404/409/422/502/201) and delete (404/403/204) |
 | `media.rs` | Covered by `media.rs`'s unit tests + a manual smoke check (no dedicated integration file — no auth on this route group to exercise) |
 | `logs.rs`, `version.rs` | Log buffer read + level PATCH, version + update-available reporting |
-| `discover.rs` | Fan-out search across all authorities (dedup, ordering, partial-failure tolerance, nhentai upgrade), trending lanes (TTL + stale-serve), add-to-library, `match_sources` (fuzzy title match, alias match, per-source timeout/error handling, sync warnings) |
+| `discover.rs` | Fan-out search across all authorities (dedup, ordering, partial-failure tolerance, nhentai upgrade), trending lanes (TTL + stale-serve), add-to-library, `match_sources` (fuzzy title match, alias match, per-source timeout/error handling, sync warnings); trending lane size follows `trending_per_source` (GH #203) |
 | `schema_bootstrap.rs` | Fresh DB gets full schema; a DB missing `metadata_source`/`metadata_source_id` (pre-dates that column) gets patched; reconnecting to an already-migrated DB is a no-op |
 
 ---
