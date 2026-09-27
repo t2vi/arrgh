@@ -34,8 +34,14 @@ async fn read_settings(state: &AppState) -> AppResult<AppSettingsDto> {
             get(settings::DOWNLOAD_WORKERS),
             settings::DEFAULT_DOWNLOAD_WORKERS,
         ),
-        index_interval_hours: settings::parse_long(get("index_interval_hours"), 6),
-        auto_download: settings::parse_bool(get("auto_download"), false),
+        index_interval_hours: settings::parse_long(
+            get(settings::INDEX_INTERVAL_HOURS),
+            settings::DEFAULT_INDEX_INTERVAL_HOURS,
+        ),
+        auto_download: settings::parse_bool(
+            get(settings::AUTO_DOWNLOAD),
+            settings::DEFAULT_AUTO_DOWNLOAD,
+        ),
         reader_mode: get("reader_mode").unwrap_or("scroll").to_string(),
         download_dir: get("download_dir")
             .map(str::to_string)
@@ -74,10 +80,15 @@ async fn save_settings(
         settings::set(&state.db, settings::DOWNLOAD_WORKERS, &v.to_string()).await?;
     }
     if let Some(v) = body.index_interval_hours {
-        settings::set(&state.db, "index_interval_hours", &v.to_string()).await?;
+        settings::set(&state.db, settings::INDEX_INTERVAL_HOURS, &v.to_string()).await?;
     }
     if let Some(v) = body.auto_download {
-        settings::set(&state.db, "auto_download", if v { "true" } else { "false" }).await?;
+        settings::set(
+            &state.db,
+            settings::AUTO_DOWNLOAD,
+            if v { "true" } else { "false" },
+        )
+        .await?;
     }
     if let Some(v) = &body.reader_mode {
         settings::set(&state.db, "reader_mode", v).await?;

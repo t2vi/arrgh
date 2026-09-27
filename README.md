@@ -15,6 +15,7 @@
 - Title aliases from MangaUpdates associated names — improves cross-source matching for series with multiple romanisations
 - Chapters aggregated across all registered sources — completeness doesn't depend on any one source being up to date
 - Automatic download fallback — if the preferred source fails, arrgh tries the next by priority
+- Scheduled re-sync + auto-download — every **Sync interval** (Settings, 1–24 h) library titles re-sync; newly found chapters are queued when auto-download is on (globally, or per title: Global / Always / Never)
 - Parallel downloads — **Download workers** (Settings → Downloads, 1–10) chapters at once; changes apply without a restart
 - A stuck source can't stall search, sync or downloads — every plugin call is time-limited
 - Hentai source routing — explicit sources only matched for titles tagged `hentai`; non-explicit sources skipped for them

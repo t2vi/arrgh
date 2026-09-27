@@ -116,6 +116,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `chapters.rs`, `chapter_sync.rs` | Chapter list/detail/text, plugin-host chapter fetch + dedup |
 | `queue.rs` | List/filter, admin-only clear-completed, owner-or-admin remove-or-cancel |
 | `downloader.rs` | Background worker: cbz/text download, multi-source priority fallback, `"downloading"` status while in flight, error messages include the failing URL, User-Agent header sent, `download_workers` honoured (2 → two items in flight at once, 1 → never more than one; GH #160) |
+| `scheduler.rs` (GH #200) | Scheduled re-sync: only chapters a sync newly finds are queued (never the backlog); per-title Always/Never override the global `auto_download`; global default off; interval from `index_interval_hours`, clamped 1–24 h |
 | `settings.rs`, `sources.rs` | KV settings CRUD + validation, source list/patch/delete, seeded bundled-source content types |
 | `discover.rs` (Royal Road, spec 019) | Royal Road leg in search results, leg failure non-fatal, NovelUpdates wins dedup, add stores `metadata_source=royalroad` + author from plugin meta + text chapters numbered by real number, no Sync Warning when Royal Road has no match (FR-009), web-shaped add body (`mangaupdates_id` + non-MU `source`) never stored as / deduped against a MangaUpdates id ✅ |
 | `chapter_sync.rs` (#173) | re-sync replaces a chapter's stale source_id when the source now reports a different one for the same chapter ✅ |

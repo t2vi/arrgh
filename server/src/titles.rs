@@ -401,6 +401,55 @@ pub async fn update_content_type(pool: &SqlitePool, id: &str, v: &str) -> sqlx::
     Ok(())
 }
 
+pub const SYNC_SYNCING: &str = "syncing";
+pub const SYNC_READY: &str = "ready";
+pub const SYNC_ERROR: &str = "error";
+
+/// Syncs chapters from every linked source, logging each step, then sets the
+/// final `sync_status` (`error` if any source failed). The caller has already
+/// set `syncing` and cleared the log. Shared by `POST /titles/{id}/sync` and
+/// the scheduler.
+pub async fn run_sync(
+    pool: &SqlitePool,
+    http: &reqwest::Client,
+    plugin_host_url: &str,
+    title_id: &str,
+    content_type: &str,
+    links: &[(String, String)],
+) {
+    let mut any_error = false;
+    for (source, source_id) in links {
+        append_sync_log(pool, title_id, &format!("Syncing from {source}…")).await;
+        match crate::chapters::sync_from_source(
+            pool,
+            http,
+            plugin_host_url,
+            title_id,
+            content_type,
+            source,
+            source_id,
+        )
+        .await
+        {
+            Ok(count) => {
+                append_sync_log(
+                    pool,
+                    title_id,
+                    &format!("Synced {count} chapter(s) from {source}"),
+                )
+                .await
+            }
+            Err(e) => {
+                any_error = true;
+                append_sync_log(pool, title_id, &format!("Error from {source}: {e}")).await;
+            }
+        }
+    }
+    let final_status = if any_error { SYNC_ERROR } else { SYNC_READY };
+    let _ = update_sync_status(pool, title_id, final_status).await;
+    append_sync_log(pool, title_id, "Sync complete").await;
+}
+
 pub async fn update_sync_status(pool: &SqlitePool, id: &str, status: &str) -> sqlx::Result<()> {
     sqlx::query("UPDATE titles SET sync_status = ? WHERE id = ?")
         .bind(status)

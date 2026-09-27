@@ -18,7 +18,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::auth::Claims;
-use crate::chapters;
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
 use crate::titles;
@@ -354,44 +353,14 @@ async fn sync_title(
         return Err(AppError::NotFound);
     }
 
-    titles::update_sync_status(&state.db, &id, "syncing").await?;
+    titles::update_sync_status(&state.db, &id, titles::SYNC_SYNCING).await?;
     titles::clear_sync_log(&state.db, &id).await?;
 
     let db = state.db.clone();
     let http = state.http.clone();
     let plugin_host_url = state.config.plugin_host_url.clone();
     tokio::spawn(async move {
-        let mut any_error = false;
-        for (source, source_id) in &links {
-            titles::append_sync_log(&db, &id, &format!("Syncing from {source}…")).await;
-            match chapters::sync_from_source(
-                &db,
-                &http,
-                &plugin_host_url,
-                &id,
-                &content_type,
-                source,
-                source_id,
-            )
-            .await
-            {
-                Ok(count) => {
-                    titles::append_sync_log(
-                        &db,
-                        &id,
-                        &format!("Synced {count} chapter(s) from {source}"),
-                    )
-                    .await
-                }
-                Err(e) => {
-                    any_error = true;
-                    titles::append_sync_log(&db, &id, &format!("Error from {source}: {e}")).await;
-                }
-            }
-        }
-        let final_status = if any_error { "error" } else { "ready" };
-        let _ = titles::update_sync_status(&db, &id, final_status).await;
-        titles::append_sync_log(&db, &id, "Sync complete").await;
+        titles::run_sync(&db, &http, &plugin_host_url, &id, &content_type, &links).await;
     });
 
     Ok(StatusCode::ACCEPTED)

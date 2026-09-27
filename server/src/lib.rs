@@ -15,6 +15,7 @@ pub mod metadata;
 pub mod plugins;
 pub mod progress;
 pub mod queue;
+pub mod scheduler;
 pub mod settings;
 pub mod sources;
 pub mod state;
@@ -69,6 +70,11 @@ pub async fn run() -> anyhow::Result<()> {
         state.http.clone(),
         state.config.plugin_host_url.clone(),
         state.config.download_dir.clone(),
+    ));
+    tokio::spawn(scheduler::run_loop(
+        state.db.clone(),
+        state.http.clone(),
+        state.config.plugin_host_url.clone(),
     ));
     tokio::spawn(update_checker::run_loop(
         state.db.clone(),

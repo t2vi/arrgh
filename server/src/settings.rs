@@ -10,6 +10,14 @@ pub const DOWNLOAD_WORKERS: &str = "download_workers";
 pub const DEFAULT_DOWNLOAD_WORKERS: i64 = 2;
 /// Matches the Settings UI stepper (1–10); the API itself accepts any number.
 pub const MAX_DOWNLOAD_WORKERS: i64 = 10;
+/// "Sync interval (hours)" — how often the scheduler re-syncs library titles.
+pub const INDEX_INTERVAL_HOURS: &str = "index_interval_hours";
+pub const DEFAULT_INDEX_INTERVAL_HOURS: i64 = 6;
+/// Matches the Settings UI stepper (1–24).
+pub const MAX_INDEX_INTERVAL_HOURS: i64 = 24;
+/// Global auto-download default; a title's own `auto_download` overrides it.
+pub const AUTO_DOWNLOAD: &str = "auto_download";
+pub const DEFAULT_AUTO_DOWNLOAD: bool = false;
 
 pub async fn get(pool: &SqlitePool, key: &str) -> sqlx::Result<Option<String>> {
     sqlx::query_scalar("SELECT value FROM server_settings WHERE key = ?")

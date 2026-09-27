@@ -130,7 +130,7 @@ pub async fn queue_download(
     chapter_id: &str,
     manga_title: &str,
     chapter_num: f64,
-    queued_by: &str,
+    queued_by: Option<&str>,
 ) -> sqlx::Result<()> {
     let now = ef_timestamp_now();
     sqlx::query(

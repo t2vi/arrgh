@@ -34,7 +34,7 @@ Last updated for **v1.2.0** (2026-09-27). Per-release detail: [CHANGELOG.md](CHA
 ## **Downloads**
 ✅ Per-chapter download progress — live percentage bar in Downloads queue and title view<br />
 ✅ Parallel downloads — `download_workers` (1–10) honoured, live-adjustable — v1.2.0<br />
-🔳 Auto-download new chapters on a schedule — the toggles exist but nothing acts on them yet ([#200](https://github.com/t2vi/arrgh/issues/200))<br />
+✅ Scheduled re-sync + auto-download of newly found chapters (global default, per-title override) ([#200](https://github.com/t2vi/arrgh/issues/200))<br />
 
 ## **Reader**
 ✅ Paged and scroll modes for comics (scroll default since v1.1.0)<br />

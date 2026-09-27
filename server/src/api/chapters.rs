@@ -119,7 +119,7 @@ async fn queue_download(
         &candidate.id,
         &candidate.manga_title,
         candidate.number,
-        &claims.user_id,
+        Some(&claims.user_id),
     )
     .await?;
 
