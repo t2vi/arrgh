@@ -1,10 +1,10 @@
-// Contract tests for plugin-index/index.json itself, plus generic cross-checks against
-// whatever plugin dirs remain bundled (frozen fallback copies — see plugins/<id>/README.md).
-// Per-plugin fixture/behavior/contract tests now live in each plugin's own repo
-// (t2vi/arrgh-plugin-<id>, spec 031 phase C) — no HTTP calls here.
+// Contract tests for plugin-index/index.json itself — no HTTP calls, no plugin source imports.
+// Per-plugin fixture/behavior/contract tests live in each plugin's own repo
+// (t2vi/arrgh-plugin-<id>, spec 031 phase C). plugins/ no longer exists in this monorepo except
+// plugins/fixture/ (e2e-only); the image fetches every bundled plugin from its own repo's
+// published release at build time (spec 031 phase D, scripts/fetch-plugin-bundles.mjs).
 
-import { describe, it, expect, beforeAll } from 'vitest'
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { describe, it, expect } from 'vitest'
 
 // ── plugin-index.json consistency check ──────────────────────────────────────
 // Catches discrepancies that don't depend on importing a specific plugin's live code.
@@ -32,52 +32,18 @@ describe('plugin-index.json consistency', () => {
   it('boxnovel not in plugin-index (removed — domain parked)', () => {
     expect(indexMap.has('boxnovel')).toBe(false)
   })
-})
 
-// ── Production plugin set (spec 020) ─────────────────────────────────────────
-// One definition, three places: the plugin-host image, `npm run build:plugins`
-// (also what scripts/sync-plugins.sh builds for dev), and the bundled index.
-
-describe('production plugin set', () => {
-  const root = new URL('../../', import.meta.url)
-  const read = (p: string) => readFileSync(new URL(p, root), 'utf8')
-
-  const dockerfile = [...read('plugin-host/Dockerfile').matchAll(
-    /COPY --from=bundles \/build\/plugins\/([^/]+)\/bundles\/\1\.js/g,
-  )].map((m) => m[1]).sort()
-  const buildScript = JSON.parse(read('package.json')).scripts['build:plugins'] as string
-  const built = [...buildScript.matchAll(/-w plugins\/(\S+)/g)].map((m) => m[1]).sort()
-  const index = (JSON.parse(read('plugin-index/index.json')) as { id: string; bundled?: boolean }[])
-    .filter((p) => p.bundled).map((p) => p.id).sort()
-
-  it('Dockerfile, build:plugins and index bundled list the same plugins', () => {
-    expect(dockerfile.length).toBeGreaterThan(0)
-    expect(built).toEqual(dockerfile)
-    expect(index).toEqual(dockerfile)
-  })
-
-  it('never ships the e2e fixture plugin', () => {
-    expect(dockerfile).not.toContain('fixture')
+  it('never marks the e2e fixture plugin bundled (it never ships in the image)', () => {
+    expect(indexMap.has('fixture')).toBe(false)
   })
 })
 
-// spec: 031/FR-010, 031/FR-001
+// spec: 031/FR-010, 031/FR-001, 031/FR-016 (phase D)
+// The image now fetches every bundled entry's download_url and verifies both its sha256 and its
+// bundle's own info.version at build time (scripts/fetch-plugin-bundles.mjs) — that IS the
+// per-plugin version/checksum check, run for real against the network, not duplicated here.
 describe('plugins report their own version (spec 031)', () => {
   const index = indexJson as { id: string; version: string; bundled?: boolean; sha256?: string | null; protocol?: number }[]
-  const pluginsDir = new URL('../../plugins/', import.meta.url)
-  const ids = readdirSync(pluginsDir).filter((d) => existsSync(new URL(`${d}/src/index.ts`, pluginsDir)))
-  let infos: { id: string; version?: string }[] = []
-  beforeAll(async () => {
-    infos = await Promise.all(ids.map(async (d) => (await import(`../../plugins/${d}/src/index.ts`)).info))
-  })
-
-  it('every bundled plugin is checked', () => {
-    expect(infos.map((i) => i.id).sort()).toEqual(index.filter((e) => e.bundled).map((e) => e.id).sort())
-  })
-
-  it.each(index.filter((e) => e.bundled).map((e) => [e.id, e] as const))('%s: info.version equals the index version', (id, entry) => {
-    expect(infos.find((i) => i.id === id)?.version).toBe(entry.version)
-  })
 
   it('every index entry carries sha256 and protocol keys', () => {
     for (const e of index) {

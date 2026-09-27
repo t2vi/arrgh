@@ -1,29 +1,23 @@
+# ── Fetch verified plugin bundles from their own repos' releases (spec 031 phase D) ───────────
+# Every plugin now lives in its own t2vi/arrgh-plugin-<id> repo; the image build fetches each
+# bundled catalog entry's release asset and verifies its sha256 + its own info.version, failing
+# the build on any mismatch (FR-016) — see plugin-index/index.json and
+# scripts/fetch-plugin-bundles.mjs. Force amd64: the fetched files are platform-agnostic JS, and
+# Node 22 crashes under QEMU arm64 emulation for the rest of this file's build stages.
+
+FROM --platform=linux/amd64 node:22-alpine AS bundles
+WORKDIR /build
+COPY plugin-index/index.json          ./plugin-index/
+COPY scripts/fetch-plugin-bundles.mjs ./scripts/
+RUN node scripts/fetch-plugin-bundles.mjs --out /build/bundles
+
 # ── Workspace deps (shared build-time install) ────────────────────────────────
-# Force amd64 for all build stages — JS bundles are platform-agnostic and
-# Node 22 crashes under QEMU arm64 emulation (illegal instruction in V8).
 
 FROM --platform=linux/amd64 node:22-alpine AS deps
 WORKDIR /build
 COPY package.json package-lock.json ./
-COPY plugins/mangadex/package.json     ./plugins/mangadex/
-COPY plugins/toonily/package.json      ./plugins/toonily/
-COPY plugins/novelfull/package.json    ./plugins/novelfull/
-COPY plugins/mangapill/package.json    ./plugins/mangapill/
-COPY plugins/nhentai/package.json      ./plugins/nhentai/
-COPY plugins/asurascans/package.json   ./plugins/asurascans/
-COPY plugins/wuxiaworld/package.json   ./plugins/wuxiaworld/
-COPY plugins/novelupdates/package.json ./plugins/novelupdates/
-COPY plugins/manga18fx/package.json    ./plugins/manga18fx/
-COPY plugins/royalroad/package.json    ./plugins/royalroad/
-COPY plugins/novelfullnet/package.json ./plugins/novelfullnet/
-COPY plugin-host/package.json          ./plugin-host/
+COPY plugin-host/package.json       ./plugin-host/
 RUN npm ci
-
-# ── Build all plugin bundles ──────────────────────────────────────────────────
-
-FROM --platform=linux/amd64 deps AS bundles
-COPY plugins ./plugins
-RUN npm run build:plugins
 
 # ── Build plugin-host ─────────────────────────────────────────────────────────
 
@@ -40,7 +34,9 @@ RUN npm run build
 FROM --platform=linux/amd64 node:22-alpine AS prod-deps
 WORKDIR /app
 COPY plugin-host/package.json ./
-RUN npm install --omit=dev --ignore-scripts
+# git: npm needs it to resolve the arrgh-plugin-sdk git devDependency before --omit=dev drops it
+# (alpine's node image doesn't ship git); the SDK itself is dev/test-only, never in node_modules here.
+RUN apk add --no-cache git && npm install --omit=dev --ignore-scripts
 
 # ── Final image ───────────────────────────────────────────────────────────────
 
@@ -48,18 +44,7 @@ FROM node:22-alpine
 WORKDIR /app
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=host-build /build/plugin-host/dist ./dist
-RUN mkdir -p bundles
-COPY --from=bundles /build/plugins/mangadex/bundles/mangadex.js         ./bundles/
-COPY --from=bundles /build/plugins/toonily/bundles/toonily.js           ./bundles/
-COPY --from=bundles /build/plugins/novelfull/bundles/novelfull.js       ./bundles/
-COPY --from=bundles /build/plugins/mangapill/bundles/mangapill.js       ./bundles/
-COPY --from=bundles /build/plugins/nhentai/bundles/nhentai.js           ./bundles/
-COPY --from=bundles /build/plugins/asurascans/bundles/asurascans.js     ./bundles/
-COPY --from=bundles /build/plugins/wuxiaworld/bundles/wuxiaworld.js     ./bundles/
-COPY --from=bundles /build/plugins/novelupdates/bundles/novelupdates.js ./bundles/
-COPY --from=bundles /build/plugins/manga18fx/bundles/manga18fx.js       ./bundles/
-COPY --from=bundles /build/plugins/royalroad/bundles/royalroad.js       ./bundles/
-COPY --from=bundles /build/plugins/novelfullnet/bundles/novelfullnet.js ./bundles/
+COPY --from=bundles /build/bundles ./bundles
 ENV PORT=4000 LANGUAGES=en CLOAKBROWSER_WS_URL=
 EXPOSE 4000
 CMD ["node", "dist/index.js"]

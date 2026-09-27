@@ -2,21 +2,10 @@
   "name": "arrgh",
   "private": true,
   "workspaces": [
-    "plugin-host",
-    "plugins/mangadex",
-    "plugins/toonily",
-    "plugins/novelfull",
-    "plugins/mangapill",
-    "plugins/nhentai",
-    "plugins/asurascans",
-    "plugins/wuxiaworld",
-    "plugins/novelupdates",
-    "plugins/manga18fx",
-    "plugins/royalroad",
-    "plugins/novelfullnet"
+    "plugin-host"
   ],
   "scripts": {
-    "build:plugins": "npm run build -w plugins/mangadex -w plugins/toonily -w plugins/novelfull -w plugins/mangapill -w plugins/nhentai -w plugins/asurascans -w plugins/wuxiaworld -w plugins/novelupdates -w plugins/manga18fx -w plugins/royalroad -w plugins/novelfullnet",
+    "fetch:plugins": "node scripts/fetch-plugin-bundles.mjs",
     "build:web": "npm run build --prefix web"
   }
 }

@@ -58,10 +58,10 @@ jobs:
       - name: Build
         run: npm run build
 
-  # ── Plugins (independent, no test layer yet) ───────────────────────────────
+  # ── Plugin Host (each plugin now lives in its own arrgh-plugin-<id> repo, spec 031) ─────────
 
   plugins:
-    name: Plugins + Plugin Host (Node)
+    name: Plugin Host (Node)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,12 +76,19 @@ jobs:
       - name: npm ci (workspace)
         run: npm ci
 
-      - name: Build plugin bundles
-        run: npm run build:plugins
-
       - name: Build plugin-host
         run: npm run build
         working-directory: plugin-host
+
+      - name: Test plugin-host
+        run: npm test
+        working-directory: plugin-host
+
+      - name: Test fetch-plugin-bundles.mjs (pure filter, no network)
+        run: node --test scripts/fetch-plugin-bundles.test.mjs
+
+      - name: Fetch + verify bundled plugins (real network — catches a rotated/deleted release)
+        run: npm run fetch:plugins
 
   # ── Allure report → GitHub Pages /test-reports/ ───────────────────────────
 
