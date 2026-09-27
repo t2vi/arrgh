@@ -53,6 +53,7 @@ HURL_FILES=(
   tests/settings.hurl
   tests/titles.hurl
   tests/sources.hurl
+  tests/trending.hurl
   tests/plugins.hurl
   tests/queue.hurl
   tests/logs.hurl
