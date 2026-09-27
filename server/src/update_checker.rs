@@ -15,11 +15,15 @@ use sqlx::SqlitePool;
 
 use crate::state::UpdateCache;
 
-const REPO: &str = "t2vi/arrgh";
 const INTERVAL: Duration = Duration::from_secs(3600);
 
-pub async fn run_loop(pool: SqlitePool, http: reqwest::Client, cache: Arc<UpdateCache>) {
-    run_loop_with_interval(pool, http, cache, INTERVAL).await
+pub async fn run_loop(
+    pool: SqlitePool,
+    http: reqwest::Client,
+    cache: Arc<UpdateCache>,
+    releases_url: String,
+) {
+    run_loop_with_interval(pool, http, cache, releases_url, INTERVAL).await
 }
 
 /// Test seam — a shorter interval keeps integration tests fast.
@@ -27,10 +31,11 @@ pub async fn run_loop_with_interval(
     pool: SqlitePool,
     http: reqwest::Client,
     cache: Arc<UpdateCache>,
+    releases_url: String,
     interval: Duration,
 ) {
     loop {
-        if let Err(e) = check(&pool, &http, &cache).await {
+        if let Err(e) = check(&pool, &http, &cache, &releases_url).await {
             tracing::debug!(error = ?e, "update check failed");
         }
         tokio::time::sleep(interval).await;
@@ -41,6 +46,7 @@ async fn check(
     pool: &SqlitePool,
     http: &reqwest::Client,
     cache: &UpdateCache,
+    releases_url: &str,
 ) -> anyhow::Result<()> {
     let enabled: Option<String> =
         sqlx::query_scalar("SELECT value FROM server_settings WHERE key = 'check_for_updates'")
@@ -51,9 +57,8 @@ async fn check(
         return Ok(());
     }
 
-    let url = format!("https://api.github.com/repos/{REPO}/releases/latest");
     let res = http
-        .get(&url)
+        .get(releases_url)
         .header("User-Agent", "arrgh-server")
         .header("Accept", "application/vnd.github+json")
         .send()

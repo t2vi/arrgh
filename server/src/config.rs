@@ -33,6 +33,9 @@ pub struct Config {
     pub anilist_url: String,
     pub mangadex_meta_url: String,
     pub wuxiaworld_meta_url: String,
+    /// GitHub releases API base (`update_checker`'s poller, spec 007/FR-013). Same
+    /// test seam as the metadata authorities above — only tests override it.
+    pub github_releases_url: String,
     /// Download target dir (`DownloadDir`).
     pub download_dir: String,
     /// JWT signing secret (`JwtSecret`). Required from S2 on; optional now.
@@ -71,6 +74,10 @@ impl Config {
             anilist_url: env_or("ANILIST_URL", crate::metadata::anilist::DEFAULT_ENDPOINT),
             mangadex_meta_url: env_or("MANGADEX_META_URL", crate::metadata::mangadex::DEFAULT_BASE),
             wuxiaworld_meta_url: env_or("WUXIAWORLD_META_URL", "https://www.wuxiaworld.com"),
+            github_releases_url: env_or(
+                "GITHUB_RELEASES_URL",
+                "https://api.github.com/repos/t2vi/arrgh/releases/latest",
+            ),
             jwt_secret,
             discover_source_timeout: crate::api::discover::DISCOVER_SOURCE_TIMEOUT,
         })
