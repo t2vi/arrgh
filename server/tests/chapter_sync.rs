@@ -643,3 +643,24 @@ async fn resync_marks_only_newly_found_chapters_new() {
     sync_once(&state, &t).await;
     assert_eq!(new_flags(&state, &t).await, vec![(1.0, false), (2.0, true)]);
 }
+
+/// GH #225: a title that fell behind (or gained a source with a full back-catalog)
+/// must not surface its whole backlog as "new" — only the actual latest chapter.
+// spec: 032/FR-007
+#[tokio::test]
+async fn resync_with_a_backlog_marks_only_the_newest_chapter() {
+    const BACKLOG_JSON: &str = r#"[
+      {"source_id":"src-ch-1","id":"src-ch-1","number":1.0,"title":"Chapter 1"},
+      {"source_id":"src-ch-2","id":"src-ch-2","number":2.0,"title":"Chapter 2"},
+      {"source_id":"src-ch-3","id":"src-ch-3","number":3.0,"title":"Chapter 3"},
+      {"source_id":"src-ch-4","id":"src-ch-4","number":4.0,"title":"Chapter 4"}
+    ]"#;
+    let state = setup(BACKLOG_JSON, false).await;
+    let t = common::seed_title(&state, "One Piece", false).await;
+    common::seed_chapter(&state, &t, 1.0, false).await;
+    sync_once(&state, &t).await;
+    assert_eq!(
+        new_flags(&state, &t).await,
+        vec![(1.0, false), (2.0, false), (3.0, false), (4.0, true)]
+    );
+}

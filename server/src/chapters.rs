@@ -290,6 +290,7 @@ pub async fn sync_from_source(
         .map(|(id, n)| (n.to_bits(), id))
         .collect();
 
+    let mut inserted: Vec<(String, f64)> = Vec::new();
     for pc in &plugin_chapters {
         if pc.number.is_nan() || pc.number.is_infinite() {
             continue;
@@ -302,7 +303,7 @@ pub async fn sync_from_source(
         sqlx::query(
             "INSERT INTO chapters \
                  (id, title_id, number, volume, title, chapter_format, is_new, page_count, downloaded, created_at) \
-             VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?)",
+             VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?)",
         )
         .bind(&id)
         .bind(title_id)
@@ -310,11 +311,25 @@ pub async fn sync_from_source(
         .bind(pc.volume)
         .bind(&pc.title)
         .bind(fmt)
-        .bind(mark_new)
         .bind(&now)
         .execute(pool)
         .await?;
-        by_num.insert(key, id);
+        by_num.insert(key, id.clone());
+        inserted.push((id, pc.number));
+    }
+
+    // Only the single chapter that's actually the newest this run discovered
+    // gets surfaced as a "new release" (Home) — marking every inserted row
+    // turned a backlog catch-up (a title re-synced after falling behind, or
+    // matched to a new source with a full back-catalog) into a wall of
+    // "new" chapters instead of the one release that's genuinely new (GH #225).
+    if mark_new {
+        if let Some((newest_id, _)) = inserted.iter().max_by(|a, b| a.1.total_cmp(&b.1)) {
+            sqlx::query("UPDATE chapters SET is_new = 1 WHERE id = ?")
+                .bind(newest_id)
+                .execute(pool)
+                .await?;
+        }
     }
 
     // Seed chapter_sources — skip pairs that already exist, and dedup
