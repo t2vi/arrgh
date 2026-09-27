@@ -280,6 +280,7 @@ async fn sync_plugin_host_error_sets_status_error() {
 
 // ── is_new flag ────────────────────────────────────────────────────────────
 
+// spec: 032/FR-007
 #[tokio::test]
 async fn sync_chapter_is_new_is_false_after_manual_sync() {
     let state = setup(DEFAULT_CHAPTERS_JSON, false).await;
@@ -302,6 +303,7 @@ async fn sync_chapter_is_new_is_false_after_manual_sync() {
     assert_eq!(new_count, 0);
 }
 
+// spec: 032/FR-006, 032/FR-007
 #[tokio::test]
 async fn new_releases_returns_empty_after_sync() {
     let state = setup(DEFAULT_CHAPTERS_JSON, false).await;
@@ -591,4 +593,53 @@ async fn sync_updates_a_changed_source_id_for_the_same_chapter() {
     .await
     .unwrap();
     assert_eq!(ids, vec!["issth/issth-book-1-chapter-2".to_string()]);
+}
+
+// ── new-release marking (GH #210) ────────────────────────────────────────
+
+async fn new_flags(state: &arrgh_server::state::AppState, title_id: &str) -> Vec<(f64, bool)> {
+    sqlx::query_as("SELECT number, is_new FROM chapters WHERE title_id = ? ORDER BY number")
+        .bind(title_id)
+        .fetch_all(&state.db)
+        .await
+        .unwrap()
+}
+
+/// One sync run with two sources, through the same path as manual/scheduled sync.
+async fn sync_once(state: &arrgh_server::state::AppState, title_id: &str) {
+    let links = [
+        ("mangadex".to_string(), "src-1".to_string()),
+        ("mangapill".to_string(), "src-1".to_string()),
+    ];
+    arrgh_server::titles::run_sync(
+        &state.db,
+        &state.http,
+        &state.config.plugin_host_url,
+        title_id,
+        "manga",
+        &links,
+    )
+    .await;
+}
+
+// spec: 032/FR-007
+#[tokio::test]
+async fn initial_import_marks_nothing_new() {
+    let state = setup(DEFAULT_CHAPTERS_JSON, false).await;
+    let t = common::seed_title(&state, "Berserk", false).await;
+    sync_once(&state, &t).await;
+    assert_eq!(
+        new_flags(&state, &t).await,
+        vec![(1.0, false), (2.0, false)]
+    );
+}
+
+// spec: 032/FR-007
+#[tokio::test]
+async fn resync_marks_only_newly_found_chapters_new() {
+    let state = setup(DEFAULT_CHAPTERS_JSON, false).await;
+    let t = common::seed_title(&state, "Berserk", false).await;
+    common::seed_chapter(&state, &t, 1.0, false).await;
+    sync_once(&state, &t).await;
+    assert_eq!(new_flags(&state, &t).await, vec![(1.0, false), (2.0, true)]);
 }

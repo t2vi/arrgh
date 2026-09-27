@@ -62,6 +62,7 @@ test.describe('Library', () => {
     await deleteTitleViaApi(page, id)
   })
 
+  // spec: 032/FR-012
   test('sync progress overlay visible while building', async ({ page }) => {
     // Add title but DON'T wait for sync — navigate immediately to see overlay
     const id = await addTitleViaApi(page, 'Fixture Manga')

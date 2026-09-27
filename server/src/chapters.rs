@@ -170,6 +170,8 @@ struct PluginChapter {
 /// Fetches `{plugin_host_url}/{source}/manga/{source_id}/chapters`, upserts
 /// chapters by `(title_id, number)`, then seeds `chapter_sources`
 /// (idempotent). Returns the number of chapters the plugin reported.
+/// `mark_new` flags inserted chapters `is_new` (Home "New releases"); the
+/// caller decides it once per sync run — see `titles::run_sync` (GH #210).
 ///
 /// Errors (network, non-2xx, bad JSON) propagate — the caller (titles.rs's
 /// sync orchestration) tracks per-source failure and logs it.
@@ -244,6 +246,7 @@ async fn reconcile_renumbered(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)] // same precedent as titles.rs; a params struct for one caller pair isn't worth it
 pub async fn sync_from_source(
     pool: &SqlitePool,
     http: &reqwest::Client,
@@ -252,6 +255,7 @@ pub async fn sync_from_source(
     content_type: &str,
     source: &str,
     source_id: &str,
+    mark_new: bool,
 ) -> anyhow::Result<u32> {
     let url = format!(
         "{}/{}/manga/{}/chapters",
@@ -299,7 +303,7 @@ pub async fn sync_from_source(
         sqlx::query(
             "INSERT INTO chapters \
                  (id, title_id, number, volume, title, chapter_format, is_new, page_count, downloaded, created_at) \
-             VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?)",
+             VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?)",
         )
         .bind(&id)
         .bind(title_id)
@@ -307,6 +311,7 @@ pub async fn sync_from_source(
         .bind(pc.volume)
         .bind(&pc.title)
         .bind(fmt)
+        .bind(mark_new)
         .bind(&now)
         .execute(pool)
         .await?;

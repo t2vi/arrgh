@@ -27,6 +27,7 @@ async fn send(app: &Router, method: &str, uri: &str, token: Option<&str>) -> (St
 
 // ── GET /api/chapters/title/{titleId} ─────────────────────────────────────
 
+// spec: 032/FR-011
 #[tokio::test]
 async fn list_chapters_returns_chapters_ordered_by_number() {
     let state = common::build_state().await;
@@ -53,6 +54,7 @@ async fn list_chapters_returns_chapters_ordered_by_number() {
     assert_eq!(arr[2]["number"], 3.0);
 }
 
+// spec: 032/FR-011
 #[tokio::test]
 async fn list_chapters_returns_empty_no_chapters() {
     let state = common::build_state().await;
@@ -72,6 +74,7 @@ async fn list_chapters_returns_empty_no_chapters() {
     assert_eq!(body.as_array().unwrap().len(), 0);
 }
 
+// spec: 032/FR-011
 #[tokio::test]
 async fn list_chapters_has_sources_true_when_chapter_source_exists() {
     let state = common::build_state().await;
@@ -93,6 +96,7 @@ async fn list_chapters_has_sources_true_when_chapter_source_exists() {
     assert_eq!(body[0]["has_sources"], true);
 }
 
+// spec: 032/FR-011
 #[tokio::test]
 async fn list_chapters_has_sources_false_when_no_chapter_source() {
     let state = common::build_state().await;
@@ -113,6 +117,7 @@ async fn list_chapters_has_sources_false_when_no_chapter_source() {
     assert_eq!(body[0]["has_sources"], false);
 }
 
+// spec: 032/FR-011
 #[tokio::test]
 async fn list_chapters_hides_explicit_title_when_user_not_allowed() {
     let state = common::build_state().await;
@@ -133,6 +138,7 @@ async fn list_chapters_hides_explicit_title_when_user_not_allowed() {
     assert_eq!(body.as_array().unwrap().len(), 0);
 }
 
+// spec: 032/FR-011
 #[tokio::test]
 async fn list_chapters_shows_explicit_title_when_user_allowed() {
     let state = common::build_state().await;
@@ -153,6 +159,7 @@ async fn list_chapters_shows_explicit_title_when_user_allowed() {
     assert_eq!(body.as_array().unwrap().len(), 1);
 }
 
+// spec: 032/FR-011
 #[tokio::test]
 async fn list_chapters_unauthorized_no_token() {
     let app = arrgh_server::api::router(common::build_state().await);
