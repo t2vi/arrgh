@@ -1,0 +1,31 @@
+{
+  "uuid": "9383fac1-5788-4de7-9c87-f644f9eab79e",
+  "historyId": "API#tests/queue.hurl",
+  "name": "tests/queue.hurl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1790551391515,
+  "stop": 1790551391518,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "api"
+    },
+    {
+      "name": "tag",
+      "value": "API"
+    },
+    {
+      "name": "suite",
+      "value": "API"
+    },
+    {
+      "name": "feature",
+      "value": "API"
+    },
+    {
+      "name": "story",
+      "value": "tests/queue.hurl"
+    }
+  ]
+}
