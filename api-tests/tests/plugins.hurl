@@ -36,13 +36,17 @@ jsonpath "$.plugins[0].id" isString
 jsonpath "$.plugins[0].origin" isString
 
 
-# Bundled entries have no download yet (phase A) → Update refused with a reason
+# Every bundled entry has a real download_url + sha256 since spec 031 phase C, so
+# `blocked_reason`'s "no download"/"no checksum" branches (unit-tested with synthetic
+# data in server/src/plugins.rs) aren't reachable from live catalog data any more —
+# this stack's `fixture` plugin-host double doesn't implement the host-protocol
+# endpoint the next check needs, so update is refused for that reason instead.
 # spec: 031/FR-005
 POST {{base}}/api/plugins/mangadex/update
 Authorization: Bearer {{token}}
 HTTP 422
 [Asserts]
-jsonpath "$.error" contains "no download"
+jsonpath "$.error" contains "unreachable"
 
 
 # Unknown id → 404
