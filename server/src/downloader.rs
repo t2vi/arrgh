@@ -18,7 +18,7 @@ use sqlx::SqlitePool;
 use time::macros::format_description;
 use time::OffsetDateTime;
 
-use crate::settings;
+use crate::{queue, settings};
 
 const USER_AGENT: &str = "arrgh-server/1.0";
 const TICK_INTERVAL: Duration = Duration::from_secs(3);
@@ -91,12 +91,14 @@ async fn tick(
     }
 
     let ids: Vec<String> = sqlx::query_scalar(
-        "UPDATE download_queue SET status = 'downloading', updated_at = ? \
-         WHERE id IN (SELECT id FROM download_queue WHERE status = 'pending' \
+        "UPDATE download_queue SET status = ?, updated_at = ? \
+         WHERE id IN (SELECT id FROM download_queue WHERE status = ? \
                       ORDER BY created_at LIMIT ?) \
          RETURNING id",
     )
+    .bind(queue::STATUS_DOWNLOADING)
     .bind(ef_timestamp_now())
+    .bind(queue::STATUS_PENDING)
     .bind(free as i64)
     .fetch_all(pool)
     .await?;
@@ -162,7 +164,7 @@ async fn process(
         return Ok(());
     }
 
-    let is_text = info.chapter_format == "text";
+    let is_text = info.chapter_format == crate::content::FORMAT_TEXT;
     let ext = if is_text { ".md" } else { ".cbz" };
     let file_name = format!("Ch. {}{ext}", format_chapter_num(chapter_num));
     let dest = match info.download_dir.filter(|d| !d.is_empty()) {
@@ -205,13 +207,12 @@ async fn process(
                 .execute(pool)
                 .await?;
 
-                sqlx::query(
-                    "UPDATE download_queue SET status = 'done', updated_at = ? WHERE id = ?",
-                )
-                .bind(&now)
-                .bind(queue_id)
-                .execute(pool)
-                .await?;
+                sqlx::query("UPDATE download_queue SET status = ?, updated_at = ? WHERE id = ?")
+                    .bind(queue::STATUS_DONE)
+                    .bind(&now)
+                    .bind(queue_id)
+                    .execute(pool)
+                    .await?;
                 return Ok(());
             }
             Err(e) => {
@@ -231,14 +232,13 @@ async fn process(
 
 async fn fail(pool: &SqlitePool, queue_id: &str, error: &str) -> anyhow::Result<()> {
     tracing::error!(queue_id, error, "download failed");
-    sqlx::query(
-        "UPDATE download_queue SET status = 'error', error = ?, updated_at = ? WHERE id = ?",
-    )
-    .bind(error)
-    .bind(ef_timestamp_now())
-    .bind(queue_id)
-    .execute(pool)
-    .await?;
+    sqlx::query("UPDATE download_queue SET status = ?, error = ?, updated_at = ? WHERE id = ?")
+        .bind(queue::STATUS_ERROR)
+        .bind(error)
+        .bind(ef_timestamp_now())
+        .bind(queue_id)
+        .execute(pool)
+        .await?;
     Ok(())
 }
 

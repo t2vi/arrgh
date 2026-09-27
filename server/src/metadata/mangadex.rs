@@ -50,7 +50,7 @@ pub(crate) fn map_entry(item: &Value) -> Option<MangaDexSeries> {
 
     let orig_lang = attrs.get("originalLanguage").and_then(Value::as_str);
     let content_type = map_content_type(orig_lang);
-    if content_type != "manhua" {
+    if content_type != crate::content::MANHUA {
         return None;
     }
 
@@ -104,7 +104,7 @@ pub(crate) fn map_entry(item: &Value) -> Option<MangaDexSeries> {
 
 pub(crate) fn map_content_type(orig_lang: Option<&str>) -> String {
     match orig_lang {
-        Some("zh") | Some("zh-hk") | Some("zh-ro") => "manhua",
+        Some("zh") | Some("zh-hk") | Some("zh-ro") => crate::content::MANHUA,
         _ => "other",
     }
     .to_string()

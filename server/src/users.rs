@@ -10,6 +10,11 @@ use sqlx::{FromRow, SqlitePool};
 use time::macros::format_description;
 use time::OffsetDateTime;
 
+/// User roles (GH #161). The column stays TEXT; these are the only values written.
+pub const ROLE_ADMIN: &str = "admin";
+pub const ROLE_MEMBER: &str = "member";
+pub const ROLES: [&str; 2] = [ROLE_ADMIN, ROLE_MEMBER];
+
 #[derive(FromRow, Clone)]
 pub struct UserRow {
     pub id: String,

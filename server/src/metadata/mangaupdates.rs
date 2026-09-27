@@ -133,7 +133,7 @@ pub(crate) fn map_series(rec: &Value) -> MuSeries {
         .get("type")
         .and_then(Value::as_str)
         .map(map_content_type)
-        .unwrap_or_else(|| "manga".to_string());
+        .unwrap_or_else(|| crate::content::MANGA.to_string());
 
     let status = rec
         .get("status")
@@ -203,10 +203,11 @@ pub(crate) fn map_series(rec: &Value) -> MuSeries {
 
 pub(crate) fn map_content_type(t: &str) -> String {
     match t.to_lowercase().as_str() {
-        "manhwa" => "manhwa",
-        "manhua" => "manhua",
-        "novel" | "web novel" | "light novel" | "oel" => "novel",
-        _ => "manga",
+        // MangaUpdates' own type names → ours
+        "manhwa" => crate::content::MANHWA,
+        "manhua" => crate::content::MANHUA,
+        "novel" | "web novel" | "light novel" | "oel" => crate::content::NOVEL,
+        _ => crate::content::MANGA,
     }
     .to_string()
 }

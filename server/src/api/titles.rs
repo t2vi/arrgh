@@ -218,7 +218,7 @@ async fn remove_title(
     Path(id): Path<String>,
     Query(q): Query<RemoveQuery>,
 ) -> AppResult<StatusCode> {
-    let is_admin = claims.role == "admin";
+    let is_admin = claims.is_admin();
     if !titles::remove_user_title(&state.db, &claims.user_id, &id).await? {
         return Err(AppError::NotFound);
     }
@@ -242,8 +242,6 @@ async fn remove_title(
 }
 
 // ── PATCH /{id} ──────────────────────────────────────────────────────────
-
-const VALID_CONTENT_TYPES: [&str; 5] = ["manga", "manhwa", "manhua", "novel", "hentai"];
 
 /// Tri-state: key absent → `None` (leave untouched); `null` → `Some(None)`
 /// (clear); a value → `Some(Some(v))`. Matches .NET's `JsonElement?` +
@@ -275,7 +273,7 @@ async fn patch_title(
     Path(id): Path<String>,
     Json(body): Json<PatchBody>,
 ) -> AppResult<StatusCode> {
-    let is_admin = claims.role == "admin";
+    let is_admin = claims.is_admin();
     if !titles::is_owned(&state.db, &claims.user_id, &id).await? {
         return Err(AppError::NotFound);
     }
@@ -320,7 +318,7 @@ async fn patch_title(
         if !is_admin {
             return Err(AppError::Forbidden);
         }
-        if !VALID_CONTENT_TYPES.contains(&ct.as_str()) {
+        if !crate::content::CONTENT_TYPES.contains(&ct.as_str()) {
             return Err(AppError::UnprocessableEntity("invalid content_type".into()));
         }
         let current = titles::get_content_type(&state.db, &id)
@@ -342,7 +340,7 @@ async fn rematch_after_type_change(state: &AppState, id: &str) -> AppResult<()> 
     let t = titles::fetch_title(&state.db, id, "")
         .await?
         .ok_or(AppError::NotFound)?;
-    let include_hentai = t.content_type == "manga" && t.is_explicit;
+    let include_hentai = t.content_type == crate::content::MANGA && t.is_explicit;
     let keep: Vec<String> =
         crate::sources::matching_for_content_type(&state.db, &t.content_type, include_hentai)
             .await?
@@ -449,7 +447,7 @@ async fn refresh_metadata(
         }
     }
 
-    titles::update_sync_status(&state.db, &id, "syncing").await?;
+    titles::update_sync_status(&state.db, &id, titles::SYNC_SYNCING).await?;
 
     let db = state.db.clone();
     let http = state.http.clone();
@@ -467,7 +465,7 @@ async fn refresh_metadata(
             )
             .await;
         }
-        let _ = titles::update_sync_status(&db, &id, "ready").await;
+        let _ = titles::update_sync_status(&db, &id, titles::SYNC_READY).await;
     });
 
     Ok(StatusCode::ACCEPTED)

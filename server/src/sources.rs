@@ -39,7 +39,7 @@ pub async fn matching_for_content_type(
     let sql = if include_hentai {
         "SELECT source_key, priority FROM external_sources \
          WHERE enabled = 1 AND source_key IS NOT NULL \
-         AND (content_types LIKE '%manga%' OR content_types LIKE '%hentai%') \
+         AND (content_types LIKE ? OR content_types LIKE ?) \
          ORDER BY priority"
     } else {
         "SELECT source_key, priority FROM external_sources \
@@ -47,7 +47,11 @@ pub async fn matching_for_content_type(
          ORDER BY priority"
     };
     let mut q = sqlx::query_as(sql);
-    if !include_hentai {
+    if include_hentai {
+        q = q
+            .bind(format!("%{}%", crate::content::MANGA))
+            .bind(format!("%{}%", crate::content::HENTAI));
+    } else {
         q = q.bind(format!("%{content_type}%"));
     }
     q.fetch_all(pool).await

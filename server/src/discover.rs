@@ -10,7 +10,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 
-use crate::{chapters, sources, titles};
+use crate::{chapters, content, sources, titles};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct DiscoverResult {
@@ -61,10 +61,10 @@ pub const AUTHORITY_ORDER: [&str; 7] = [
 
 pub fn designated_authority(content_type: &str) -> &'static str {
     match content_type.to_lowercase().as_str() {
-        "manhwa" => "anilist",
-        "manhua" => "mangadex",
-        "novel" | "web novel" | "light novel" => "novelupdates",
-        "hentai" => "nhentai",
+        content::MANHWA => "anilist",
+        content::MANHUA => "mangadex",
+        content::NOVEL | "web novel" | "light novel" => "novelupdates",
+        content::HENTAI => "nhentai",
         _ => "mangaupdates",
     }
 }
@@ -75,7 +75,12 @@ pub fn designated_authority(content_type: &str) -> &'static str {
 pub fn filter_mu_scope(results: Vec<DiscoverResult>) -> Vec<DiscoverResult> {
     results
         .into_iter()
-        .filter(|r| matches!(r.content_type.to_lowercase().as_str(), "manga" | "one-shot"))
+        .filter(|r| {
+            matches!(
+                r.content_type.to_lowercase().as_str(),
+                content::MANGA | "one-shot"
+            )
+        })
         .collect()
 }
 
@@ -125,7 +130,7 @@ pub fn merge_fan_out(results: Vec<DiscoverResult>) -> Vec<DiscoverResult> {
         let mut consumed = std::collections::HashSet::new();
         let mut results = results;
         for r in &mut results {
-            if r.source == "nhentai" || !r.is_explicit || r.content_type != "manga" {
+            if r.source == "nhentai" || !r.is_explicit || r.content_type != content::MANGA {
                 continue;
             }
             let norm = normalize_title(&r.title);
@@ -135,7 +140,7 @@ pub fn merge_fan_out(results: Vec<DiscoverResult>) -> Vec<DiscoverResult> {
             let Some(matched) = matched.cloned() else {
                 continue;
             };
-            r.content_type = "hentai".to_string();
+            r.content_type = content::HENTAI.to_string();
             r.is_explicit = true;
             consumed.insert(matched);
         }
@@ -411,7 +416,7 @@ pub async fn match_sources(
         return;
     }
 
-    let include_hentai = content_type == "manga" && is_explicit;
+    let include_hentai = content_type == content::MANGA && is_explicit;
     let Ok(candidate_sources) =
         sources::matching_for_content_type(pool, content_type, include_hentai).await
     else {

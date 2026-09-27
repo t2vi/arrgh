@@ -21,6 +21,7 @@ use sqlx::SqlitePool;
 
 use crate::api::titles::TitleDto;
 use crate::auth::Claims;
+use crate::content;
 use crate::discover::{self, DiscoverResult};
 use crate::error::{AppError, AppResult};
 use crate::metadata;
@@ -396,7 +397,7 @@ async fn search_nhentai(
             mangaupdates_id: s.id.unwrap_or_default(),
             title: s.title.unwrap_or_default(),
             status: "complete".to_string(),
-            content_type: "hentai".to_string(),
+            content_type: content::HENTAI.to_string(),
             source: "nhentai".to_string(),
             is_explicit: true,
             ..Default::default()
@@ -471,7 +472,7 @@ fn novelupdates_to_result(s: metadata::novelupdates::NovelUpdatesSeries) -> Disc
         description: s.description,
         cover_url: s.cover_url,
         status: s.status,
-        content_type: "novel".to_string(),
+        content_type: content::NOVEL.to_string(),
         source: "novelupdates".to_string(),
         ..Default::default()
     }
@@ -484,7 +485,7 @@ fn wuxiaworld_to_result(s: metadata::wuxiaworld::WuxiaWorldSeries) -> DiscoverRe
         cover_url: s.cover_url,
         status: s.status,
         author: s.author,
-        content_type: "novel".to_string(),
+        content_type: content::NOVEL.to_string(),
         source: "wuxiaworld".to_string(),
         ..Default::default()
     }
@@ -498,7 +499,7 @@ fn royalroad_to_result(s: metadata::royalroad::RoyalRoadSeries) -> DiscoverResul
         cover_url: s.cover_url,
         status: s.status,
         tags: s.tags,
-        content_type: "novel".to_string(),
+        content_type: content::NOVEL.to_string(),
         source: discover::ROYALROAD.to_string(),
         ..Default::default()
     }
@@ -532,7 +533,7 @@ async fn trending_manga(
     claims: Claims,
     State(state): State<AppState>,
 ) -> AppResult<Json<Vec<DiscoverResult>>> {
-    const LANE: &str = "manga";
+    const LANE: &str = content::MANGA;
     let cached = match state.trending.get_fresh(LANE) {
         Some(c) => c,
         None => match metadata::mangaupdates::latest_releases(
@@ -597,7 +598,7 @@ async fn trending_manhwa(
     claims: Claims,
     State(state): State<AppState>,
 ) -> AppResult<Json<Vec<DiscoverResult>>> {
-    let cached = anilist_trending_lane(&state, "manhwa", "KR", false).await;
+    let cached = anilist_trending_lane(&state, content::MANHWA, "KR", false).await;
     let results = enrich_and_check_library(
         &state.db,
         &claims.user_id,
@@ -614,7 +615,7 @@ async fn trending_manhua(
     claims: Claims,
     State(state): State<AppState>,
 ) -> AppResult<Json<Vec<DiscoverResult>>> {
-    let cached = anilist_trending_lane(&state, "manhua", "CN", false).await;
+    let cached = anilist_trending_lane(&state, content::MANHUA, "CN", false).await;
     let results = enrich_and_check_library(
         &state.db,
         &claims.user_id,
@@ -672,7 +673,7 @@ fn default_status() -> String {
 }
 
 fn default_content_type() -> String {
-    "manga".to_string()
+    content::MANGA.to_string()
 }
 
 async fn add(
@@ -732,7 +733,7 @@ async fn add(
             .map(|t| t.split(',').any(|t| t.trim().eq_ignore_ascii_case("adult")))
             .unwrap_or(false);
         let is_explicit = body.is_explicit == Some(true)
-            || body.content_type == "hentai"
+            || body.content_type == content::HENTAI
             || discover::is_hentai_tag(body.tags.as_deref())
             || has_adult_tag;
         let clean_title =
@@ -896,6 +897,6 @@ fn spawn_add_manga_background(
         .await;
 
         titles::append_sync_log(&db, &title_id, "Sync complete").await;
-        let _ = titles::update_sync_status(&db, &title_id, "ready").await;
+        let _ = titles::update_sync_status(&db, &title_id, titles::SYNC_READY).await;
     });
 }

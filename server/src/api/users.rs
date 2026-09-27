@@ -72,7 +72,15 @@ async fn create(
 
     let id = uuid::Uuid::new_v4().to_string();
     let hash = auth::hash_password(&body.password)?;
-    users::insert(&state.db, &id, body.username.trim(), &hash, "member", false).await?;
+    users::insert(
+        &state.db,
+        &id,
+        body.username.trim(),
+        &hash,
+        users::ROLE_MEMBER,
+        false,
+    )
+    .await?;
     Ok(StatusCode::CREATED)
 }
 
@@ -95,7 +103,7 @@ async fn patch_user(
         .ok_or(AppError::NotFound)?;
 
     if let Some(role) = &body.role {
-        if role != "admin" && role != "member" {
+        if !users::ROLES.contains(&role.as_str()) {
             return Err(AppError::UnprocessableEntity("invalid role".into()));
         }
         users::update_role(&state.db, &id, role).await?;
