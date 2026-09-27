@@ -42,6 +42,7 @@ async fn send(
 
 // ── GET /api/titles ──────────────────────────────────────────────────────
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_empty_library_returns_empty_page() {
     let state = common::build_state().await;
@@ -54,6 +55,7 @@ async fn list_titles_empty_library_returns_empty_page() {
     assert_eq!(body["items"].as_array().unwrap().len(), 0);
 }
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_returns_owned_titles() {
     let state = common::build_state().await;
@@ -69,6 +71,7 @@ async fn list_titles_returns_owned_titles() {
     assert_eq!(body["total"], 2);
 }
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_excludes_other_users_library() {
     let state = common::build_state().await;
@@ -83,6 +86,7 @@ async fn list_titles_excludes_other_users_library() {
     assert_eq!(body["total"], 0);
 }
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_hides_explicit_from_non_explicit_user() {
     let state = common::build_state().await;
@@ -96,6 +100,7 @@ async fn list_titles_hides_explicit_from_non_explicit_user() {
     assert_eq!(body["total"], 0);
 }
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_shows_explicit_to_explicit_user() {
     let state = common::build_state().await;
@@ -109,6 +114,7 @@ async fn list_titles_shows_explicit_to_explicit_user() {
     assert_eq!(body["total"], 1);
 }
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_search_filters_by_title() {
     let state = common::build_state().await;
@@ -125,6 +131,7 @@ async fn list_titles_search_filters_by_title() {
     assert_eq!(body["items"][0]["title"], "Naruto");
 }
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_unauthorized_no_token() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -132,6 +139,7 @@ async fn list_titles_unauthorized_no_token() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 032/FR-001
 #[tokio::test]
 async fn list_titles_pagination_limit_applied() {
     let state = common::build_state().await;
@@ -151,6 +159,7 @@ async fn list_titles_pagination_limit_applied() {
 
 // ── GET /api/titles/{id} ─────────────────────────────────────────────────
 
+// spec: 032/FR-003
 #[tokio::test]
 async fn get_title_returns_title_when_owned() {
     let state = common::build_state().await;
@@ -166,6 +175,7 @@ async fn get_title_returns_title_when_owned() {
     assert_eq!(body["title"], "Naruto");
 }
 
+// spec: 032/FR-003
 #[tokio::test]
 async fn get_title_not_found_when_not_owned() {
     let state = common::build_state().await;
@@ -178,6 +188,7 @@ async fn get_title_not_found_when_not_owned() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 032/FR-002
 #[tokio::test]
 async fn get_title_reports_chapter_stats() {
     let state = common::build_state().await;
@@ -197,6 +208,7 @@ async fn get_title_reports_chapter_stats() {
     assert_eq!(body["chapters_read"], 1);
 }
 
+// spec: 032/FR-002
 #[tokio::test]
 async fn get_title_is_local_false_when_has_sources() {
     let state = common::build_state().await;
@@ -211,6 +223,7 @@ async fn get_title_is_local_false_when_has_sources() {
     assert_eq!(body["is_local"], false);
 }
 
+// spec: 032/FR-002
 #[tokio::test]
 async fn get_title_has_sync_warnings_when_warning_exists() {
     let state = common::build_state().await;
@@ -227,6 +240,7 @@ async fn get_title_has_sync_warnings_when_warning_exists() {
 
 // ── GET /api/titles/new-releases ─────────────────────────────────────────
 
+// spec: 032/FR-006
 #[tokio::test]
 async fn new_releases_returns_new_chapters() {
     let state = common::build_state().await;
@@ -245,6 +259,7 @@ async fn new_releases_returns_new_chapters() {
 
 // ── DELETE /api/titles/{id} ───────────────────────────────────────────────
 
+// spec: 032/FR-005
 #[tokio::test]
 async fn remove_title_no_content_when_owned() {
     let state = common::build_state().await;
@@ -265,6 +280,7 @@ async fn remove_title_no_content_when_owned() {
     assert_eq!(status, StatusCode::NO_CONTENT);
 }
 
+// spec: 032/FR-005
 #[tokio::test]
 async fn remove_title_not_found_when_not_owned() {
     let state = common::build_state().await;
@@ -276,6 +292,7 @@ async fn remove_title_not_found_when_not_owned() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 032/FR-005
 #[tokio::test]
 async fn remove_title_does_not_delete_title_when_other_user_still_has_it() {
     let state = common::build_state().await;
@@ -304,6 +321,7 @@ async fn remove_title_does_not_delete_title_when_other_user_still_has_it() {
     assert_eq!(still_there, 1);
 }
 
+// spec: 032/FR-005
 #[tokio::test]
 async fn remove_title_deletes_title_when_last_user() {
     let state = common::build_state().await;
@@ -332,6 +350,7 @@ async fn remove_title_deletes_title_when_last_user() {
 
 // ── PATCH /api/titles/{id} ────────────────────────────────────────────────
 
+// spec: 032/FR-004
 #[tokio::test]
 async fn patch_title_updates_auto_download() {
     let state = common::build_state().await;
@@ -355,6 +374,7 @@ async fn patch_title_updates_auto_download() {
     assert_eq!(body["auto_download"], true);
 }
 
+// spec: 032/FR-004
 #[tokio::test]
 async fn patch_title_forbidden_is_explicit_for_member() {
     let state = common::build_state().await;
@@ -375,6 +395,7 @@ async fn patch_title_forbidden_is_explicit_for_member() {
     assert_eq!(status, StatusCode::FORBIDDEN);
 }
 
+// spec: 032/FR-004
 #[tokio::test]
 async fn patch_title_unprocessable_invalid_reader_mode() {
     let state = common::build_state().await;
@@ -395,6 +416,7 @@ async fn patch_title_unprocessable_invalid_reader_mode() {
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
 }
 
+// spec: 032/FR-004
 #[tokio::test]
 async fn patch_title_sets_reader_mode() {
     let state = common::build_state().await;
@@ -417,6 +439,7 @@ async fn patch_title_sets_reader_mode() {
     assert_eq!(body["reader_mode"], "scroll");
 }
 
+// spec: 032/FR-004
 #[tokio::test]
 async fn patch_title_admin_can_set_explicit() {
     let state = common::build_state().await;
@@ -440,6 +463,7 @@ async fn patch_title_admin_can_set_explicit() {
     assert_eq!(body["is_explicit"], true);
 }
 
+// spec: 032/FR-004
 #[tokio::test]
 async fn patch_title_unprocessable_invalid_content_type() {
     let state = common::build_state().await;
@@ -460,6 +484,7 @@ async fn patch_title_unprocessable_invalid_content_type() {
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
 }
 
+// spec: 032/FR-004
 #[tokio::test]
 async fn patch_title_not_found_when_not_owned() {
     let state = common::build_state().await;
@@ -480,6 +505,7 @@ async fn patch_title_not_found_when_not_owned() {
 
 // ── POST /api/titles/{id}/sync ────────────────────────────────────────────
 
+// spec: 032/FR-008
 #[tokio::test]
 async fn sync_title_accepted_when_source_links_exist() {
     let state = common::build_state().await;
@@ -501,6 +527,7 @@ async fn sync_title_accepted_when_source_links_exist() {
     assert_eq!(status, StatusCode::ACCEPTED);
 }
 
+// spec: 032/FR-008
 #[tokio::test]
 async fn sync_title_not_found_when_no_source_links() {
     let state = common::build_state().await;
@@ -521,6 +548,7 @@ async fn sync_title_not_found_when_no_source_links() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 032/FR-008
 #[tokio::test]
 async fn sync_title_not_found_when_not_owned() {
     let state = common::build_state().await;
@@ -534,6 +562,7 @@ async fn sync_title_not_found_when_not_owned() {
 
 // ── GET /api/titles/{id}/sync-log ─────────────────────────────────────────
 
+// spec: 032/FR-009
 #[tokio::test]
 async fn get_sync_log_returns_entries() {
     let state = common::build_state().await;
@@ -556,6 +585,7 @@ async fn get_sync_log_returns_entries() {
     assert_eq!(body.as_array().unwrap().len(), 2);
 }
 
+// spec: 032/FR-009
 #[tokio::test]
 async fn get_sync_log_not_found_when_not_owned() {
     let state = common::build_state().await;
@@ -576,6 +606,7 @@ async fn get_sync_log_not_found_when_not_owned() {
 
 // ── POST /api/titles/{id}/refresh-metadata ────────────────────────────────
 
+// spec: 032/FR-010
 #[tokio::test]
 async fn refresh_metadata_returns_404_when_title_not_owned() {
     let state = common::build_state().await;
@@ -594,6 +625,7 @@ async fn refresh_metadata_returns_404_when_title_not_owned() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 032/FR-010
 #[tokio::test]
 async fn refresh_metadata_returns_401_without_token() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -601,6 +633,7 @@ async fn refresh_metadata_returns_401_without_token() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 032/FR-010
 #[tokio::test]
 async fn refresh_metadata_clears_sync_warnings_and_returns_202() {
     let state = common::build_state().await;

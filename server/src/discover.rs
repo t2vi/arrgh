@@ -530,6 +530,7 @@ pub async fn match_sources(
             content_type,
             source_key,
             source_id,
+            false, // source matching pulls backlog, never "new releases" (GH #210)
         )
         .await
         {

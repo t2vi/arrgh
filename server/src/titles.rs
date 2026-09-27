@@ -417,6 +417,14 @@ pub async fn run_sync(
     content_type: &str,
     links: &[(String, String)],
 ) {
+    // A chapter is a "new release" only when a re-sync finds it; the first
+    // import of a title (no chapters yet) marks nothing new (GH #210).
+    let had_chapters: bool =
+        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM chapters WHERE title_id = ?)")
+            .bind(title_id)
+            .fetch_one(pool)
+            .await
+            .unwrap_or(false);
     let mut any_error = false;
     for (source, source_id) in links {
         append_sync_log(pool, title_id, &format!("Syncing from {source}…")).await;
@@ -428,6 +436,7 @@ pub async fn run_sync(
             content_type,
             source,
             source_id,
+            had_chapters,
         )
         .await
         {
