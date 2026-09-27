@@ -5,10 +5,8 @@
 //! the network legs are real too: chapter-sync since S5 #127
 //! (`crate::chapters::sync_from_source`), and Discover re-match + MU alias
 //! refresh since S6 #128 (`crate::discover::match_sources`,
-//! `crate::metadata::mangaupdates::series_detail`). `patch_title`'s
-//! content_type-change branch still just resets `sync_status` to `"ready"`
-//! without re-matching sources — matches .NET's own already-stubbed
-//! `ReMatchSourcesAsync`, which has the identical TODO.
+//! `crate::metadata::mangaupdates::series_detail`). A content_type change
+//! prunes mismatched source links and re-matches (GH #211; .NET only stubbed it).
 
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
@@ -245,7 +243,7 @@ async fn remove_title(
 
 // ── PATCH /{id} ──────────────────────────────────────────────────────────
 
-const VALID_CONTENT_TYPES: [&str; 4] = ["manga", "manhwa", "manhua", "novel"];
+const VALID_CONTENT_TYPES: [&str; 5] = ["manga", "manhwa", "manhua", "novel", "hentai"];
 
 /// Tri-state: key absent → `None` (leave untouched); `null` → `Some(None)`
 /// (clear); a value → `Some(Some(v))`. Matches .NET's `JsonElement?` +
@@ -330,12 +328,47 @@ async fn patch_title(
             .ok_or(AppError::NotFound)?;
         if &current != ct {
             titles::update_content_type(&state.db, &id, ct).await?;
-            // ReMatchSourcesAsync stub — see module doc.
-            titles::update_sync_status(&state.db, &id, "ready").await?;
+            rematch_after_type_change(&state, &id).await?;
         }
     }
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+/// A title's content type decides which sources can serve it (GH #211): drop
+/// links (title + chapters) to sources that don't serve the new type, then
+/// re-run source matching in the background — same flow as refresh-metadata.
+async fn rematch_after_type_change(state: &AppState, id: &str) -> AppResult<()> {
+    let t = titles::fetch_title(&state.db, id, "")
+        .await?
+        .ok_or(AppError::NotFound)?;
+    let include_hentai = t.content_type == "manga" && t.is_explicit;
+    let keep: Vec<String> =
+        crate::sources::matching_for_content_type(&state.db, &t.content_type, include_hentai)
+            .await?
+            .into_iter()
+            .map(|(key, _)| key)
+            .collect();
+    titles::prune_source_links(&state.db, id, &keep).await?;
+    titles::update_sync_status(&state.db, id, titles::SYNC_SYNCING).await?;
+
+    let (db, http) = (state.db.clone(), state.http.clone());
+    let plugin_host_url = state.config.plugin_host_url.clone();
+    let id = id.to_string();
+    tokio::spawn(async move {
+        crate::discover::match_sources(
+            &db,
+            &http,
+            &plugin_host_url,
+            &id,
+            &t.title,
+            &t.content_type,
+            t.is_explicit,
+        )
+        .await;
+        let _ = titles::update_sync_status(&db, &id, titles::SYNC_READY).await;
+    });
+    Ok(())
 }
 
 // ── POST /{id}/sync ──────────────────────────────────────────────────────

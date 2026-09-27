@@ -60,6 +60,10 @@ async fn list(
     State(state): State<AppState>,
     Path(title_id): Path<String>,
 ) -> AppResult<Json<Vec<ChapterDto>>> {
+    // Same library gate as GET /api/titles/{id} (GH #211).
+    if !crate::titles::is_owned(&state.db, &claims.user_id, &title_id).await? {
+        return Err(AppError::NotFound);
+    }
     let rows = chapters::list_chapters(&state.db, &title_id, claims.allow_explicit).await?;
     Ok(Json(rows.into_iter().map(ChapterDto::from).collect()))
 }

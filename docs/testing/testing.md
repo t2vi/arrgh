@@ -23,6 +23,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | `components/SegmentedControl` | render, onChange | ✅ |
 | `components/Toggle` | render, onChange | ✅ |
 | `indexHtml.test.ts` (GH #205) | `index.html` links the arrgh favicon set + manifest + theme-color and `public/` ships them; no Vite scaffold icons | ✅ |
+| `detail/ContentTypeCard` (GH #211) | offers all five content types incl. hentai; picking one saves it | ✅ |
 | `components/NumberStepper` | render, onChange | ✅ |
 | `components/SettingRow` | render | ✅ |
 | `lib/utils` (cn) | class merging | ✅ |
@@ -123,6 +124,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `chapter_sync.rs` (#173) | re-sync replaces a chapter's stale source_id when the source now reports a different one for the same chapter ✅ |
 | `chapter_sync.rs` (spec 030) | re-sync with a renumbered source chapter moves the existing row (progress kept); stale duplicate from the old numbering removed; downloaded duplicate kept ✅ |
 | `chapter_sync.rs` (GH #210, spec 032) | first import marks nothing new; a re-sync (two sources, one run) marks only newly found chapters `is_new` → Home "New releases" ✅ |
+| `titles.rs` / `chapters.rs` (GH #211, spec 032) | admin can set `hentai`; content-type change drops source links that don't serve the new type and re-matches; chapter list 404s outside the caller's library ✅ |
 | `discover.rs` (live progress, spec 021) | `GET /api/discover/stream`: `sources` first (6 for members, nhentai 7th only for explicit users), one `source` event per leg, `done` last; timed-out leg → `status:"timeout"` while others still return; all legs failed → every event `error` + `done.ok=false`; 401 without token; a fast source's event arrives before a slow source finishes (incremental body read); last event's `results` == the one-shot response; one-shot `GET /api/discover` bounded by the same per-source timeout (all hung → 502 promptly); shared HTTP client sends a default User-Agent (MangaDex 400s without one); NovelUpdates description passed through (spec 029) ✅ |
 | `schema_bootstrap.rs` (spec 019) | Migration 0004 restores the royalroad source row on existing installs, no-op on empty table, idempotent ✅ |
 | `plugins.rs` | Index fetch, admin-gated install (404/409/422/502/201) and delete (404/403/204) |
