@@ -1,7 +1,7 @@
-# toonily (bundled fallback)
+# novelfullnet (bundled fallback)
 
 Source of truth for this plugin moved to
-[t2vi/arrgh-plugin-toonily](https://github.com/t2vi/arrgh-plugin-toonily) (spec 031 phase C,
+[t2vi/arrgh-plugin-novelfullnet](https://github.com/t2vi/arrgh-plugin-novelfullnet) (spec 031 phase C,
 ADR 0034/0035). Do not edit `src/` here — this copy only exists so the arrgh Docker image ships a
 working bundled version; it is overridden by whatever `plugin-index/index.json`'s `download_url`
 points admins at in Settings → Sources → Plugins.

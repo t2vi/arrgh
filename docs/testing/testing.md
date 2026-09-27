@@ -173,61 +173,18 @@ Vitest + supertest. `createApp(registry | Map, downloadedIds?, opts?)` exported 
 | `rewriteCdpHost` → rewrites internal hostname to Docker service name | ✅ |
 | `rewriteCdpHost` → preserves path after host rewrite | ✅ |
 
-## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) ✅
+## Plugin Contract — `plugin-index.json` + production set (`plugin-host/src/contract.test.ts`) ✅
 
-Tests `info` shape and exported fn signatures for all bundled default plugins. No HTTP calls.
+Every plugin's own `info`-shape/fn-export/fixture-behavior tests moved into its own
+`t2vi/arrgh-plugin-<id>` repo (spec 031 phase C, #199) — see that repo's `test/contract.test.ts`
+(the shared SDK's `pluginContractTests`, `arrgh-plugin-sdk/testing`) and `test/parse.test.ts`.
+What's left here only covers cross-cutting consistency that has to live in the monorepo:
 
-| Plugin | Cases | Status |
+| Check | Cases | Status |
 |---|---|---|
-| mangadex | id, default_explicit=false, content_types (manga+manhwa+manhua+one-shot), fn exports | ✅ |
-| mangapill | id, default_explicit=false, content_types (manga), fn exports | ✅ |
-| nhentai | id, default_explicit=true, fn exports | ✅ |
-| novelfull | id, default_explicit=false, content_types (novel), chapterText export | ✅ |
-| royalroad | id, default_explicit=false, content_types (novel), chapterText export | ✅ |
-| toonily | id, default_explicit=false, content_types (manhwa), fn exports | ✅ |
-| plugin-index consistency | mangadex index.json includes manga+manhwa+manhua+one-shot | ✅ |
-| every bundled plugin (spec 031 FR-010) | `info.version` equals its index `version`; every index entry has `sha256`/`protocol` keys | ✅ |
-
-## Plugin Contract — New Plugins (`plugin-host/src/contract.new-plugins.test.ts`) ✅ ADR 0031
-
-| Plugin | content_types | Novel? | Status |
-|---|---|---|---|
-| mangafire | `['manga','manhwa','manhua','one-shot']` | no (pages) | ✅ |
-| asurascans | `['manhwa']` | no (pages) | ✅ |
-| wuxiaworld | `['novel']` | yes (chapterText, no pages) | ✅ |
-| manga18fx | `['manhwa']` | no (pages) | ✅ |
-| royalroad | `['novel']` | yes (search, meta, chapters, chapterText) — ADR 0034 | ✅ |
-
-## Plugin Contract — Existing (`plugin-host/src/contract.test.ts`) — `novelupdates` added ✅
-
-| Plugin | Cases | Status |
-|---|---|---|
-| novelupdates | id, default_explicit=false, content_types (novel), search+chapters exports, no pages | ✅ |
-| plugin-index consistency | novelupdates index.json includes novel | ✅ |
-| novelfullnet (spec 027) | id, name NovelFull.net, default_explicit=false, content_types (novel), search/meta/chapters/chapterText exports, bundled in plugin-index | ✅ |
+| plugin-index consistency | novelupdates index.json includes novel; royalroad bundled novel entry present (flipped from the ADR 0024 "absent" guard); manhuafast/boxnovel absent (removed sources) | ✅ |
 | production plugin set (spec 020) | Dockerfile COPY ids == `build:plugins` ids == index `bundled` ids, fixture excluded | ✅ |
-| plugin-index consistency | royalroad bundled novel entry present (flipped from the ADR 0024 "absent" guard) | ✅ |
-
-## Plugin Behavior — New Plugins (`plugin-host/src/behavior.new-plugins.test.ts`) ✅ ADR 0031
-
-HTML/JSON fixture tests for scraping logic. Each plugin tested with mocked responses.
-
-| Plugin | Cases | Status |
-|---|---|---|
-| mangafire | search shape + field values, manhwa type, chapters w/ numbers, pages URLs | ✅ |
-| asurascans | search shape + slug extraction, status normalization, chapters, pages | ✅ |
-| wuxiaworld | search shape + API mapping; chapters via GetChapterList gRPC-web (real slugs for every chapter, number = novel position, volume = group order, request frame, Karma-locked chapters skipped, API failure throws, empty page → []); chapterText extraction, empty CSR shell throws, teaser (locked) page throws — live fixtures 2026-09-26 (#173) | ✅ |
-| manga18fx | search shape + slug extraction, chapters with numbers, pages URLs | ✅ |
-| manga18fx | chapters — sidebar/popular chapter links from other series NOT included (contamination regression) | ✅ |
-| manga18fx | search URL is `/search?q=` not `/?s=` (WordPress fallback regression) | ✅ |
-| manga18fx | pages — lazy-load URLs match any `imgXX.manga18fx.com` CDN subdomain (not hardcoded to `img01`) | ✅ |
-| manga18fx | pages — mixed lazy+eager: some imgs have `data-src`, some have `src` only — all CDN URLs returned | ✅ |
-| novelupdates | `parseSearchHtml` on live Series Finder capture (id/title/cover, status unknown, empty HTML) + search URL assertion (spec 022); synopsis description incl. hidden remainder, no title/stats/genres/more-less (spec 029) | ✅ |
-| nhentai | direct v2 API first (search URL, chapters sorted by id, page URLs, no browser), empty result + 404 JSON never fall back, 403/non-JSON challenge → CloakBrowser fallback once, both fail → rejects — fixtures from live v2 API 2026-09-26 (spec 023) | ✅ |
-| novelfullnet | search (slug/title/absolute cover), chapter list with real numbers + positional fallback, chapters() collects every `/ajax-chapter-list?novelId=` page in one browser session, chapterText strips ad slot/scripts + throws on missing content, meta (summary/cover/genres/chapter count/novel id), search URL — fixtures from live site 2026-09-26 (spec 027) | ✅ |
-| royalroad + novelfullnet (spec 030) | lettered parts `Chapter 2.A/B/C` → 2.1/2.2/2.3, unnumbered entry → previous + 0.01 (not list position), no numbers anywhere → 1..n — live DCC Book 6 chapter table | ✅ |
-| royalroad (spec 029) | no-cover placeholder `/dist/img/nocover-new-min.png` → `cover_url: null` (search + meta), other relative covers made absolute | ✅ |
-| royalroad | search (id/title/cover/`#description-<id>`/tags, author null), meta author from `books:author`, STUB chapters numbered by real number `[1,2,1389]` + positional fallback, chapterText strips hidden anti-piracy spans, throws on missing content — fixtures from live site 2026-09-25 | ✅ |
+| every bundled plugin (spec 031 FR-010) | `info.version` equals its index `version`; every index entry has `sha256`/`protocol` keys; every entry with a `download_url` has a 64-hex `sha256` (spec 031 FR-013) | ✅ |
 
 ---
 

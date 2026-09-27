@@ -90,20 +90,24 @@ See [docs/deploy/kubernetes.md](docs/deploy/kubernetes.md) for storage/replica r
 
 All default sources compile into a single **plugin-host** container — no per-plugin ports or sidecars:
 
-| Source | Content | Directory | Notes |
+| Source | Content | Repo | Notes |
 |---|---|---|---|
-| **Mangapill** | Manga | `plugins/mangapill/` | |
-| **MangaDex** | Manga, Manhwa, Manhua, One-shot | `plugins/mangadex/` | |
-| **Toonily** | Manhwa | `plugins/toonily/` | CF-protected — uses CloakBrowser |
-| **AsuraScans** | Manhwa | `plugins/asurascans/` | |
-| **Manga18fx** | Manhwa (explicit) | `plugins/manga18fx/` | `default_explicit=true` |
-| **NovelFull** | Novel | `plugins/novelfull/` | CF-protected — uses CloakBrowser |
-| **NovelFull.net** | Novel | `plugins/novelfullnet/` | novelfull.net — same site, different catalog (e.g. The Primal Hunter); CF-protected — uses CloakBrowser |
-| **WuxiaWorld** | Novel | `plugins/wuxiaworld/` | Official API — no CF protection |
-| **Royal Road** | Novel (English originals) | [`t2vi/arrgh-plugin-royalroad`](https://github.com/t2vi/arrgh-plugin-royalroad) | Direct fetch — no CF protection; also a Discover authority. First plugin split into its own repo (spec 031 phase C); `plugins/royalroad/` here is only the image's bundled fallback |
-| **nhentai** | Hentai doujinshi | `plugins/nhentai/` | Direct API, CloakBrowser fallback when challenged; explicit-only source |
+| **Mangapill** | Manga | [`arrgh-plugin-mangapill`](https://github.com/t2vi/arrgh-plugin-mangapill) | |
+| **MangaDex** | Manga, Manhwa, Manhua, One-shot | [`arrgh-plugin-mangadex`](https://github.com/t2vi/arrgh-plugin-mangadex) | |
+| **Toonily** | Manhwa | [`arrgh-plugin-toonily`](https://github.com/t2vi/arrgh-plugin-toonily) | CF-protected — uses CloakBrowser |
+| **AsuraScans** | Manhwa | [`arrgh-plugin-asurascans`](https://github.com/t2vi/arrgh-plugin-asurascans) | |
+| **Manga18fx** | Manhwa (explicit) | [`arrgh-plugin-manga18fx`](https://github.com/t2vi/arrgh-plugin-manga18fx) | `default_explicit=true` |
+| **NovelFull** | Novel | [`arrgh-plugin-novelfull`](https://github.com/t2vi/arrgh-plugin-novelfull) | CF-protected — uses CloakBrowser |
+| **NovelFull.net** | Novel | [`arrgh-plugin-novelfullnet`](https://github.com/t2vi/arrgh-plugin-novelfullnet) | novelfull.net — same site, different catalog (e.g. The Primal Hunter); CF-protected — uses CloakBrowser |
+| **WuxiaWorld** | Novel | [`arrgh-plugin-wuxiaworld`](https://github.com/t2vi/arrgh-plugin-wuxiaworld) | Official API — no CF protection |
+| **Royal Road** | Novel (English originals) | [`arrgh-plugin-royalroad`](https://github.com/t2vi/arrgh-plugin-royalroad) | Direct fetch — no CF protection; also a Discover authority |
+| **nhentai** | Hentai doujinshi | [`arrgh-plugin-nhentai`](https://github.com/t2vi/arrgh-plugin-nhentai) | Direct API, CloakBrowser fallback when challenged; explicit-only source |
+| **NovelUpdates** | — (metadata authority only) | [`arrgh-plugin-novelupdates`](https://github.com/t2vi/arrgh-plugin-novelupdates) | Not a download source — backs the NovelUpdates Discover authority (`info.metadata_only=true`); CF-protected |
 
-`plugins/novelupdates/` is not a download source — it backs the NovelUpdates Discover authority.
+Every plugin now lives in its own `t2vi/arrgh-plugin-<id>` repo (spec 031 phase C, ADR 0035) —
+`plugins/<id>/` in this repo is only the Docker image's bundled-fallback copy, not where
+development happens. See [`arrgh-plugin-template`](https://github.com/t2vi/arrgh-plugin-template)
+to write a new one.
 
 CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromium, source-level fingerprint patches). Plugin Host holds the CDP connection; plugins call `ctx.getBrowser()` via `PluginContext`.
 
@@ -139,7 +143,7 @@ Optional:
 GET /chapter/:source_id/text      → Markdown string (novel/light-novel chapters only)
 ```
 
-Plugins can be written in any language. See `plugins/mangadex/` (API-backed) and `plugins/toonily/` (scraper + CloakBrowser) for reference implementations.
+Plugins can be written in any language. See [`arrgh-plugin-mangadex`](https://github.com/t2vi/arrgh-plugin-mangadex) (API-backed) and [`arrgh-plugin-toonily`](https://github.com/t2vi/arrgh-plugin-toonily) (scraper + CloakBrowser) for reference implementations, or start from [`arrgh-plugin-template`](https://github.com/t2vi/arrgh-plugin-template).
 
 `version` is the bundle's own version; Settings shows it as the loaded version (missing = "unknown").
 
