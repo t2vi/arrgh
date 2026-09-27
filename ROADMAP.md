@@ -1,7 +1,7 @@
 # *ARRgh Roadmap
 
 Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim one.
-Last updated for **v1.2.0** (2026-09-27). Per-release detail: [CHANGELOG.md](CHANGELOG.md).
+Last updated for **v1.3.0** (2026-09-27). Per-release detail: [CHANGELOG.md](CHANGELOG.md).
 
 ## **Platform**
 ✅ Backend rewritten in Rust (axum + sqlx), frontend in Svelte 5 — v1.0.0<br />
@@ -34,7 +34,8 @@ Last updated for **v1.2.0** (2026-09-27). Per-release detail: [CHANGELOG.md](CHA
 ## **Downloads**
 ✅ Per-chapter download progress — live percentage bar in Downloads queue and title view<br />
 ✅ Parallel downloads — `download_workers` (1–10) honoured, live-adjustable — v1.2.0<br />
-✅ Scheduled re-sync + auto-download of newly found chapters (global default, per-title override) ([#200](https://github.com/t2vi/arrgh/issues/200))<br />
+✅ Scheduled re-sync + auto-download of newly found chapters (global default, per-title override) — v1.3.0<br />
+✅ Home "New releases" — chapters found by re-syncs — v1.3.0<br />
 
 ## **Reader**
 ✅ Paged and scroll modes for comics (scroll default since v1.1.0)<br />
