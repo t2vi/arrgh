@@ -258,4 +258,66 @@ mod tests {
             .unwrap();
         assert_eq!(count_again, 11);
     }
+
+    async fn seed_source(pool: &SqlitePool, key: &str, content_types: &str) {
+        sqlx::query(
+            "INSERT INTO external_sources (id, name, base_url, content_types, enabled, created_at, is_community, priority, source_key, default_explicit) \
+             VALUES (?, ?, 'http://x', ?, 1, datetime('now'), 0, 10, ?, 0)",
+        )
+        .bind(uuid::Uuid::new_v4().to_string())
+        .bind(key)
+        .bind(content_types)
+        .bind(key)
+        .execute(pool)
+        .await
+        .unwrap();
+    }
+
+    // spec: 002/FR-005 (negative case — the flag is what gates this)
+    #[tokio::test]
+    async fn matching_for_content_type_excludes_hentai_sources_by_default() {
+        let pool = crate::state::connect_db(&format!(
+            "{}/arrgh-matching-test-{}.db",
+            std::env::temp_dir().display(),
+            uuid::Uuid::new_v4()
+        ))
+        .await
+        .unwrap();
+        seed_source(&pool, "mangadex", "manga").await;
+        seed_source(&pool, "manga18fx", "hentai").await;
+
+        let matched = matching_for_content_type(&pool, "manga", false)
+            .await
+            .unwrap();
+        assert_eq!(
+            matched.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>(),
+            vec!["mangadex"]
+        );
+    }
+
+    // spec: 002/FR-005
+    #[tokio::test]
+    async fn matching_for_content_type_includes_hentai_sources_when_explicit_manga() {
+        let pool = crate::state::connect_db(&format!(
+            "{}/arrgh-matching-test-{}.db",
+            std::env::temp_dir().display(),
+            uuid::Uuid::new_v4()
+        ))
+        .await
+        .unwrap();
+        seed_source(&pool, "mangadex", "manga").await;
+        seed_source(&pool, "manga18fx", "hentai").await;
+
+        let mut matched: Vec<String> = matching_for_content_type(&pool, "manga", true)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|(k, _)| k)
+            .collect();
+        matched.sort();
+        assert_eq!(
+            matched,
+            vec!["manga18fx".to_string(), "mangadex".to_string()]
+        );
+    }
 }

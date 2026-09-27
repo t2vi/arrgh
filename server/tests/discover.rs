@@ -461,6 +461,7 @@ async fn add_with_hentai_tag_sets_is_explicit() {
 
 // ── match_sources via add's background task ──────────────────────────────
 
+// spec: 002/FR-004
 #[tokio::test]
 async fn add_with_matching_external_source_creates_source_and_chapters() {
     let search_body = r#"[{"id":"mangadex-source-id","title":"Naruto"}]"#;
@@ -513,6 +514,7 @@ async fn add_with_matching_external_source_creates_source_and_chapters() {
     assert_eq!(chapter_count, 2);
 }
 
+// spec: 002/FR-006
 #[tokio::test]
 async fn add_no_source_match_sets_sync_warning() {
     let search_body = r#"[{"id":"x","title":"Completely Different Title Xyz"}]"#;
