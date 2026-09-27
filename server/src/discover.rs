@@ -115,9 +115,9 @@ pub fn deduplicate(results: Vec<DiscoverResult>) -> Vec<DiscoverResult> {
         .collect()
 }
 
-/// Merge fan-out results: nhentai-upgrade pass, dedup, then sort by
-/// `AUTHORITY_ORDER`.
-pub fn merge_fan_out(results: Vec<DiscoverResult>) -> Vec<DiscoverResult> {
+/// Merge fan-out results: nhentai-upgrade pass, dedup, then sort by exact
+/// query match first (GH #190, spec 004/FR-020), `AUTHORITY_ORDER` second.
+pub fn merge_fan_out(results: Vec<DiscoverResult>, query: &str) -> Vec<DiscoverResult> {
     let nhentai_norms: std::collections::HashSet<String> = results
         .iter()
         .filter(|r| r.source == "nhentai")
@@ -151,11 +151,15 @@ pub fn merge_fan_out(results: Vec<DiscoverResult>) -> Vec<DiscoverResult> {
     };
 
     let mut deduped = deduplicate(pre_dedup);
+    let norm_query = normalize_title(query);
     deduped.sort_by_key(|r| {
-        AUTHORITY_ORDER
-            .iter()
-            .position(|a| *a == r.source)
-            .unwrap_or(usize::MAX)
+        (
+            normalize_title(&r.title) != norm_query,
+            AUTHORITY_ORDER
+                .iter()
+                .position(|a| *a == r.source)
+                .unwrap_or(usize::MAX),
+        )
     });
     deduped
 }
@@ -645,7 +649,7 @@ mod tests {
             result("novelupdates", "A", "novel"),
             result("mangaupdates", "B", "manga"),
         ];
-        let merged = merge_fan_out(results);
+        let merged = merge_fan_out(results, "");
         assert_eq!(merged[0].source, "mangaupdates");
         assert_eq!(merged[1].source, "novelupdates");
     }
@@ -659,20 +663,26 @@ mod tests {
 
     #[test]
     fn novelupdates_beats_royalroad_on_same_title() {
-        let merged = merge_fan_out(vec![
-            result(ROYALROAD, "X", "novel"),
-            result("novelupdates", "X", "novel"),
-        ]);
+        let merged = merge_fan_out(
+            vec![
+                result(ROYALROAD, "X", "novel"),
+                result("novelupdates", "X", "novel"),
+            ],
+            "",
+        );
         assert_eq!(merged.len(), 1);
         assert_eq!(merged[0].source, "novelupdates");
     }
 
     #[test]
     fn royalroad_sorted_after_manga_authorities() {
-        let merged = merge_fan_out(vec![
-            result(ROYALROAD, "A", "novel"),
-            result("mangaupdates", "B", "manga"),
-        ]);
+        let merged = merge_fan_out(
+            vec![
+                result(ROYALROAD, "A", "novel"),
+                result("mangaupdates", "B", "manga"),
+            ],
+            "",
+        );
         assert_eq!(merged[0].source, "mangaupdates");
         assert_eq!(merged[1].source, ROYALROAD);
     }
@@ -687,7 +697,7 @@ mod tests {
             "manga",
         );
         mu.is_explicit = true;
-        let merged = merge_fan_out(vec![nhentai, mu]);
+        let merged = merge_fan_out(vec![nhentai, mu], "");
         assert_eq!(merged.len(), 1);
         assert_eq!(merged[0].source, "mangaupdates");
         assert_eq!(merged[0].content_type, "hentai");
@@ -699,7 +709,7 @@ mod tests {
         let nhentai = result("nhentai", "Berserk", "hentai");
         let mut mu = result("mangaupdates", "Berserk", "manga");
         mu.is_explicit = false;
-        let merged = merge_fan_out(vec![nhentai, mu]);
+        let merged = merge_fan_out(vec![nhentai, mu], "");
         // no upgrade → both survive as separate content_types
         assert_eq!(merged.len(), 2);
     }
@@ -712,9 +722,44 @@ mod tests {
         let nhentai = result("nhentai", "Berserk", "hentai");
         let mut mu = result("mangaupdates", "Berserk dj Lightning", "manga");
         mu.is_explicit = true;
-        let merged = merge_fan_out(vec![nhentai, mu]);
+        let merged = merge_fan_out(vec![nhentai, mu], "");
         assert_eq!(merged.len(), 1);
         assert_eq!(merged[0].content_type, "hentai");
+    }
+
+    // spec: 004/FR-020
+    #[test]
+    fn merge_fan_out_ranks_exact_query_match_above_a_lower_priority_authority() {
+        // GH #190: NovelUpdates (higher AUTHORITY_ORDER priority) returns an
+        // alternate-edition title that ISN'T what the user searched; Royal
+        // Road's exact match must still rank first.
+        let merged = merge_fan_out(
+            vec![
+                result(
+                    "novelupdates",
+                    "The Primal Hunter in a Ruined World",
+                    "novel",
+                ),
+                result(ROYALROAD, "The Primal Hunter", "novel"),
+            ],
+            "the primal hunter",
+        );
+        assert_eq!(merged[0].source, ROYALROAD);
+        assert_eq!(merged[1].source, "novelupdates");
+    }
+
+    // spec: 004/FR-020
+    #[test]
+    fn merge_fan_out_falls_back_to_authority_order_when_neither_is_exact() {
+        let merged = merge_fan_out(
+            vec![
+                result("novelupdates", "Something Else Entirely", "novel"),
+                result(ROYALROAD, "Also Not It", "novel"),
+            ],
+            "the primal hunter",
+        );
+        assert_eq!(merged[0].source, "novelupdates");
+        assert_eq!(merged[1].source, ROYALROAD);
     }
 
     #[test]
@@ -724,7 +769,7 @@ mod tests {
         let nhentai = result("nhentai", "Berserk", "hentai");
         let mut mu = result("mangaupdates", "Berserker", "manga");
         mu.is_explicit = true;
-        let merged = merge_fan_out(vec![nhentai, mu]);
+        let merged = merge_fan_out(vec![nhentai, mu], "");
         assert_eq!(merged.len(), 2);
         assert_eq!(
             merged

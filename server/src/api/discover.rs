@@ -186,7 +186,7 @@ async fn search(
         return Err(AppError::BadGateway);
     }
 
-    let merged = discover::merge_fan_out(raw);
+    let merged = discover::merge_fan_out(raw, &query.q);
     let results = enrich_and_check_library(&state.db, &claims.user_id, merged).await?;
     Ok(Json(results))
 }
@@ -284,7 +284,7 @@ async fn search_stream(
                 match enrich_and_check_library(
                     &state.db,
                     &claims.user_id,
-                    discover::merge_fan_out(raw),
+                    discover::merge_fan_out(raw, &query.q),
                 )
                 .await
                 {
