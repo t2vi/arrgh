@@ -4,6 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [v1.3.0](docs/releases/v1.3.0.md) | 2026-09-27 | Scheduled re-sync + working auto-download, New releases populated, Library path / trending-per-source settings take effect, hentai content type + re-match on type change, favicon restored, status/role/content-type constants |
 | [v1.2.0](docs/releases/v1.2.0.md) | 2026-09-27 | English-original novels (Royal Road authority + source), NovelFull.net source, live-streaming Discover, MangaDex/NovelUpdates/nhentai/WuxiaWorld/Royal Road fixes, chapter renumbering fix, plugin call timeout, working `download_workers` |
 | [v1.1.0](docs/releases/v1.1.0.md) | 2026-09-17 | Scroll mode now the default reader mode, scroll-reader page-1 trap fix, undownloaded chapter-nav blank-page fix, Portainer/K8s deployment docs, local dev port-collision fix + one-command startup script |
 | [v1.0.0](docs/releases/v1.0.0.md) | 2026-09-15 | Full backend rewrite .NET→Rust (S0–S10), full frontend rewrite React→Svelte 5 (F0–F6), sync-warning bug fix, log viewer env var fix |
