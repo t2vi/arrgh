@@ -142,6 +142,7 @@ async fn sync_has_sources_true_in_get_chapters() {
     assert!(arr.iter().all(|c| c["has_sources"] == true));
 }
 
+// spec: 002/FR-003
 #[tokio::test]
 async fn sync_idempotent_no_duplicate_chapters() {
     let state = setup(DEFAULT_CHAPTERS_JSON, false).await;
@@ -174,6 +175,7 @@ async fn sync_idempotent_no_duplicate_chapters() {
     assert_eq!(source_count, 2);
 }
 
+// spec: 002/FR-002, 002/FR-003
 #[tokio::test]
 async fn sync_two_sources_same_chapter_numbers_one_chapter_row_two_source_links() {
     let state = setup(DEFAULT_CHAPTERS_JSON, false).await;

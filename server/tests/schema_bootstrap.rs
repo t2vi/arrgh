@@ -5,6 +5,7 @@
 //! the new mechanism, not a line-for-line port.
 
 use arrgh_server::state::connect_db;
+use arrgh_server::titles;
 
 fn temp_db_path(tag: &str) -> String {
     std::env::temp_dir()
@@ -57,6 +58,111 @@ async fn fresh_db_gets_full_schema() {
     .unwrap();
     assert!(has_metadata_source);
 
+    pool.close().await;
+    std::fs::remove_file(&path).ok();
+}
+
+/// One link per (title, source) — a title can be linked to more than one source
+/// (that's the whole point of the multi-source pool), but never twice to the
+/// *same* source.
+// spec: 002/FR-001
+#[tokio::test]
+async fn title_sources_rejects_a_duplicate_title_source_pair() {
+    let path = temp_db_path("title-sources-unique");
+    let pool = connect_db(&path).await.unwrap();
+    let title_id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO titles (id, title, status, created_at, updated_at, sync_status, content_type, is_explicit) \
+         VALUES (?, 'X', 'ongoing', datetime('now'), datetime('now'), 'ready', 'manga', 0)",
+    )
+    .bind(&title_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    titles::insert_title_source(&pool, &title_id, "mangadex", "src-1")
+        .await
+        .unwrap();
+    // A second, different source for the same title is fine — that's FR-001's point.
+    titles::insert_title_source(&pool, &title_id, "mangapill", "src-1")
+        .await
+        .unwrap();
+    // The same source again is not.
+    assert!(
+        titles::insert_title_source(&pool, &title_id, "mangadex", "src-2")
+            .await
+            .is_err()
+    );
+
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM title_sources WHERE title_id = ?")
+        .bind(&title_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(count, 2);
+
+    pool.close().await;
+    std::fs::remove_file(&path).ok();
+}
+
+/// One link per (chapter, source) — mirrors the title-level rule above at the
+/// chapter level (spec 002 Key Entities: "Source Link (chapter-level)").
+// spec: 002/FR-003
+#[tokio::test]
+async fn chapter_sources_rejects_a_duplicate_chapter_source_pair() {
+    let path = temp_db_path("chapter-sources-unique");
+    let pool = connect_db(&path).await.unwrap();
+    let title_id = uuid::Uuid::new_v4().to_string();
+    let chapter_id = uuid::Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO titles (id, title, status, created_at, updated_at, sync_status, content_type, is_explicit) \
+         VALUES (?, 'X', 'ongoing', datetime('now'), datetime('now'), 'ready', 'manga', 0)",
+    )
+    .bind(&title_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO chapters (id, title_id, number, chapter_format, is_new, page_count, downloaded, created_at) \
+         VALUES (?, ?, 1.0, 'pages', 0, 0, 0, datetime('now'))",
+    )
+    .bind(&chapter_id)
+    .bind(&title_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let insert_link = |source: &'static str, source_id: &'static str| {
+        let pool = pool.clone();
+        let chapter_id = chapter_id.clone();
+        async move {
+            sqlx::query(
+                "INSERT INTO chapter_sources (id, chapter_id, source, source_id) VALUES (?, ?, ?, ?)",
+            )
+            .bind(uuid::Uuid::new_v4().to_string())
+            .bind(&chapter_id)
+            .bind(source)
+            .bind(source_id)
+            .execute(&pool)
+            .await
+        }
+    };
+
+    insert_link("mangadex", "src-1").await.unwrap();
+    // Two sources linked to the same chapter is exactly the multi-source pool's point.
+    insert_link("mangapill", "src-1").await.unwrap();
+    // The same source again is not.
+    assert!(insert_link("mangadex", "src-2").await.is_err());
+
+    let count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM chapter_sources WHERE chapter_id = ?")
+            .bind(&chapter_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(count, 2);
+
+    pool.close().await;
     std::fs::remove_file(&path).ok();
 }
 

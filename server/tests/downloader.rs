@@ -170,6 +170,7 @@ async fn pages_download_marks_chapter_downloaded_with_cbz() {
     let _ = std::fs::remove_dir_all(&tmp);
 }
 
+// spec: 002/FR-009
 #[tokio::test]
 async fn no_chapter_sources_sets_error() {
     let (mock_url, _) = start_mock(3, None).await;
@@ -198,6 +199,7 @@ async fn no_chapter_sources_sets_error() {
     assert_eq!(error.as_deref(), Some("no chapter sources"));
 }
 
+// spec: 002/FR-009
 #[tokio::test]
 async fn all_sources_fail_sets_error() {
     let (mock_url, _) = start_mock(3, None).await;
@@ -276,6 +278,7 @@ async fn image_error_message_contains_failing_image_url() {
     assert!(error.contains("bad-image.jpg"), "error was: {error}");
 }
 
+// spec: 002/FR-007, 002/FR-008
 #[tokio::test]
 async fn priority_fallback_tries_next_source_on_failure() {
     let (mock_url, _) = start_mock(2, None).await;
