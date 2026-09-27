@@ -84,6 +84,7 @@ describe('QueueStore', () => {
     cleanup()
   })
 
+  // spec: 005/FR-012
   it('polls every 2s', async () => {
     vi.useFakeTimers()
     const { cleanup } = createStore()
@@ -92,6 +93,34 @@ describe('QueueStore', () => {
 
     await vi.advanceTimersByTimeAsync(2000)
     expect(vi.mocked(api.getQueue).mock.calls.length).toBeGreaterThan(callsBefore)
+    cleanup()
+  })
+
+  // spec: 005/FR-013
+  it('auto-clears once an active item finishes, leaving a done item behind', async () => {
+    vi.useFakeTimers()
+    vi.mocked(api.getQueue)
+      .mockResolvedValueOnce([item({ id: '1', status: 'pending' })])
+      .mockResolvedValueOnce([item({ id: '1', status: 'done' })])
+    const { cleanup } = createStore()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(api.clearCompletedQueue).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(2000)
+    await vi.waitFor(() => expect(api.clearCompletedQueue).toHaveBeenCalledTimes(1))
+    cleanup()
+  })
+
+  // spec: 005/FR-013
+  it('does not auto-clear when nothing was ever active since load', async () => {
+    vi.useFakeTimers()
+    vi.mocked(api.getQueue).mockResolvedValue([item({ id: '1', status: 'done' })])
+    const { cleanup } = createStore()
+    await vi.advanceTimersByTimeAsync(0)
+
+    await vi.advanceTimersByTimeAsync(2000)
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(api.clearCompletedQueue).not.toHaveBeenCalled()
     cleanup()
   })
 })

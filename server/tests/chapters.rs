@@ -316,6 +316,7 @@ async fn get_chapter_text_returns_content_when_file_exists() {
 
 // ── POST /api/chapters/{id}/download ───────────────────────────────────────
 
+// spec: 005/FR-001, 005/FR-003
 #[tokio::test]
 async fn queue_download_accepted_when_eligible() {
     let state = common::build_state().await;
@@ -346,6 +347,43 @@ async fn queue_download_accepted_when_eligible() {
     assert_eq!(queued_by.as_deref(), Some(admin.id.as_str()));
 }
 
+// spec: 005/FR-002
+#[tokio::test]
+async fn queue_download_twice_while_pending_does_not_duplicate() {
+    let state = common::build_state().await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let t = common::seed_title(&state, "Naruto", false).await;
+    common::seed_user_title(&state, &admin.id, &t).await;
+    let c = common::seed_chapter(&state, &t, 1.0, false).await;
+    common::add_chapter_source(&state, &c, "mangadex").await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    send(
+        &app,
+        "POST",
+        &format!("/api/chapters/{c}/download"),
+        Some(&token),
+    )
+    .await;
+    let (status, _) = send(
+        &app,
+        "POST",
+        &format!("/api/chapters/{c}/download"),
+        Some(&token),
+    )
+    .await;
+    assert_eq!(status, StatusCode::ACCEPTED);
+
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM download_queue WHERE chapter_id = ?")
+        .bind(&c)
+        .fetch_one(&state.db)
+        .await
+        .unwrap();
+    assert_eq!(count, 1);
+}
+
+// spec: 005/FR-001
 #[tokio::test]
 async fn queue_download_not_found_when_already_downloaded() {
     let state = common::build_state().await;
@@ -367,6 +405,7 @@ async fn queue_download_not_found_when_already_downloaded() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 005/FR-001
 #[tokio::test]
 async fn queue_download_not_found_when_no_chapter_source() {
     let state = common::build_state().await;
@@ -408,6 +447,7 @@ async fn queue_download_not_found_explicit_hidden_from_user() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 005/FR-002
 #[tokio::test]
 async fn queue_download_requeues_when_previously_errored() {
     let state = common::build_state().await;
