@@ -8,57 +8,100 @@
 
 ---
 
-## Features
+## Quick start
 
-- **Discover** — fan-out search across 7 authorities: MangaUpdates (manga), AniList (manhwa), MangaDex (manhua), NovelUpdates + WuxiaWorld (translated novels), Royal Road (English-original novels), nhentai (hentai). Results deduplicated by authority precedence; live per-source progress, with results streaming in as each source answers
-- **Trending lanes** — Home screen shows 4 independent trending rows: Manga (MangaUpdates), Manhwa, Manhua, and Adult Manhwa (AniList); each lane caches independently
-- Title aliases from MangaUpdates associated names — improves cross-source matching for series with multiple romanisations
-- Chapters aggregated across all registered sources — completeness doesn't depend on any one source being up to date
-- Automatic download fallback — if the preferred source fails, arrgh tries the next by priority
-- Scheduled re-sync + auto-download — every **Sync interval** (Settings, 1–24 h) library titles re-sync; newly found chapters are queued when auto-download is on (globally, or per title: Global / Always / Never)
-- Parallel downloads — **Download workers** (Settings → Downloads, 1–10) chapters at once; changes apply without a restart
-- A stuck source can't stall search, sync or downloads — every plugin call is time-limited
-- Hentai source routing — explicit sources only matched for titles tagged `hentai`; non-explicit sources skipped for them
-- Source plugin system — add new download sources without recompiling or redeploying
-- Browse and install community plugins from the Settings UI
-- Update a broken source from Settings without upgrading the app: the plugin catalog is read live, each download is checked against its sha256 before it loads, and **Revert** goes back to the version bundled in the image
-- Download chapters to your server for offline reading
-- Real-time download progress with per-chapter percentage bars
-- **Library sort & filter** — sort by recently added, title A–Z/Z–A, or year; filter by content type (manga/manhwa/manhua/novel) and status (ongoing/completed/hiatus/cancelled); active filter count badge
-- Live sync progress — library card and title detail page show step-by-step sync status while building
-- Sync warnings — amber badge when a source couldn't be matched; re-sync to retry
-- Web reader (paged or scroll mode for comics; prose mode for novels)
-- Multi-user support — per-user libraries with shared file storage, per-user reading progress
-- Explicit content controls — admin grants access per user; 18+ badge shown on all title cards (library, home, Discover, trending)
-- Shared download queue — visible to all users, members cancel own items, admins cancel any
-
----
-
-## Quick start (Docker)
+### Docker (recommended)
 
 ```bash
 curl -O https://raw.githubusercontent.com/t2vi/arrgh/main/docker-compose.yml
 docker compose up -d
 ```
 
-Open `http://<your-server-ip>:8282` — the setup wizard runs on first launch.
+Open `http://<your-server-ip>:8282` — the setup wizard runs on first launch. The default Compose
+file runs **plugin-host** (all bundled sources) and the **CloakBrowser** sidecar for
+Cloudflare-protected sites — nothing else to configure. See
+[docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full configuration, or
+[Portainer](#portainer) / [Kubernetes](#kubernetes) below for those deployment paths.
 
-The default Compose file runs **plugin-host** (all bundled sources, below) and the **CloakBrowser** sidecar for Cloudflare-protected sites. The bundled sources register on first boot — no manual configuration needed.
-
-See [docs/deploy/docker-compose.md](docs/deploy/docker-compose.md) for full configuration.
-
----
-
-## Upgrading
+To upgrade later, from the same directory:
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-Migrations run automatically on startup. No manual DB steps needed.
+Migrations run automatically on startup — no manual DB steps needed.
 
-**From v0.1.2 or earlier** — the host port changed from `8080` to `8282`. Update firewall rules, bookmarks, and any reverse proxy config that referenced `:8080`.
+> **From v0.1.2 or earlier** — the host port changed from `8080` to `8282`. Update firewall rules, bookmarks, and any reverse proxy config that referenced `:8080`.
+
+### Run from source (local dev)
+
+```bash
+./scripts/dev-up.sh
+```
+
+Starts the Rust API server, Vite web server, plugin-host, and CloakBrowser together —
+`Ctrl-C` stops all four. Requires Rust, Node.js, and Docker or podman already installed, with
+`plugin-host`/`web-svelte` dependencies installed once (`npm install` in each). See
+[Contributing](#contributing) for the per-service steps and test commands.
+
+---
+
+## Features
+
+- **Search once, find it everywhere** — one search box fans out across 7 sites (MangaUpdates,
+  AniList, MangaDex, NovelUpdates, WuxiaWorld, Royal Road, nhentai) and dedupes the results, so
+  you're not scrolling past the same series ten times under ten different covers
+- **Your whole reading list in one place** — manga, manhwa, manhua, translated novels,
+  English-original web novels, and hentai, tracked side by side instead of six different bookmark folders
+- **Never miss a chapter** — arrgh checks your sources on a schedule and can download new
+  chapters the moment they're out, so your library is caught up before you open the app
+- **A dead source doesn't kill your backlog** — chapters are pooled across every source that
+  carries a title, so if one site goes down, blocks scrapers, or gets abandoned, downloads
+  automatically fall back to the next
+- **Fix a broken source yourself, no app update required** — scrapers break when sites change
+  their layout; update or roll back a source from Settings in a couple clicks instead of waiting
+  on a release
+- **Read the way that fits the content** — paged or scroll mode for comics, a distraction-free
+  prose reader for novels
+- **Built for a household, not just you** — everyone gets their own library and reading progress
+  on shared storage, with admin-controlled access to explicit content and a shared download
+  queue everyone can see
+- **Take it with you** — download chapters to your server for offline reading, with real-time
+  per-chapter progress while it happens
+- **Open to new sources** — anyone can write a new source plugin without recompiling or
+  redeploying arrgh itself (see [Sources](#sources))
+
+<details>
+<summary>Also under the hood</summary>
+
+Title aliasing for better cross-source matching · configurable sync interval and parallel
+download workers · per-plugin call timeouts so one stuck source can't stall search/sync/downloads ·
+library sort/filter with active-filter badge · live step-by-step sync status on library/detail
+cards · sync-warning badges for unmatched sources.
+
+</details>
+
+---
+
+## Pointing downloads at a NAS
+
+Downloads and the database live under the `arrgh` container's `/data` volume
+(`docker-compose.yml`'s `arrgh_data`). To store them on a NAS instead of local disk, mount the NAS
+share on the Docker host first (NFS or SMB, whichever your NAS exposes), then bind-mount that path
+in place of the named volume:
+
+```yaml
+services:
+  arrgh:
+    volumes:
+      - /mnt/nas/arrgh:/data   # /mnt/nas/arrgh is the NAS share mounted on the host
+```
+
+`/mnt/nas/arrgh` must already be mounted and writable by the container's user before `docker
+compose up` — arrgh doesn't mount network shares itself, only the local path it's given. See
+[docs/deploy/docker-compose.md](docs/deploy/docker-compose.md#production-checklist) for the full
+volume layout (DB + downloads paths) and backup notes.
 
 ---
 
@@ -104,11 +147,10 @@ All default sources compile into a single **plugin-host** container — no per-p
 | **nhentai** | Hentai doujinshi | [`arrgh-plugin-nhentai`](https://github.com/t2vi/arrgh-plugin-nhentai) | Direct API, CloakBrowser fallback when challenged; explicit-only source |
 | **NovelUpdates** | — (metadata authority only) | [`arrgh-plugin-novelupdates`](https://github.com/t2vi/arrgh-plugin-novelupdates) | Not a download source — backs the NovelUpdates Discover authority (`info.metadata_only=true`); CF-protected |
 
-Every plugin now lives in its own `t2vi/arrgh-plugin-<id>` repo (spec 031, ADR 0035) — this repo
+Every plugin lives in its own `t2vi/arrgh-plugin-<id>` repo (spec 031, ADR 0035) — this repo
 no longer contains plugin source at all (only the e2e `plugins/fixture/`). The image fetches each
 bundled plugin from its own repo's published release at build time, checksum- and
-version-verified (`scripts/fetch-plugin-bundles.mjs`). See
-[`arrgh-plugin-template`](https://github.com/t2vi/arrgh-plugin-template) to write a new one.
+version-verified (`scripts/fetch-plugin-bundles.mjs`).
 
 CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromium, source-level fingerprint patches). Plugin Host holds the CDP connection; plugins call `ctx.getBrowser()` via `PluginContext`.
 
@@ -116,9 +158,9 @@ CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromiu
 
 The quickest way is a bundle plugin. Create a repo from
 **[arrgh-plugin-template](https://github.com/t2vi/arrgh-plugin-template)**: it has the
-[plugin SDK](https://github.com/t2vi/arrgh-plugin-sdk) (types, `arrgh-plugin build`, contract tests),
-CI, and a release workflow that publishes `<id>.js`, its sha256, and the entry to add to
-`plugin-index/index.json`.
+**[arrgh-plugin-sdk](https://github.com/t2vi/arrgh-plugin-sdk)** (types, `arrgh-plugin build`,
+contract tests), CI, and a release workflow that publishes `<id>.js`, its sha256, and the entry to
+add to `plugin-index/index.json`.
 
 Or run your own HTTP server:
 
@@ -167,8 +209,6 @@ arrgh/
     └── fixture/     # arrgh-plugin-<id> repo now, fetched from its release at build time
 ```
 
-> Plugins are moving to one repo each, with one-click updates from Settings ([#199](https://github.com/t2vi/arrgh/issues/199)).
-
 - **Backend**: Rust, axum, sqlx (SQLite)
 - **Frontend**: Svelte 5 (runes), TypeScript, Vite, Tailwind
 - **Plugins**: Node.js bundles loaded by plugin-host; CF-protected sources use CloakBrowser via CDP
@@ -184,16 +224,23 @@ Issues and PRs are welcome. A few things to know:
 - Run `cargo test` (server), `npm test` in `web-svelte/` and `plugin-host/` before submitting
 - Follow the existing code style — see `CLAUDE.md` for dev setup
 
-### Local development (quick start)
+To run/restart one service individually instead of the full `./scripts/dev-up.sh` stack (see
+[Quick start](#quick-start) above):
 
 ```bash
-./scripts/dev-up.sh
+# Terminal 1 — API server
+cd server && cargo run
+
+# Terminal 2 — Web dev server
+cd web-svelte && npm run dev
+
+# Terminal 3 — Plugin host (needed for source browsing + chapter pages)
+cd plugin-host && npm install && ../scripts/sync-plugins.sh && npm start
 ```
 
-Starts the Rust API server, Vite web server, plugin-host, and CloakBrowser (for CF-protected
-sources) together, `Ctrl-C` stops all four. Requires Rust, Node.js, and Docker or podman already
-installed, with `plugin-host`/`web-svelte` dependencies installed once (`npm install` in each).
-For running/restarting one service individually instead, see `CLAUDE.md`'s Dev Workflow section.
+Web runs at `http://localhost:5173`, API at `http://localhost:3001`, Plugin Host at
+`http://localhost:4000`. See `CLAUDE.md`'s Dev Workflow section for CF-protected source testing
+(CloakBrowser) and other environment details.
 
 No CLA, no process overhead. Just open a PR.
 
