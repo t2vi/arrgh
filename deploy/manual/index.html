@@ -21,7 +21,7 @@
 <pre class="astro-code one-dark-pro" style="background-color:#282c34;color:#abb2bf; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>DatabasePath=/var/lib/arrgh/arrgh.db</span></span>
 <span class="line"><span>DownloadDir=/var/lib/arrgh/downloads</span></span>
 <span class="line"><span>PluginHostUrl=http://localhost:4000</span></span>
-<span class="line"><span>PluginIndexUrl=file:///opt/arrgh/plugin-index.json</span></span>
+<span class="line"><span>PluginIndexFallbackUrl=file:///opt/arrgh/plugin-index.json   # used when the live catalog (PluginIndexUrl, GitHub main by default) is unreachable</span></span>
 <span class="line"><span>JwtSecret=&#x3C;generate with: openssl rand -base64 48></span></span>
 <span class="line"><span>RUST_BIND=127.0.0.1:3001</span></span>
 <span class="line"><span>LOG_LEVEL=info</span></span></code></pre>
