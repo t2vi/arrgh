@@ -31,7 +31,12 @@ if [ -z "$JwtSecret" ]; then
   export JwtSecret="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 48)"
 fi
 
-export PluginIndexUrl="${PluginIndexUrl:-file:///app/plugin-index.json}"
+# PLUGIN_INDEX_URL → PluginIndexUrl. Unset = the live catalog on GitHub main,
+# falling back to the image copy (/app/plugin-index.json, PluginIndexFallbackUrl)
+# when unreachable (spec 031).
+if [ -n "$PLUGIN_INDEX_URL" ] && [ -z "$PluginIndexUrl" ]; then
+  export PluginIndexUrl="$PLUGIN_INDEX_URL"
+fi
 
 # LOG_LEVEL=debug|info|warn|error (default: info) — controls both the
 # docker console output and the in-app log viewer; read directly by the
@@ -41,7 +46,7 @@ mkdir -p "$DownloadDir"
 
 # Start the Rust API server in background (ADR 0033 — sole backend as of
 # S10 #132; reads DatabasePath/PluginHostUrl/DownloadDir/JwtSecret/
-# PluginIndexUrl exported above).
+# PluginIndexUrl if set).
 RUST_BIND="127.0.0.1:3001" LOG_LEVEL="${LOG_LEVEL:-info}" /app/arrgh-server &
 
 # Start nginx in foreground (keeps the container alive)

@@ -1,4 +1,5 @@
 import express from 'express'
+import { createHash, randomUUID } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { chromium } from 'playwright-core'
@@ -67,6 +68,8 @@ async function getBrowser(): Promise<Browser> {
 export interface PluginInfo {
   id: string
   name: string
+  /** The bundle's own version (spec 031 FR-010); absent on older builds → shown as unknown. */
+  version?: string
   default_explicit: boolean
   content_types: string[]
   is_community?: boolean
@@ -91,75 +94,127 @@ export interface PluginBundle {
 
 // ── Registry ──────────────────────────────────────────────────────────────────
 
-const plugins = new Map<string, PluginBundle>()
-const communityIds = new Set<string>()
+/** Plugin protocol this host implements. A catalog entry needing more can't be installed (spec 031 FR-006). */
+export const PLUGIN_PROTOCOL = 1
+
+export const ORIGIN_BUNDLED = 'bundled'
+export const ORIGIN_DOWNLOADED = 'downloaded'
+export type Origin = typeof ORIGIN_BUNDLED | typeof ORIGIN_DOWNLOADED
+
+export interface Loaded { bundle: PluginBundle; file?: string }
+export interface Slots { bundled?: Loaded; downloaded?: Loaded }
+
+/** Numeric dot-separated compare; a pre-release suffix is ignored. ponytail: not full semver. */
+export function compareVersions(a: string, b: string): number {
+  const parts = (v: string) => v.split('-')[0].split('.').map((n) => parseInt(n, 10) || 0)
+  const [pa, pb] = [parts(a), parts(b)]
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0)
+    if (d !== 0) return d
+  }
+  return 0
+}
+
+/** Downloaded wins, unless both versions are known and the bundled one is newer (spec 031 FR-008). */
+export function pickActive({ bundled, downloaded }: Slots): Loaded | undefined {
+  if (!downloaded || !bundled) return downloaded ?? bundled
+  const [bv, dv] = [bundled.bundle.info.version, downloaded.bundle.info.version]
+  return bv && dv && compareVersions(bv, dv) > 0 ? bundled : downloaded
+}
+
+/** Per id: a bundled and a downloaded slot; `active` is what the routes serve. */
+export class PluginRegistry {
+  readonly slots = new Map<string, Slots>()
+
+  /** `active` may be a caller's map; its existing entries count as bundled, or downloaded when in `downloadedIds`. */
+  constructor(readonly active: Map<string, PluginBundle> = new Map(), downloadedIds: Set<string> = new Set()) {
+    for (const [id, bundle] of active) {
+      this.slots.set(id, { [downloadedIds.has(id) ? ORIGIN_DOWNLOADED : ORIGIN_BUNDLED]: { bundle } })
+    }
+  }
+
+  put(id: string, origin: Origin, loaded: Loaded | undefined): void {
+    const slots = { ...this.slots.get(id), [origin]: loaded }
+    const pick = pickActive(slots)
+    if (!pick) {
+      this.slots.delete(id)
+      this.active.delete(id)
+      return
+    }
+    this.slots.set(id, slots)
+    this.active.set(id, pick.bundle)
+  }
+
+  origin(id: string): Origin | undefined {
+    const slots = this.slots.get(id)
+    if (!slots) return undefined
+    return pickActive(slots) === slots.downloaded ? ORIGIN_DOWNLOADED : ORIGIN_BUNDLED
+  }
+
+  /** Watcher: a bundle file disappeared — drop whichever slot it filled. */
+  removeFile(file: string): void {
+    for (const [id, slots] of this.slots) {
+      for (const origin of [ORIGIN_BUNDLED, ORIGIN_DOWNLOADED] as const) {
+        if (slots[origin]?.file === file) {
+          this.put(id, origin, undefined)
+          console.log(`[plugin-host] unloaded ${origin}: ${id} (bundle removed)`)
+        }
+      }
+    }
+  }
+}
+
+const registry = new PluginRegistry()
 
 const ctx: PluginContext = {
   getBrowser,
   logger: console,
 }
 
-/** Which plugin id each loaded bundle file registered — so a removed file can be unloaded. */
-const bundleFileIds = new Map<string, string>()
-
-/** Watcher event: (re)load a changed bundle file, or unload it if the file was removed (spec 020). */
-export async function onBundleChange(
-  registry: Map<string, PluginBundle>,
-  communitySet: Set<string>,
-  file: string,
-  isCommunity: boolean,
-): Promise<void> {
-  const abs = path.resolve(file)
-  if (fs.existsSync(abs)) return loadBundle(registry, communitySet, abs, isCommunity)
-  const id = bundleFileIds.get(abs)
-  if (!id) return
-  bundleFileIds.delete(abs)
-  registry.delete(id)
-  communitySet.delete(id)
-  console.log(`[plugin-host] unloaded: ${id} (bundle removed)`)
+/** require + init a bundle file; throws on any failure. */
+async function requireBundle(file: string): Promise<PluginBundle> {
+  delete require.cache[file]
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const bundle: PluginBundle = require(file)
+  if (!bundle?.info?.id) throw new Error('bundle has no info.id')
+  if (bundle.init) await bundle.init(ctx)
+  return bundle
 }
 
-async function loadBundle(
-  registry: Map<string, PluginBundle>,
-  communitySet: Set<string>,
-  file: string,
-  isCommunity = false,
-): Promise<void> {
+async function loadBundle(reg: PluginRegistry, file: string, origin: Origin): Promise<void> {
   const abs = path.resolve(file)
   try {
-    delete require.cache[abs]
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const bundle: PluginBundle = require(abs)
-    if (bundle.init) await bundle.init(ctx)
-    registry.set(bundle.info.id, bundle)
-    bundleFileIds.set(abs, bundle.info.id)
-    if (isCommunity) communitySet.add(bundle.info.id)
-    console.log(`[plugin-host] loaded: ${bundle.info.id} (${bundle.info.name})${isCommunity ? ' [community]' : ''}`)
+    const bundle = await requireBundle(abs)
+    reg.put(bundle.info.id, origin, { bundle, file: abs })
+    console.log(`[plugin-host] loaded ${origin}: ${bundle.info.id} ${bundle.info.version ?? '(version unknown)'}`)
   } catch (e) {
     console.error(`[plugin-host] failed to load ${path.basename(file)}:`, e)
   }
 }
 
-async function loadAll(): Promise<void> {
-  if (fs.existsSync(BUNDLES_DIR)) {
-    const files = fs.readdirSync(BUNDLES_DIR).filter((f) => f.endsWith('.js'))
-    for (const f of files) await loadBundle(plugins, communityIds, path.join(BUNDLES_DIR, f), false)
-  } else {
-    console.warn(`[plugin-host] bundles dir not found: ${BUNDLES_DIR}`)
-  }
+export async function loadDir(reg: PluginRegistry, dir: string, origin: Origin): Promise<void> {
+  for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.js'))) await loadBundle(reg, path.join(dir, f), origin)
+}
 
-  if (fs.existsSync(COMMUNITY_BUNDLES_DIR)) {
-    const files = fs.readdirSync(COMMUNITY_BUNDLES_DIR).filter((f) => f.endsWith('.js'))
-    for (const f of files) await loadBundle(plugins, communityIds, path.join(COMMUNITY_BUNDLES_DIR, f), true)
-  }
+/** Watcher event: (re)load a changed bundle file, or unload it if the file was removed (spec 020). */
+export async function onBundleChange(reg: PluginRegistry, file: string, origin: Origin): Promise<void> {
+  const abs = path.resolve(file)
+  if (fs.existsSync(abs)) return loadBundle(reg, abs, origin)
+  reg.removeFile(abs)
+}
+
+async function loadAll(): Promise<void> {
+  if (fs.existsSync(BUNDLES_DIR)) await loadDir(registry, BUNDLES_DIR, ORIGIN_BUNDLED)
+  else console.warn(`[plugin-host] bundles dir not found: ${BUNDLES_DIR}`)
+  if (fs.existsSync(COMMUNITY_BUNDLES_DIR)) await loadDir(registry, COMMUNITY_BUNDLES_DIR, ORIGIN_DOWNLOADED)
 }
 
 function watchBundles(): void {
-  for (const [dir, isCommunity] of [[BUNDLES_DIR, false], [COMMUNITY_BUNDLES_DIR, true]] as const) {
+  for (const [dir, origin] of [[BUNDLES_DIR, ORIGIN_BUNDLED], [COMMUNITY_BUNDLES_DIR, ORIGIN_DOWNLOADED]] as const) {
     if (!fs.existsSync(dir)) continue
     fs.watch(dir, (_event, filename) => {
       if (filename && filename.endsWith('.js')) {
-        onBundleChange(plugins, communityIds, path.join(dir, filename), isCommunity).catch(console.error)
+        onBundleChange(registry, path.join(dir, filename), origin).catch(console.error)
       }
     })
   }
@@ -169,10 +224,15 @@ function watchBundles(): void {
 // ── App factory ───────────────────────────────────────────────────────────────
 
 export function createApp(
-  registry: Map<string, PluginBundle>,
-  communityPluginIds: Set<string> = new Set(),
-  { callTimeoutMs = PLUGIN_CALL_TIMEOUT_MS }: { callTimeoutMs?: number } = {},
+  plugins: PluginRegistry | Map<string, PluginBundle>,
+  downloadedIds: Set<string> = new Set(),
+  {
+    callTimeoutMs = PLUGIN_CALL_TIMEOUT_MS,
+    communityDir = COMMUNITY_BUNDLES_DIR,
+  }: { callTimeoutMs?: number; communityDir?: string } = {},
 ): express.Application {
+  const reg = plugins instanceof PluginRegistry ? plugins : new PluginRegistry(plugins, downloadedIds)
+  const registry = reg.active
   const app = express()
   const call = <T>(req: express.Request, fn: string, work: Promise<T>) =>
     withTimeout(work, callTimeoutMs, `${req.params.plugin} ${fn}`)
@@ -187,62 +247,100 @@ export function createApp(
     return p
   }
 
-  app.get('/plugins', (_req, res) => {
-    res.json(Array.from(registry.values()).map((p) => ({
+  const describe = (p: PluginBundle) => {
+    const origin = reg.origin(p.info.id)
+    return {
       ...p.info,
-      is_community: communityPluginIds.has(p.info.id),
-    })))
+      version: p.info.version ?? null,
+      origin,
+      has_bundled: !!reg.slots.get(p.info.id)?.bundled,
+      is_community: origin === ORIGIN_DOWNLOADED,
+    }
+  }
+
+  app.get('/host', (_req, res) => {
+    res.json({ protocol: PLUGIN_PROTOCOL })
+  })
+
+  app.get('/plugins', (_req, res) => {
+    res.json(Array.from(registry.values()).map(describe))
   })
 
   app.get('/:plugin/info', (req, res) => {
     const p = registry.get(req.params.plugin)
     if (!p) return void res.status(404).json({ error: `plugin not found: ${req.params.plugin}` })
-    res.json({ ...p.info, is_community: communityPluginIds.has(p.info.id) })
+    res.json(describe(p))
   })
 
+  // Install or update one plugin by id (spec 031 FR-005/006/012). Nothing is written or swapped
+  // unless the download matches its sha256 and the bundle loads and reports the same id.
   app.post('/plugins/install', async (req, res) => {
+    const id = String(req.body?.id ?? '').trim()
     const url = String(req.body?.url ?? '').trim()
-    if (!url) return void res.status(400).json({ error: 'url required' })
+    const expected = String(req.body?.sha256 ?? '').trim().toLowerCase()
+    const protocol = Number(req.body?.protocol ?? 1)
+    if (!id || !url) return void res.status(400).json({ error: 'id and url required' })
+    if (!expected) return void res.status(400).json({ error: 'sha256 required' })
+    let pathname: string
+    try { pathname = new URL(url).pathname } catch { return void res.status(400).json({ error: 'invalid url' }) }
+    if (!pathname.endsWith('.js')) return void res.status(400).json({ error: 'download_url must end with .js' })
+    if (protocol > PLUGIN_PROTOCOL) {
+      return void res.status(422).json({
+        error: `needs plugin protocol ${protocol}; this *ARRgh supports ${PLUGIN_PROTOCOL} — upgrade *ARRgh first`,
+      })
+    }
 
-    fs.mkdirSync(COMMUNITY_BUNDLES_DIR, { recursive: true })
-
-    let bundleCode: string
+    let code: Buffer
     try {
       const resp = await fetch(url)
       if (!resp.ok) throw new Error(`download failed: ${resp.status}`)
-      bundleCode = await resp.text()
+      code = Buffer.from(await resp.arrayBuffer())
     } catch (e) {
       return void res.status(502).json({ error: String(e) })
     }
-
-    const filename = path.basename(new URL(url).pathname)
-    if (!filename.endsWith('.js')) {
-      return void res.status(400).json({ error: 'download_url must end with .js' })
+    const actual = createHash('sha256').update(code).digest('hex')
+    if (actual !== expected) {
+      return void res.status(422).json({ error: `checksum mismatch: expected ${expected}, got ${actual}` })
     }
-    const dest = path.join(COMMUNITY_BUNDLES_DIR, filename)
-    fs.writeFileSync(dest, bundleCode, 'utf-8')
 
-    await loadBundle(registry, communityPluginIds, dest, true)
-    res.status(201).json({ ok: true })
+    // Unique temp name per request (not .js, so the watcher ignores it); rename is atomic,
+    // so two concurrent updates never leave a half-written <id>.js.
+    fs.mkdirSync(communityDir, { recursive: true })
+    const tmp = path.join(communityDir, `.${id}.${randomUUID()}.tmp`)
+    fs.writeFileSync(tmp, code)
+    let bundle: PluginBundle
+    try {
+      bundle = await requireBundle(tmp)
+      if (bundle.info.id !== id) throw new Error(`bundle reports id "${bundle.info.id}", expected "${id}"`)
+    } catch (e) {
+      fs.rmSync(tmp, { force: true })
+      return void res.status(422).json({ error: `bundle failed to load: ${e instanceof Error ? e.message : e}` })
+    } finally {
+      delete require.cache[tmp]
+    }
+
+    const dest = path.join(communityDir, `${id}.js`)
+    const previous = reg.slots.get(id)?.downloaded?.file
+    fs.renameSync(tmp, dest)
+    if (previous && previous !== dest) fs.rmSync(previous, { force: true }) // legacy URL-named file
+    reg.put(id, ORIGIN_DOWNLOADED, { bundle, file: dest })
+    console.log(`[plugin-host] installed ${id} ${bundle.info.version ?? '(version unknown)'}`)
+    res.status(201).json({ id, version: bundle.info.version ?? null, origin: reg.origin(id) })
   })
 
+  // Revert to the bundled version, or unload a downloaded-only plugin (spec 031 FR-009).
   app.delete('/plugins/:id', (req, res) => {
     const id = req.params.id
-    if (!communityPluginIds.has(id)) {
-      return void res.status(403).json({ error: 'cannot delete a bundled default plugin' })
+    const slots = reg.slots.get(id)
+    if (!slots) return void res.status(404).json({ error: `plugin not found: ${id}` })
+    if (!slots.downloaded) {
+      return void res.status(403).json({ error: 'nothing downloaded to remove — this is the bundled version' })
     }
-
-    registry.delete(id)
-    communityPluginIds.delete(id)
-
-    if (fs.existsSync(COMMUNITY_BUNDLES_DIR)) {
-      const file = fs.readdirSync(COMMUNITY_BUNDLES_DIR).find((f) => f.startsWith(id))
-      if (file) {
-        try { fs.unlinkSync(path.join(COMMUNITY_BUNDLES_DIR, file)) } catch { /* ignore */ }
-      }
-    }
-
-    res.status(204).send()
+    if (slots.downloaded.file) fs.rmSync(slots.downloaded.file, { force: true })
+    reg.put(id, ORIGIN_DOWNLOADED, undefined)
+    const now = registry.get(id)
+    if (!now) return void res.status(204).send()
+    res.json({ id, version: now.info.version ?? null, origin: reg.origin(id) })
   })
 
   app.get('/:plugin/search', async (req, res) => {
@@ -341,9 +439,9 @@ export function createApp(
 // (it would load real bundles and collide with a running dev host on :PORT).
 if (!process.env.VITEST) loadAll().then(() => {
   watchBundles()
-  const app = createApp(plugins, communityIds)
+  const app = createApp(registry)
   app.listen(PORT, () => {
-    console.log(`[plugin-host] listening on :${PORT} — ${plugins.size} plugin(s) loaded`)
+    console.log(`[plugin-host] listening on :${PORT} — ${registry.active.size} plugin(s) loaded`)
     console.log(`[plugin-host] languages: ${LANGS.join(', ')}`)
     console.log(`[plugin-host] cloakbrowser: ${CLOAKBROWSER_WS_URL || 'not configured (CF plugins will fail)'}`)
   })

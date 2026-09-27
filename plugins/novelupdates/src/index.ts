@@ -4,6 +4,7 @@ import type { PluginContext } from './novelupdates'
 
 export const info = {
   id: 'novelupdates',
+  version: '1.0.0',
   name: 'NovelUpdates',
   default_explicit: false,
   content_types: ['novel'],

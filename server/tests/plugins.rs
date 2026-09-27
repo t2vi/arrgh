@@ -52,6 +52,7 @@ fn default_index() -> Value {
             "description": "MangaDex source",
             "version": "1.0.0",
             "download_url": "http://fake-cdn/mangadex.js",
+            "sha256": "abc123",
             "bundled": false,
             "default_explicit": false,
             "content_types": ["manga", "manhwa"],
@@ -477,5 +478,406 @@ async fn delete_no_content_removes_source() {
         .unwrap();
     assert_eq!(count, 0);
 
+    std::fs::remove_file(&path).unwrap();
+}
+
+// ── spec 031 phase A: catalog fallback, status, update, revert ─────────────
+
+async fn admin_app(state: arrgh_server::state::AppState) -> (Router, String) {
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    (arrgh_server::api::router(state), common::token_for(&admin))
+}
+
+async fn member_token(state: &arrgh_server::state::AppState) -> String {
+    common::token_for(&common::seed_user(state, "member1", "member", false).await)
+}
+
+/// Catalog for update tests: `p` 1.1.0 is updatable; the others are each blocked one way.
+fn update_index() -> Value {
+    let entry = |id: &str, url: Value, sha: Value, protocol: u32| {
+        json!({
+            "id": id, "name": id, "version": "1.1.0", "download_url": url, "sha256": sha,
+            "protocol": protocol, "bundled": true, "default_explicit": false, "content_types": ["manga"],
+        })
+    };
+    json!([
+        entry("p", json!("https://cdn.example/p.js"), json!("abc123"), 1),
+        entry("nourl", json!(null), json!("abc123"), 1),
+        entry(
+            "nosha",
+            json!("https://cdn.example/nosha.js"),
+            json!(null),
+            1
+        ),
+        entry(
+            "future",
+            json!("https://cdn.example/future.js"),
+            json!("abc123"),
+            2
+        ),
+    ])
+}
+
+const HOST_PLUGINS: &str = r#"[
+  {"id":"p","name":"P","version":"1.0.0","origin":"bundled","has_bundled":true,"content_types":["manga"]},
+  {"id":"nourl","name":"NoUrl","version":"1.0.0","origin":"bundled","has_bundled":true,"content_types":["manga"]},
+  {"id":"nosha","name":"NoSha","version":null,"origin":"bundled","has_bundled":true,"content_types":["manga"]},
+  {"id":"future","name":"Future","version":"1.0.0","origin":"downloaded","has_bundled":true,"content_types":["manga"]},
+  {"id":"local","name":"Local","version":"3.0.0","origin":"downloaded","has_bundled":false,"content_types":["manga"]}
+]"#;
+
+// spec: 031/FR-001, 031/FR-002
+#[tokio::test]
+async fn index_falls_back_to_the_image_copy_when_live_fails() {
+    let fallback = write_index(&update_index());
+    let state = common::build_plugins_state_with_fallback(
+        "http://127.0.0.1:9/unreachable.json",
+        &format!("file://{}", fallback.display()),
+        "http://fake-plugin-host",
+    )
+    .await;
+    let (app, token) = admin_app(state).await;
+
+    let (status, body) = send(&app, "GET", "/api/plugins/index", Some(&token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body[0]["sha256"], "abc123");
+    assert_eq!(body[3]["protocol"], 2);
+    std::fs::remove_file(&fallback).unwrap();
+}
+
+// spec: 031/FR-003, 031/FR-006, 031/FR-010, 031/FR-011
+#[tokio::test]
+async fn status_merges_loaded_plugins_with_the_catalog() {
+    let path = write_index(&update_index());
+    let (host, seen) = common::start_recording_mock(&[
+        ("GET /plugins", 200, HOST_PLUGINS),
+        ("GET /host", 200, r#"{"protocol":1}"#),
+    ])
+    .await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+
+    let (status, body) = send(&app, "GET", "/api/plugins", Some(&token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["catalog"], "live");
+    assert_eq!(body["host_protocol"], 1);
+    let row = |id: &str| {
+        body["plugins"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|p| p["id"] == id)
+            .unwrap()
+            .clone()
+    };
+
+    let p = row("p");
+    assert_eq!(p["loaded_version"], "1.0.0");
+    assert_eq!(p["origin"], "bundled");
+    assert_eq!(p["catalog_version"], "1.1.0");
+    assert_eq!(p["update_available"], true);
+    assert_eq!(p["blocked_reason"], Value::Null);
+
+    assert!(row("nourl")["blocked_reason"]
+        .as_str()
+        .unwrap()
+        .contains("download"));
+    // unknown loaded version → update still offered (US3 AS2)
+    assert_eq!(row("nosha")["update_available"], true);
+    assert!(row("nosha")["blocked_reason"]
+        .as_str()
+        .unwrap()
+        .contains("checksum"));
+    assert!(row("future")["blocked_reason"]
+        .as_str()
+        .unwrap()
+        .contains("newer *ARRgh"));
+
+    let local = row("local");
+    assert_eq!(local["catalog_version"], Value::Null);
+    assert_eq!(local["update_available"], false);
+    assert_eq!(local["has_bundled"], false);
+
+    // Listing never installs anything on its own (FR-011).
+    assert!(seen.lock().unwrap().iter().all(|(m, _, _)| m == "GET"));
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-002
+#[tokio::test]
+async fn status_reports_fallback_catalog_and_survives_no_catalog() {
+    let fallback = write_index(&update_index());
+    let (host, _) = common::start_recording_mock(&[
+        ("GET /plugins", 200, HOST_PLUGINS),
+        ("GET /host", 200, r#"{"protocol":1}"#),
+    ])
+    .await;
+    let state = common::build_plugins_state_with_fallback(
+        "http://127.0.0.1:9/unreachable.json",
+        &format!("file://{}", fallback.display()),
+        &host,
+    )
+    .await;
+    let (app, token) = admin_app(state).await;
+    let (_, body) = send(&app, "GET", "/api/plugins", Some(&token), None).await;
+    assert_eq!(body["catalog"], "fallback");
+
+    let state = common::build_plugins_state("http://127.0.0.1:9/unreachable.json", &host).await;
+    let (app, token) = admin_app(state).await;
+    let (status, body) = send(&app, "GET", "/api/plugins", Some(&token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["catalog"], Value::Null);
+    assert_eq!(body["plugins"].as_array().unwrap().len(), 5);
+    std::fs::remove_file(&fallback).unwrap();
+}
+
+#[tokio::test]
+async fn status_bad_gateway_when_plugin_host_is_down() {
+    let path = write_index(&update_index());
+    let state =
+        common::build_plugins_state(&format!("file://{}", path.display()), "http://127.0.0.1:9")
+            .await;
+    let (app, token) = admin_app(state).await;
+    let (status, _) = send(&app, "GET", "/api/plugins", Some(&token), None).await;
+    assert_eq!(status, StatusCode::BAD_GATEWAY);
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-004
+#[tokio::test]
+async fn plugin_admin_routes_are_admin_only() {
+    let path = write_index(&update_index());
+    let state = common::build_plugins_state(
+        &format!("file://{}", path.display()),
+        "http://fake-plugin-host",
+    )
+    .await;
+    let member = member_token(&state).await;
+    let app = arrgh_server::api::router(state);
+    for (method, uri) in [
+        ("GET", "/api/plugins"),
+        ("POST", "/api/plugins/p/update"),
+        ("POST", "/api/plugins/p/revert"),
+    ] {
+        assert_eq!(
+            send(&app, method, uri, None, None).await.0,
+            StatusCode::UNAUTHORIZED,
+            "{uri}"
+        );
+        assert_eq!(
+            send(&app, method, uri, Some(&member), None).await.0,
+            StatusCode::FORBIDDEN,
+            "{uri}"
+        );
+    }
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-005, 031/FR-006
+#[tokio::test]
+async fn update_forwards_the_catalog_entry_to_the_host() {
+    let path = write_index(&update_index());
+    let (host, seen) = common::start_recording_mock(&[
+        ("GET /host", 200, r#"{"protocol":1}"#),
+        (
+            "POST /plugins/install",
+            201,
+            r#"{"id":"p","version":"1.1.0","origin":"downloaded"}"#,
+        ),
+    ])
+    .await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+
+    let (status, body) = send(&app, "POST", "/api/plugins/p/update", Some(&token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        body,
+        json!({"id":"p","version":"1.1.0","origin":"downloaded"})
+    );
+    let install = seen
+        .lock()
+        .unwrap()
+        .iter()
+        .find(|(m, _, _)| m == "POST")
+        .unwrap()
+        .2
+        .clone();
+    assert_eq!(
+        install,
+        json!({"id":"p","url":"https://cdn.example/p.js","sha256":"abc123","protocol":1})
+    );
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-005, 031/FR-006, 031/FR-012
+#[tokio::test]
+async fn update_refuses_blocked_entries_without_calling_install() {
+    let path = write_index(&update_index());
+    let (host, seen) =
+        common::start_recording_mock(&[("GET /host", 200, r#"{"protocol":1}"#)]).await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+
+    for (id, why) in [
+        ("nourl", "download"),
+        ("nosha", "checksum"),
+        ("future", "newer *ARRgh"),
+    ] {
+        let (status, body) = send(
+            &app,
+            "POST",
+            &format!("/api/plugins/{id}/update"),
+            Some(&token),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{id}");
+        assert!(
+            body["error"].as_str().unwrap().contains(why),
+            "{id}: {body}"
+        );
+    }
+    let (status, _) = send(
+        &app,
+        "POST",
+        "/api/plugins/unknown/update",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert!(seen.lock().unwrap().iter().all(|(m, _, _)| m == "GET"));
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-012
+#[tokio::test]
+async fn update_surfaces_the_hosts_rejection() {
+    let path = write_index(&update_index());
+    let (host, _) = common::start_recording_mock(&[
+        ("GET /host", 200, r#"{"protocol":1}"#),
+        (
+            "POST /plugins/install",
+            422,
+            r#"{"error":"checksum mismatch: expected abc123, got def"}"#,
+        ),
+    ])
+    .await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+    let (status, body) = send(&app, "POST", "/api/plugins/p/update", Some(&token), None).await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(body["error"]
+        .as_str()
+        .unwrap()
+        .contains("checksum mismatch"));
+
+    let (host, _) = common::start_recording_mock(&[
+        ("GET /host", 200, r#"{"protocol":1}"#),
+        (
+            "POST /plugins/install",
+            502,
+            r#"{"error":"download failed: 404"}"#,
+        ),
+    ])
+    .await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+    let (status, body) = send(&app, "POST", "/api/plugins/p/update", Some(&token), None).await;
+    assert_eq!(status, StatusCode::BAD_GATEWAY);
+    assert!(body["error"].as_str().unwrap().contains("download failed"));
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-005
+#[tokio::test]
+async fn install_refuses_an_entry_without_checksum() {
+    let path = write_index(&update_index());
+    let (host, seen) = common::start_recording_mock(&[]).await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+    let (status, body) = send(
+        &app,
+        "POST",
+        "/api/plugins/install",
+        Some(&token),
+        Some(json!({"plugin_id": "nosha"})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(body["error"].as_str().unwrap().contains("checksum"));
+    assert!(seen.lock().unwrap().is_empty());
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-005
+#[tokio::test]
+async fn install_forwards_id_and_checksum() {
+    let path = write_index(&default_index());
+    let (host, seen) =
+        common::start_recording_mock(&[("POST /plugins/install", 201, r#"{"id":"mangadex"}"#)])
+            .await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+    let (status, _) = send(
+        &app,
+        "POST",
+        "/api/plugins/install",
+        Some(&token),
+        Some(json!({"plugin_id": "mangadex"})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(
+        seen.lock().unwrap()[0].2,
+        json!({"id":"mangadex","url":"http://fake-cdn/mangadex.js","sha256":"abc123","protocol":1})
+    );
+    std::fs::remove_file(&path).unwrap();
+}
+
+// spec: 031/FR-009
+#[tokio::test]
+async fn revert_passes_through_and_maps_nothing_to_revert() {
+    let path = write_index(&update_index());
+    let (host, seen) = common::start_recording_mock(&[
+        (
+            "DELETE /plugins/p",
+            200,
+            r#"{"id":"p","version":"1.0.0","origin":"bundled"}"#,
+        ),
+        (
+            "DELETE /plugins/nourl",
+            403,
+            r#"{"error":"nothing downloaded to remove"}"#,
+        ),
+    ])
+    .await;
+    let state = common::build_plugins_state(&format!("file://{}", path.display()), &host).await;
+    let (app, token) = admin_app(state).await;
+
+    let (status, body) = send(&app, "POST", "/api/plugins/p/revert", Some(&token), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["origin"], "bundled");
+    assert_eq!(seen.lock().unwrap()[0].0, "DELETE");
+
+    let (status, _) = send(
+        &app,
+        "POST",
+        "/api/plugins/nourl/revert",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
+    let (status, _) = send(
+        &app,
+        "POST",
+        "/api/plugins/ghost/revert",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
     std::fs::remove_file(&path).unwrap();
 }

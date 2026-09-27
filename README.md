@@ -21,6 +21,7 @@
 - Hentai source routing — explicit sources only matched for titles tagged `hentai`; non-explicit sources skipped for them
 - Source plugin system — add new download sources without recompiling or redeploying
 - Browse and install community plugins from the Settings UI
+- Update a broken source from Settings without upgrading the app: the plugin catalog is read live, each download is checked against its sha256 before it loads, and **Revert** goes back to the version bundled in the image
 - Download chapters to your server for offline reading
 - Real-time download progress with per-chapter percentage bars
 - **Library sort & filter** — sort by recently added, title A–Z/Z–A, or year; filter by content type (manga/manhwa/manhua/novel) and status (ongoing/completed/hiatus/cancelled); active filter count badge
@@ -119,7 +120,7 @@ Plugins are **download-only backends**. Metadata (search, descriptions, covers, 
 Every plugin must implement:
 
 ```
-GET /info                         → { id, name, default_explicit, content_types }
+GET /info                         → { id, name, version, default_explicit, content_types }
 GET /manga/:source_id/chapters    → [ChapterResult]
 GET /chapter/:source_id/pages     → [image_url]
 ```
@@ -131,6 +132,8 @@ GET /chapter/:source_id/text      → Markdown string (novel/light-novel chapter
 ```
 
 Plugins can be written in any language. See `plugins/mangadex/` (API-backed) and `plugins/toonily/` (scraper + CloakBrowser) for reference implementations.
+
+`version` is the bundle's own version; Settings shows it as the loaded version (missing = "unknown").
 
 plugin-host bounds every plugin call (`PLUGIN_CALL_TIMEOUT_MS`, default 180 s) and answers `504` when one runs out of time.
 

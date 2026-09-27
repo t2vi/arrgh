@@ -29,7 +29,7 @@ COPY docker/nginx.conf /etc/nginx/sites-available/default
 # Rust server binary (ADR 0033)
 COPY --from=rust-server-builder /build/target/release/arrgh-server /app/arrgh-server
 
-# Bundled plugin index (default when PluginIndexUrl not overridden)
+# Plugin catalog copy — fallback when the live catalog (PluginIndexUrl) is unreachable (spec 031)
 COPY plugin-index/index.json /app/plugin-index.json
 
 # Web assets

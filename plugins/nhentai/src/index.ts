@@ -4,6 +4,7 @@ import type { PluginContext } from './nhentai'
 
 export const info = {
   id: 'nhentai',
+  version: '1.0.0',
   name: 'nhentai',
   default_explicit: true,
   content_types: ['hentai'],

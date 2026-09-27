@@ -6,6 +6,7 @@
   import ServerSettingsSection from './settings/ServerSettingsSection.svelte'
   import UsersSection from './settings/UsersSection.svelte'
   import SourcesSection from './settings/SourcesSection.svelte'
+  import PluginsSection from './settings/PluginsSection.svelte'
   import LogsSection from './settings/LogsSection.svelte'
   import ChangePasswordSection from './settings/ChangePasswordSection.svelte'
   import ClientSection from './settings/ClientSection.svelte'
@@ -69,7 +70,10 @@
       {/if}
 
       {#if store.tab === 'sources' && store.admin}
-        <SourcesSection />
+        <div class="space-y-8">
+          <SourcesSection />
+          <PluginsSection />
+        </div>
       {/if}
 
       {#if store.tab === 'logs' && store.admin}

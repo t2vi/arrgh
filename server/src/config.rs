@@ -1,5 +1,9 @@
 use std::net::SocketAddr;
 
+pub const DEFAULT_PLUGIN_INDEX_URL: &str =
+    "https://raw.githubusercontent.com/t2vi/arrgh/main/plugin-index/index.json";
+pub const DEFAULT_PLUGIN_INDEX_FALLBACK_URL: &str = "file:///app/plugin-index.json";
+
 /// Runtime config. Env var names match the .NET server + `docker/entrypoint.sh`
 /// so the deployment contract is unchanged (ADR 0033).
 #[derive(Debug, Clone)]
@@ -11,8 +15,12 @@ pub struct Config {
     pub database_path: String,
     /// Node plugin host base URL (`PluginHostUrl`).
     pub plugin_host_url: String,
-    /// Bundled plugin index location (`PluginIndexUrl`) — `file://` or `http(s)://`.
+    /// Live plugin catalog (`PluginIndexUrl`) — `file://` or `http(s)://`;
+    /// defaults to `main`'s raw `plugin-index/index.json` (spec 031, ADR 0035).
     pub plugin_index_url: String,
+    /// Catalog copy baked into the image, used when the live one can't be
+    /// read (`PluginIndexFallbackUrl`).
+    pub plugin_index_fallback_url: String,
     /// Seed the bundled `external_sources` on first boot unless explicitly
     /// disabled (`SeedDefaultSources=false`) — tests use this to start from
     /// an empty table. Port of `Program.cs`'s inline seed block.
@@ -49,7 +57,11 @@ impl Config {
             bind,
             database_path: env_or("DatabasePath", "arrgh.db"),
             plugin_host_url: env_or("PluginHostUrl", "http://localhost:4000"),
-            plugin_index_url: env_or("PluginIndexUrl", "file:///app/plugin-index.json"),
+            plugin_index_url: env_or("PluginIndexUrl", DEFAULT_PLUGIN_INDEX_URL),
+            plugin_index_fallback_url: env_or(
+                "PluginIndexFallbackUrl",
+                DEFAULT_PLUGIN_INDEX_FALLBACK_URL,
+            ),
             seed_default_sources: env_or("SeedDefaultSources", "true") != "false",
             download_dir: env_or("DownloadDir", "./downloads"),
             mangaupdates_url: env_or(

@@ -2,6 +2,7 @@ import * as w from './wuxiaworld'
 
 export const info = {
   id: 'wuxiaworld',
+  version: '1.0.0',
   name: 'WuxiaWorld',
   default_explicit: false,
   content_types: ['novel'],

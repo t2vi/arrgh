@@ -2,8 +2,8 @@
 // Tests info shape + content_types — no HTTP calls.
 // Catches: wrong content_types, missing default_explicit, id mismatch with plugin-index/index.json.
 
-import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { describe, it, expect, beforeAll } from 'vitest'
+import { readFileSync, readdirSync, existsSync } from 'node:fs'
 
 // ── Existing plugins ──────────────────────────────────────────────────────────
 
@@ -167,5 +167,31 @@ describe('production plugin set', () => {
 
   it('never ships the e2e fixture plugin', () => {
     expect(dockerfile).not.toContain('fixture')
+  })
+})
+
+// spec: 031/FR-010, 031/FR-001
+describe('plugins report their own version (spec 031)', () => {
+  const index = indexJson as { id: string; version: string; bundled?: boolean; sha256?: string | null; protocol?: number }[]
+  const pluginsDir = new URL('../../plugins/', import.meta.url)
+  const ids = readdirSync(pluginsDir).filter((d) => existsSync(new URL(`${d}/src/index.ts`, pluginsDir)))
+  let infos: { id: string; version?: string }[] = []
+  beforeAll(async () => {
+    infos = await Promise.all(ids.map(async (d) => (await import(`../../plugins/${d}/src/index.ts`)).info))
+  })
+
+  it('every bundled plugin is checked', () => {
+    expect(infos.map((i) => i.id).sort()).toEqual(index.filter((e) => e.bundled).map((e) => e.id).sort())
+  })
+
+  it.each(index.filter((e) => e.bundled).map((e) => [e.id, e] as const))('%s: info.version equals the index version', (id, entry) => {
+    expect(infos.find((i) => i.id === id)?.version).toBe(entry.version)
+  })
+
+  it('every index entry carries sha256 and protocol keys', () => {
+    for (const e of index) {
+      expect(e, e.id).toHaveProperty('sha256')
+      expect(e.protocol, e.id).toBeGreaterThanOrEqual(1)
+    }
   })
 })

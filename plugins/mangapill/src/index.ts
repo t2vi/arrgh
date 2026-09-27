@@ -2,6 +2,7 @@ import * as m from './mangapill'
 
 export const info = {
   id: 'mangapill',
+  version: '1.0.0',
   name: 'Mangapill',
   default_explicit: false,
   content_types: ['manga'],

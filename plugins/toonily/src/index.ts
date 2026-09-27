@@ -4,6 +4,7 @@ import type { PluginContext } from './toonily'
 
 export const info = {
   id: 'toonily',
+  version: '1.0.0',
   name: 'Toonily',
   default_explicit: false,
   content_types: ['manhwa'],

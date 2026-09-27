@@ -78,6 +78,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Setup | `useSetup` | no token → `api.me()` never called | ✅ |
 | Settings | `SourcesSection` | browse modal open/close | ✅ |
 | Settings | `SourcesSection` | install plugin success → sources refetch | ✅ |
+| Settings | `PluginsSection` (spec 031) | version/unknown + origin; Update when newer; disabled + reason when blocked; failure reason shown; Revert only over a bundled copy; fallback/unavailable catalog notice | ✅ |
 | Settings | `SourcesSection` | add source 502 error → error message shown | ✅ |
 | Settings | `SourcesSection` | toggle source calls patchSource with flipped state | ✅ |
 
@@ -128,7 +129,8 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `titles.rs` / `chapters.rs` (GH #211, spec 032) | admin can set `hentai`; content-type change drops source links that don't serve the new type and re-matches; chapter list 404s outside the caller's library ✅ |
 | `discover.rs` (live progress, spec 021) | `GET /api/discover/stream`: `sources` first (6 for members, nhentai 7th only for explicit users), one `source` event per leg, `done` last; timed-out leg → `status:"timeout"` while others still return; all legs failed → every event `error` + `done.ok=false`; 401 without token; a fast source's event arrives before a slow source finishes (incremental body read); last event's `results` == the one-shot response; one-shot `GET /api/discover` bounded by the same per-source timeout (all hung → 502 promptly); shared HTTP client sends a default User-Agent (MangaDex 400s without one); NovelUpdates description passed through (spec 029) ✅ |
 | `schema_bootstrap.rs` (spec 019) | Migration 0004 restores the royalroad source row on existing installs, no-op on empty table, idempotent ✅ |
-| `plugins.rs` | Index fetch, admin-gated install (404/409/422/502/201) and delete (404/403/204) |
+| `plugins.rs` | Index fetch (live → image-copy fallback), admin-gated install (404/409/422/502/201, forwards id+sha256+protocol) and delete (404/403/204); spec 031: `GET /api/plugins` status merge (update available, blocked reasons, fallback/no catalog, host down), update (forwards catalog entry; 422 blocked; relays host's reason), revert (200/409/404), admin-only |
+| `deploy_docs.rs` | Every env var in the deploy docs/configmap is read by the container (spec 010 FR-008, #217) |
 | `media.rs` | Covered by `media.rs`'s unit tests + a manual smoke check (no dedicated integration file — no auth on this route group to exercise) |
 | `logs.rs`, `version.rs` | Log buffer read + level PATCH, version + update-available reporting |
 | `discover.rs` | Fan-out search across all authorities (dedup, ordering, partial-failure tolerance, nhentai upgrade), trending lanes (TTL + stale-serve), add-to-library, `match_sources` (fuzzy title match, alias match, per-source timeout/error handling, sync warnings); trending lane size follows `trending_per_source` (GH #203) |
@@ -138,7 +140,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 
 ## Plugin Host — Routing (`plugin-host/src/routing.test.ts`) ✅
 
-Vitest + supertest. `createApp(plugins, communityIds?)` exported from `index.ts`.
+Vitest + supertest. `createApp(registry | Map, downloadedIds?, opts?)` exported from `index.ts`; `PluginRegistry` holds a bundled and a downloaded slot per id.
 
 | Case | Status |
 |---|---|
@@ -160,9 +162,12 @@ Vitest + supertest. `createApp(plugins, communityIds?)` exported from `index.ts`
 | `GET /:plugin/chapter/:id/pages` → 404 for unknown plugin | ✅ |
 | `GET /:plugin/chapter/:id/text` → calls plugin.chapterText, returns markdown | ✅ |
 | `GET /:plugin/chapter/:id/text` → 404 when plugin has no chapterText fn (manga) | ✅ |
-| `POST /plugins/install` → 400 when url missing | ✅ |
+| `POST /plugins/install` → 400 without id/url/sha256 | ✅ |
+| `POST /plugins/install` (spec 031) → verified swap to `<id>.js`, persists across restart; 422 checksum mismatch / protocol too new / load failure / wrong id; 502 download failure — previous version keeps serving in every failure | ✅ |
+| `compareVersions` / `pickActive` → downloaded beats bundled unless bundled is newer; unknown download still wins (spec 031 FR-008) | ✅ |
+| `GET /host` → plugin protocol; `GET /plugins` → version, origin, has_bundled (spec 031) | ✅ |
 | `DELETE /plugins/:id` → 403 for bundled plugin | ✅ |
-| `DELETE /plugins/:id` → 204 removes community plugin | ✅ |
+| `DELETE /plugins/:id` → 204 removes community plugin; 200 reverts a download to the bundled version; removes only the file that plugin registered (#218) | ✅ |
 | `rewriteCdpHost` → rewrites 0.0.0.0 to localhost for local dev | ✅ |
 | Hung plugin call on any route (search/trending/meta/chapters/pages/text/cover) → 504 after `callTimeoutMs` (GH #159) | ✅ |
 | `rewriteCdpHost` → rewrites internal hostname to Docker service name | ✅ |
@@ -181,6 +186,7 @@ Tests `info` shape and exported fn signatures for all bundled default plugins. N
 | royalroad | id, default_explicit=false, content_types (novel), chapterText export | ✅ |
 | toonily | id, default_explicit=false, content_types (manhwa), fn exports | ✅ |
 | plugin-index consistency | mangadex index.json includes manga+manhwa+manhua+one-shot | ✅ |
+| every bundled plugin (spec 031 FR-010) | `info.version` equals its index `version`; every index entry has `sha256`/`protocol` keys | ✅ |
 
 ## Plugin Contract — New Plugins (`plugin-host/src/contract.new-plugins.test.ts`) ✅ ADR 0031
 

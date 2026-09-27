@@ -34,10 +34,8 @@ Open `http://<your-server-ip>:8282`. The setup wizard runs on first launch.
 | `DATABASE_URL` | `sqlite:///data/arrgh.db` | SQLite DB path inside the container |
 | `DOWNLOAD_DIR` | `/data/downloads` | Where downloaded chapters are stored (must be inside the volume) |
 | `JWT_SECRET` | _(random on startup)_ | Set this in production — sessions break on restart without it |
-| `INDEX_INTERVAL_HOURS` | `6` | How often the background indexer runs |
-| `PLUGIN_URLS` | `http://plugin-host:4000` | Comma-separated plugin URLs to auto-register on first boot |
-| `PLUGIN_HOST_URL` | `http://plugin-host:4000` | Plugin host base URL (used by install/delete endpoints) |
-| `PLUGIN_INDEX_URL` | `file:///app/plugin-index.json` | Plugin index for the Browse UI — bundled in image, override to use a remote index |
+| `PLUGIN_URLS` | `http://plugin-host:4000` | Plugin host base URL — bundled sources are registered against it on first boot, and plugin install/update/revert go through it |
+| `PLUGIN_INDEX_URL` | GitHub `main`'s `plugin-index/index.json` | Plugin catalog for Browse and plugin updates. If it can't be fetched, the copy in the image is used. Point it at a `file://` path to stay offline |
 | `LOG_LEVEL` | `info` | Console + in-app log verbosity (`debug`/`info`/`warn`/`error`) |
 
 ### `plugin-host`
