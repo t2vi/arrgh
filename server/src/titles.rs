@@ -628,6 +628,23 @@ pub async fn clear_title_aliases(pool: &SqlitePool, title_id: &str) -> sqlx::Res
     Ok(())
 }
 
+/// `true` if a row was actually deleted (caller maps absence to 404). Matches
+/// case-insensitively — same comparison the user-add path dedups against
+/// (spec 033/FR-002).
+pub async fn remove_title_alias(
+    pool: &SqlitePool,
+    title_id: &str,
+    alias: &str,
+) -> sqlx::Result<bool> {
+    let res =
+        sqlx::query("DELETE FROM title_aliases WHERE title_id = ? AND alias = ? COLLATE NOCASE")
+            .bind(title_id)
+            .bind(alias)
+            .execute(pool)
+            .await?;
+    Ok(res.rows_affected() > 0)
+}
+
 pub async fn insert_title_alias(
     pool: &SqlitePool,
     title_id: &str,

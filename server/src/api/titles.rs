@@ -34,6 +34,8 @@ pub fn routes() -> Router<AppState> {
             "/{id}/refresh-metadata",
             axum::routing::post(refresh_metadata),
         )
+        .route("/{id}/aliases", axum::routing::post(add_alias))
+        .route("/{id}/aliases/{alias}", axum::routing::delete(remove_alias))
 }
 
 #[derive(Serialize)]
@@ -60,6 +62,9 @@ pub(crate) struct TitleDto {
     downloaded_chapters: i64,
     chapters_read: i64,
     has_sync_warnings: bool,
+    /// Only populated on `GET /{id}` (spec 033/FR-003) — the list endpoint has
+    /// no use for it and doesn't pay for the extra per-row query.
+    aliases: Vec<String>,
 }
 
 impl From<titles::TitleListItem> for TitleDto {
@@ -87,6 +92,7 @@ impl From<titles::TitleListItem> for TitleDto {
             downloaded_chapters: t.downloaded_chapters,
             chapters_read: t.chapters_read,
             has_sync_warnings: t.has_sync_warnings,
+            aliases: Vec::new(),
         }
     }
 }
@@ -202,7 +208,9 @@ async fn get_title(
     let t = titles::get_title(&state.db, &id, &claims.user_id, claims.allow_explicit)
         .await?
         .ok_or(AppError::NotFound)?;
-    Ok(Json(TitleDto::from(t)))
+    let mut dto = TitleDto::from(t);
+    dto.aliases = titles::list_title_aliases(&state.db, &id).await?;
+    Ok(Json(dto))
 }
 
 // ── DELETE /{id} ─────────────────────────────────────────────────────────
@@ -469,6 +477,79 @@ async fn refresh_metadata(
     });
 
     Ok(StatusCode::ACCEPTED)
+}
+
+// ── POST /{id}/aliases ───────────────────────────────────────────────────
+
+#[derive(Deserialize)]
+struct AliasBody {
+    alias: String,
+}
+
+/// Adds a user-supplied alias (spec 033/FR-001) — case-insensitively deduped,
+/// then re-runs source matching in the background (same shape as
+/// refresh-metadata) so a source that only recognizes the alias gets linked.
+async fn add_alias(
+    claims: Claims,
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(body): Json<AliasBody>,
+) -> AppResult<StatusCode> {
+    if !titles::is_owned(&state.db, &claims.user_id, &id).await? {
+        return Err(AppError::NotFound);
+    }
+    let alias = body.alias.trim();
+    if alias.is_empty() {
+        return Err(AppError::UnprocessableEntity(
+            "alias must not be empty".into(),
+        ));
+    }
+
+    let existing = titles::list_title_aliases(&state.db, &id).await?;
+    if !existing.iter().any(|a| a.eq_ignore_ascii_case(alias)) {
+        titles::insert_title_alias(&state.db, &id, alias).await?;
+    }
+
+    titles::update_sync_status(&state.db, &id, titles::SYNC_SYNCING).await?;
+
+    let db = state.db.clone();
+    let http = state.http.clone();
+    let plugin_host_url = state.config.plugin_host_url.clone();
+    tokio::spawn(async move {
+        if let Some(t) = titles::fetch_title(&db, &id, "").await.ok().flatten() {
+            crate::discover::match_sources(
+                &db,
+                &http,
+                &plugin_host_url,
+                &id,
+                &t.title,
+                &t.content_type,
+                t.is_explicit,
+            )
+            .await;
+        }
+        let _ = titles::update_sync_status(&db, &id, titles::SYNC_READY).await;
+    });
+
+    Ok(StatusCode::ACCEPTED)
+}
+
+// ── DELETE /{id}/aliases/{alias} ─────────────────────────────────────────
+
+/// Removes one alias (spec 033/FR-002) — no re-match; it only narrows future
+/// matching and can't undo a source link already made.
+async fn remove_alias(
+    claims: Claims,
+    State(state): State<AppState>,
+    Path((id, alias)): Path<(String, String)>,
+) -> AppResult<StatusCode> {
+    if !titles::is_owned(&state.db, &claims.user_id, &id).await? {
+        return Err(AppError::NotFound);
+    }
+    if !titles::remove_title_alias(&state.db, &id, &alias).await? {
+        return Err(AppError::NotFound);
+    }
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[cfg(test)]

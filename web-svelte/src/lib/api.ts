@@ -324,6 +324,8 @@ export const api = {
   syncTitle: (id: string) => post<void>(`/api/titles/${id}/sync`),
   getSyncLog: (id: string) => get<SyncLogEntry[]>(`/api/titles/${id}/sync-log`),
   refreshMetadata: (id: string) => post<void>(`/api/titles/${id}/refresh-metadata`),
+  addAlias: (id: string, alias: string) => post<void>(`/api/titles/${id}/aliases`, { alias }),
+  removeAlias: (id: string, alias: string) => del(`/api/titles/${id}/aliases/${encodeURIComponent(alias)}`),
 
   listChapters: (titleId: string) => get<Chapter[]>(`/api/chapters/title/${titleId}`),
   getChapter: (id: string) => get<Chapter>(`/api/chapters/${id}`),
