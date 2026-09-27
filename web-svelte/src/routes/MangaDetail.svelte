@@ -21,6 +21,7 @@
   import ChapterRow from './detail/ChapterRow.svelte'
   import NoChaptersMessage from './detail/NoChaptersMessage.svelte'
   import SectionHeading from './detail/SectionHeading.svelte'
+  import AliasesSection from './detail/AliasesSection.svelte'
   import CoverImg from './detail/CoverImg.svelte'
   import ChapterListSkeleton from './detail/ChapterListSkeleton.svelte'
   import ReaderModeCard from './detail/ReaderModeCard.svelte'
@@ -38,6 +39,7 @@
 
   let synopsisOpen = $state(false)
   let syncLogOpen = $state(false)
+  let aliasesOpen = $state(false)
   let removeMenuRef: HTMLDivElement | undefined = $state()
 
   $effect(() => {
@@ -194,6 +196,25 @@
             {#if synopsisOpen}
               <div class="rounded-lg bg-card border border-border p-4 mt-3">
                 <p class="text-sm text-muted-foreground leading-relaxed">{store.manga.description}</p>
+              </div>
+            {/if}
+          </section>
+        {/if}
+
+        {#if store.manga}
+          <section>
+            <button class="flex items-center gap-1.5 w-full text-left group" onclick={() => (aliasesOpen = !aliasesOpen)}>
+              <SectionHeading>Aliases</SectionHeading>
+              <ChevronDown class={cn('w-3.5 h-3.5 text-muted-foreground transition-transform shrink-0', aliasesOpen && 'rotate-180')} />
+            </button>
+            {#if aliasesOpen}
+              <div class="mt-3">
+                <AliasesSection
+                  aliases={store.manga.aliases ?? []}
+                  pending={store.aliasPending}
+                  onAdd={(alias) => store.addAlias(alias)}
+                  onRemove={(alias) => store.removeAlias(alias)}
+                />
               </div>
             {/if}
           </section>

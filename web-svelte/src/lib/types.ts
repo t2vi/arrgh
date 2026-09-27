@@ -22,6 +22,8 @@ export interface Title {
   total_chapters?: number
   downloaded_chapters?: number
   chapters_read?: number
+  // Present on GET /{id} only (spec 033)
+  aliases?: string[]
 }
 
 export interface PaginatedTitle {

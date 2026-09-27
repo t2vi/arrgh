@@ -27,6 +27,7 @@ export class MangaDetailStore {
 
   syncPending = $state(false)
   refreshMetaPending = $state(false)
+  aliasPending = $state(false)
   removeFromQueuePending = $state(false)
   cancelAllPending = $state(false)
   downloadAllPending = $state(false)
@@ -244,6 +245,29 @@ export class MangaDetailStore {
       })
       .catch(() => {})
       .finally(() => (this.refreshMetaPending = false))
+  }
+
+  addAlias(alias: string) {
+    if (!this.#id || !alias.trim()) return
+    this.aliasPending = true
+    api
+      .addAlias(this.#id, alias.trim())
+      .then(() => {
+        this.fetchManga()
+        setTimeout(() => this.fetchChapters(), 3000)
+      })
+      .catch(() => {})
+      .finally(() => (this.aliasPending = false))
+  }
+
+  removeAlias(alias: string) {
+    if (!this.#id) return
+    this.aliasPending = true
+    api
+      .removeAlias(this.#id, alias)
+      .then(() => this.fetchManga())
+      .catch(() => {})
+      .finally(() => (this.aliasPending = false))
   }
 
   removeFromQueue(itemId: string) {

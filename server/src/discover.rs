@@ -431,137 +431,168 @@ pub async fn match_sources(
         .await
         .unwrap_or_default();
     let norm_aliases: Vec<String> = aliases.iter().map(|a| normalize_title(a)).collect();
+    // A source's search rejecting the title's own name outright (e.g. an
+    // alternate-edition title an English source never carries — spec 033/#193)
+    // must not end matching for that source when an alias might still find it:
+    // try each candidate name in turn, primary title first, until one search
+    // response actually contains a match.
+    let candidate_names: Vec<&str> = std::iter::once(title_name)
+        .chain(aliases.iter().map(String::as_str))
+        .collect();
 
-    for (source_key, _priority) in &candidate_sources {
-        let search_url = format!(
-            "{}/{}/search?q={}",
-            plugin_host_url.trim_end_matches('/'),
-            source_key,
-            urlencoding::encode(title_name)
-        );
+    'sources: for (source_key, _priority) in &candidate_sources {
+        let mut any_nonempty_results = false;
+        for candidate in &candidate_names {
+            let search_url = format!(
+                "{}/{}/search?q={}",
+                plugin_host_url.trim_end_matches('/'),
+                source_key,
+                urlencoding::encode(candidate)
+            );
 
-        let resp = match http.get(&search_url).send().await {
-            Ok(r) => r,
-            Err(e) if e.is_timeout() => {
-                // Soft failure — CF-protected source without CloakBrowser, or
-                // plugin-host unreachable. Log but no sync_warning.
-                titles::append_sync_log(pool, title_id, &format!("Source {source_key} timed out"))
+            let resp = match http.get(&search_url).send().await {
+                Ok(r) => r,
+                Err(e) if e.is_timeout() => {
+                    // Soft failure — CF-protected source without CloakBrowser, or
+                    // plugin-host unreachable. Log but no sync_warning. A
+                    // network-level failure won't go away for a different query
+                    // string, so don't retry it per candidate name.
+                    titles::append_sync_log(
+                        pool,
+                        title_id,
+                        &format!("Source {source_key} timed out"),
+                    )
                     .await;
-                continue;
-            }
-            Err(e) if e.is_connect() => {
+                    continue 'sources;
+                }
+                Err(e) if e.is_connect() => {
+                    titles::append_sync_log(
+                        pool,
+                        title_id,
+                        &format!("Source {source_key} unreachable"),
+                    )
+                    .await;
+                    continue 'sources;
+                }
+                Err(e) => {
+                    titles::append_sync_log(
+                        pool,
+                        title_id,
+                        &format!("Error from {source_key}: {e}"),
+                    )
+                    .await;
+                    titles::append_sync_warning(pool, title_id, source_key, &e.to_string()).await;
+                    continue 'sources;
+                }
+            };
+
+            if !resp.status().is_success() {
                 titles::append_sync_log(
                     pool,
                     title_id,
-                    &format!("Source {source_key} unreachable"),
+                    &format!(
+                        "Source {source_key} unavailable ({})",
+                        resp.status().as_u16()
+                    ),
                 )
                 .await;
-                continue;
+                continue 'sources;
             }
-            Err(e) => {
-                titles::append_sync_log(pool, title_id, &format!("Error from {source_key}: {e}"))
-                    .await;
-                titles::append_sync_warning(pool, title_id, source_key, &e.to_string()).await;
-                continue;
-            }
-        };
 
-        if !resp.status().is_success() {
+            let results: Vec<PluginSearchResult> = match resp.json().await {
+                Ok(r) => r,
+                Err(e) => {
+                    titles::append_sync_log(
+                        pool,
+                        title_id,
+                        &format!("Error from {source_key}: {e}"),
+                    )
+                    .await;
+                    titles::append_sync_warning(pool, title_id, source_key, &e.to_string()).await;
+                    continue 'sources;
+                }
+            };
+            if results.is_empty() {
+                continue;
+            }
+            any_nonempty_results = true;
+
+            let matched = results.iter().find(|r| {
+                let norm_result = normalize_title(r.title.as_deref().unwrap_or(""));
+                title_matches(&norm_result, &norm_target)
+                    || norm_aliases
+                        .iter()
+                        .any(|na| title_matches(&norm_result, na))
+            });
+            let Some(matched) = matched else {
+                continue;
+            };
+            let Some(source_id) = matched.id.as_deref().filter(|s| !s.is_empty()) else {
+                continue;
+            };
+
             titles::append_sync_log(
                 pool,
                 title_id,
-                &format!(
-                    "Source {source_key} unavailable ({})",
-                    resp.status().as_u16()
-                ),
+                &format!("Matched {source_key}:{source_id} — syncing chapters…"),
             )
             .await;
-            continue;
-        }
 
-        let results: Vec<PluginSearchResult> = match resp.json().await {
-            Ok(r) => r,
-            Err(e) => {
-                titles::append_sync_log(pool, title_id, &format!("Error from {source_key}: {e}"))
-                    .await;
-                titles::append_sync_warning(pool, title_id, source_key, &e.to_string()).await;
-                continue;
+            if !titles::has_title_source_for(pool, title_id, source_key)
+                .await
+                .unwrap_or(false)
+            {
+                let _ = titles::insert_title_source(pool, title_id, source_key, source_id).await;
             }
-        };
-        if results.is_empty() {
-            titles::append_sync_log(pool, title_id, &format!("No results from {source_key}")).await;
-            continue;
+
+            match chapters::sync_from_source(
+                pool,
+                http,
+                plugin_host_url,
+                title_id,
+                content_type,
+                source_key,
+                source_id,
+                false, // source matching pulls backlog, never "new releases" (GH #210)
+            )
+            .await
+            {
+                Ok(count) => {
+                    titles::append_sync_log(
+                        pool,
+                        title_id,
+                        &format!("Synced {count} chapter(s) from {source_key}"),
+                    )
+                    .await
+                }
+                Err(e) => {
+                    titles::append_sync_log(
+                        pool,
+                        title_id,
+                        &format!("Error syncing from {source_key}: {e}"),
+                    )
+                    .await;
+                    titles::append_sync_warning(
+                        pool,
+                        title_id,
+                        source_key,
+                        &format!("Chapter sync failed: {e}"),
+                    )
+                    .await;
+                }
+            }
+            continue 'sources;
         }
 
-        let matched = results.iter().find(|r| {
-            let norm_result = normalize_title(r.title.as_deref().unwrap_or(""));
-            title_matches(&norm_result, &norm_target)
-                || norm_aliases
-                    .iter()
-                    .any(|na| title_matches(&norm_result, na))
-        });
-        let Some(matched) = matched else {
+        if any_nonempty_results {
             titles::append_sync_log(
                 pool,
                 title_id,
                 &format!("No title match on {source_key} (searched \"{title_name}\")"),
             )
             .await;
-            continue;
-        };
-        let Some(source_id) = matched.id.as_deref().filter(|s| !s.is_empty()) else {
-            continue;
-        };
-
-        titles::append_sync_log(
-            pool,
-            title_id,
-            &format!("Matched {source_key}:{source_id} — syncing chapters…"),
-        )
-        .await;
-
-        if !titles::has_title_source_for(pool, title_id, source_key)
-            .await
-            .unwrap_or(false)
-        {
-            let _ = titles::insert_title_source(pool, title_id, source_key, source_id).await;
-        }
-
-        match chapters::sync_from_source(
-            pool,
-            http,
-            plugin_host_url,
-            title_id,
-            content_type,
-            source_key,
-            source_id,
-            false, // source matching pulls backlog, never "new releases" (GH #210)
-        )
-        .await
-        {
-            Ok(count) => {
-                titles::append_sync_log(
-                    pool,
-                    title_id,
-                    &format!("Synced {count} chapter(s) from {source_key}"),
-                )
-                .await
-            }
-            Err(e) => {
-                titles::append_sync_log(
-                    pool,
-                    title_id,
-                    &format!("Error syncing from {source_key}: {e}"),
-                )
-                .await;
-                titles::append_sync_warning(
-                    pool,
-                    title_id,
-                    source_key,
-                    &format!("Chapter sync failed: {e}"),
-                )
-                .await;
-            }
+        } else {
+            titles::append_sync_log(pool, title_id, &format!("No results from {source_key}")).await;
         }
     }
 

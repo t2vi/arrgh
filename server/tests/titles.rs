@@ -746,3 +746,153 @@ async fn patch_content_type_drops_sources_that_dont_serve_the_new_type() {
             .unwrap();
     assert_eq!(chapter_srcs, vec!["novelfull"]);
 }
+
+// ── aliases (spec 033/#193) ───────────────────────────────────────────────
+
+// spec: 033/FR-001
+#[tokio::test]
+async fn post_alias_links_a_source_only_findable_by_the_alias() {
+    let mock = common::start_mock_search_by_query(
+        &[(
+            "The Primal Hunter",
+            r#"[{"id":"the-primal-hunter","title":"The Primal Hunter"}]"#,
+        )],
+        r#"[{"source_id":"ch-1","number":1.0}]"#,
+    )
+    .await;
+    let state = common::build_state_with_plugin_host(&mock).await;
+    common::seed_external_source(&state, "royalroad", "novel", 10).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let t = common::seed_title(&state, "The Primal Hunter in a Ruined World", false).await;
+    arrgh_server::titles::update_content_type(&state.db, &t, "novel")
+        .await
+        .unwrap();
+    common::seed_user_title(&state, &admin.id, &t).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (status, _) = send(
+        &app,
+        "POST",
+        &format!("/api/titles/{t}/aliases"),
+        Some(&token),
+        Some(json!({ "alias": "The Primal Hunter" })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::ACCEPTED);
+
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    loop {
+        let st: String = sqlx::query_scalar("SELECT sync_status FROM titles WHERE id = ?")
+            .bind(&t)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+        if st == "ready" {
+            break;
+        }
+        assert!(std::time::Instant::now() < deadline, "match never finished");
+        tokio::time::sleep(std::time::Duration::from_millis(30)).await;
+    }
+
+    let source_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM title_sources WHERE title_id = ?")
+            .bind(&t)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(source_count, 1);
+
+    let (_, body) = send(&app, "GET", &format!("/api/titles/{t}"), Some(&token), None).await;
+    assert_eq!(body["aliases"], json!(["The Primal Hunter"]));
+}
+
+// spec: 033/FR-001
+#[tokio::test]
+async fn post_alias_rejects_empty_and_dedups_case_insensitive_duplicate() {
+    let mock = common::start_mock_plugin_host("[]", false).await;
+    let state = common::build_state_with_plugin_host(&mock).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let t = common::seed_title(&state, "Naruto", false).await;
+    common::seed_user_title(&state, &admin.id, &t).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (status, _) = send(
+        &app,
+        "POST",
+        &format!("/api/titles/{t}/aliases"),
+        Some(&token),
+        Some(json!({ "alias": "   " })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+
+    for _ in 0..2 {
+        let (status, _) = send(
+            &app,
+            "POST",
+            &format!("/api/titles/{t}/aliases"),
+            Some(&token),
+            Some(json!({ "alias": "NARUTO Shippuden" })),
+        )
+        .await;
+        assert_eq!(status, StatusCode::ACCEPTED);
+    }
+
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM title_aliases WHERE title_id = ?")
+        .bind(&t)
+        .fetch_one(&state.db)
+        .await
+        .unwrap();
+    assert_eq!(count, 1);
+}
+
+// spec: 033/FR-002
+#[tokio::test]
+async fn delete_alias_removes_it_without_triggering_a_rematch() {
+    let mock = common::start_mock_plugin_host("[]", false).await;
+    let state = common::build_state_with_plugin_host(&mock).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let t = common::seed_title(&state, "Naruto", false).await;
+    common::seed_user_title(&state, &admin.id, &t).await;
+    arrgh_server::titles::insert_title_alias(&state.db, &t, "Naruto Shippuden")
+        .await
+        .unwrap();
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (status, _) = send(
+        &app,
+        "DELETE",
+        &format!("/api/titles/{t}/aliases/Naruto%20Shippuden"),
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM title_aliases WHERE title_id = ?")
+        .bind(&t)
+        .fetch_one(&state.db)
+        .await
+        .unwrap();
+    assert_eq!(count, 0);
+
+    let st: String = sqlx::query_scalar("SELECT sync_status FROM titles WHERE id = ?")
+        .bind(&t)
+        .fetch_one(&state.db)
+        .await
+        .unwrap();
+    assert_eq!(st, "ready");
+
+    let (status, _) = send(
+        &app,
+        "DELETE",
+        &format!("/api/titles/{t}/aliases/does-not-exist"),
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

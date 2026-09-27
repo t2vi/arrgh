@@ -555,6 +555,46 @@ async fn add_no_source_match_sets_sync_warning() {
     assert_eq!(warnings, 1);
 }
 
+// ── alias-aware source matching (spec 033/#193) ──────────────────────────
+
+// spec: 033/FR-004
+#[tokio::test]
+async fn match_sources_retries_search_per_alias_when_primary_title_finds_nothing() {
+    let mock = common::start_mock_search_by_query(
+        &[(
+            "The Primal Hunter",
+            r#"[{"id":"the-primal-hunter","title":"The Primal Hunter"}]"#,
+        )],
+        r#"[{"source_id":"ch-1","number":1.0}]"#,
+    )
+    .await;
+    let state = common::build_state_with_plugin_host(&mock).await;
+    common::seed_source_with_key(&state, "Royal Road", "royalroad", "novel").await;
+    let t = common::seed_title(&state, "The Primal Hunter in a Ruined World", false).await;
+    arrgh_server::titles::insert_title_alias(&state.db, &t, "The Primal Hunter")
+        .await
+        .unwrap();
+
+    arrgh_server::discover::match_sources(
+        &state.db,
+        &state.http,
+        &state.config.plugin_host_url,
+        &t,
+        "The Primal Hunter in a Ruined World",
+        "novel",
+        false,
+    )
+    .await;
+
+    let source_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM title_sources WHERE title_id = ?")
+            .bind(&t)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(source_count, 1);
+}
+
 // ── Royal Road — English-original novels (ADR 0034, spec 019) ────────────
 
 const RR_SEARCH_BODY: &str = r#"[{

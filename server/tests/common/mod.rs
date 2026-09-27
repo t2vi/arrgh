@@ -198,6 +198,48 @@ pub async fn start_mock_source_match_host(
     format!("http://{addr}")
 }
 
+/// Like `start_mock_source_match_host`, but `/{source}/search`'s response
+/// depends on the `q` query param: each `(q, body)` pair in `by_query`
+/// answers that exact query, anything else gets `"[]"` — needed for
+/// `discover::match_sources`'s per-alias search-retry (spec 033/#193), where
+/// the primary title and each alias must get genuinely different responses.
+pub async fn start_mock_search_by_query(
+    by_query: &'static [(&'static str, &'static str)],
+    chapters_body: &'static str,
+) -> String {
+    use axum::extract::Query;
+    use axum::response::IntoResponse;
+    use std::collections::HashMap;
+
+    let app = axum::Router::new()
+        .route(
+            "/{source}/search",
+            axum::routing::get(
+                move |Query(params): Query<HashMap<String, String>>| async move {
+                    let q = params.get("q").map(String::as_str).unwrap_or("");
+                    let body = by_query
+                        .iter()
+                        .find(|(k, _)| *k == q)
+                        .map(|(_, v)| *v)
+                        .unwrap_or("[]");
+                    ([("content-type", "application/json")], body).into_response()
+                },
+            ),
+        )
+        .route(
+            "/{source}/manga/{id}/chapters",
+            axum::routing::get(move || async move {
+                ([("content-type", "application/json")], chapters_body).into_response()
+            }),
+        );
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    format!("http://{addr}")
+}
+
 /// Exact-path router mock: each `(path, status, body)` answers its path
 /// (query string ignored); every other path 404s. For tests where several
 /// authorities/plugins share one mock URL but must answer differently.
