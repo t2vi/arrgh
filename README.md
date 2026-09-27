@@ -104,10 +104,11 @@ All default sources compile into a single **plugin-host** container — no per-p
 | **nhentai** | Hentai doujinshi | [`arrgh-plugin-nhentai`](https://github.com/t2vi/arrgh-plugin-nhentai) | Direct API, CloakBrowser fallback when challenged; explicit-only source |
 | **NovelUpdates** | — (metadata authority only) | [`arrgh-plugin-novelupdates`](https://github.com/t2vi/arrgh-plugin-novelupdates) | Not a download source — backs the NovelUpdates Discover authority (`info.metadata_only=true`); CF-protected |
 
-Every plugin now lives in its own `t2vi/arrgh-plugin-<id>` repo (spec 031 phase C, ADR 0035) —
-`plugins/<id>/` in this repo is only the Docker image's bundled-fallback copy, not where
-development happens. See [`arrgh-plugin-template`](https://github.com/t2vi/arrgh-plugin-template)
-to write a new one.
+Every plugin now lives in its own `t2vi/arrgh-plugin-<id>` repo (spec 031, ADR 0035) — this repo
+no longer contains plugin source at all (only the e2e `plugins/fixture/`). The image fetches each
+bundled plugin from its own repo's published release at build time, checksum- and
+version-verified (`scripts/fetch-plugin-bundles.mjs`). See
+[`arrgh-plugin-template`](https://github.com/t2vi/arrgh-plugin-template) to write a new one.
 
 CF-protected plugins route through the **CloakBrowser** sidecar (stealth Chromium, source-level fingerprint patches). Plugin Host holds the CDP connection; plugins call `ctx.getBrowser()` via `PluginContext`.
 
@@ -161,12 +162,9 @@ arrgh/
 ├── web-svelte/      # Svelte 5 + TypeScript SPA
 ├── plugin-host/     # Node.js plugin host (loads compiled plugin bundles)
 ├── plugin-index/    # index.json — plugin catalog shipped in the image
-├── scripts/         # dev-up.sh (one-command dev stack), sync-plugins.sh
-└── plugins/         # Plugin source bundles (esbuild → single .js)
-    ├── mangadex/  mangapill/  toonily/  asurascans/  manga18fx/
-    ├── novelfull/  novelfullnet/  wuxiaworld/  royalroad/  novelupdates/
-    ├── nhentai/
-    └── fixture/     # e2e test plugin — never shipped
+├── scripts/         # dev-up.sh (one-command dev stack), sync-plugins.sh, fetch-plugin-bundles.mjs
+└── plugins/         # Only the e2e fixture/ plugin — every real plugin lives in its own
+    └── fixture/     # arrgh-plugin-<id> repo now, fetched from its release at build time
 ```
 
 > Plugins are moving to one repo each, with one-click updates from Settings ([#199](https://github.com/t2vi/arrgh/issues/199)).

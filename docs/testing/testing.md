@@ -173,7 +173,7 @@ Vitest + supertest. `createApp(registry | Map, downloadedIds?, opts?)` exported 
 | `rewriteCdpHost` → rewrites internal hostname to Docker service name | ✅ |
 | `rewriteCdpHost` → preserves path after host rewrite | ✅ |
 
-## Plugin Contract — `plugin-index.json` + production set (`plugin-host/src/contract.test.ts`) ✅
+## Plugin Contract — `plugin-index.json` (`plugin-host/src/contract.test.ts`) ✅
 
 Every plugin's own `info`-shape/fn-export/fixture-behavior tests moved into its own
 `t2vi/arrgh-plugin-<id>` repo (spec 031 phase C, #199) — see that repo's `test/contract.test.ts`
@@ -182,9 +182,32 @@ What's left here only covers cross-cutting consistency that has to live in the m
 
 | Check | Cases | Status |
 |---|---|---|
-| plugin-index consistency | novelupdates index.json includes novel; royalroad bundled novel entry present (flipped from the ADR 0024 "absent" guard); manhuafast/boxnovel absent (removed sources) | ✅ |
-| production plugin set (spec 020) | Dockerfile COPY ids == `build:plugins` ids == index `bundled` ids, fixture excluded | ✅ |
-| every bundled plugin (spec 031 FR-010) | `info.version` equals its index `version`; every index entry has `sha256`/`protocol` keys; every entry with a `download_url` has a 64-hex `sha256` (spec 031 FR-013) | ✅ |
+| plugin-index consistency | novelupdates index.json includes novel; royalroad bundled novel entry present (flipped from the ADR 0024 "absent" guard); manhuafast/boxnovel absent (removed sources); fixture never marked bundled | ✅ |
+| every bundled plugin (spec 031 FR-010) | every index entry has `sha256`/`protocol` keys; every entry with a `download_url` has a 64-hex `sha256` (spec 031 FR-013) | ✅ |
+
+## Plugin Bundle Fetch — image build (`scripts/fetch-plugin-bundles.mjs`) ✅ spec 031 phase D
+
+`plugins/` contains only the e2e `fixture/` plugin now — every other plugin lives in its own repo
+and is fetched from its published GitHub release at build time (`plugin-host/Dockerfile`) and by
+`scripts/sync-plugins.sh` for local dev, both calling this one script. A mismatch (wrong sha256, a
+bundle's `info.version` not matching the index) fails the build/fetch (FR-016). Not fixture-mocked
+in CI — `.github/workflows/ci.yml`'s "Plugin Host" job runs it for real against the network as a
+smoke test (catches a rotated/deleted GitHub release before merge); `docker build -f
+plugin-host/Dockerfile .` is the full integration proof.
+
+| Check | Cases | Status |
+|---|---|---|
+| `bundledEntries()` (`scripts/fetch-plugin-bundles.test.mjs`, `node --test`) | pure filter of `plugin-index.json`'s `bundled: true` entries; real index's bundled entries all have a `download_url` + 64-hex `sha256`, fixture excluded — no network | ✅ |
+| checksum verify | download → sha256 mismatch throws, exits non-zero | ✅ (verified manually against the real releases during phase D implementation) |
+| version verify | fetched bundle's own `info.version` must equal the index entry's `version`, or throws | ✅ (manual) |
+| idempotent | a file already on disk whose sha256 already matches is not refetched | ✅ (manual) |
+
+## Plugin Protocol Drift Guard (`plugin-host/src/protocol.test.ts`) ✅ spec 031 phase D
+
+Dev-only dynamic `import('arrgh-plugin-sdk')` (plugin-host stays CommonJS at runtime — its
+dynamic `require()`-based bundle loading can't take an ESM-only package as a real dependency) —
+asserts plugin-host's own `PLUGIN_PROTOCOL` constant equals the SDK's, so the two can't silently
+drift.
 
 ---
 
