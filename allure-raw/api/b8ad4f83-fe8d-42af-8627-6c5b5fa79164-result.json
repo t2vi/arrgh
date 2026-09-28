@@ -1,11 +1,11 @@
 {
-  "uuid": "26ef2aea-baef-41ce-934e-c7e89c3fa02e",
-  "historyId": "API#tests/logs.hurl",
-  "name": "tests/logs.hurl",
+  "uuid": "b8ad4f83-fe8d-42af-8627-6c5b5fa79164",
+  "historyId": "API#tests/auth.hurl",
+  "name": "tests/auth.hurl",
   "status": "passed",
   "stage": "finished",
-  "start": 1790552473715,
-  "stop": 1790552473719,
+  "start": 1790554820677,
+  "stop": 1790554821230,
   "labels": [
     {
       "name": "layer",
@@ -25,7 +25,7 @@
     },
     {
       "name": "story",
-      "value": "tests/logs.hurl"
+      "value": "tests/auth.hurl"
     }
   ]
 }
