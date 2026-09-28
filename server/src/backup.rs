@@ -83,8 +83,22 @@ pub async fn create_backup(pool: &SqlitePool, dir: &Path) -> AppResult<BackupInf
     tokio::fs::create_dir_all(dir)
         .await
         .map_err(anyhow::Error::from)?;
-    let filename = backup_filename(OffsetDateTime::now_utc());
-    let dest = dir.join(&filename);
+    let base = backup_filename(OffsetDateTime::now_utc());
+    // Two backups triggered in the same second (manual + scheduled racing, or a rapid
+    // double-click) must not collide — VACUUM INTO refuses to write an existing path, so
+    // probe for the next free `-N` suffix before the same-second name is taken.
+    let (filename, dest) = {
+        let mut candidate = base.clone();
+        let mut n = 1u32;
+        loop {
+            let path = dir.join(&candidate);
+            if !tokio::fs::try_exists(&path).await.unwrap_or(false) {
+                break (candidate, path);
+            }
+            n += 1;
+            candidate = format!("{}-{n}{SUFFIX}", base.strip_suffix(SUFFIX).unwrap());
+        }
+    };
     sqlx::query("VACUUM INTO ?")
         .bind(dest.to_string_lossy().as_ref())
         .execute(pool)
