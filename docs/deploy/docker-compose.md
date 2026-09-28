@@ -79,6 +79,11 @@ The volume must contain both the SQLite DB and the downloads directory:
 - DB: `/data/arrgh.db` (+ `-shm` and `-wal` WAL files)
 - Downloads: `/data/downloads/`
 
+**In-app DB backup** — as of v1.5.0, Settings → Backups can snapshot the DB (manual or on a
+schedule) to any destination path you set, and restore from a listed backup or an uploaded file.
+Point the destination at durable storage (e.g. your NAS) for a second copy beyond the volume
+itself. See `CLAUDE.md`'s "DB Backup & Restore" section for how it works under the hood.
+
 **Reverse proxy** — put nginx or Caddy in front to get HTTPS. See [nginx.md](nginx.md).
 
 ---

@@ -51,6 +51,36 @@ async fn backup_now_with_configured_destination_creates_a_listed_file() {
     assert_eq!(body[0]["filename"], filename);
 }
 
+// spec: 035/edge-case (same-second collision)
+#[tokio::test]
+async fn backup_now_twice_rapidly_produces_two_distinct_files() {
+    let state = common::build_state().await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let dir = std::env::temp_dir().join(format!("arrgh-backup-test-{}", uuid::Uuid::new_v4()));
+    arrgh_server::settings::set(
+        &state.db,
+        arrgh_server::settings::BACKUP_DIR,
+        dir.to_str().unwrap(),
+    )
+    .await
+    .unwrap();
+    let app = arrgh_server::api::router(state);
+
+    let (status1, body1) = send(&app, "POST", "/api/backups", Some(&token)).await;
+    let (status2, body2) = send(&app, "POST", "/api/backups", Some(&token)).await;
+    assert_eq!(status1, StatusCode::CREATED);
+    assert_eq!(status2, StatusCode::CREATED);
+    let f1 = body1["filename"].as_str().unwrap().to_string();
+    let f2 = body2["filename"].as_str().unwrap().to_string();
+    assert_ne!(f1, f2, "same-second backups must not collide");
+    assert!(dir.join(&f1).exists());
+    assert!(dir.join(&f2).exists());
+
+    let (_, list) = send(&app, "GET", "/api/backups", Some(&token)).await;
+    assert_eq!(list.as_array().unwrap().len(), 2);
+}
+
 // spec: 035/FR-001
 #[tokio::test]
 async fn backup_now_with_no_destination_is_refused() {
