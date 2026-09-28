@@ -1,0 +1,31 @@
+{
+  "uuid": "1a1f4319-a524-40d4-a58e-5d252c48c0cd",
+  "historyId": "API#tests/progress.hurl",
+  "name": "tests/progress.hurl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1790598941144,
+  "stop": 1790598941147,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "api"
+    },
+    {
+      "name": "tag",
+      "value": "API"
+    },
+    {
+      "name": "suite",
+      "value": "API"
+    },
+    {
+      "name": "feature",
+      "value": "API"
+    },
+    {
+      "name": "story",
+      "value": "tests/progress.hurl"
+    }
+  ]
+}
