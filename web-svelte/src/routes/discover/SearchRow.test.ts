@@ -121,6 +121,7 @@ describe('SearchRow', () => {
     expect(img!.src).toContain('cdn.example.com')
   })
 
+  // spec: 028/FR-001
   it('renders a static cover placeholder (not a loading pulse) when no cover_url', () => {
     const { container } = render(SearchRow, baseProps())
     expect(container.querySelector('img')).toBeNull()
@@ -130,6 +131,7 @@ describe('SearchRow', () => {
 
   // Results never fill in a missing description later (e.g. NovelUpdates search
   // has none), so a pulsing skeleton looked like a card stuck loading forever.
+  // spec: 028/FR-001
   it('renders nothing (no loading skeleton) when description is missing', () => {
     const { container } = render(SearchRow, baseProps({ result: makeResult({ description: null }) }))
     expect(container.querySelector('.animate-pulse')).toBeNull()

@@ -189,6 +189,7 @@ describe('DiscoverStore', () => {
   })
 
   describe('streaming (spec 021)', () => {
+    // spec: 021/FR-002, 021/FR-007, 021/FR-011
     it('sources event → every source is searching', async () => {
       vi.mocked(api.searchMangaStream).mockImplementation(async (_q, onEvent) => {
         onEvent({ type: 'sources', sources: SOURCES })
@@ -203,6 +204,7 @@ describe('DiscoverStore', () => {
       cleanup()
     })
 
+    // spec: 021/FR-003, 021/FR-007, 021/FR-008
     it('first source event shows its results while still fetching; a later one replaces them', async () => {
       let emit!: (e: StreamEvent) => void
       vi.mocked(api.searchMangaStream).mockImplementation((_q, onEvent) => {
@@ -243,6 +245,7 @@ describe('DiscoverStore', () => {
       cleanup()
     })
 
+    // spec: 021/FR-009
     it('a new submit aborts the previous stream and ignores its late events', async () => {
       const calls: { emit: (e: StreamEvent) => void; signal: AbortSignal }[] = []
       vi.mocked(api.searchMangaStream).mockImplementation((_q, onEvent, signal) => {
@@ -265,6 +268,7 @@ describe('DiscoverStore', () => {
       cleanup()
     })
 
+    // spec: 021/FR-009
     it('cleanup (leaving the page) aborts the stream', async () => {
       let signal!: AbortSignal
       vi.mocked(api.searchMangaStream).mockImplementation((_q, _onEvent, s) => {

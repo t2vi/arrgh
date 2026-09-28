@@ -10,6 +10,7 @@ beforeEach(() => {
   localStorage.clear()
 })
 
+// spec: 015/FR-009
 describe('createNovelFontSize', () => {
   it('defaults to 16 when no stored value', () => {
     const pref = createNovelFontSize()

@@ -26,6 +26,7 @@ beforeEach(() => {
   vi.spyOn(router, 'navigate').mockImplementation(() => {})
 })
 
+// spec: 013/FR-005, 015/FR-005, 015/FR-006
 describe('ReaderFooter — paged mode', () => {
   it('shows Prev/Next page buttons mid-chapter', () => {
     render(ReaderFooter, {
@@ -98,6 +99,7 @@ describe('ReaderFooter — paged mode', () => {
   })
 })
 
+// spec: 013/FR-005, 015/FR-005, 015/FR-006
 describe('ReaderFooter — scroll/novel mode', () => {
   it('shows Prev Ch. / Next Ch. buttons', () => {
     render(ReaderFooter, {

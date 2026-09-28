@@ -82,7 +82,7 @@ async fn search_returns_502_when_all_authorities_fail() {
     assert_eq!(status, StatusCode::BAD_GATEWAY);
 }
 
-// spec: 004/FR-001
+// spec: 004/FR-001, 021/FR-010
 #[tokio::test]
 async fn search_returns_mu_mapped_results() {
     let mock = common::start_mock_plugin_host(MU_BODY, false).await;
@@ -859,6 +859,7 @@ async fn wait_ready(state: &arrgh_server::state::AppState, title_id: &str) {
     }
 }
 
+// spec: 019/FR-001, 019/FR-002
 #[tokio::test]
 async fn search_includes_royalroad_novel_result() {
     static ROUTES: [(&str, u16, &str); 1] = [("/royalroad/search", 200, RR_SEARCH_BODY)];
@@ -894,7 +895,7 @@ async fn search_includes_royalroad_novel_result() {
     assert_eq!(rr["tags"], "LitRPG, Progression");
 }
 
-// spec: 004/FR-003
+// spec: 004/FR-003, 019/FR-004
 #[tokio::test]
 async fn search_royalroad_failure_does_not_fail_request() {
     static ROUTES: [(&str, u16, &str); 2] = [
@@ -918,6 +919,7 @@ async fn search_royalroad_failure_does_not_fail_request() {
     assert!(!arr.iter().any(|r| r["source"] == "royalroad"));
 }
 
+// spec: 019/FR-003
 #[tokio::test]
 async fn search_dedup_prefers_novelupdates_over_royalroad() {
     static ROUTES: [(&str, u16, &str); 2] = [
@@ -952,6 +954,7 @@ async fn search_dedup_prefers_novelupdates_over_royalroad() {
     assert_eq!(hits[0]["source"], "novelupdates");
 }
 
+// spec: 019/FR-005, 019/FR-007, 019/FR-008, 019/FR-012
 #[tokio::test]
 async fn add_royalroad_title_stores_source_fetches_author_and_syncs_chapters() {
     static ROUTES: [(&str, u16, &str); 3] = [
@@ -1026,6 +1029,7 @@ async fn add_royalroad_title_stores_source_fetches_author_and_syncs_chapters() {
 
 /// FR-009 regression: Royal Road returning nothing for an East Asian title
 /// must not raise a Sync Warning (the ADR 0024 noise).
+// spec: 019/FR-009
 #[tokio::test]
 async fn royalroad_no_results_adds_no_sync_warning() {
     static ROUTES: [(&str, u16, &str); 3] = [
@@ -1197,6 +1201,7 @@ const MEMBER_SOURCES: [&str; 6] = [
     "royalroad",
 ];
 
+// spec: 021/FR-001, 021/FR-002
 #[tokio::test]
 async fn stream_lists_sources_then_one_event_per_source_then_done() {
     static ROUTES: [(&str, u16, &str); 1] = [("/royalroad/search", 200, RR_SEARCH_BODY)];
@@ -1233,6 +1238,7 @@ async fn stream_lists_sources_then_one_event_per_source_then_done() {
     assert_eq!(events.len(), 8);
 }
 
+// spec: 021/FR-002
 #[tokio::test]
 async fn stream_explicit_user_includes_nhentai() {
     let mock = common::start_mock_routes(&[]).await;
@@ -1251,6 +1257,7 @@ async fn stream_explicit_user_includes_nhentai() {
     );
 }
 
+// spec: 021/FR-005
 #[tokio::test]
 async fn stream_reports_timeout_status() {
     static ROUTES: [(&str, u16, &str); 2] = [
@@ -1284,6 +1291,7 @@ async fn stream_reports_timeout_status() {
     assert_eq!(lines.last().unwrap().1, json!({"type": "done", "ok": true}));
 }
 
+// spec: 021/FR-006
 #[tokio::test]
 async fn stream_all_failed_done_not_ok() {
     let mock = common::start_mock_plugin_host("boom", true).await; // 500 everywhere
@@ -1315,6 +1323,7 @@ async fn stream_unauthorized() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 021/FR-003, 021/FR-008
 #[tokio::test]
 async fn stream_fast_source_event_arrives_before_slow_source_finishes() {
     static ROUTES: [(&str, u16, &str); 2] = [
@@ -1351,6 +1360,7 @@ async fn stream_fast_source_event_arrives_before_slow_source_finishes() {
     assert_eq!(nu["status"], "found");
 }
 
+// spec: 021/FR-004
 #[tokio::test]
 async fn stream_final_results_equal_one_shot() {
     static ROUTES: [(&str, u16, &str); 3] = [
@@ -1382,6 +1392,7 @@ async fn stream_final_results_equal_one_shot() {
 /// MangaDex answers 400 to requests without a User-Agent — the shared HTTP
 /// client must send one by default (found via the spec 021 source pills).
 #[tokio::test]
+// spec: 024/FR-001
 async fn shared_http_client_sends_a_user_agent() {
     use axum::http::HeaderMap;
     use axum::response::IntoResponse;
@@ -1413,6 +1424,7 @@ async fn shared_http_client_sends_a_user_agent() {
 
 /// Spec 029: NovelUpdates Series Finder rows carry a synopsis — Discover must
 /// pass it through instead of dropping it.
+// spec: 029/FR-002
 #[tokio::test]
 async fn search_novelupdates_description_passed_through() {
     static ROUTES: [(&str, u16, &str); 1] = [(
