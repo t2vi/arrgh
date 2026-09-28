@@ -1,11 +1,11 @@
 {
-  "uuid": "eeac2c93-0a34-4d23-b8e0-af1337f5ee12",
+  "uuid": "d0823656-1882-4f59-b850-ab13fd89d5e9",
   "historyId": "API#tests/settings.hurl",
   "name": "tests/settings.hurl",
   "status": "passed",
   "stage": "finished",
-  "start": 1790557255077,
-  "stop": 1790557255082,
+  "start": 1790566232830,
+  "stop": 1790566232837,
   "labels": [
     {
       "name": "layer",
