@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { splitNdjson } from './api'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { api, getToken, setToken, splitNdjson } from './api'
 
 describe('splitNdjson', () => {
   it('parses every complete line in a chunk', () => {
@@ -19,5 +19,34 @@ describe('splitNdjson', () => {
 
   it('ignores blank lines', () => {
     expect(splitNdjson('\n{"a":1}\n\n').lines).toEqual([{ a: 1 }])
+  })
+})
+
+// spec: 003/FR-006, 003/FR-007
+describe('401 handling', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    localStorage.clear()
+  })
+
+  it('clears the stored token and dispatches arrgh:unauthorized on a 401 response', async () => {
+    setToken('tok', 'user', 'member', false)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        json: async () => ({}),
+      }),
+    )
+    const listener = vi.fn()
+    window.addEventListener('arrgh:unauthorized', listener)
+
+    await expect(api.getSettings()).rejects.toThrow()
+
+    expect(getToken()).toBeNull()
+    expect(listener).toHaveBeenCalledTimes(1)
+    window.removeEventListener('arrgh:unauthorized', listener)
   })
 })

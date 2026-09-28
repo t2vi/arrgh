@@ -57,6 +57,7 @@ async fn register_and_get_token(app: &Router, username: &str, password: &str) ->
 
 // ── /api/auth/status ─────────────────────────────────────────────────────
 
+// spec: 003/FR-003
 #[tokio::test]
 async fn status_needs_setup_when_no_users() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -64,6 +65,7 @@ async fn status_needs_setup_when_no_users() {
     assert_eq!(body["needs_setup"], true);
 }
 
+// spec: 003/FR-003
 #[tokio::test]
 async fn status_no_setup_needed_after_register() {
     let state = common::build_state().await;
@@ -76,6 +78,7 @@ async fn status_no_setup_needed_after_register() {
 
 // ── /api/auth/register ───────────────────────────────────────────────────
 
+// spec: 003/FR-004
 #[tokio::test]
 async fn register_creates_admin_and_returns_token() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -87,6 +90,7 @@ async fn register_creates_admin_and_returns_token() {
     assert_eq!(body["allow_explicit"], true);
 }
 
+// spec: 003/FR-005
 #[tokio::test]
 async fn register_forbidden_when_users_exist() {
     let state = common::build_state().await;
@@ -97,6 +101,7 @@ async fn register_forbidden_when_users_exist() {
     assert_eq!(status, StatusCode::FORBIDDEN);
 }
 
+// spec: 003/FR-010
 #[tokio::test]
 async fn register_unprocessable_entity_short_password() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -104,6 +109,7 @@ async fn register_unprocessable_entity_short_password() {
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
 }
 
+// spec: 003/FR-010
 #[tokio::test]
 async fn register_unprocessable_entity_empty_username() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -113,6 +119,7 @@ async fn register_unprocessable_entity_empty_username() {
 
 // ── /api/auth/login ──────────────────────────────────────────────────────
 
+// spec: 003/FR-001
 #[tokio::test]
 async fn login_returns_token_valid_credentials() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -130,6 +137,7 @@ async fn login_returns_token_valid_credentials() {
     assert!(!body["token"].as_str().unwrap().is_empty());
 }
 
+// spec: 003/FR-002
 #[tokio::test]
 async fn login_unauthorized_wrong_password() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -146,6 +154,7 @@ async fn login_unauthorized_wrong_password() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 003/FR-002
 #[tokio::test]
 async fn login_unauthorized_unknown_user() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -162,6 +171,7 @@ async fn login_unauthorized_unknown_user() {
 
 // ── /api/auth/me ─────────────────────────────────────────────────────────
 
+// spec: 003/FR-001
 #[tokio::test]
 async fn me_returns_current_user() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -172,6 +182,7 @@ async fn me_returns_current_user() {
     assert_eq!(body["role"], "admin");
 }
 
+// spec: 003/FR-006
 #[tokio::test]
 async fn me_unauthorized_no_token() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -179,8 +190,17 @@ async fn me_unauthorized_no_token() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 003/FR-006
+#[tokio::test]
+async fn me_unauthorized_malformed_token() {
+    let app = arrgh_server::api::router(common::build_state().await);
+    let (status, _) = send(&app, "GET", "/api/auth/me", Some("not.a.valid.jwt"), None).await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+}
+
 // ── /api/users ───────────────────────────────────────────────────────────
 
+// spec: 003/FR-008
 #[tokio::test]
 async fn list_users_forbidden_for_member() {
     let state = common::build_state().await;
@@ -192,6 +212,7 @@ async fn list_users_forbidden_for_member() {
     assert_eq!(status, StatusCode::FORBIDDEN);
 }
 
+// spec: 003/FR-010
 #[tokio::test]
 async fn create_user_conflict_duplicate_username() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -216,6 +237,7 @@ async fn create_user_conflict_duplicate_username() {
     assert_eq!(status, StatusCode::CONFLICT);
 }
 
+// spec: 003/FR-012
 #[tokio::test]
 async fn delete_user_forbidden_cannot_delete_self() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -236,6 +258,7 @@ async fn delete_user_forbidden_cannot_delete_self() {
 
 // ── /api/auth/me PATCH ───────────────────────────────────────────────────
 
+// spec: 003/FR-014
 #[tokio::test]
 async fn patch_me_changes_password() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -272,6 +295,7 @@ async fn patch_me_changes_password() {
     assert_eq!(new_status, StatusCode::OK);
 }
 
+// spec: 003/FR-015
 #[tokio::test]
 async fn patch_me_unprocessable_entity_short_password() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -290,6 +314,7 @@ async fn patch_me_unprocessable_entity_short_password() {
 
 // ── /api/users full CRUD ─────────────────────────────────────────────────
 
+// spec: 003/FR-008
 #[tokio::test]
 async fn list_users_returns_all_users_for_admin() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -316,6 +341,7 @@ async fn list_users_returns_all_users_for_admin() {
     assert_eq!(body.as_array().unwrap().len(), 3);
 }
 
+// spec: 003/FR-009
 #[tokio::test]
 async fn create_user_created_valid_member() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -344,6 +370,7 @@ async fn create_user_created_valid_member() {
     assert_eq!(body["allow_explicit"], false);
 }
 
+// spec: 003/FR-008
 #[tokio::test]
 async fn create_user_forbidden_for_member() {
     let state = common::build_state().await;
@@ -374,6 +401,7 @@ async fn user_id_by_username(app: &Router, token: &str, username: &str) -> Strin
         .to_string()
 }
 
+// spec: 003/FR-008
 #[tokio::test]
 async fn patch_user_updates_role() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -410,6 +438,7 @@ async fn patch_user_updates_role() {
     assert_eq!(bob["role"], "admin");
 }
 
+// spec: 003/FR-008
 #[tokio::test]
 async fn patch_user_updates_allow_explicit() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -452,6 +481,7 @@ async fn patch_user_updates_allow_explicit() {
     assert_eq!(bob["allow_explicit"], true);
 }
 
+// spec: 003/FR-011
 #[tokio::test]
 async fn patch_user_unprocessable_entity_invalid_role() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -478,6 +508,7 @@ async fn patch_user_unprocessable_entity_invalid_role() {
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
 }
 
+// spec: 003/FR-013
 #[tokio::test]
 async fn patch_user_not_found_nonexistent_user() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -494,6 +525,7 @@ async fn patch_user_not_found_nonexistent_user() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 003/FR-008
 #[tokio::test]
 async fn delete_user_no_content_success() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -523,6 +555,7 @@ async fn delete_user_no_content_success() {
     assert_eq!(body.as_array().unwrap().len(), 1);
 }
 
+// spec: 003/FR-013
 #[tokio::test]
 async fn delete_user_not_found_nonexistent_user() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -532,6 +565,7 @@ async fn delete_user_not_found_nonexistent_user() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 003/FR-008
 #[tokio::test]
 async fn delete_user_forbidden_for_member() {
     let state = common::build_state().await;

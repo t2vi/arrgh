@@ -45,4 +45,14 @@ describe('App shell', () => {
 
     expect(document.querySelector('[data-nav]')).not.toBeInTheDocument()
   })
+
+  // spec: 003/FR-007
+  it('navigates to login when an arrgh:unauthorized event is observed', async () => {
+    render(App)
+    expect(router.path).not.toBe(ROUTES.login)
+
+    window.dispatchEvent(new Event('arrgh:unauthorized'))
+
+    expect(router.path).toBe(ROUTES.login)
+  })
 })

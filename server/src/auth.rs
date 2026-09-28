@@ -130,6 +130,7 @@ impl FromRequestParts<AppState> for Claims {
 mod tests {
     use super::*;
 
+    // spec: 003/FR-017
     #[test]
     fn create_token_roundtrip_admin_claims() {
         let token = create_token("user-1", "alice", "admin", true, "s3cr3t").unwrap();
@@ -141,8 +142,10 @@ mod tests {
         .unwrap();
         assert_eq!(data.claims.user_id, "user-1");
         assert_eq!(data.claims.role, "admin");
+        assert!(data.claims.allow_explicit);
     }
 
+    // spec: 003/FR-006
     #[test]
     fn create_token_wrong_secret_rejected() {
         let token = create_token("user-1", "alice", "admin", true, "s3cr3t").unwrap();
@@ -164,6 +167,7 @@ mod tests {
         assert!(matches!(claims.require_admin(), Err(AppError::Forbidden)));
     }
 
+    // spec: 003/FR-016
     #[test]
     fn password_hash_roundtrip() {
         let hash = hash_password("secret123").unwrap();
@@ -173,6 +177,7 @@ mod tests {
 
     /// Cross-compat: verify a hash BCrypt.Net-Next actually produced (`$2a$`
     /// variant, cost 11) against a live .NET-created user row.
+    // spec: 003/FR-016
     #[test]
     fn verifies_dotnet_bcrypt_hash() {
         let dotnet_hash = "$2a$11$DTQZsXk/3YwBcThxy/t3k.jW3fY/e5u8QyJ/rTO4jslPfdf091HKi";
