@@ -84,7 +84,7 @@ describe('QueueStore', () => {
     cleanup()
   })
 
-  // spec: 005/FR-012
+  // spec: 005/FR-012, 001/FR-004
   it('polls every 2s', async () => {
     vi.useFakeTimers()
     const { cleanup } = createStore()
@@ -94,6 +94,18 @@ describe('QueueStore', () => {
     await vi.advanceTimersByTimeAsync(2000)
     expect(vi.mocked(api.getQueue).mock.calls.length).toBeGreaterThan(callsBefore)
     cleanup()
+  })
+
+  // spec: 001/FR-004
+  it('stops polling once cleanup runs (leaving the page)', async () => {
+    vi.useFakeTimers()
+    const { cleanup } = createStore()
+    await vi.advanceTimersByTimeAsync(0)
+    cleanup()
+    const callsAfterCleanup = vi.mocked(api.getQueue).mock.calls.length
+
+    await vi.advanceTimersByTimeAsync(4000)
+    expect(vi.mocked(api.getQueue).mock.calls.length).toBe(callsAfterCleanup)
   })
 
   // spec: 005/FR-013

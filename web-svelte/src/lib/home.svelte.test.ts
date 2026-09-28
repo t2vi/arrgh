@@ -93,6 +93,7 @@ describe('HomeStore', () => {
     cleanup()
   })
 
+  // spec: 001/FR-006
   it('skips the adult-manhwa lane when explicit content is not allowed', async () => {
     const { store, cleanup } = createStore()
     await vi.waitFor(() => expect(store.trendingAdultManhwaLoading).toBe(false))

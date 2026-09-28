@@ -10,7 +10,7 @@ beforeEach(() => {
   localStorage.clear()
 })
 
-// spec: 015/FR-009
+// spec: 015/FR-009, 001/FR-005
 describe('createImageZoom', () => {
   it('defaults to 100 when no stored value', () => {
     const pref = createImageZoom()

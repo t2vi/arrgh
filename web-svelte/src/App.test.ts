@@ -46,7 +46,7 @@ describe('App shell', () => {
     expect(document.querySelector('[data-nav]')).not.toBeInTheDocument()
   })
 
-  // spec: 003/FR-007
+  // spec: 003/FR-007, 001/FR-003
   it('navigates to login when an arrgh:unauthorized event is observed', async () => {
     render(App)
     expect(router.path).not.toBe(ROUTES.login)
