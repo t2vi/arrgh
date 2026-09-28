@@ -644,6 +644,7 @@ mod tests {
         assert_eq!(normalize_title("  Multiple   Spaces "), "multiple spaces");
     }
 
+    // spec: 004/FR-005
     #[test]
     fn designated_authority_per_content_type() {
         assert_eq!(designated_authority("manhwa"), "anilist");
@@ -654,6 +655,7 @@ mod tests {
         assert_eq!(designated_authority("unknown"), "mangaupdates");
     }
 
+    // spec: 004/FR-004
     #[test]
     fn deduplicate_designated_authority_wins() {
         let results = vec![
@@ -665,6 +667,7 @@ mod tests {
         assert_eq!(deduped[0].source, "anilist");
     }
 
+    // spec: 004/FR-004
     #[test]
     fn deduplicate_keeps_different_content_types_separate() {
         let results = vec![
@@ -718,6 +721,7 @@ mod tests {
         assert_eq!(merged[1].source, ROYALROAD);
     }
 
+    // spec: 004/FR-007
     #[test]
     fn merge_fan_out_upgrades_matching_explicit_manga_to_hentai() {
         let mut nhentai = result("nhentai", "Kayanetori", "hentai");
@@ -735,6 +739,7 @@ mod tests {
         assert!(merged[0].is_explicit);
     }
 
+    // spec: 004/FR-007
     #[test]
     fn merge_fan_out_does_not_upgrade_non_explicit_result() {
         let nhentai = result("nhentai", "Berserk", "hentai");
@@ -745,6 +750,7 @@ mod tests {
         assert_eq!(merged.len(), 2);
     }
 
+    // spec: 004/FR-007
     #[test]
     fn merge_fan_out_upgrades_on_word_boundary_prefix() {
         // .NET's actual `MergeFanOut` matches exact OR word-boundary prefix
@@ -793,6 +799,7 @@ mod tests {
         assert_eq!(merged[1].source, ROYALROAD);
     }
 
+    // spec: 004/FR-007
     #[test]
     fn merge_fan_out_does_not_upgrade_on_substring_without_word_boundary() {
         // "Berserker" contains "Berserk" as a prefix but with no following
@@ -812,6 +819,7 @@ mod tests {
         );
     }
 
+    // spec: 004/FR-006
     #[test]
     fn filter_mu_scope_keeps_only_manga_and_one_shot() {
         let results = vec![
@@ -835,6 +843,7 @@ mod tests {
         assert_eq!(levenshtein("same", "same"), 0);
     }
 
+    // spec: 004/FR-019
     #[test]
     fn strip_search_qualifier_strips_trailing_parens() {
         assert_eq!(
@@ -845,6 +854,7 @@ mod tests {
         assert_eq!(strip_search_qualifier("(Just Parens)"), None); // stripped would be empty
     }
 
+    // spec: 004/FR-018
     #[test]
     fn is_hentai_tag_detects_case_insensitive() {
         assert!(is_hentai_tag(Some("Action,Hentai")));

@@ -69,6 +69,7 @@ async fn search_unauthorized_no_token() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 004/FR-003
 #[tokio::test]
 async fn search_returns_502_when_all_authorities_fail() {
     let mock = common::start_mock_plugin_host("boom", true).await; // 500 everywhere
@@ -81,6 +82,7 @@ async fn search_returns_502_when_all_authorities_fail() {
     assert_eq!(status, StatusCode::BAD_GATEWAY);
 }
 
+// spec: 004/FR-001
 #[tokio::test]
 async fn search_returns_mu_mapped_results() {
     let mock = common::start_mock_plugin_host(MU_BODY, false).await;
@@ -103,6 +105,7 @@ async fn search_returns_mu_mapped_results() {
     assert_eq!(mu["in_library"], false);
 }
 
+// spec: 004/FR-008
 #[tokio::test]
 async fn search_in_library_true_when_already_added() {
     let mock = common::start_mock_plugin_host(MU_BODY, false).await;
@@ -125,6 +128,7 @@ async fn search_in_library_true_when_already_added() {
     assert_eq!(mu["library_id"], t);
 }
 
+// spec: 004/FR-002
 #[tokio::test]
 async fn search_nhentai_not_included_for_non_explicit_user() {
     let nh_body = r#"[{"id":"nh-1","title":"Doujin"}]"#;
@@ -142,6 +146,7 @@ async fn search_nhentai_not_included_for_non_explicit_user() {
         .all(|r| r["source"] != "nhentai"));
 }
 
+// spec: 004/FR-002
 #[tokio::test]
 async fn search_nhentai_included_for_explicit_user() {
     let nh_body = r#"[{"id":"nh-1","title":"Doujin"}]"#;
@@ -201,6 +206,29 @@ async fn search_nhentai_result_mapped_correctly() {
     assert_eq!(nh["is_explicit"], true);
 }
 
+// spec: 004/FR-012
+#[tokio::test]
+async fn search_excludes_adult_content_from_anilist_query_for_non_explicit_users() {
+    let (mock, recorded) = common::start_recording_mock(&[]).await;
+    let state = common::build_discover_state(&mock).await;
+    let member = common::seed_user(&state, "member1", "member", false).await;
+    let token = common::token_for(&member);
+    let app = arrgh_server::api::router(state);
+
+    send(&app, "GET", "/api/discover?q=test", Some(&token), None).await;
+
+    let seen = recorded.lock().unwrap();
+    let anilist_call = seen
+        .iter()
+        .find(|(_, _, body)| {
+            body.get("variables")
+                .and_then(|v| v.get("isAdult"))
+                .is_some()
+        })
+        .expect("anilist leg was called");
+    assert_eq!(anilist_call.2["variables"]["isAdult"], false);
+}
+
 // ── GET /api/discover/trending/* ────────────────────────────────────────
 
 #[tokio::test]
@@ -211,6 +239,7 @@ async fn trending_manga_unauthorized() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 004/FR-010
 #[tokio::test]
 async fn trending_manga_empty_when_fails_and_no_cache() {
     let mock = common::start_mock_plugin_host("boom", true).await; // MU 500s
@@ -231,6 +260,7 @@ async fn trending_manga_empty_when_fails_and_no_cache() {
     assert_eq!(body.as_array().unwrap().len(), 0);
 }
 
+// spec: 004/FR-010
 #[tokio::test]
 async fn trending_manga_serves_stale_cache_when_fails() {
     let mock = common::start_mock_plugin_host("boom", true).await;
@@ -311,6 +341,7 @@ async fn trending_lane_size_follows_trending_per_source() {
     assert_eq!(lane_len(app, token).await, 3);
 }
 
+// spec: 004/FR-011
 #[tokio::test]
 async fn trending_adult_manhwa_forbidden_for_non_explicit_user() {
     let mock = common::start_mock_plugin_host("{}", false).await;
@@ -347,6 +378,7 @@ async fn add_unauthorized_no_token() {
     assert_eq!(status, StatusCode::UNAUTHORIZED);
 }
 
+// spec: 004/FR-019
 #[tokio::test]
 async fn add_creates_title_and_strips_qualifier() {
     let mock = common::start_mock_plugin_host("[]", false).await; // plugin-host: no sources match
@@ -374,6 +406,7 @@ async fn add_creates_title_and_strips_qualifier() {
     assert_eq!(owned, 1);
 }
 
+// spec: 004/FR-014
 #[tokio::test]
 async fn add_dedup_by_existing_mangaupdates_id() {
     let mock = common::start_mock_plugin_host("[]", false).await;
@@ -433,6 +466,7 @@ async fn add_with_source_anilist_stores_metadata_source() {
     assert_eq!(mu_id, None);
 }
 
+// spec: 004/FR-018
 #[tokio::test]
 async fn add_with_hentai_tag_sets_is_explicit() {
     let mock = common::start_mock_plugin_host("[]", false).await;
@@ -457,6 +491,206 @@ async fn add_with_hentai_tag_sets_is_explicit() {
         .await
         .unwrap();
     assert!(is_explicit);
+}
+
+// spec: 004/FR-013
+#[tokio::test]
+async fn resolve_meta_cover_passes_through_a_plain_url_and_resolves_a_cached_key() {
+    let state = common::build_state().await;
+
+    let plain =
+        arrgh_server::discover::resolve_meta_cover(&state.db, "https://cdn.example/cover.jpg")
+            .await
+            .unwrap();
+    assert_eq!(plain.as_deref(), Some("https://cdn.example/cover.jpg"));
+
+    let missing =
+        arrgh_server::discover::resolve_meta_cover(&state.db, "/api/media/meta-cover?key=nope")
+            .await
+            .unwrap();
+    assert_eq!(missing, None);
+
+    let key = arrgh_server::discover::normalize_title("CachedCoverTitle");
+    sqlx::query(
+        "INSERT INTO title_meta (title_key, cover_cdn_url, fetched_at, source, source_id, chapter_count) \
+         VALUES (?, 'https://cdn.example/original.jpg', '2026-01-01T00:00:00', 'mangaupdates', '1', 0)",
+    )
+    .bind(&key)
+    .execute(&state.db)
+    .await
+    .unwrap();
+    let resolved = arrgh_server::discover::resolve_meta_cover(
+        &state.db,
+        &format!("/api/media/meta-cover?key={key}"),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        resolved.as_deref(),
+        Some("https://cdn.example/original.jpg")
+    );
+}
+
+// spec: 004/FR-014
+#[tokio::test]
+async fn add_coalesces_only_null_fields_without_overwriting_existing() {
+    let mock = common::start_mock_plugin_host("[]", false).await;
+    let state = common::build_discover_state(&mock).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (_, first) = send(
+        &app,
+        "POST",
+        "/api/discover/add",
+        Some(&token),
+        Some(json!({
+            "mangaupdates_id": "999",
+            "title": "Coalesce Test",
+            "content_type": "manga",
+            "author": "Original Author"
+        })),
+    )
+    .await;
+    let id = first["id"].as_str().unwrap().to_string();
+
+    send(
+        &app,
+        "POST",
+        "/api/discover/add",
+        Some(&token),
+        Some(json!({
+            "mangaupdates_id": "999",
+            "title": "Coalesce Test",
+            "content_type": "manga",
+            "author": "Different Author",
+            "description": "Filled in description"
+        })),
+    )
+    .await;
+
+    let (author, description): (Option<String>, Option<String>) =
+        sqlx::query_as("SELECT author, description FROM titles WHERE id = ?")
+            .bind(&id)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(author.as_deref(), Some("Original Author"));
+    assert_eq!(description.as_deref(), Some("Filled in description"));
+}
+
+// spec: 004/FR-015
+#[tokio::test]
+async fn add_downloads_cover_to_local_storage_in_background() {
+    let mock = common::start_mock_routes(&[("/cover.jpg", 200, "fake-image-bytes")]).await;
+    let tmp = std::env::temp_dir().join(format!("arrgh-covers-{}", uuid::Uuid::new_v4()));
+    let state = common::build_downloader_state(&mock, tmp.to_str().unwrap()).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (_, body) = send(
+        &app,
+        "POST",
+        "/api/discover/add",
+        Some(&token),
+        Some(json!({
+            "title": "Cover Download Test",
+            "content_type": "manga",
+            "cover_url": format!("{mock}/cover.jpg")
+        })),
+    )
+    .await;
+    let id = body["id"].as_str().unwrap().to_string();
+    wait_ready(&state, &id).await;
+
+    let cover_url: String = sqlx::query_scalar("SELECT cover_url FROM titles WHERE id = ?")
+        .bind(&id)
+        .fetch_one(&state.db)
+        .await
+        .unwrap();
+    assert!(cover_url.contains("_covers"));
+    assert!(cover_url.ends_with(&format!("{id}.jpg")));
+    let bytes = tokio::fs::read(&cover_url).await.unwrap();
+    assert_eq!(bytes, b"fake-image-bytes");
+}
+
+// spec: 004/FR-016
+#[tokio::test]
+async fn add_mangaupdates_source_fetches_associated_names_as_aliases() {
+    let mock = common::start_mock_routes(&[(
+        "/series/555",
+        200,
+        r#"{"associated":[{"title":"Alias One"},{"title":"Alias Two"}]}"#,
+    )])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (_, body) = send(
+        &app,
+        "POST",
+        "/api/discover/add",
+        Some(&token),
+        Some(json!({
+            "mangaupdates_id": "555",
+            "title": "MU Alias Test",
+            "content_type": "manga"
+        })),
+    )
+    .await;
+    let id = body["id"].as_str().unwrap().to_string();
+    wait_ready(&state, &id).await;
+
+    let aliases = arrgh_server::titles::list_title_aliases(&state.db, &id)
+        .await
+        .unwrap();
+    assert_eq!(
+        aliases,
+        vec!["Alias One".to_string(), "Alias Two".to_string()]
+    );
+}
+
+// spec: 004/FR-017
+#[tokio::test]
+async fn add_anilist_source_fetches_synonyms_as_aliases() {
+    let mock = common::start_mock_routes(&[(
+        "/",
+        200,
+        r#"{"data":{"Media":{"synonyms":["Alt Name One","Alt Name Two"]}}}"#,
+    )])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (_, body) = send(
+        &app,
+        "POST",
+        "/api/discover/add",
+        Some(&token),
+        Some(json!({
+            "source": "anilist",
+            "source_id": "101517",
+            "title": "AniList Alias Test",
+            "content_type": "manhwa"
+        })),
+    )
+    .await;
+    let id = body["id"].as_str().unwrap().to_string();
+    wait_ready(&state, &id).await;
+
+    let aliases = arrgh_server::titles::list_title_aliases(&state.db, &id)
+        .await
+        .unwrap();
+    assert_eq!(
+        aliases,
+        vec!["Alt Name One".to_string(), "Alt Name Two".to_string()]
+    );
 }
 
 // ── match_sources via add's background task ──────────────────────────────
@@ -660,6 +894,7 @@ async fn search_includes_royalroad_novel_result() {
     assert_eq!(rr["tags"], "LitRPG, Progression");
 }
 
+// spec: 004/FR-003
 #[tokio::test]
 async fn search_royalroad_failure_does_not_fail_request() {
     static ROUTES: [(&str, u16, &str); 2] = [
