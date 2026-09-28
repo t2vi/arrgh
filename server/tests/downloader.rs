@@ -136,6 +136,7 @@ fn record_ua(headers: &HeaderMap, ua: &Arc<Mutex<Vec<String>>>) {
 
 // ── manga (cbz) path ─────────────────────────────────────────────────────
 
+// spec: 005/FR-004
 #[tokio::test]
 async fn pages_download_marks_chapter_downloaded_with_cbz() {
     let (mock_url, _) = start_mock(3, None).await;
@@ -170,7 +171,7 @@ async fn pages_download_marks_chapter_downloaded_with_cbz() {
     let _ = std::fs::remove_dir_all(&tmp);
 }
 
-// spec: 002/FR-009
+// spec: 002/FR-009, 005/FR-004
 #[tokio::test]
 async fn no_chapter_sources_sets_error() {
     let (mock_url, _) = start_mock(3, None).await;
@@ -199,7 +200,7 @@ async fn no_chapter_sources_sets_error() {
     assert_eq!(error.as_deref(), Some("no chapter sources"));
 }
 
-// spec: 002/FR-009
+// spec: 002/FR-009, 005/FR-004
 #[tokio::test]
 async fn all_sources_fail_sets_error() {
     let (mock_url, _) = start_mock(3, None).await;
@@ -371,6 +372,69 @@ async fn text_chapter_downloads_md_file() {
 
 // ── worker behaviour ─────────────────────────────────────────────────────
 
+// spec: 005/FR-005
+#[tokio::test]
+async fn pages_total_and_downloaded_progress_are_tracked() {
+    let notify = Arc::new(Notify::new());
+    let (mock_url, _) = start_mock(3, Some(notify.clone())).await;
+    let tmp = std::env::temp_dir().join(format!("arrgh-dl-{}", uuid::Uuid::new_v4()));
+    let state = common::build_downloader_state(&mock_url, tmp.to_str().unwrap()).await;
+    let t = common::seed_title(&state, "Naruto", false).await;
+    let c = common::seed_chapter(&state, &t, 1.0, false).await;
+    common::add_chapter_source(&state, &c, "mangadex").await;
+    let qid = common::seed_queue_item(&state, &c, "Naruto", 1.0, "pending", None).await;
+
+    tokio::spawn(arrgh_server::downloader::run_loop_with_interval(
+        state.db.clone(),
+        state.http.clone(),
+        state.config.plugin_host_url.clone(),
+        state.config.download_dir.clone(),
+        TICK,
+    ));
+
+    // pages_total is written before the first page fetch even starts — the mock blocks
+    // page 0, so this window proves the total is known up front, not derived from
+    // however many pages happen to have completed.
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
+    loop {
+        let pages_total: Option<i64> =
+            sqlx::query_scalar("SELECT pages_total FROM download_queue WHERE id = ?")
+                .bind(&qid)
+                .fetch_one(&state.db)
+                .await
+                .unwrap();
+        if pages_total == Some(3) {
+            break;
+        }
+        assert!(
+            tokio::time::Instant::now() < deadline,
+            "pages_total never reached 3"
+        );
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    let pages_downloaded: i64 =
+        sqlx::query_scalar("SELECT pages_downloaded FROM download_queue WHERE id = ?")
+            .bind(&qid)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(pages_downloaded, 0);
+
+    notify.notify_one();
+    let status = wait_for_status(&state.db, &qid, Duration::from_secs(5)).await;
+    assert_eq!(status, "done");
+    let pages_downloaded: i64 =
+        sqlx::query_scalar("SELECT pages_downloaded FROM download_queue WHERE id = ?")
+            .bind(&qid)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(pages_downloaded, 3);
+
+    let _ = std::fs::remove_dir_all(&tmp);
+}
+
+// spec: 005/FR-004, 005/FR-008
 #[tokio::test]
 async fn status_is_downloading_while_in_progress() {
     let notify = Arc::new(Notify::new());

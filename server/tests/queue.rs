@@ -58,6 +58,7 @@ async fn list_ordered_by_created_at_desc() {
     assert_eq!(arr[1]["chapter_num"], 1.0);
 }
 
+// spec: 005/FR-011
 #[tokio::test]
 async fn list_hides_explicit_title_for_member_without_flag() {
     let state = common::build_state().await;
@@ -72,6 +73,7 @@ async fn list_hides_explicit_title_for_member_without_flag() {
     assert_eq!(body.as_array().unwrap().len(), 0);
 }
 
+// spec: 005/FR-011
 #[tokio::test]
 async fn list_shows_explicit_title_for_admin_regardless_of_flag() {
     let state = common::build_state().await;
@@ -131,6 +133,7 @@ async fn list_for_title_empty_when_none() {
 
 // ── DELETE /api/queue/completed ─────────────────────────────────────────────
 
+// spec: 005/FR-009
 #[tokio::test]
 async fn clear_completed_deletes_done_cancelled_error_leaves_pending() {
     let state = common::build_state().await;
@@ -162,6 +165,7 @@ async fn clear_completed_deletes_done_cancelled_error_leaves_pending() {
     assert_eq!(remaining_status, "pending");
 }
 
+// spec: 005/FR-010
 #[tokio::test]
 async fn clear_completed_forbidden_for_member() {
     let state = common::build_state().await;
@@ -175,6 +179,7 @@ async fn clear_completed_forbidden_for_member() {
 
 // ── DELETE /api/queue/{id} ───────────────────────────────────────────────────
 
+// spec: 005/FR-007
 #[tokio::test]
 async fn remove_deletes_when_not_downloading() {
     let state = common::build_state().await;
@@ -196,6 +201,7 @@ async fn remove_deletes_when_not_downloading() {
     assert_eq!(count, 0);
 }
 
+// spec: 005/FR-007
 #[tokio::test]
 async fn remove_soft_cancels_when_downloading() {
     let state = common::build_state().await;
@@ -229,6 +235,7 @@ async fn remove_not_found_nonexistent() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 005/FR-006
 #[tokio::test]
 async fn remove_forbidden_for_other_users_item() {
     let state = common::build_state().await;
@@ -244,6 +251,7 @@ async fn remove_forbidden_for_other_users_item() {
     assert_eq!(status, StatusCode::FORBIDDEN);
 }
 
+// spec: 005/FR-006
 #[tokio::test]
 async fn remove_allowed_for_admin_on_others_item() {
     let state = common::build_state().await;
@@ -266,6 +274,7 @@ async fn remove_allowed_for_admin_on_others_item() {
     assert_eq!(count, 0);
 }
 
+// spec: 005/FR-006
 #[tokio::test]
 async fn remove_allowed_for_owning_member() {
     let state = common::build_state().await;
