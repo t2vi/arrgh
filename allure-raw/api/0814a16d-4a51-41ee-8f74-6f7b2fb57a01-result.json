@@ -1,0 +1,31 @@
+{
+  "uuid": "0814a16d-4a51-41ee-8f74-6f7b2fb57a01",
+  "historyId": "API#tests/settings.hurl",
+  "name": "tests/settings.hurl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1790569531831,
+  "stop": 1790569531837,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "api"
+    },
+    {
+      "name": "tag",
+      "value": "API"
+    },
+    {
+      "name": "suite",
+      "value": "API"
+    },
+    {
+      "name": "feature",
+      "value": "API"
+    },
+    {
+      "name": "story",
+      "value": "tests/settings.hurl"
+    }
+  ]
+}

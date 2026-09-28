@@ -1,0 +1,31 @@
+{
+  "uuid": "e55e1fe7-22c3-4a57-a852-e037d6c54064",
+  "historyId": "API#tests/discover-search.hurl",
+  "name": "tests/discover-search.hurl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1790569530360,
+  "stop": 1790569531838,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "api"
+    },
+    {
+      "name": "tag",
+      "value": "API"
+    },
+    {
+      "name": "suite",
+      "value": "API"
+    },
+    {
+      "name": "feature",
+      "value": "API"
+    },
+    {
+      "name": "story",
+      "value": "tests/discover-search.hurl"
+    }
+  ]
+}
