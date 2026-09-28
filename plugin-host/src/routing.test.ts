@@ -38,6 +38,7 @@ const EXPLICIT_PLUGIN = makePlugin({
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
+// spec: 009/FR-002
 describe('GET /plugins', () => {
   it('returns all loaded plugins', async () => {
     const registry = new Map([
@@ -59,6 +60,7 @@ describe('GET /plugins', () => {
   })
 })
 
+// spec: 009/FR-001, 009/FR-003, 009/FR-006
 describe('GET /:plugin/info', () => {
   it('returns plugin info for known plugin', async () => {
     const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]))
@@ -76,6 +78,7 @@ describe('GET /:plugin/info', () => {
   })
 })
 
+// spec: 009/FR-003, 009/FR-006, 009/FR-007
 describe('GET /:plugin/search', () => {
   it('calls plugin.search and returns results', async () => {
     const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]))
@@ -109,6 +112,7 @@ describe('GET /:plugin/search', () => {
   })
 })
 
+// spec: 009/FR-003, 009/FR-007
 describe('GET /:plugin/manga/:id/chapters', () => {
   it('calls plugin.chapters and returns results', async () => {
     const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]))
@@ -137,6 +141,7 @@ describe('GET /:plugin/manga/:id/chapters', () => {
   })
 })
 
+// spec: 009/FR-003, 009/FR-004, 009/FR-006
 describe('GET /:plugin/chapter/:id/pages', () => {
   it('calls plugin.pages and returns URLs', async () => {
     const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]))
@@ -159,6 +164,7 @@ describe('GET /:plugin/chapter/:id/pages', () => {
   })
 })
 
+// spec: 009/FR-004
 describe('GET /:plugin/chapter/:id/text', () => {
   it('calls plugin.chapterText and returns markdown', async () => {
     const app = createApp(new Map([['mock-novel', NOVEL_PLUGIN]]))
@@ -175,6 +181,42 @@ describe('GET /:plugin/chapter/:id/text', () => {
   })
 })
 
+// spec: 009/FR-005 — optional capabilities respond "not supported" rather than crashing.
+describe('optional capabilities not implemented by a plugin', () => {
+  it('GET /:plugin/trending returns 404 when the plugin has no trending fn', async () => {
+    const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]))
+    const res = await request(app).get('/mock-manga/trending')
+    expect(res.status).toBe(404)
+    expect(res.body).toEqual({ error: 'trending not supported' })
+  })
+
+  it('GET /:plugin/manga/:id/meta returns 404 when the plugin has no meta fn', async () => {
+    const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]))
+    const res = await request(app).get('/mock-manga/manga/m1/meta')
+    expect(res.status).toBe(404)
+    expect(res.body).toEqual({ error: 'meta not supported' })
+  })
+
+  it('GET /:plugin/cover returns 501 when the plugin has no cover fn', async () => {
+    const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]))
+    const res = await request(app).get('/mock-manga/cover?url=https://example.com/x.jpg')
+    expect(res.status).toBe(501)
+    expect(res.body).toEqual({ error: 'cover proxy not implemented' })
+  })
+
+  it('GET /:plugin/trending calls plugin.trending and returns its results when implemented', async () => {
+    const plugin = makePlugin({
+      info: { id: 'mock-trending', name: 'Mock Trending', default_explicit: false, content_types: ['manga'] },
+      trending: vi.fn().mockResolvedValue([{ id: 't1', title: 'Trending Title' }]),
+    })
+    const app = createApp(new Map([['mock-trending', plugin]]))
+    const res = await request(app).get('/mock-trending/trending')
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual([{ id: 't1', title: 'Trending Title' }])
+  })
+})
+
+// spec: 009/FR-008
 describe('POST /plugins/install', () => {
   it('returns 400 when url missing', async () => {
     const app = createApp(new Map())
@@ -183,6 +225,7 @@ describe('POST /plugins/install', () => {
   })
 })
 
+// spec: 009/FR-008
 describe('DELETE /plugins/:id', () => {
   it('returns 403 for bundled (non-community) plugin', async () => {
     const app = createApp(new Map([['mock-manga', MANGA_PLUGIN]]), new Set()) // empty communityIds
@@ -202,6 +245,7 @@ describe('DELETE /plugins/:id', () => {
 
 // ── rewriteCdpHost ────────────────────────────────────────────────────────────
 
+// spec: 009/FR-010, 009/FR-011
 describe('rewriteCdpHost', () => {
   it('rewrites 0.0.0.0 to localhost for local dev', () => {
     const result = rewriteCdpHost(
@@ -235,6 +279,7 @@ import * as fsm from 'node:fs'
 import * as os from 'node:os'
 import * as pathm from 'node:path'
 
+// spec: 009/FR-009 — both watched directories (bundled + community) hot-reload the same way.
 describe('onBundleChange', () => {
   it('loads a new bundle file, and unloads it when the file is removed', async () => {
     const dir = fsm.mkdtempSync(pathm.join(os.tmpdir(), 'bundles-'))
@@ -249,6 +294,21 @@ describe('onBundleChange', () => {
     fsm.unlinkSync(file)
     await onBundleChange(reg, file, ORIGIN_DOWNLOADED)
     expect(reg.active.has('tmpplugin')).toBe(false)
+  })
+
+  it('loads and unloads the same way for the bundled (default) directory', async () => {
+    const dir = fsm.mkdtempSync(pathm.join(os.tmpdir(), 'bundles-'))
+    const file = pathm.join(dir, 'tmpbundled.js')
+    fsm.writeFileSync(file, `module.exports = { info: { id: 'tmpbundled', name: 'Tmp', content_types: ['manga'] } }`)
+    const reg = new PluginRegistry()
+
+    await onBundleChange(reg, file, ORIGIN_BUNDLED)
+    expect(reg.active.has('tmpbundled')).toBe(true)
+    expect(reg.origin('tmpbundled')).toBe(ORIGIN_BUNDLED)
+
+    fsm.unlinkSync(file)
+    await onBundleChange(reg, file, ORIGIN_BUNDLED)
+    expect(reg.active.has('tmpbundled')).toBe(false)
   })
 })
 

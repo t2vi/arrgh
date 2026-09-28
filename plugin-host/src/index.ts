@@ -41,7 +41,12 @@ export function rewriteCdpHost(cdpWsUrl: string, configUrl: string): string {
 
 let browser: Browser | null = null
 
-async function getBrowser(): Promise<Browser> {
+/** Test seam — clears the cached connection so the next `getBrowser()` reconnects. */
+export function resetBrowserForTest(): void {
+  browser = null
+}
+
+export async function getBrowser(): Promise<Browser> {
   if (browser?.isConnected()) return browser
   if (!CLOAKBROWSER_WS_URL) {
     throw new Error('CLOAKBROWSER_WS_URL is not set — CF-dependent plugins will not work')
