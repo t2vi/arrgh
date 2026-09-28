@@ -2,7 +2,7 @@
 [![CI](https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ci.yml) [![GHCR](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml) [![Docs-site](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml)
 [![E2e](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml)
 
-**v1.4.0** · A self-hosted comics and web-novel manager, downloader, and reader for your home server. Supports manga, manhwa, manhua, novels (translated and English-original), and hentai from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
+**v1.5.0** · A self-hosted comics and web-novel manager, downloader, and reader for your home server. Supports manga, manhwa, manhua, novels (translated and English-original), and hentai from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
 
 > I'm a solo dev who built this for myself — tired of juggling browser tabs, download scripts, and folder structures just to keep up with series. If you find it useful or want to contribute, you're very welcome. See [Contributing](#contributing).
 
