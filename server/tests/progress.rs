@@ -39,6 +39,7 @@ async fn send(
 
 // ── GET /api/progress/title/{titleId} ─────────────────────────────────────
 
+// spec: 006/FR-010
 #[tokio::test]
 async fn list_title_progress_returns_progress_for_user() {
     let state = common::build_state().await;
@@ -63,6 +64,7 @@ async fn list_title_progress_returns_progress_for_user() {
     assert_eq!(body[0]["chapter_id"], c1);
 }
 
+// spec: 006/FR-009
 #[tokio::test]
 async fn list_title_progress_isolated_per_user() {
     let state = common::build_state().await;
@@ -133,6 +135,7 @@ async fn get_progress_not_found_when_no_progress() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 006/FR-012
 #[tokio::test]
 async fn get_progress_unauthorized_no_token() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -142,6 +145,7 @@ async fn get_progress_unauthorized_no_token() {
 
 // ── PUT /api/progress/{chapterId} ─────────────────────────────────────────
 
+// spec: 006/FR-008
 #[tokio::test]
 async fn update_progress_creates_when_not_exists() {
     let state = common::build_state().await;
@@ -166,6 +170,7 @@ async fn update_progress_creates_when_not_exists() {
     assert_eq!(body["chapter_id"], c);
 }
 
+// spec: 006/FR-008
 #[tokio::test]
 async fn update_progress_updates_when_already_exists() {
     let state = common::build_state().await;
@@ -197,6 +202,7 @@ async fn update_progress_updates_when_already_exists() {
     assert_eq!(body["completed"], true);
 }
 
+// spec: 006/FR-009
 #[tokio::test]
 async fn update_progress_isolated_per_user() {
     let state = common::build_state().await;
@@ -241,6 +247,7 @@ async fn update_progress_isolated_per_user() {
 
 // ── GET /api/progress/continue ────────────────────────────────────────────
 
+// spec: 006/FR-011
 #[tokio::test]
 async fn continue_reading_returns_titles_with_unread_chapters() {
     let state = common::build_state().await;
@@ -261,6 +268,7 @@ async fn continue_reading_returns_titles_with_unread_chapters() {
     assert_eq!(body[0]["total_chapters"], 2);
 }
 
+// spec: 006/FR-011
 #[tokio::test]
 async fn continue_reading_empty_when_nothing_started() {
     let state = common::build_state().await;
@@ -275,6 +283,7 @@ async fn continue_reading_empty_when_nothing_started() {
     assert_eq!(body.as_array().unwrap().len(), 0);
 }
 
+// spec: 006/FR-011
 #[tokio::test]
 async fn continue_reading_empty_when_all_chapters_read() {
     let state = common::build_state().await;
@@ -290,6 +299,7 @@ async fn continue_reading_empty_when_all_chapters_read() {
     assert_eq!(body.as_array().unwrap().len(), 0);
 }
 
+// spec: 006/FR-011
 #[tokio::test]
 async fn continue_reading_skips_not_downloaded_chapters() {
     let state = common::build_state().await;
