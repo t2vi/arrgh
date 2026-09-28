@@ -30,14 +30,13 @@
     <HomeSkeleton />
   {:else}
     <div class="pb-12">
+      <GreetingJumbotron {typeCounts} totalRead={store.totalRead} coverManga={store.coverManga} />
+
       {#if store.items.length === 0}
         <div class="flex flex-col items-center justify-center py-24 gap-4">
-          <p class="text-muted-foreground text-sm">Library empty — discover titles to add some.</p>
           <Button onclick={() => router.navigate(ROUTES.discover)}>Discover</Button>
         </div>
       {:else}
-        <GreetingJumbotron {typeCounts} totalRead={store.totalRead} coverManga={store.coverManga} />
-
         {#if store.continueItems.length > 0}
           <section class="mt-8 px-6 space-y-4">
             <h2 class="text-xl font-bold">Continue Reading</h2>
