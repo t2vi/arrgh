@@ -83,6 +83,7 @@ pub async fn run() -> anyhow::Result<()> {
         state.db.clone(),
         state.http.clone(),
         state.update.clone(),
+        state.config.github_releases_url.clone(),
     ));
 
     let listener = TcpListener::bind(addr).await?;

@@ -28,6 +28,7 @@ async fn send(app: &Router, method: &str, uri: &str, body: Option<Value>) -> (St
     (status, json)
 }
 
+// spec: 007/FR-001, 007/FR-002
 #[tokio::test]
 async fn get_settings_returns_defaults_when_nothing_saved() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -66,6 +67,7 @@ async fn save_settings_updates_and_returns_new_values() {
     assert_eq!(body["check_for_updates"], true);
 }
 
+// spec: 007/FR-003
 #[tokio::test]
 async fn save_settings_partial_update_only_changes_specified_fields() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -104,6 +106,7 @@ async fn save_settings_idempotent_overwrites_same_key() {
     assert_eq!(body["download_workers"], 8);
 }
 
+// spec: 007/FR-004
 #[tokio::test]
 async fn save_settings_unprocessable_entity_invalid_reader_mode() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -117,6 +120,7 @@ async fn save_settings_unprocessable_entity_invalid_reader_mode() {
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
 }
 
+// spec: 007/FR-005
 #[tokio::test]
 async fn save_settings_clamps_trending_per_source() {
     let app = arrgh_server::api::router(common::build_state().await);
@@ -130,6 +134,7 @@ async fn save_settings_clamps_trending_per_source() {
     assert_eq!(body["trending_per_source"], 50);
 }
 
+// spec: 007/FR-006
 #[tokio::test]
 async fn save_settings_ignores_empty_download_dir() {
     let app = arrgh_server::api::router(common::build_state().await);

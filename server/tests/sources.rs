@@ -53,6 +53,7 @@ async fn list_sources_returns_empty_when_none() {
     assert_eq!(body.as_array().unwrap().len(), 0);
 }
 
+// spec: 007/FR-007
 #[tokio::test]
 async fn list_sources_returns_sources_with_content_types_array() {
     let state = common::build_state().await;
@@ -151,6 +152,7 @@ async fn add_source_bad_gateway_when_plugin_not_ported_yet() {
 
 // ── PATCH /api/sources/{id} ──────────────────────────────────────────────
 
+// spec: 007/FR-007
 #[tokio::test]
 async fn patch_source_toggles_enabled() {
     let state = common::build_state().await;
@@ -173,6 +175,7 @@ async fn patch_source_toggles_enabled() {
     assert_eq!(body[0]["enabled"], false);
 }
 
+// spec: 007/FR-008
 #[tokio::test]
 async fn patch_source_not_found_nonexistent_id() {
     let state = common::build_state().await;
@@ -191,6 +194,7 @@ async fn patch_source_not_found_nonexistent_id() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 007/FR-007
 #[tokio::test]
 async fn patch_source_forbidden_for_member() {
     let state = common::build_state().await;
@@ -233,6 +237,7 @@ async fn patch_source_can_update_priority() {
 
 // ── DELETE /api/sources/{id} ─────────────────────────────────────────────
 
+// spec: 007/FR-007
 #[tokio::test]
 async fn delete_source_no_content_when_exists() {
     let state = common::build_state().await;
@@ -266,6 +271,7 @@ async fn delete_source_not_found_nonexistent_id() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 007/FR-007
 #[tokio::test]
 async fn delete_source_forbidden_for_member() {
     let state = common::build_state().await;

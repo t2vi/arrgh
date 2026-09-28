@@ -93,6 +93,7 @@ async fn seed_plugin_source(
 
 // ── GET /api/plugins/index ──────────────────────────────────────────────
 
+// spec: 007/FR-009
 #[tokio::test]
 async fn index_returns_entries() {
     let path = write_index(&default_index());
@@ -131,6 +132,7 @@ async fn index_unauthorized_without_token() {
     std::fs::remove_file(&path).unwrap();
 }
 
+// spec: 007/FR-009
 #[tokio::test]
 async fn index_member_can_access() {
     let path = write_index(&default_index());
@@ -262,6 +264,7 @@ async fn install_not_found_unknown_plugin() {
     std::fs::remove_file(&path).unwrap();
 }
 
+// spec: 007/FR-010
 #[tokio::test]
 async fn install_unprocessable_entity_no_download_url() {
     let path = write_index(&default_index());
@@ -287,6 +290,7 @@ async fn install_unprocessable_entity_no_download_url() {
     std::fs::remove_file(&path).unwrap();
 }
 
+// spec: 007/FR-011
 #[tokio::test]
 async fn install_conflict_when_already_installed() {
     let path = write_index(&default_index());
@@ -311,6 +315,7 @@ async fn install_conflict_when_already_installed() {
     std::fs::remove_file(&path).unwrap();
 }
 
+// spec: 007/FR-010
 #[tokio::test]
 async fn install_bad_gateway_when_plugin_host_fails() {
     let path = write_index(&default_index());
@@ -333,6 +338,7 @@ async fn install_bad_gateway_when_plugin_host_fails() {
     std::fs::remove_file(&path).unwrap();
 }
 
+// spec: 007/FR-010
 #[tokio::test]
 async fn install_created_on_success() {
     let path = write_index(&default_index());
@@ -428,6 +434,7 @@ async fn delete_not_found_unknown() {
     std::fs::remove_file(&path).unwrap();
 }
 
+// spec: 007/FR-012
 #[tokio::test]
 async fn delete_forbidden_non_community_source() {
     let path = write_index(&default_index());
@@ -451,6 +458,7 @@ async fn delete_forbidden_non_community_source() {
     std::fs::remove_file(&path).unwrap();
 }
 
+// spec: 007/FR-012
 #[tokio::test]
 async fn delete_no_content_removes_source() {
     let path = write_index(&default_index());
