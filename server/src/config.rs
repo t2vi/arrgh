@@ -43,6 +43,12 @@ pub struct Config {
     /// Per-source Discover search bound. Deliberately not read from env —
     /// always `DISCOVER_SOURCE_TIMEOUT`; only tests override it (spec 021).
     pub discover_source_timeout: std::time::Duration,
+    /// Whether a successful restore calls `std::process::exit` (spec 035). Always `true` in
+    /// production — `docker-compose.yml`'s `restart: unless-stopped` brings the process back up
+    /// against the just-restored file. Deliberately not read from env, same as
+    /// `discover_source_timeout` above; only tests set this `false`, since a real exit would
+    /// kill the whole test binary rather than just the one test.
+    pub restart_on_restore: bool,
 }
 
 impl Config {
@@ -80,6 +86,7 @@ impl Config {
             ),
             jwt_secret,
             discover_source_timeout: crate::api::discover::DISCOVER_SOURCE_TIMEOUT,
+            restart_on_restore: true,
         })
     }
 }

@@ -15,6 +15,7 @@ const mockSettings = {
   download_workers: 3, index_interval_hours: 6, auto_download: true,
   reader_mode: 'paged' as const, download_dir: './downloads',
   trending_per_source: 10, check_for_updates: true,
+  backup_dir: '', backup_interval_hours: 24,
 }
 
 beforeEach(() => {

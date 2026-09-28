@@ -4,6 +4,7 @@ use tower_http::trace::{DefaultMakeSpan, TraceLayer};
 use crate::state::AppState;
 
 pub mod auth;
+pub mod backup;
 pub mod chapters;
 pub mod discover;
 pub mod logs;
@@ -35,6 +36,7 @@ pub fn router(state: AppState) -> Router {
         .nest("/api/queue", queue::routes())
         .nest("/api/media", media::routes())
         .nest("/api/plugins", plugins::routes())
+        .nest("/api/backups", backup::routes())
         // INFO-level span so failure lines (`response failed … 502`) carry the
         // method + URI at the default log level — without it they're undiagnosable.
         .layer(

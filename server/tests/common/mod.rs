@@ -134,6 +134,7 @@ async fn build_state_with(configure: impl FnOnce(&mut Config)) -> AppState {
     let mut config = Config {
         jwt_secret: Some(JWT_SECRET.into()),
         database_path: db_path.clone(),
+        restart_on_restore: false,
         ..Config::from_env().expect("default config")
     };
     configure(&mut config);

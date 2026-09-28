@@ -81,6 +81,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Settings | `PluginsSection` (spec 031) | version/unknown + origin; Update when newer; disabled + reason when blocked; failure reason shown; Revert only over a bundled copy; fallback/unavailable catalog notice | ✅ |
 | Settings | `SourcesSection` | add source 502 error → error message shown | ✅ |
 | Settings | `SourcesSection` | toggle source calls patchSource with flipped state | ✅ |
+| Settings | `BackupsStore` (spec 035, #251) | loads on construction, backupNow creates+reloads, friendly error on 422 (no destination), deleteBackup removes+reloads, restore/restoreUpload friendly errors for backup_too_new/invalid_backup | ✅ |
 
 ---
 
@@ -106,6 +107,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `sources.rs` | `seed_defaults_if_empty` (10 sources), `DEFAULT_SOURCES` includes royalroad @ priority 35 (spec 019) ✅ |
 | `update_checker.rs` | GitHub release JSON → `(version, html_url)` parsing |
 | `api/titles.rs`'s `patch_body_tests` | `PatchBody`'s tri-state `Option<Option<T>>` parsing for `reader_mode`/`download_dir` — absent vs. explicit `null` vs. a value are all distinguishable (an improvement over .NET's `JsonElement?`, which couldn't tell "absent" from "null" cleanly; see the module's doc comment) |
+| `backup.rs` (spec 035) | `backup_filename` shape (no colons), `is_backup_filename` accepts/rejects, `migration_max_version` is positive |
 
 ---
 
@@ -121,6 +123,8 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `queue.rs` | List/filter, admin-only clear-completed, owner-or-admin remove-or-cancel |
 | `downloader.rs` | Background worker: cbz/text download, multi-source priority fallback, `"downloading"` status while in flight, error messages include the failing URL, User-Agent header sent, `download_workers` honoured (2 → two items in flight at once, 1 → never more than one; GH #160) |
 | `scheduler.rs` (GH #200) | Scheduled re-sync: only chapters a sync newly finds are queued (never the backlog); per-title Always/Never override the global `auto_download`; global default off; interval from `index_interval_hours`, clamped 1–24 h |
+| `backup.rs` (spec 035, #251) | Manual backup creates a listed, valid SQLite file; refused (`422`) with no destination configured; list with no destination is `[]` not an error; restore from a listed backup swaps the live file in; restore rejects a schema-too-new backup and a non-SQLite file, live DB provably unchanged either way; restore of an unknown filename is `404`; restore-upload (multipart) success + invalid-file rejection; delete removes from disk and the list, unknown filename is `404`; every route admin-gated (401/403) |
+| `backup_scheduler.rs` (spec 035, #251) | `interval()` defaults to `DEFAULT_BACKUP_INTERVAL_HOURS` (24h) and reads the configured value; `tick()` with a configured destination produces a backup; `tick()` with no destination is a silent no-op |
 | `settings.rs`, `sources.rs` | KV settings CRUD + validation, source list/patch/delete, seeded bundled-source content types |
 | `discover.rs` (Royal Road, spec 019) | Royal Road leg in search results, leg failure non-fatal, NovelUpdates wins dedup, add stores `metadata_source=royalroad` + author from plugin meta + text chapters numbered by real number, no Sync Warning when Royal Road has no match (FR-009), web-shaped add body (`mangaupdates_id` + non-MU `source`) never stored as / deduped against a MangaUpdates id ✅ |
 | `chapter_sync.rs` (#173) | re-sync replaces a chapter's stale source_id when the source now reports a different one for the same chapter ✅ |

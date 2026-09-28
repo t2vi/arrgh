@@ -55,6 +55,8 @@ export interface AppSettings {
   download_dir: string
   trending_per_source: number
   check_for_updates: boolean
+  backup_dir: string
+  backup_interval_hours: number
 }
 
 export interface SyncLogEntry {

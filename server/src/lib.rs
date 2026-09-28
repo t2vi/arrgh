@@ -4,6 +4,8 @@
 
 pub mod api;
 pub mod auth;
+pub mod backup;
+pub mod backup_scheduler;
 pub mod chapters;
 pub mod config;
 pub mod content;
@@ -79,6 +81,7 @@ pub async fn run() -> anyhow::Result<()> {
         state.http.clone(),
         state.config.plugin_host_url.clone(),
     ));
+    tokio::spawn(backup_scheduler::run_loop(state.db.clone()));
     tokio::spawn(update_checker::run_loop(
         state.db.clone(),
         state.http.clone(),

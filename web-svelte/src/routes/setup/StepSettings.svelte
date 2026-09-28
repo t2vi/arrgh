@@ -19,6 +19,8 @@
     download_dir: './downloads',
     trending_per_source: 5,
     check_for_updates: false,
+    backup_dir: '',
+    backup_interval_hours: 24,
   }
 
   let workers = $state(DEFAULTS.download_workers)

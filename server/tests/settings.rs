@@ -179,6 +179,47 @@ async fn save_settings_no_auth_required() {
     assert_eq!(status, StatusCode::OK);
 }
 
+// spec: 035/FR-002, 035/FR-003
+#[tokio::test]
+async fn save_settings_updates_backup_dir_and_interval() {
+    let app = arrgh_server::api::router(common::build_state().await);
+    let (_, before) = send(&app, "GET", "/api/settings", None).await;
+    assert_eq!(before["backup_dir"], "");
+    assert_eq!(before["backup_interval_hours"], 24);
+
+    let (status, body) = send(
+        &app,
+        "POST",
+        "/api/settings",
+        Some(json!({ "backup_dir": "/data/backups", "backup_interval_hours": 12 })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["backup_dir"], "/data/backups");
+    assert_eq!(body["backup_interval_hours"], 12);
+}
+
+// spec: 035/FR-002
+#[tokio::test]
+async fn save_settings_allows_clearing_backup_dir_back_to_empty() {
+    let app = arrgh_server::api::router(common::build_state().await);
+    send(
+        &app,
+        "POST",
+        "/api/settings",
+        Some(json!({ "backup_dir": "/data/backups" })),
+    )
+    .await;
+    let (_, body) = send(
+        &app,
+        "POST",
+        "/api/settings",
+        Some(json!({ "backup_dir": "" })),
+    )
+    .await;
+    assert_eq!(body["backup_dir"], "");
+}
+
 // spec: 007/FR-001b
 #[tokio::test]
 async fn effective_download_dir_prefers_saved_setting_over_env() {
