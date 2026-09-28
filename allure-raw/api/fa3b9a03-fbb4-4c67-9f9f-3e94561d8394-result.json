@@ -1,11 +1,11 @@
 {
-  "uuid": "3cd54026-e582-4ab9-9a2e-8904ddd170d1",
+  "uuid": "fa3b9a03-fbb4-4c67-9f9f-3e94561d8394",
   "historyId": "API#tests/trending.hurl",
   "name": "tests/trending.hurl",
   "status": "passed",
   "stage": "finished",
-  "start": 1790600940529,
-  "stop": 1790600950416,
+  "start": 1790604088975,
+  "stop": 1790604092497,
   "labels": [
     {
       "name": "layer",
