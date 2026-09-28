@@ -1,11 +1,11 @@
 {
-  "uuid": "e55e1fe7-22c3-4a57-a852-e037d6c54064",
+  "uuid": "fe2db1fd-2b62-4b36-9f52-79744fb75ca5",
   "historyId": "API#tests/discover-search.hurl",
   "name": "tests/discover-search.hurl",
   "status": "passed",
   "stage": "finished",
-  "start": 1790569530360,
-  "stop": 1790569531838,
+  "start": 1790583603986,
+  "stop": 1790583605102,
   "labels": [
     {
       "name": "layer",
