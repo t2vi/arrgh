@@ -53,6 +53,12 @@ impl LogBuffer {
         buf.iter().rev().take(limit).rev().cloned().collect()
     }
 
+    /// Test seam — appends directly, bypassing the tracing layer (which
+    /// needs a live global subscriber to reach `on_event`).
+    pub fn append_for_test(&self, entry: LogEntry) {
+        self.append(entry);
+    }
+
     pub fn current_level(&self) -> String {
         self.level.read().unwrap().clone()
     }
@@ -138,6 +144,14 @@ mod tests {
 
     use super::*;
 
+    // spec: 008/FR-009
+    #[test]
+    fn new_seeds_level_from_initial_value() {
+        assert_eq!(LogBuffer::new("debug").current_level(), "DEBUG");
+        assert_eq!(LogBuffer::new("WARN").current_level(), "WARN");
+    }
+
+    // spec: 008/FR-001, 008/FR-004
     #[test]
     fn evicts_oldest_beyond_capacity() {
         let buf = LogBuffer::new("info");
@@ -155,6 +169,7 @@ mod tests {
         assert_eq!(recent.last().unwrap().message, (CAPACITY + 9).to_string());
     }
 
+    // spec: 008/FR-007
     #[test]
     fn set_level_rejects_unknown_value() {
         let buf = LogBuffer::new("info");
@@ -162,6 +177,7 @@ mod tests {
         assert_eq!(buf.current_level(), "INFO");
     }
 
+    // spec: 008/FR-006
     #[test]
     fn set_level_accepts_known_values_case_insensitive() {
         let buf = LogBuffer::new("info");
@@ -169,6 +185,7 @@ mod tests {
         assert_eq!(buf.current_level(), "DEBUG");
     }
 
+    // spec: 008/FR-010
     #[test]
     fn layer_captures_tracked_event_within_gate() {
         let buffer = LogBuffer::new("info");
