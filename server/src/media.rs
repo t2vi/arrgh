@@ -310,6 +310,7 @@ pub async fn clear_title_meta_local_path(pool: &SqlitePool, key: &str) -> sqlx::
 mod tests {
     use super::*;
 
+    // spec: 006/FR-002
     #[test]
     fn detect_content_type_jpeg() {
         assert_eq!(
@@ -381,6 +382,7 @@ mod tests {
         assert_eq!(&result[..2], &[0xFF, 0xD8]);
     }
 
+    // spec: 006/FR-002
     #[test]
     fn strip_jpeg_icc_strips_icc_segment() {
         let icc_payload = b"ICC_PROFILE\0fake icc data";
@@ -401,6 +403,7 @@ mod tests {
         haystack.windows(needle.len()).any(|w| w == needle)
     }
 
+    // spec: 006/FR-001
     #[test]
     fn is_image_known_extensions() {
         for name in [
@@ -471,6 +474,7 @@ mod tests {
     }
 
     #[tokio::test]
+    // spec: 006/FR-001
     async fn get_chapter_page_dir_reads_correct_file() {
         let dir = std::env::temp_dir().join(format!("arrgh-media-test-{}", uuid::Uuid::new_v4()));
         tokio::fs::create_dir_all(&dir).await.unwrap();
@@ -490,6 +494,7 @@ mod tests {
     }
 
     #[tokio::test]
+    // spec: 006/FR-001
     async fn get_chapter_page_dir_out_of_range_returns_none() {
         let dir = std::env::temp_dir().join(format!("arrgh-media-test-{}", uuid::Uuid::new_v4()));
         tokio::fs::create_dir_all(&dir).await.unwrap();
@@ -503,6 +508,7 @@ mod tests {
     }
 
     #[tokio::test]
+    // spec: 006/FR-001
     async fn get_chapter_page_zip_extracts_correct_entry() {
         let path =
             std::env::temp_dir().join(format!("arrgh-media-test-{}.cbz", uuid::Uuid::new_v4()));

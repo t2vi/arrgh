@@ -212,6 +212,7 @@ async fn get_chapter_not_found_explicit_hidden_from_user() {
 
 // ── GET /api/chapters/{id}/text ────────────────────────────────────────────
 
+// spec: 006/FR-006
 #[tokio::test]
 async fn get_chapter_text_bad_request_when_not_text_format() {
     let state = common::build_state().await;
@@ -232,6 +233,7 @@ async fn get_chapter_text_bad_request_when_not_text_format() {
     assert_eq!(status, StatusCode::BAD_REQUEST);
 }
 
+// spec: 006/FR-006
 #[tokio::test]
 async fn get_chapter_text_not_found_when_not_downloaded() {
     let state = common::build_state().await;
@@ -257,6 +259,7 @@ async fn get_chapter_text_not_found_when_not_downloaded() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 006/FR-006
 #[tokio::test]
 async fn get_chapter_text_not_found_when_file_gone() {
     let state = common::build_state().await;
@@ -282,6 +285,7 @@ async fn get_chapter_text_not_found_when_file_gone() {
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
 
+// spec: 006/FR-006
 #[tokio::test]
 async fn get_chapter_text_returns_content_when_file_exists() {
     let state = common::build_state().await;
