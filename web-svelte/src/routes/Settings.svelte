@@ -10,6 +10,7 @@
   import LogsSection from './settings/LogsSection.svelte'
   import ChangePasswordSection from './settings/ChangePasswordSection.svelte'
   import ClientSection from './settings/ClientSection.svelte'
+  import BackupSection from './settings/BackupSection.svelte'
 
   let _params: Record<string, string> = $props()
 
@@ -19,6 +20,7 @@
     { id: 'library', label: 'Library' },
     { id: 'users', label: 'Users' },
     { id: 'sources', label: 'Sources' },
+    { id: 'backups', label: 'Backups' },
     { id: 'logs', label: 'Logs' },
     { id: 'account', label: 'Account' },
   ]
@@ -73,6 +75,16 @@
         <div class="space-y-8">
           <SourcesSection />
           <PluginsSection />
+        </div>
+      {/if}
+
+      {#if store.tab === 'backups' && store.admin}
+        <div class="space-y-8">
+          {#if store.settings}
+            <BackupSection settings={store.settings} saving={store.saving} onSave={store.handleSave} />
+          {:else}
+            <p class="text-sm text-muted-foreground">Failed to load settings.</p>
+          {/if}
         </div>
       {/if}
 

@@ -24,6 +24,13 @@ pub const DOWNLOAD_DIR: &str = "download_dir";
 /// Results shown per trending lane (each lane is fed by one source).
 pub const TRENDING_PER_SOURCE: &str = "trending_per_source";
 pub const DEFAULT_TRENDING_PER_SOURCE: i64 = 5;
+/// Where manual/scheduled DB backups are written (spec 035). No default — no safe path can be
+/// guessed, unlike `DOWNLOAD_DIR`'s env-var fallback; backups simply don't happen until an admin
+/// sets this.
+pub const BACKUP_DIR: &str = "backup_dir";
+/// How often the scheduler takes an automatic DB backup, when `BACKUP_DIR` is set (spec 035).
+pub const BACKUP_INTERVAL_HOURS: &str = "backup_interval_hours";
+pub const DEFAULT_BACKUP_INTERVAL_HOURS: i64 = 24;
 
 /// Saved `download_dir` if set and non-empty, else the env/config default.
 pub async fn effective_download_dir(pool: &SqlitePool, env_default: &str) -> String {

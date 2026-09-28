@@ -71,6 +71,8 @@ Starts the Rust API server, Vite web server, plugin-host, and CloakBrowser toget
   per-chapter progress while it happens
 - **Open to new sources** — anyone can write a new source plugin without recompiling or
   redeploying arrgh itself (see [Sources](#sources))
+- **Never lose your library to a wiped install** — one-click and scheduled DB backups to a
+  destination you choose (point it at your NAS), restored in-app from Settings when you need them
 
 <details>
 <summary>Also under the hood</summary>

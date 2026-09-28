@@ -3,7 +3,7 @@ import { router } from './router.svelte'
 import { ROUTES } from './routes'
 import type { AppSettings } from './types'
 
-export type Tab = 'library' | 'users' | 'sources' | 'account' | 'logs'
+export type Tab = 'library' | 'users' | 'sources' | 'account' | 'logs' | 'backups'
 
 export class SettingsStore {
   admin = isAdmin()

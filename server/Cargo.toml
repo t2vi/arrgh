@@ -19,7 +19,7 @@ name = "arrgh-server"
 path = "src/main.rs"
 
 [dependencies]
-axum = "0.8"
+axum = { version = "0.8", features = ["multipart"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal"] }
 tower-http = { version = "0.6", features = ["trace"] }
 serde = { version = "1", features = ["derive"] }

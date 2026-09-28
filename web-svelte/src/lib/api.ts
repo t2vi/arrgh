@@ -77,6 +77,12 @@ export interface UserListItem {
   created_at: string
 }
 
+export interface BackupRow {
+  filename: string
+  created_at: string
+  size_bytes: number
+}
+
 export interface SourceRow {
   id: string
   name: string
@@ -306,6 +312,26 @@ export const api = {
   patchUser: (id: string, body: { role?: string; allow_explicit?: boolean; password?: string }) =>
     patch<void>(`/api/users/${id}`, body),
   deleteUser: (id: string) => del(`/api/users/${id}`),
+
+  // Backups (admin only)
+  listBackups: () => get<BackupRow[]>('/api/backups'),
+  createBackup: () => post<void>('/api/backups'),
+  deleteBackup: (filename: string) => del(`/api/backups/${filename}`),
+  restoreBackup: (filename: string) => post<void>(`/api/backups/${filename}/restore`),
+  restoreBackupUpload: async (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(base() + '/api/backups/restore-upload', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: form,
+    })
+    handle401(res.status)
+    if (!res.ok) {
+      const reason = await res.json().then((b) => b?.error, () => undefined)
+      throw new Error(`${res.status} ${reason || res.statusText}`)
+    }
+  },
 
   getNewReleases: () => get<NewReleaseItem[]>('/api/titles/new-releases'),
   getContinueReading: () => get<ContinueItem[]>('/api/progress/continue'),

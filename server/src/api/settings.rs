@@ -23,6 +23,8 @@ struct AppSettingsDto {
     download_dir: String,
     trending_per_source: i64,
     check_for_updates: bool,
+    backup_dir: String,
+    backup_interval_hours: i64,
 }
 
 async fn read_settings(state: &AppState) -> AppResult<AppSettingsDto> {
@@ -51,6 +53,11 @@ async fn read_settings(state: &AppState) -> AppResult<AppSettingsDto> {
             settings::DEFAULT_TRENDING_PER_SOURCE,
         ),
         check_for_updates: settings::parse_bool(get("check_for_updates"), false),
+        backup_dir: get(settings::BACKUP_DIR).unwrap_or("").to_string(),
+        backup_interval_hours: settings::parse_long(
+            get(settings::BACKUP_INTERVAL_HOURS),
+            settings::DEFAULT_BACKUP_INTERVAL_HOURS,
+        ),
     })
 }
 
@@ -67,6 +74,8 @@ struct SaveSettingsBody {
     download_dir: Option<String>,
     trending_per_source: Option<i64>,
     check_for_updates: Option<bool>,
+    backup_dir: Option<String>,
+    backup_interval_hours: Option<i64>,
 }
 
 async fn save_settings(
@@ -117,6 +126,15 @@ async fn save_settings(
             if v { "true" } else { "false" },
         )
         .await?;
+    }
+    if let Some(v) = &body.backup_dir {
+        // Unlike download_dir, an empty value is meaningful here — it's how an admin turns
+        // scheduled/manual backups back off (settings::BACKUP_DIR has no safe default to fall
+        // back to).
+        settings::set(&state.db, settings::BACKUP_DIR, v.trim()).await?;
+    }
+    if let Some(v) = body.backup_interval_hours {
+        settings::set(&state.db, settings::BACKUP_INTERVAL_HOURS, &v.to_string()).await?;
     }
 
     Ok(Json(read_settings(&state).await?))
