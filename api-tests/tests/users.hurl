@@ -10,7 +10,7 @@ Authorization: Bearer {{token}}
 HTTP 200
 [Asserts]
 jsonpath "$" isCollection
-jsonpath "$[?(@.username=='test-admin')].username" == "test-admin"
+body contains "\"username\":\"test-admin\""
 
 
 # ── Own id, for the "can't delete self" check below ───────────────────────────
@@ -62,10 +62,9 @@ GET {{base}}/api/users
 Authorization: Bearer {{token}}
 HTTP 200
 [Captures]
-member_id: jsonpath "$[?(@.username=='users-test-member')].id"
+member_id: regex "\"id\":\"([^\"]+)\",\"username\":\"users-test-member\""
 [Asserts]
-jsonpath "$[?(@.username=='users-test-member')].role" == "member"
-jsonpath "$[?(@.username=='users-test-member')].allow_explicit" == false
+body contains "\"username\":\"users-test-member\",\"role\":\"member\",\"allow_explicit\":false"
 
 
 # spec: 003/FR-008
@@ -123,8 +122,7 @@ GET {{base}}/api/users
 Authorization: Bearer {{token}}
 HTTP 200
 [Asserts]
-jsonpath "$[?(@.username=='users-test-member')].role" == "admin"
-jsonpath "$[?(@.username=='users-test-member')].allow_explicit" == true
+body contains "\"username\":\"users-test-member\",\"role\":\"admin\",\"allow_explicit\":true"
 
 # The password change took — old password now rejected, new one works
 POST {{base}}/api/auth/login
