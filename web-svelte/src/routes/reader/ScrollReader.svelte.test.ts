@@ -22,6 +22,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+// spec: 012/FR-001, 012/FR-002, 012/FR-003, 012/FR-004, 015/FR-004
 describe('ScrollReader — page tracking does not fight the user scroll', () => {
   it('applies initialPage once on open, then leaves scrollTop alone on later page-seen updates', () => {
     const onPageSeen = vi.fn()

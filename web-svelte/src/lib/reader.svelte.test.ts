@@ -33,6 +33,7 @@ beforeEach(() => {
   vi.mocked(api.getTitle).mockResolvedValue({ id: 'title1' } as never)
   vi.mocked(api.listChapters).mockResolvedValue([])
   vi.mocked(api.downloadChapter).mockResolvedValue(undefined as never)
+  vi.mocked(api.updateProgress).mockResolvedValue(undefined as never)
 })
 
 afterEach(() => {
@@ -50,6 +51,7 @@ function createStore() {
   return { store, cleanup }
 }
 
+// spec: 013/FR-001, 013/FR-002, 013/FR-003, 013/FR-005, 015/FR-005
 describe('ReaderStore — triggers a download instead of leaving a blank chapter', () => {
   it('triggers a download and sets chapterDownloading for an undownloaded, sourced chapter', async () => {
     vi.mocked(api.getChapter).mockResolvedValue(chapter({ downloaded: false, has_sources: true }))
@@ -80,6 +82,7 @@ describe('ReaderStore — triggers a download instead of leaving a blank chapter
     cleanup()
   })
 
+  // spec: 013/FR-004, 015/FR-007
   it('never triggers a download for a chapter with no source, and marks it unavailable', async () => {
     vi.mocked(api.getChapter).mockResolvedValue(chapter({ downloaded: false, has_sources: false }))
     const { store, cleanup } = createStore()
@@ -99,6 +102,94 @@ describe('ReaderStore — triggers a download instead of leaving a blank chapter
     await vi.waitFor(() => expect(store.chapter).toBeDefined())
     expect(api.downloadChapter).not.toHaveBeenCalled()
     expect(store.chapterDownloading).toBe(false)
+    cleanup()
+  })
+})
+
+// spec: 015/FR-002
+describe('ReaderStore — paged navigation', () => {
+  it('goTo clamps to the known page range and persists the new position', async () => {
+    vi.mocked(api.getChapter).mockResolvedValue(chapter({ page_count: 10 }))
+    const { store, cleanup } = createStore()
+    store.load('ch1')
+    await vi.waitFor(() => expect(store.chapter).toBeDefined())
+
+    store.goTo(20)
+    expect(store.page).toBe(9)
+    expect(api.updateProgress).toHaveBeenCalledWith('ch1', 9, true)
+
+    store.goTo(-5)
+    expect(store.page).toBe(0)
+    expect(api.updateProgress).toHaveBeenCalledWith('ch1', 0, false)
+    cleanup()
+  })
+
+  it('ArrowRight/ArrowLeft advance and retreat one page in paged mode', async () => {
+    vi.mocked(api.getChapter).mockResolvedValue(chapter({ page_count: 10 }))
+    vi.mocked(api.getSettings).mockResolvedValue({ reader_mode: 'paged' } as never)
+    const { store, cleanup } = createStore()
+    store.load('ch1')
+    await vi.waitFor(() => expect(store.chapter).toBeDefined())
+    expect(store.effectiveMode).toBe('paged')
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+    expect(store.page).toBe(1)
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
+    expect(store.page).toBe(0)
+    cleanup()
+  })
+})
+
+// spec: 014/FR-001, 014/FR-003, 015/FR-001
+describe('ReaderStore — effective reader mode fallback chain', () => {
+  it('falls back to scroll when no per-title override and no global setting is saved', async () => {
+    vi.mocked(api.getChapter).mockResolvedValue(chapter())
+    vi.mocked(api.getTitle).mockResolvedValue({ id: 'title1', reader_mode: null } as never)
+    vi.mocked(api.getSettings).mockResolvedValue({ reader_mode: null } as never)
+    const { store, cleanup } = createStore()
+    store.load('ch1')
+
+    await vi.waitFor(() => expect(store.manga).toBeDefined())
+    expect(store.effectiveMode).toBe('scroll')
+    cleanup()
+  })
+
+  it('the global default is used when no per-title override exists', async () => {
+    vi.mocked(api.getChapter).mockResolvedValue(chapter())
+    vi.mocked(api.getTitle).mockResolvedValue({ id: 'title1', reader_mode: null } as never)
+    vi.mocked(api.getSettings).mockResolvedValue({ reader_mode: 'paged' } as never)
+    const { store, cleanup } = createStore()
+    store.load('ch1')
+
+    await vi.waitFor(() => expect(store.manga).toBeDefined())
+    expect(store.effectiveMode).toBe('paged')
+    cleanup()
+  })
+
+  it('a per-title override wins over the global default', async () => {
+    vi.mocked(api.getChapter).mockResolvedValue(chapter())
+    vi.mocked(api.getTitle).mockResolvedValue({ id: 'title1', reader_mode: 'paged' } as never)
+    vi.mocked(api.getSettings).mockResolvedValue({ reader_mode: 'scroll' } as never)
+    const { store, cleanup } = createStore()
+    store.load('ch1')
+
+    await vi.waitFor(() => expect(store.manga).toBeDefined())
+    expect(store.effectiveMode).toBe('paged')
+    cleanup()
+  })
+
+  it('an in-session toggle overrides the resolved mode and flips back without a reload', async () => {
+    vi.mocked(api.getChapter).mockResolvedValue(chapter())
+    vi.mocked(api.getTitle).mockResolvedValue({ id: 'title1', reader_mode: 'paged' } as never)
+    const { store, cleanup } = createStore()
+    store.load('ch1')
+    await vi.waitFor(() => expect(store.manga).toBeDefined())
+    expect(store.effectiveMode).toBe('paged')
+
+    store.toggleMode()
+    expect(store.effectiveMode).toBe('scroll')
+    store.toggleMode()
+    expect(store.effectiveMode).toBe('paged')
     cleanup()
   })
 })

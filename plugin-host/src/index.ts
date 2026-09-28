@@ -5,7 +5,7 @@ import path from 'path'
 import { chromium } from 'playwright-core'
 import type { Browser } from 'playwright-core'
 
-const PORT = parseInt(process.env.PORT ?? '4000', 10)
+export const PORT = parseInt(process.env.PORT ?? '4000', 10)
 const BUNDLES_DIR = process.env.BUNDLES_DIR ?? path.join(__dirname, '..', 'bundles')
 const COMMUNITY_BUNDLES_DIR = process.env.COMMUNITY_BUNDLES_DIR ?? path.join(__dirname, '..', 'community-bundles')
 const LANGS = (process.env.LANGUAGES ?? 'en').split(',').map((s) => s.trim()).filter(Boolean)

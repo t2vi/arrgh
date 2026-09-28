@@ -491,6 +491,7 @@ async fn sync_now(
     wait_for_sync_ready(state, t).await;
 }
 
+// spec: 030/FR-002, 019/FR-012
 #[tokio::test]
 async fn sync_renumbers_a_source_chapter_in_place() {
     let state = setup(RENUMBERED_JSON, false).await;
@@ -519,6 +520,7 @@ async fn sync_renumbers_a_source_chapter_in_place() {
     assert_eq!(n, 2.1);
 }
 
+// spec: 030/FR-002
 #[tokio::test]
 async fn sync_removes_stale_duplicate_left_by_old_numbering() {
     let state = setup(RENUMBERED_JSON, false).await;
@@ -548,6 +550,7 @@ async fn sync_removes_stale_duplicate_left_by_old_numbering() {
     assert_eq!(nums, vec![2.1, 2.31]);
 }
 
+// spec: 030/FR-002
 #[tokio::test]
 async fn sync_keeps_a_stale_duplicate_that_was_downloaded() {
     let state = setup(RENUMBERED_JSON, false).await;
