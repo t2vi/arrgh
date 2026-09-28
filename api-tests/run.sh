@@ -57,6 +57,10 @@ HURL_FILES=(
   tests/plugins.hurl
   tests/queue.hurl
   tests/logs.hurl
+  tests/users.hurl
+  tests/discover-search.hurl
+  tests/media.hurl
+  tests/progress.hurl
 )
 
 hurl \
