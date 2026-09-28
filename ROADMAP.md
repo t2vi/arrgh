@@ -1,7 +1,7 @@
 # *ARRgh Roadmap
 
 Items marked ✅ are shipped. 🔳 = planned. Open an issue to propose or claim one.
-Last updated for **v1.3.0** (2026-09-27). Per-release detail: [CHANGELOG.md](CHANGELOG.md).
+Last updated for **v1.4.0** (2026-09-28). Per-release detail: [CHANGELOG.md](CHANGELOG.md).
 
 ## **Platform**
 ✅ Backend rewritten in Rust (axum + sqlx), frontend in Svelte 5 — v1.0.0<br />
@@ -19,15 +19,15 @@ Last updated for **v1.3.0** (2026-09-27). Per-release detail: [CHANGELOG.md](CHA
 ✅ NovelFull, NovelFull.net, WuxiaWorld, Royal Road (novels) · nhentai (hentai)<br />
 ✅ Multi-source chapter pool with priority-ordered download fallback<br />
 ✅ Plugin call timeout — a hung source can't stall search, sync or downloads — v1.2.0<br />
-🔳 One repo per plugin + one-click plugin updates from Settings, with checksum verification and revert to bundled ([#199](https://github.com/t2vi/arrgh/issues/199))<br />
-🔳 Manually set an alternate title for source matching (e.g. a novel's other edition) ([#193](https://github.com/t2vi/arrgh/issues/193))<br />
+✅ One repo per plugin + one-click plugin updates from Settings, with checksum verification and revert to bundled — v1.4.0<br />
+✅ Manually set an alternate title for source matching (e.g. a novel's other edition) — v1.4.0<br />
 
 ## **Discover / Trending**
 ✅ Fan-out search across 7 authorities (MangaUpdates, AniList, MangaDex, NovelUpdates, WuxiaWorld, Royal Road, nhentai)<br />
 ✅ English-original novels via Royal Road — v1.2.0<br />
 ✅ Live per-source progress, results stream in as each source answers — v1.2.0<br />
 ✅ Trending lanes: Manga, Manhwa, Manhua, Adult Manhwa<br />
-🔳 Exact title matches ranked above partial matches ([#190](https://github.com/t2vi/arrgh/issues/190))<br />
+✅ Exact title matches ranked above partial matches — v1.4.0<br />
 🔳 Trending hentai lane<br />
 🔳 Trending novels lane<br />
 

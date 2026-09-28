@@ -227,8 +227,16 @@ Out-of-process HTTP tests against the running server. Catches: middleware orderi
 | `tests/plugins.hurl` | index list, install no-url → 400, delete bundled → 403 | ✅ |
 | `tests/queue.hurl` | list empty, clear completed idempotent, remove unknown → 404 | ✅ |
 | `tests/logs.hurl` | GET logs, GET level, PATCH level → debug → restore info | ✅ |
+| `tests/trending.hurl` | unauth → 401 per lane, 200 array per lane, adult-manhwa 403 for a fresh non-explicit member | ✅ |
+| `tests/users.hurl` | admin CRUD (list/create/patch/delete), non-admin 403, invalid role/password, delete-self 403, 404s | ✅ spec 003 |
+| `tests/discover-search.hurl` | search (fixture-backed query, not a real external site) + add, with cleanup | ✅ spec 004 |
+| `tests/media.hurl` | page/cover/meta-cover/proxy 404 paths; proves no auth required | ✅ spec 006 |
+| `tests/progress.hurl` | auth-gating + not-found/empty-list paths (upsert-success round trip needs a seeded chapter — covered at the integration layer instead, `server/tests/progress.rs`) | ✅ spec 006 |
 
-**Note**: Discover endpoints excluded from API layer — calls real external APIs. Covered by Rust integration tests with mocked HTTP (`server/tests/discover.rs`).
+**Note**: `discover-search.hurl`'s search test reuses the same "Fixture Manga" query e2e relies on
+(resolves through the fixture plugin-host in the test stack) rather than depending on any live,
+changeable external site. Broader discover fan-out behavior (authority ordering, dedup, timeouts)
+stays at the Rust integration layer with mocked HTTP (`server/tests/discover.rs`).
 
 **Local run** (requires docker-compose.test.yml stack running):
 ```bash
