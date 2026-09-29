@@ -1,0 +1,31 @@
+{
+  "uuid": "5887fae0-0149-4c02-8030-47963306994f",
+  "historyId": "API#tests/trending.hurl",
+  "name": "tests/trending.hurl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1790678134496,
+  "stop": 1790678137132,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "api"
+    },
+    {
+      "name": "tag",
+      "value": "API"
+    },
+    {
+      "name": "suite",
+      "value": "API"
+    },
+    {
+      "name": "feature",
+      "value": "API"
+    },
+    {
+      "name": "story",
+      "value": "tests/trending.hurl"
+    }
+  ]
+}
