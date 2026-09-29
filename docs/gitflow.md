@@ -11,16 +11,20 @@ deliberately diverges — keep it that way unless the team decides otherwise.)
 - **`feature/<name>`** — a new capability. Branch from `main`, PR back into `main`. Delete after merge.
 - **`bugfix/<name>`** — a fix for something already on `main`. Same flow.
 - **`chore/<name>`** — maintenance, infra, CI, deps — no user-facing change. Same flow.
+- **`release/vX.Y.Z`** — release prep only: version bump, `CHANGELOG.md`, `docs/releases/vX.Y.Z.md`. Branch from `main`, PR back into `main`, tag after merge. Never bump the version or write release notes inline on a `feature/`/`bugfix/`/`chore/` branch — even when the release is really just shipping one already-finished fix, cut a `release/` branch for that step.
 - **`hotfix/<name>`** — urgent production fix. Same flow; expedited review, tag a patch release immediately after merge.
 
-No `develop`, no `release/*` branches. Release prep happens on a normal
-`chore/` or `release/` topic branch and merges to `main` like anything else.
+No `develop` branch. Every topic branch above targets `main` directly.
+
+Always branch out before starting work — never keep editing on `main`, and don't reuse a
+branch left over from a different, unrelated prior task; cut a fresh one named for the task
+actually at hand.
 
 ## Topic flow
 
 ```bash
 git checkout main && git pull
-git checkout -b feature/<name>
+git checkout -b feature/<name>   # or bugfix/<name>, chore/<name> — same flow
 # ...work, commit...
 git push -u origin feature/<name>
 gh pr create --base main
@@ -34,10 +38,10 @@ Follow the **Feature-Ready Checklist** in `CLAUDE.md` (docs, build, tests,
 e2e, Docker, version bump, release notes). Then:
 
 ```bash
-git checkout -b chore/release-vX.Y.Z main
+git checkout -b release/vX.Y.Z main
 # bump [package] version in server/Cargo.toml, add docs/releases/vX.Y.Z.md,
 # add CHANGELOG.md row
-git push -u origin chore/release-vX.Y.Z
+git push -u origin release/vX.Y.Z
 gh pr create --base main --title "release vX.Y.Z"
 # after merge:
 git checkout main && git pull
