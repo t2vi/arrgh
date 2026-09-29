@@ -229,6 +229,254 @@ async fn search_excludes_adult_content_from_anilist_query_for_non_explicit_users
     assert_eq!(anilist_call.2["variables"]["isAdult"], false);
 }
 
+// ── Source-fallback search (spec 036, #254) ─────────────────────────────
+
+const NOVELFULL_HIT: &str = r#"[{"id":"dragon-slug","title":"A Dragon against the Whole World","cover_url":"https://novelfull.com/cover.webp","status":"ongoing"}]"#;
+
+/// mangaupdates succeeds empty (keeps the existing `any_succeeded` guard from tripping) without
+/// affecting the "novel" content type at all — every other authority path is left unregistered
+/// (404 → that leg fails, contributing nothing to "novel", same net effect as succeeding empty).
+const MANGAUPDATES_EMPTY: &[(&str, u16, &str)] = &[("POST /series/search", 200, "{}")];
+
+// spec: 036/FR-001
+#[tokio::test]
+async fn search_falls_back_to_a_source_when_every_novel_authority_is_empty() {
+    let (mock, _recorded) = common::start_recording_mock(&[
+        ("POST /series/search", 200, "{}"),
+        ("GET /novelfull/search", 200, NOVELFULL_HIT),
+    ])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    common::seed_external_source(&state, "novelfull", "novel", 100).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (status, body) = send(
+        &app,
+        "GET",
+        "/api/discover?q=Dragon+against+the+Whole+World",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let hit = body
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["source"] == "novelfull")
+        .expect("source-fallback result present");
+    assert_eq!(hit["title"], "A Dragon against the Whole World");
+    assert_eq!(hit["content_type"], "novel");
+    assert_eq!(hit["via_source"], true);
+    assert_eq!(hit["mangaupdates_id"], "dragon-slug");
+}
+
+// spec: 036/FR-007
+#[tokio::test]
+async fn search_fallback_result_is_addable_like_any_other_discover_result() {
+    let (mock, _recorded) = common::start_recording_mock(&[
+        ("POST /series/search", 200, "{}"),
+        ("GET /novelfull/search", 200, NOVELFULL_HIT),
+    ])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    common::seed_external_source(&state, "novelfull", "novel", 100).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (status, _) = send(
+        &app,
+        "POST",
+        "/api/discover/add",
+        Some(&token),
+        Some(json!({
+            "mangaupdates_id": "dragon-slug",
+            "title": "A Dragon against the Whole World",
+            "content_type": "novel",
+            "source": "novelfull",
+        })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    let (_, body) = send(
+        &app,
+        "GET",
+        "/api/discover?q=Dragon+against+the+Whole+World",
+        Some(&token),
+        None,
+    )
+    .await;
+    let hit = body
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["source"] == "novelfull")
+        .unwrap();
+    assert_eq!(hit["in_library"], true);
+}
+
+// spec: 036/FR-008
+#[tokio::test]
+async fn search_fallback_dedupes_the_same_title_from_two_sources() {
+    let (mock, _recorded) = common::start_recording_mock(&[
+        ("POST /series/search", 200, "{}"),
+        ("GET /novelfull/search", 200, NOVELFULL_HIT),
+        (
+            "GET /novelfullnet/search",
+            200,
+            r#"[{"id":"dragon-2","title":"A Dragon against the Whole World"}]"#,
+        ),
+    ])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    common::seed_external_source(&state, "novelfull", "novel", 100).await;
+    common::seed_external_source(&state, "novelfullnet", "novel", 200).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (_, body) = send(
+        &app,
+        "GET",
+        "/api/discover?q=Dragon+against+the+Whole+World",
+        Some(&token),
+        None,
+    )
+    .await;
+    let hits: Vec<&Value> = body
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|r| r["via_source"] == true)
+        .collect();
+    assert_eq!(hits.len(), 1, "two sources' same-title hits must dedupe");
+}
+
+// spec: 036/FR-003, 036/FR-009
+#[tokio::test]
+async fn search_fallback_skipped_when_no_source_configured_for_the_content_type() {
+    let (mock, _recorded) = common::start_recording_mock(MANGAUPDATES_EMPTY).await;
+    let state = common::build_discover_state(&mock).await;
+    // no external_sources row at all
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (status, body) = send(
+        &app,
+        "GET",
+        "/api/discover?q=nothing+configured",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|r| r["via_source"] != true));
+}
+
+// spec: 036/FR-002
+#[tokio::test]
+async fn search_never_queries_sources_when_an_authority_already_hit() {
+    let (mock, recorded) = common::start_recording_mock(&[(
+        "POST /series/search",
+        200,
+        r#"{"results":[{"record":{"series_id":"555","title":"Solo Leveling","type":"Manga","status":"Complete"}}]}"#,
+    )])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    // A source configured for "manga" — if fallback ran for manga (it must not, since
+    // mangaupdates already found something), this would be hit and recorded.
+    common::seed_external_source(&state, "some-manga-source", "manga", 100).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (_, body) = send(&app, "GET", "/api/discover?q=solo", Some(&token), None).await;
+    assert!(body
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|r| r["via_source"] != true));
+    let seen = recorded.lock().unwrap();
+    assert!(
+        !seen
+            .iter()
+            .any(|(_, path, _)| path.contains("some-manga-source")),
+        "no source should be queried for a content type an authority already answered"
+    );
+}
+
+// spec: 036/FR-005
+#[tokio::test]
+async fn search_fallback_one_broken_source_does_not_block_a_working_one() {
+    let (mock, _recorded) = common::start_recording_mock(&[
+        ("POST /series/search", 200, "{}"),
+        ("GET /broken-source/search", 500, "boom"),
+        ("GET /novelfull/search", 200, NOVELFULL_HIT),
+    ])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    common::seed_external_source(&state, "broken-source", "novel", 50).await;
+    common::seed_external_source(&state, "novelfull", "novel", 100).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (status, body) = send(
+        &app,
+        "GET",
+        "/api/discover?q=Dragon+against+the+Whole+World",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let hit = body
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["source"] == "novelfull");
+    assert!(hit.is_some(), "working source's result must still appear");
+}
+
+// spec: 036/FR-005
+#[tokio::test]
+async fn search_fallback_all_sources_failing_still_returns_200() {
+    let (mock, _recorded) = common::start_recording_mock(&[
+        ("POST /series/search", 200, "{}"),
+        ("GET /novelfull/search", 500, "boom"),
+    ])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    common::seed_external_source(&state, "novelfull", "novel", 100).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (status, body) = send(
+        &app,
+        "GET",
+        "/api/discover?q=Dragon+against+the+Whole+World",
+        Some(&token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|r| r["via_source"] != true));
+}
+
 // ── GET /api/discover/trending/* ────────────────────────────────────────
 
 #[tokio::test]

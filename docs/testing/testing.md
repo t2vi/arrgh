@@ -36,7 +36,7 @@ Legend: ✅ exists · 🟡 partial (some red TDD) · ⬜ planned · 🔴 known f
 | Library | `useLibrary` | fetch, totalPages, remove, removingId, syncing poll, sort default+setSort refetches, toggleContentType add/remove/resets page, toggleStatus add/remove, hasFilters, clearFilters, fetches with filter params, showFiltersl | ✅ |
 | Library | `MangaCard` | render, remove button, is_explicit=true→18+ pill shown, is_explicit=false→no 18+ pill | ✅ |
 | Discover | `useDiscover` | submit, blank guard, navigate, added tracking, source field, addingId lifecycle, addError, contentTypeFilter, filteredData, availableTypes (6 TDD ⬜) | 🟡 |
-| Discover | `SearchRow` | render, is_explicit=true→18+ badge shown, is_explicit=false→no 18+ badge, tag-based inference blocked, loading state, In Library, cover; missing cover → static placeholder + missing description → nothing (no fake loading pulse, spec 028) | ✅ |
+| Discover | `SearchRow` | render, is_explicit=true→18+ badge shown, is_explicit=false→no 18+ badge, tag-based inference blocked, loading state, In Library, cover; missing cover → static placeholder + missing description → nothing (no fake loading pulse, spec 028); `via_source`→"Found via source" badge shown/hidden (spec 036, #254) | ✅ |
 | Discover | `ContentTypeFilter` | render, hentai pill, novel pill, onChange (2 TDD ⬜) | 🟡 |
 | Discover | `SearchProgress` (spec 021) | renders exactly the server-provided sources (no hard-coded list), searching→pulsing violet, found→green + count, empty→grey "no results", error/timeout→amber with title, "Searching sources…"/"Results from…" heading, skeletons only when asked | ✅ |
 | Discover | `DiscoverStore` streaming (spec 021) | `sources` event → all searching; first `source` event shows results while still fetching, later ones replace; `done{ok:false}` → discovery-failed error; new submit aborts the old stream + ignores its late events (generation guard); leaving the page aborts | ✅ |
@@ -101,7 +101,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `settings.rs` | Numeric/bool parsing, trending clamp, reader-mode validation |
 | `content.rs` (GH #163) | `chapter_format_for`: novels → text, every other content type → pages |
 | `media.rs` | `detect_content_type`, `strip_jpeg_icc`, `is_image`, `root_domain_referer`, `get_chapter_page` (dir + cbz) |
-| `discover.rs` | `normalize_title`, `designated_authority`, `deduplicate`, `merge_fan_out` (incl. nhentai word-boundary upgrade), `title_matches`/`levenshtein`, `strip_search_qualifier`, `is_hentai_tag`, `filter_mu_scope`, Royal Road authority order + NU-wins dedup (spec 019) ✅ |
+| `discover.rs` | `normalize_title`, `designated_authority`, `deduplicate`, `merge_fan_out` (incl. nhentai word-boundary upgrade), `title_matches`/`levenshtein`, `strip_search_qualifier`, `is_hentai_tag`, `filter_mu_scope`, Royal Road authority order + NU-wins dedup (spec 019), `empty_content_types`/`source_hit_to_result` (spec 036, #254) ✅ |
 | `metadata/*.rs` | Per-authority response mapping (MangaUpdates, AniList, MangaDex, WuxiaWorld, Royal Road — spec 019 ✅) |
 | `plugins.rs` | `fetch_index` (file:// + missing-file) |
 | `sources.rs` | `seed_defaults_if_empty` (10 sources), `DEFAULT_SOURCES` includes royalroad @ priority 35 (spec 019) ✅ |
@@ -137,7 +137,7 @@ Framework: plain `#[test]`/`#[tokio::test]` inline in the module under test. Run
 | `deploy_docs.rs` | Every env var in the deploy docs/configmap is read by the container (spec 010 FR-008, #217) |
 | `media.rs` | Covered by `media.rs`'s unit tests + a manual smoke check (no dedicated integration file — no auth on this route group to exercise) |
 | `logs.rs`, `version.rs` | Log buffer read + level PATCH, version + update-available reporting |
-| `discover.rs` | Fan-out search across all authorities (dedup, ordering, partial-failure tolerance, nhentai upgrade), trending lanes (TTL + stale-serve), add-to-library, `match_sources` (fuzzy title match, alias match, per-source timeout/error handling, sync warnings); trending lane size follows `trending_per_source` (GH #203) |
+| `discover.rs` | Fan-out search across all authorities (dedup, ordering, partial-failure tolerance, nhentai upgrade), trending lanes (TTL + stale-serve), add-to-library, `match_sources` (fuzzy title match, alias match, per-source timeout/error handling, sync warnings); trending lane size follows `trending_per_source` (GH #203); source-fallback search (spec 036, #254): surfaces a result when every authority for a content type is empty, addable normally, dedupes across sources, never triggers when an authority already hit, one broken source doesn't block a working one or the overall request |
 | `schema_bootstrap.rs` | Fresh DB gets full schema; a DB missing `metadata_source`/`metadata_source_id` (pre-dates that column) gets patched; reconnecting to an already-migrated DB is a no-op |
 
 ---

@@ -29,6 +29,11 @@ pub struct DiscoverResult {
     pub source: String,
     #[serde(default)]
     pub is_explicit: bool,
+    /// `true` when this result came from querying a content type's configured source plugins
+    /// directly (spec 036, #254) rather than from a metadata authority — the UI marks these
+    /// distinctly since their metadata is typically thinner (no synopsis).
+    #[serde(default)]
+    pub via_source: bool,
 }
 
 // ── pure helpers ─────────────────────────────────────────────────────────
@@ -162,6 +167,60 @@ pub fn merge_fan_out(results: Vec<DiscoverResult>, query: &str) -> Vec<DiscoverR
         )
     });
     deduped
+}
+
+/// Which of `content::CONTENT_TYPES` have zero entries in `results` (spec 036/FR-001) — the
+/// content types source-fallback should be attempted for. `hentai` is only ever considered when
+/// `allow_explicit`, matching the existing nhentai leg's own gating.
+pub fn empty_content_types(results: &[DiscoverResult], allow_explicit: bool) -> Vec<&'static str> {
+    content::CONTENT_TYPES
+        .into_iter()
+        .filter(|ct| *ct != content::HENTAI || allow_explicit)
+        .filter(|ct| !results.iter().any(|r| r.content_type == *ct))
+        .collect()
+}
+
+/// One source plugin's raw `/search` JSON hit — same fields `match_sources` already tolerates
+/// being absent, plus the richer optional ones this codebase's source plugins already return
+/// (novelfull et al.) for a normal search response.
+#[derive(serde::Deserialize)]
+pub struct SourceSearchHit {
+    pub id: Option<String>,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub cover_url: Option<String>,
+    pub status: Option<String>,
+    pub author: Option<String>,
+    pub year: Option<i32>,
+    pub tags: Option<String>,
+}
+
+/// Maps one source's search hit into a `DiscoverResult` for source-fallback (spec 036/FR-001,
+/// FR-006). `content_type` is the content type being probed, not read from the hit itself — this
+/// codebase's source plugins don't reliably report their own content type, and the caller already
+/// knows which one it's asking about. Returns `None` for a hit missing an id or title, same
+/// leniency `match_sources`'s own `PluginSearchResult` already applies.
+pub fn source_hit_to_result(
+    hit: SourceSearchHit,
+    source_key: &str,
+    content_type: &str,
+) -> Option<DiscoverResult> {
+    let id = hit.id.filter(|s| !s.is_empty())?;
+    let title = hit.title.filter(|s| !s.is_empty())?;
+    Some(DiscoverResult {
+        mangaupdates_id: id,
+        title,
+        description: hit.description,
+        cover_url: hit.cover_url,
+        status: hit.status.unwrap_or_else(|| "unknown".to_string()),
+        author: hit.author,
+        year: hit.year,
+        tags: hit.tags,
+        content_type: content_type.to_string(),
+        source: source_key.to_string(),
+        via_source: true,
+        ..Default::default()
+    })
 }
 
 pub fn title_matches(a: &str, b: &str) -> bool {
@@ -653,6 +712,68 @@ mod tests {
         assert_eq!(designated_authority("hentai"), "nhentai");
         assert_eq!(designated_authority("manga"), "mangaupdates");
         assert_eq!(designated_authority("unknown"), "mangaupdates");
+    }
+
+    // spec: 036/FR-001
+    #[test]
+    fn empty_content_types_finds_only_the_gaps() {
+        let results = vec![
+            result("mangaupdates", "A", content::MANGA),
+            result("anilist", "B", content::MANHWA),
+        ];
+        let empty = empty_content_types(&results, false);
+        assert!(empty.contains(&content::MANHUA));
+        assert!(empty.contains(&content::NOVEL));
+        assert!(!empty.contains(&content::MANGA));
+        assert!(!empty.contains(&content::MANHWA));
+        assert!(!empty.contains(&content::HENTAI), "not explicit-allowed");
+    }
+
+    // spec: 036/FR-001
+    #[test]
+    fn empty_content_types_includes_hentai_only_when_explicit_allowed() {
+        let empty = empty_content_types(&[], true);
+        assert!(empty.contains(&content::HENTAI));
+        let empty = empty_content_types(&[], false);
+        assert!(!empty.contains(&content::HENTAI));
+    }
+
+    // spec: 036/FR-001, 036/FR-006
+    #[test]
+    fn source_hit_to_result_maps_fields_and_marks_via_source() {
+        let hit = SourceSearchHit {
+            id: Some("dragon-slug".to_string()),
+            title: Some("A Dragon against the Whole World".to_string()),
+            description: None,
+            cover_url: Some("https://novelfull.com/cover.webp".to_string()),
+            status: Some("ongoing".to_string()),
+            author: Some("Some Author".to_string()),
+            year: None,
+            tags: None,
+        };
+        let r = source_hit_to_result(hit, "novelfull", content::NOVEL).unwrap();
+        assert_eq!(r.mangaupdates_id, "dragon-slug");
+        assert_eq!(r.title, "A Dragon against the Whole World");
+        assert_eq!(r.source, "novelfull");
+        assert_eq!(r.content_type, content::NOVEL);
+        assert!(r.via_source);
+        assert_eq!(r.status, "ongoing");
+    }
+
+    // spec: 036/FR-001
+    #[test]
+    fn source_hit_to_result_rejects_missing_id_or_title() {
+        let base = SourceSearchHit {
+            id: None,
+            title: Some("X".to_string()),
+            description: None,
+            cover_url: None,
+            status: None,
+            author: None,
+            year: None,
+            tags: None,
+        };
+        assert!(source_hit_to_result(base, "novelfull", content::NOVEL).is_none());
     }
 
     // spec: 004/FR-004

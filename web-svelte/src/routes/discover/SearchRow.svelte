@@ -48,6 +48,15 @@
       {#if result.status && result.status !== 'unknown'}
         <Badge variant="secondary" class="capitalize text-xs">{result.status}</Badge>
       {/if}
+      {#if result.via_source}
+        <span
+          data-testid="via-source-badge"
+          class="inline-flex items-center px-1.5 py-px rounded text-[10px] font-bold bg-muted text-muted-foreground"
+          title="Found by searching {result.source} directly — no metadata authority catalogs this title"
+        >
+          Found via source
+        </span>
+      {/if}
       {#if result.author}
         <span class="text-xs text-muted-foreground">{result.author}</span>
       {/if}

@@ -26,6 +26,7 @@ use crate::discover::{self, DiscoverResult};
 use crate::error::{AppError, AppResult};
 use crate::metadata;
 use crate::settings;
+use crate::sources;
 use crate::state::AppState;
 use crate::titles;
 
@@ -186,9 +187,82 @@ async fn search(
         return Err(AppError::BadGateway);
     }
 
-    let merged = discover::merge_fan_out(raw, &query.q);
+    let mut merged = discover::merge_fan_out(raw, &query.q);
+    merged.extend(source_fallback_results(&state, &query.q, &merged, claims.allow_explicit).await);
     let results = enrich_and_check_library(&state.db, &claims.user_id, merged).await?;
     Ok(Json(results))
+}
+
+/// Source-fallback search (spec 036, #254): for every content type the authority fan-out came
+/// back with zero results for, query that content type's configured sources directly — the same
+/// list `discover::match_sources` already uses post-add — and return whatever they find, marked
+/// `via_source: true`. Bounded to the empty-content-type case only (FR-002): a content type an
+/// authority already answered never triggers a source query.
+async fn source_fallback_results(
+    state: &AppState,
+    query: &str,
+    already_found: &[DiscoverResult],
+    allow_explicit: bool,
+) -> Vec<DiscoverResult> {
+    let mut out = Vec::new();
+    for content_type in discover::empty_content_types(already_found, allow_explicit) {
+        let include_hentai = content_type == content::MANGA && allow_explicit;
+        let Ok(candidates) =
+            sources::matching_for_content_type(&state.db, content_type, include_hentai).await
+        else {
+            continue;
+        };
+        if candidates.is_empty() {
+            continue;
+        }
+
+        let hits =
+            join_all(
+                candidates.into_iter().map(|(source_key, _priority)| {
+                    let http = state.http.clone();
+                    let plugin_host_url = state.config.plugin_host_url.clone();
+                    let q = query.to_string();
+                    async move {
+                        source_search(http, plugin_host_url, source_key, q, content_type).await
+                    }
+                }),
+            )
+            .await;
+
+        let content_type_results: Vec<DiscoverResult> = hits.into_iter().flatten().collect();
+        out.extend(discover::deduplicate(content_type_results));
+    }
+    out
+}
+
+/// One source's `GET {plugin_host}/{source}/search?q=...` leg — same URL shape and soft-fail
+/// behavior (timeout/connect/non-success status/unparseable body all just contribute zero
+/// results) as `discover::match_sources`'s existing post-add source search.
+async fn source_search(
+    http: reqwest::Client,
+    plugin_host_url: String,
+    source_key: String,
+    q: String,
+    content_type: &str,
+) -> Vec<DiscoverResult> {
+    let url = format!(
+        "{}/{}/search?q={}",
+        plugin_host_url.trim_end_matches('/'),
+        source_key,
+        urlencoding::encode(&q)
+    );
+    let Ok(resp) = http.get(&url).send().await else {
+        return Vec::new();
+    };
+    if !resp.status().is_success() {
+        return Vec::new();
+    }
+    let Ok(hits) = resp.json::<Vec<discover::SourceSearchHit>>().await else {
+        return Vec::new();
+    };
+    hits.into_iter()
+        .filter_map(|h| discover::source_hit_to_result(h, &source_key, content_type))
+        .collect()
 }
 
 // ── GET /stream — same fan-out, NDJSON per-source progress (spec 021) ────
