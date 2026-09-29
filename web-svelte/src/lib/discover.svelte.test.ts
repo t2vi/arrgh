@@ -205,7 +205,7 @@ describe('DiscoverStore', () => {
     })
 
     // spec: 021/FR-003, 021/FR-007, 021/FR-008
-    it('first source event shows its results while still fetching; a later one replaces them', async () => {
+    it('source events update per-source progress while fetching, but data stays held back until done', async () => {
       let emit!: (e: StreamEvent) => void
       vi.mocked(api.searchMangaStream).mockImplementation((_q, onEvent) => {
         emit = onEvent
@@ -217,14 +217,15 @@ describe('DiscoverStore', () => {
       await vi.waitFor(() => expect(emit).toBeDefined())
       emit({ type: 'sources', sources: SOURCES })
       emit({ type: 'source', key: 'anilist', status: 'found', count: 1, ms: 5, results: [anilistResult] as never })
-      expect(store.data).toEqual([anilistResult])
+      expect(store.data).toBeUndefined()
       expect(store.isFetching).toBe(true)
       expect(store.sourceState.get('anilist')).toEqual({ status: 'found', count: 1 })
       expect(store.sourceState.get('mangaupdates')).toEqual({ status: 'searching' })
 
       emit({ type: 'source', key: 'mangaupdates', status: 'found', count: 1, ms: 9, results: [mockResult, anilistResult] as never })
-      expect(store.data).toHaveLength(2)
+      expect(store.data).toBeUndefined()
       emit({ type: 'done', ok: true })
+      expect(store.data).toHaveLength(2)
       expect(store.isFetching).toBe(false)
       expect(store.searchError).toBeNull()
       cleanup()
@@ -262,8 +263,10 @@ describe('DiscoverStore', () => {
       expect(calls[0].signal.aborted).toBe(true)
 
       calls[0].emit({ type: 'source', key: 'mangaupdates', status: 'found', count: 1, ms: 1, results: [mockResult] as never })
+      calls[0].emit({ type: 'done', ok: true })
       expect(store.data).toBeUndefined()
       calls[1].emit({ type: 'source', key: 'anilist', status: 'found', count: 1, ms: 1, results: [anilistResult] as never })
+      calls[1].emit({ type: 'done', ok: true })
       expect(store.data).toEqual([anilistResult])
       cleanup()
     })

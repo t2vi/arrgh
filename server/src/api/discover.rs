@@ -377,6 +377,30 @@ async fn search_stream(
                 return;
             }
         }
+        // spec: 036/FR-001 — same fallback the one-shot endpoint applies, run once
+        // the fan-out has fully settled so `empty_content_types` sees final results.
+        let raw_final: Vec<DiscoverResult> = slots.iter().flatten().flatten().cloned().collect();
+        let mut merged_final = discover::merge_fan_out(raw_final, &query.q);
+        let fallback =
+            source_fallback_results(&state, &query.q, &merged_final, claims.allow_explicit).await;
+        if !fallback.is_empty() {
+            merged_final.extend(fallback);
+            match enrich_and_check_library(&state.db, &claims.user_id, merged_final).await {
+                Ok(r) => {
+                    results = r;
+                    let ms = started.elapsed().as_millis() as u64;
+                    send(StreamEvent::Source {
+                        key: "source_fallback",
+                        status: LegStatus::Found,
+                        count: results.len(),
+                        ms,
+                        results: results.clone(),
+                    });
+                }
+                Err(e) => tracing::warn!("discover stream: fallback enrich failed: {e:?}"),
+            }
+        }
+
         send(StreamEvent::Done { ok: any_succeeded });
     });
 

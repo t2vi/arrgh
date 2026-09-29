@@ -55,7 +55,13 @@ export class DiscoverStore {
       this.sources = []
       this.sourceState = new Map()
 
+      // Buffered here, not committed to `this.data` until the stream's `done` —
+      // results (including source-fallback) only render once every leg has
+      // actually settled, not mid-search.
+      let pending: SearchResult[] | undefined
+
       const finish = (error: string | null) => {
+        this.data = pending
         this.isFetching = false
         this.searchError = error
         collapse = setTimeout(() => (this.showProgress = false), 700)
@@ -73,7 +79,7 @@ export class DiscoverStore {
               this.sourceState = new Map(e.sources.map((s) => [s.key, { status: SEARCHING }]))
             } else if (e.type === 'source') {
               this.sourceState = new Map(this.sourceState).set(e.key, { status: e.status, count: e.count })
-              this.data = e.results
+              pending = e.results
             } else {
               finish(e.ok ? null : DISCOVERY_FAILED)
             }
@@ -82,7 +88,7 @@ export class DiscoverStore {
         )
         .then(() => {
           // Stream closed without a `done` event (connection dropped).
-          if (gen === this.#gen && this.isFetching) finish(this.data ? null : SEARCH_FAILED)
+          if (gen === this.#gen && this.isFetching) finish(pending ? null : SEARCH_FAILED)
         })
         .catch((err: unknown) => {
           if (gen !== this.#gen || ctrl.signal.aborted) return

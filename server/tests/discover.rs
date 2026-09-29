@@ -1637,6 +1637,51 @@ async fn stream_final_results_equal_one_shot() {
     assert_eq!(last.1["results"], one_shot);
 }
 
+/// Source-fallback (spec 036) is wired into `search()` but was missed on
+/// `search_stream()` — the endpoint the web UI actually calls exclusively —
+/// until this test caught the gap. Mirrors
+/// `search_falls_back_to_a_source_when_every_novel_authority_is_empty` but
+/// against `/stream`, asserting the extra `source_fallback` event arrives
+/// before `done`.
+// spec: 036/FR-001
+#[tokio::test]
+async fn stream_falls_back_to_a_source_when_every_novel_authority_is_empty() {
+    let (mock, _recorded) = common::start_recording_mock(&[
+        ("POST /series/search", 200, "{}"),
+        ("GET /novelfull/search", 200, NOVELFULL_HIT),
+    ])
+    .await;
+    let state = common::build_discover_state(&mock).await;
+    common::seed_external_source(&state, "novelfull", "novel", 100).await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state);
+
+    let (status, lines) = stream(
+        &app,
+        "/api/discover/stream?q=Dragon+against+the+Whole+World",
+        Some(&token),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    let fallback_idx = lines
+        .iter()
+        .position(|(_, e)| e["type"] == "source" && e["key"] == "source_fallback")
+        .expect("a source_fallback event before done");
+    let done_idx = lines.iter().position(|(_, e)| e["type"] == "done").unwrap();
+    assert!(fallback_idx < done_idx);
+
+    let hit = lines[fallback_idx].1["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["source"] == "novelfull")
+        .expect("novelfull hit present in the fallback event's results");
+    assert_eq!(hit["title"], "A Dragon against the Whole World");
+    assert_eq!(hit["via_source"], true);
+}
+
 /// MangaDex answers 400 to requests without a User-Agent — the shared HTTP
 /// client must send one by default (found via the spec 021 source pills).
 #[tokio::test]
