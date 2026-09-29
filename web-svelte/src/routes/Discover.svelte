@@ -51,12 +51,13 @@
         <SearchProgress
           sources={store.sources}
           state={store.sourceState}
-          skeleton={store.isFetching && !store.data?.length}
+          skeleton={store.isFetching}
+          isFetching={store.isFetching}
         />
       {/if}
 
-      <!-- Results render as soon as any source has them, and update in place (spec 021). -->
-      {#if store.data && (store.data.length > 0 || !store.isFetching)}
+      <!-- Results render only once the stream fully settles, incl. source-fallback (spec 036). -->
+      {#if store.data}
         <div class="space-y-3">
           <ContentTypeFilter
             value={store.contentTypeFilter}

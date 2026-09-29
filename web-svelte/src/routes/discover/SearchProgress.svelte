@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Loader2 } from '@lucide/svelte'
   import Skeleton from '../../lib/components/ui/Skeleton.svelte'
   import { cn } from '../../lib/utils'
   import type { SourceInfo } from '../../lib/api'
@@ -8,17 +9,28 @@
     sources,
     state,
     skeleton = false,
-  }: { sources: SourceInfo[]; state: Map<string, SourceProgress>; skeleton?: boolean } = $props()
+    isFetching = false,
+  }: {
+    sources: SourceInfo[]
+    state: Map<string, SourceProgress>
+    skeleton?: boolean
+    isFetching?: boolean
+  } = $props()
 
   const TITLES: Record<string, string> = { empty: 'no results', error: 'error', timeout: 'timed out' }
 
   const statusOf = (key: string) => state.get(key)?.status ?? 'searching'
-  const anySearching = $derived(sources.some((s) => statusOf(s.key) === 'searching'))
+  // isFetching, not just the per-authority pills: the source-fallback leg (spec 036) keeps
+  // running after every authority pill has settled, with no pill of its own.
+  const anySearching = $derived(isFetching || sources.some((s) => statusOf(s.key) === 'searching'))
 </script>
 
 <div class="space-y-4">
   <div class="rounded-lg border border-border bg-card px-4 py-3">
-    <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+    <p class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+      {#if anySearching}
+        <Loader2 data-testid="search-spinner" class="w-3.5 h-3.5 animate-spin" />
+      {/if}
       {anySearching ? 'Searching sources…' : 'Results from…'}
     </p>
     <div class="flex flex-wrap gap-2">

@@ -4,6 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [v1.5.2](docs/releases/v1.5.2.md) | 2026-09-29 | Discover source-fallback (#254) fixed on the streaming endpoint the web app actually uses; Discover no longer shows a partial result mid-search; Royal Road relevance filter (#255) |
 | [v1.5.1](docs/releases/v1.5.1.md) | 2026-09-29 | Discover source-fallback search — a title only a configured source has (no authority catalogs it) is now findable and addable (#254) |
 | [v1.5.0](docs/releases/v1.5.0.md) | 2026-09-28 | DB backup + in-app restore (manual & scheduled, destination-aware, reject-too-new guard), Home page empty-library greeting fix |
 | [v1.4.0](docs/releases/v1.4.0.md) | 2026-09-28 | Title aliases for source matching, Discover exact-match ranking fix, New Releases backlog fix, one repo per plugin (all phases), full spec-traceability pass + Hurl coverage for users/discover/media/progress |
