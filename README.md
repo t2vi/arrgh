@@ -52,6 +52,9 @@ Starts the Rust API server, Vite web server, plugin-host, and CloakBrowser toget
 - **Search once, find it everywhere** — one search box fans out across 7 sites (MangaUpdates,
   AniList, MangaDex, NovelUpdates, WuxiaWorld, Royal Road, nhentai) and dedupes the results, so
   you're not scrolling past the same series ten times under ten different covers
+- **If it's on your source, you can find it** — a title none of those 7 sites has catalogued yet
+  is still findable by searching your own configured sources directly, marked distinctly so you
+  know its details are thinner than usual
 - **Your whole reading list in one place** — manga, manhwa, manhua, translated novels,
   English-original web novels, and hentai, tracked side by side instead of six different bookmark folders
 - **Never miss a chapter** — arrgh checks your sources on a schedule and can download new

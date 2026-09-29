@@ -14,6 +14,8 @@ export interface SearchResult {
   library_id: string | null
   source: string
   is_explicit: boolean
+  /** Found by querying a source plugin directly (spec 036, #254) rather than a metadata authority. */
+  via_source?: boolean
 }
 
 export interface QueueItem {

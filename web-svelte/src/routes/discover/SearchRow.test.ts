@@ -74,6 +74,18 @@ describe('SearchRow', () => {
     expect(screen.getByText('18+')).toBeInTheDocument()
   })
 
+  // spec: 036/FR-006
+  it('shows the found-via-source badge when via_source is true', () => {
+    render(SearchRow, baseProps({ result: makeResult({ via_source: true, source: 'novelfull' }) }))
+    expect(screen.getByText('Found via source')).toBeInTheDocument()
+  })
+
+  // spec: 036/FR-006
+  it('does not show the found-via-source badge when via_source is absent', () => {
+    render(SearchRow, baseProps())
+    expect(screen.queryByText('Found via source')).not.toBeInTheDocument()
+  })
+
   it('shows Add button when not in library', () => {
     render(SearchRow, baseProps({ inLibrary: false }))
     expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument()
