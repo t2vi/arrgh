@@ -37,6 +37,12 @@ else
   bad "ponytail plugin not enabled in ~/.claude/settings.json"
 fi
 
+if grep -q '"context-mode@context-mode": true' ~/.claude/settings.json 2>/dev/null; then
+  ok "context-mode plugin enabled"
+else
+  bad "context-mode plugin not enabled — /plugin marketplace add mksglu/context-mode, then /plugin install context-mode@context-mode"
+fi
+
 if [ -d ~/.claude/skills/graphify ]; then
   ok "graphify skill installed"
 else
