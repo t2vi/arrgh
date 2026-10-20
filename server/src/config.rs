@@ -38,7 +38,8 @@ pub struct Config {
     pub github_releases_url: String,
     /// Download target dir (`DownloadDir`).
     pub download_dir: String,
-    /// JWT signing secret (`JwtSecret`). Required from S2 on; optional now.
+    /// JWT signing secret (`JwtSecret`, else `JWT_SECRET`). `from_env` refuses to start without
+    /// one (spec 003/FR-018); still an `Option` so tests can build a `Config` without auth.
     pub jwt_secret: Option<String>,
     /// Per-source Discover search bound. Deliberately not read from env —
     /// always `DISCOVER_SOURCE_TIMEOUT`; only tests override it (spec 021).
@@ -53,13 +54,23 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> anyhow::Result<Self> {
-        let bind = std::env::var("RUST_BIND")
-            .unwrap_or_else(|_| "127.0.0.1:3001".into())
-            .parse()?;
+        Self::from_lookup(|k| std::env::var(k).ok())
+    }
 
+    /// `from_env` over an injectable lookup — the unit-test seam for env parsing.
+    pub fn from_lookup(get: impl Fn(&str) -> Option<String>) -> anyhow::Result<Self> {
+        let env_or = |key: &str, default: &str| get(key).unwrap_or_else(|| default.to_string());
+        let env_opt = |key: &str| get(key).filter(|v| !v.is_empty());
+
+        // spec 016/FR-006: an unparseable RUST_BIND stops startup, never falls back.
+        let bind = env_or("RUST_BIND", "127.0.0.1:3001")
+            .parse()
+            .map_err(|e| anyhow::anyhow!("RUST_BIND is not a valid host:port address: {e}"))?;
+
+        // spec 003/FR-018: no secret → refuse to boot (Docker's entrypoint always sets one).
         let jwt_secret = env_opt("JwtSecret").or_else(|| env_opt("JWT_SECRET"));
         if jwt_secret.is_none() {
-            tracing::warn!("JwtSecret not set — fine for S0, required once auth (S2) lands");
+            anyhow::bail!("JwtSecret (or JWT_SECRET) is required — set it to any non-empty string");
         }
 
         Ok(Self {
@@ -91,10 +102,61 @@ impl Config {
     }
 }
 
-fn env_or(key: &str, default: &str) -> String {
-    std::env::var(key).unwrap_or_else(|_| default.to_string())
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
 
-fn env_opt(key: &str) -> Option<String> {
-    std::env::var(key).ok().filter(|v| !v.is_empty())
+    fn cfg(vars: &[(&str, &str)]) -> anyhow::Result<Config> {
+        let env: HashMap<String, String> = vars
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.to_string()))
+            .collect();
+        Config::from_lookup(|k| env.get(k).cloned())
+    }
+
+    // spec: 003/FR-018
+    #[test]
+    fn missing_jwt_secret_refuses_to_start() {
+        let err = cfg(&[]).unwrap_err().to_string();
+        assert!(err.contains("JwtSecret"), "{err}");
+        assert!(cfg(&[("JwtSecret", "")]).is_err(), "empty counts as unset");
+    }
+
+    // spec: 003/FR-018
+    #[test]
+    fn jwt_secret_precedence() {
+        let c = cfg(&[("JWT_SECRET", "fallback")]).unwrap();
+        assert_eq!(c.jwt_secret.as_deref(), Some("fallback"));
+        let c = cfg(&[("JwtSecret", "primary"), ("JWT_SECRET", "fallback")]).unwrap();
+        assert_eq!(c.jwt_secret.as_deref(), Some("primary"));
+    }
+
+    // spec: 016/FR-006
+    #[test]
+    fn rust_bind_default_override_and_invalid() {
+        assert_eq!(
+            cfg(&[("JwtSecret", "s")]).unwrap().bind.to_string(),
+            "127.0.0.1:3001"
+        );
+        let c = cfg(&[("JwtSecret", "s"), ("RUST_BIND", "0.0.0.0:9000")]).unwrap();
+        assert_eq!(c.bind.to_string(), "0.0.0.0:9000");
+        assert!(cfg(&[("JwtSecret", "s"), ("RUST_BIND", "not-an-addr")]).is_err());
+    }
+
+    // spec: 007/FR-016
+    #[test]
+    fn seed_default_sources_only_off_for_exact_false() {
+        let seed = |v: Option<&str>| {
+            let mut vars = vec![("JwtSecret", "s")];
+            if let Some(v) = v {
+                vars.push(("SeedDefaultSources", v));
+            }
+            cfg(&vars).unwrap().seed_default_sources
+        };
+        assert!(seed(None));
+        assert!(seed(Some("true")));
+        assert!(seed(Some("no")));
+        assert!(!seed(Some("false")));
+    }
 }
