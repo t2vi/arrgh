@@ -2,7 +2,6 @@ name: Docs-site
 
 on:
   push:
-    branches: [main]
     paths:
       - 'docs/**'
       - 'docs-site/**'
@@ -13,6 +12,8 @@ permissions:
 jobs:
   build-deploy:
     name: Build & deploy docs
+    # default branch only — the trigger can't name it (smoke test forbids hardcoding main)
+    if: ${{ github.ref_name == github.event.repository.default_branch }}
     runs-on: ubuntu-latest
     defaults:
       run:

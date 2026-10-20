@@ -2,12 +2,12 @@ name: Rust
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - 'server/**'
       - '.github/workflows/rust.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - 'server/**'
       - '.github/workflows/rust.yml'

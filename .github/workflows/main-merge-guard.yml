@@ -1,0 +1,32 @@
+name: Main merge guard
+
+# Gitflow: only release/* and hotfix/* branches may merge into the default branch —
+# never develop or a topic branch directly. Runs on every PR (no branches filter: a workflow
+# can't know a project's default branch); PRs into any other branch pass straight away. Make this
+# check required via branch protection on the default branch (scripts/repo-setup.sh, see
+# docs/gitflow.md "Merge guard"), or it only warns. Trunk projects don't install this file.
+# `edited` re-runs it when a PR's base is switched.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+permissions: {}
+
+jobs:
+  guard:
+    name: main-merge-guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Into the default branch, the source must be release/* or hotfix/*
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ "$BASE_REF" != "$DEFAULT_BRANCH" ]; then
+            echo "ok: $HEAD_REF -> $BASE_REF (not the default branch)"; exit 0
+          fi
+          case "$HEAD_REF" in
+            release/*|hotfix/*) echo "ok: $HEAD_REF -> $DEFAULT_BRANCH" ;;
+            *) echo "::error::$HEAD_REF -> $DEFAULT_BRANCH is not allowed. Only release/* or hotfix/* merge into $DEFAULT_BRANCH; target develop instead (docs/gitflow.md)."; exit 1 ;;
+          esac

@@ -18,6 +18,7 @@
 #   scripts/private-overlay.sh push            # push to the private remote (normal, non-forced)
 #   scripts/private-overlay.sh pull            # ff-only pull from the private remote
 #   scripts/private-overlay.sh restore         # re-checkout tracked paths missing from disk
+#   scripts/private-overlay.sh gitignore       # regenerate the managed .gitignore block from the conf
 #
 # `pull` only applies the delta between old/new HEAD — a file unchanged in the
 # overlay's own history but deleted from disk out-of-band (a `git clean` on the
@@ -46,6 +47,8 @@ CONF="$ROOT/.claude/private-overlay.conf"
 # shellcheck disable=SC1090
 . "$CONF"
 : "${PRIVATE_PATHS:?private-overlay: PRIVATE_PATHS unset in $CONF}"
+# the shipped conf's {{PRIVATE_REMOTE_URL}} placeholder means "not opted in yet", not a URL
+case "${PRIVATE_REMOTE:-}" in *"{{"*"}}"*) PRIVATE_REMOTE="" ;; esac
 
 p() { git --git-dir="$GD" --work-tree="$ROOT" "$@"; }
 
