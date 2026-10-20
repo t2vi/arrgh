@@ -1,0 +1,34 @@
+name: Scripts
+
+# Lints and smoke-tests scripts/*.sh (backup, private overlay, tooling check).
+# Smoke test runs in a throwaway clone — see scripts/smoke-test.sh.
+# ponytail: no paths filter — the smoke test reads files outside scripts/ (catalog, README, conf)
+# and a filter silently drifts behind it; the job takes seconds.
+# Pushes: only the repo's default branch (whatever it's called) and develop — checked in the job,
+# since a trigger filter can't know the default branch.
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  scripts:
+    name: shellcheck + smoke test
+    if: github.event_name == 'pull_request' || github.ref_name == github.event.repository.default_branch || github.ref_name == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # shellcheck is preinstalled on ubuntu-latest. Info-level notes (e.g. the
+      # deliberate `[ -e x ] && cmd || true` pattern) don't fail the build.
+      # Only the template's own scripts (TEMPLATE_SCRIPTS in scripts/smoke-test.sh) — a derived
+      # project's other scripts are its own business.
+      - name: shellcheck
+        run: shellcheck --severity=warning $(sed -n 's/^TEMPLATE_SCRIPTS="\(.*\)"$/\1/p' scripts/smoke-test.sh | tr ' ' '\n' | sed 's#^#scripts/#')
+
+      - name: smoke test
+        run: sh scripts/smoke-test.sh

@@ -226,6 +226,7 @@ Issues and PRs are welcome. A few things to know:
 
 - This is a personal project — I may be slow to review, but I do look at everything
 - Check open issues before starting large features; comment to claim one
+- Branch from `develop` and open PRs against `develop` — `main` only takes `release/*` and `hotfix/*` merges
 - Run `cargo test` (server), `npm test` in `web-svelte/` and `plugin-host/` before submitting
 - Follow the existing code style — see `CLAUDE.md` for dev setup
 
