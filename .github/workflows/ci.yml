@@ -90,6 +90,27 @@ jobs:
       - name: Fetch + verify bundled plugins (real network — catches a rotated/deleted release)
         run: npm run fetch:plugins
 
+  # ── Release gate: bundled plugin pins current (spec 031/FR-019, #262) ─────────────────────
+  # Only on PRs into main (release/*, hotfix/*) — a required check there, so a release can't
+  # bake a stale plugin into the GHCR image. Skipped (= passing) on PRs into develop.
+
+  plugin-pins:
+    name: Plugin pins current
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == github.event.repository.default_branch }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Every bundled pin matches its plugin's latest release
+        run: node scripts/fetch-plugin-bundles.mjs --check-latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # ── Allure report → GitHub Pages /test-reports/ ───────────────────────────
 
   report:
