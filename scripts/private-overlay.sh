@@ -65,7 +65,8 @@ OVERLAY_EXCLUDES=":(exclude,glob)**/node_modules/**
 stage() {
   # shellcheck disable=SC2086
   for x in $PRIVATE_PATHS; do
-    [ -e "$ROOT/$x" ] && p add -f "$x" $OVERLAY_EXCLUDES || true
+    # missing path → skip; a real `git add` failure must stop the commit
+    if [ -e "$ROOT/$x" ]; then p add -f "$x" $OVERLAY_EXCLUDES; fi
   done
   # never mirror machine-local Claude state, even when a parent dir is listed
   for x in ${PRIVATE_EXCLUDE:-.claude/settings.local.json .claude/projects .claude/worktrees .claude/scheduled_tasks.lock .claude/.credentials.json}; do
@@ -102,7 +103,7 @@ case "${1:-status}" in
       p config core.worktree ..
       printf '*\n' > "$GD/info/exclude"
       p symbolic-ref HEAD refs/heads/main
-      [ -n "${PRIVATE_REMOTE:-}" ] && p remote add origin "$PRIVATE_REMOTE" || true
+      if [ -n "${PRIVATE_REMOTE:-}" ]; then p remote add origin "$PRIVATE_REMOTE"; fi
       # init never fetches/checks out — run `private-overlay.sh pull` to adopt
       # existing remote history, or just `commit` + force-push to replace it.
     fi

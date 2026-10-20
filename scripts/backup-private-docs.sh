@@ -6,8 +6,10 @@
 # something overwrites them — see MIGRATE.md's own incident note for why
 # that's not hypothetical.
 #
-# Default path list is what OAIKit itself manages as "living docs" — extend
-# it below for anything else this project keeps out of git on purpose.
+# Default path list is what OAIKit itself manages as "living docs" — a
+# superset of PRIVATE_PATHS in .claude/private-overlay.conf (keep them in
+# sync), minus .claude's machine-local junk. Extend it below for anything
+# else this project keeps out of git on purpose.
 set -eu
 
 WORK_TREE="$(git rev-parse --show-toplevel)"
@@ -18,7 +20,10 @@ PATHS="
 CLAUDE.md
 CONTEXT.md
 docs/adr
+docs/agents
 .claude/profile.yaml
+.claude/private-overlay.conf
+.claude/skills
 .claude/settings.json
 .claude/settings.local.json
 .claude/skills-registry.yaml
