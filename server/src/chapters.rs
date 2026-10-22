@@ -142,7 +142,7 @@ pub async fn queue_download(
              error = NULL, \
              queued_by = excluded.queued_by, \
              updated_at = excluded.updated_at \
-         WHERE download_queue.status IN (?, ?)",
+         WHERE download_queue.status IN (?, ?, ?)",
     )
     .bind(uuid::Uuid::new_v4().to_string())
     .bind(chapter_id)
@@ -154,6 +154,9 @@ pub async fn queue_download(
     .bind(queued_by)
     .bind(crate::queue::STATUS_ERROR)
     .bind(crate::queue::STATUS_CANCELLED)
+    // `done` too: callers only get here for a chapter that's no longer downloaded
+    // (queue_candidate requires downloaded = 0), so its old done row is stale.
+    .bind(crate::queue::STATUS_DONE)
     .execute(pool)
     .await?;
     Ok(())

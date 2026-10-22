@@ -132,6 +132,57 @@ async fn serve_page_falls_back_to_source_and_clears_stale_local_state() {
     assert_eq!(local_path, None);
 }
 
+// spec: 006/FR-003
+// The scroll reader requests pages past the end before it knows the page count;
+// that must not wipe a chapter whose local copy is still on disk.
+#[tokio::test]
+async fn serve_page_out_of_range_on_existing_local_copy_is_404_and_keeps_downloaded_state() {
+    let state = common::build_state().await;
+    let t = common::seed_title(&state, "Naruto", false).await;
+    let c = common::seed_chapter(&state, &t, 1.0, true).await;
+
+    let dir = std::env::temp_dir().join(format!("arrgh-media-page-{}", uuid::Uuid::new_v4()));
+    tokio::fs::create_dir_all(&dir).await.unwrap();
+    tokio::fs::write(dir.join("01.jpg"), [0xFF, 0xD8, 0xFF, 0xE0])
+        .await
+        .unwrap();
+    sqlx::query("UPDATE chapters SET local_path = ? WHERE id = ?")
+        .bind(dir.to_str().unwrap())
+        .bind(&c)
+        .execute(&state.db)
+        .await
+        .unwrap();
+
+    let hits = Arc::new(AtomicUsize::new(0));
+    let mock = start_source_mock("proxied-bytes", hits.clone()).await;
+    sqlx::query(
+        "INSERT INTO external_sources (id, name, base_url, content_types, enabled, created_at, is_community, priority, source_key, default_explicit) \
+         VALUES (?, 'mock', ?, 'manga', 1, datetime('now'), 0, 1, 'mock', 0)",
+    )
+    .bind(uuid::Uuid::new_v4().to_string())
+    .bind(&mock)
+    .execute(&state.db)
+    .await
+    .unwrap();
+    common::add_chapter_source(&state, &c, "mock").await;
+
+    let app = arrgh_server::api::router(state.clone());
+    let (status, _, _) = send(&app, &format!("/api/media/page/{c}/5")).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(hits.load(Ordering::SeqCst), 0);
+
+    let (downloaded, local_path): (bool, Option<String>) =
+        sqlx::query_as("SELECT downloaded, local_path FROM chapters WHERE id = ?")
+            .bind(&c)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+    assert!(downloaded);
+    assert_eq!(local_path.as_deref(), dir.to_str());
+
+    tokio::fs::remove_dir_all(&dir).await.unwrap();
+}
+
 // spec: 006/FR-004
 #[tokio::test]
 async fn serve_page_tries_lower_priority_source_first_and_caches_resolved_list() {
