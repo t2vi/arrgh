@@ -1,6 +1,10 @@
 # *ARRgh!
 [![CI](https://github.com/t2vi/arrgh/actions/workflows/ci.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ci.yml) [![GHCR](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/ghcr.yml) [![Docs-site](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/docs-site.yml)
 [![E2e](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml/badge.svg)](https://github.com/t2vi/arrgh/actions/workflows/e2e.yml)
+<br />
+<a href="https://ko-fi.com/iamt2vi">
+  <img src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" alt="Support Me On Ko-Fi" height="35">
+</a>   
 
 **v1.5.2** · A self-hosted comics and web-novel manager, downloader, and reader for your home server. Supports manga, manhwa, manhua, novels (translated and English-original), and hentai from multiple sources via a plugin system. Built to run on a NAS, Raspberry Pi, or any always-on box.
 
