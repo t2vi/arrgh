@@ -45,6 +45,11 @@ async fn serve_page(
                     return Ok(bytes_response(ct, media::strip_jpeg_icc(&data)));
                 }
             }
+            // Local copy still on disk → this page just isn't in it (e.g. the scroll
+            // reader probing past the end). Don't wipe a good download over that.
+            if tokio::fs::try_exists(path).await.unwrap_or(false) {
+                return Err(AppError::NotFound);
+            }
         }
         media::reset_chapter_local(&state.db, &chapter_id).await?;
     }

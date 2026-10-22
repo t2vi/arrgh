@@ -483,6 +483,44 @@ async fn queue_download_requeues_when_previously_errored() {
     assert_eq!(error, None);
 }
 
+// spec: 005/FR-002
+// A chapter whose local copy was lost keeps its old `done` queue row; asking to
+// download it again must re-queue that row, not silently no-op.
+#[tokio::test]
+async fn queue_download_requeues_when_previously_done_but_no_longer_downloaded() {
+    let state = common::build_state().await;
+    let admin = common::seed_user(&state, "admin", "admin", true).await;
+    let t = common::seed_title(&state, "Naruto", false).await;
+    common::seed_user_title(&state, &admin.id, &t).await;
+    let c = common::seed_chapter(&state, &t, 1.0, false).await;
+    common::add_chapter_source(&state, &c, "mangadex").await;
+    common::seed_errored_queue_item(&state, &c, "Naruto", 1.0).await;
+    sqlx::query("UPDATE download_queue SET status = 'done', error = NULL WHERE chapter_id = ?")
+        .bind(&c)
+        .execute(&state.db)
+        .await
+        .unwrap();
+    let token = common::token_for(&admin);
+    let app = arrgh_server::api::router(state.clone());
+
+    let (status, _) = send(
+        &app,
+        "POST",
+        &format!("/api/chapters/{c}/download"),
+        Some(&token),
+    )
+    .await;
+    assert_eq!(status, StatusCode::ACCEPTED);
+
+    let status_val: String =
+        sqlx::query_scalar("SELECT status FROM download_queue WHERE chapter_id = ?")
+            .bind(&c)
+            .fetch_one(&state.db)
+            .await
+            .unwrap();
+    assert_eq!(status_val, "pending");
+}
+
 #[tokio::test]
 async fn queue_download_unauthorized_no_token() {
     let app = arrgh_server::api::router(common::build_state().await);
