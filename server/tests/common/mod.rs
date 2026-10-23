@@ -131,11 +131,12 @@ async fn build_state_with(configure: impl FnOnce(&mut Config)) -> AppState {
     let db_path = std::env::temp_dir().join(format!("arrgh-rust-test-{}.db", uuid::Uuid::new_v4()));
     let db_path = db_path.to_str().unwrap().to_string();
 
+    // Defaults only (never the developer's own env), plus the test secret from_env requires.
     let mut config = Config {
-        jwt_secret: Some(JWT_SECRET.into()),
         database_path: db_path.clone(),
         restart_on_restore: false,
-        ..Config::from_env().expect("default config")
+        ..Config::from_lookup(|k| (k == "JwtSecret").then(|| JWT_SECRET.into()))
+            .expect("default config")
     };
     configure(&mut config);
 

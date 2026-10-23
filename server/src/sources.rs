@@ -229,6 +229,7 @@ mod tests {
         assert!(DEFAULT_SOURCES.contains(&("novelfullnet", "NovelFull.net", "novel", false, 45)));
     }
 
+    // spec: 007/FR-016
     #[tokio::test]
     async fn seed_defaults_inserts_eleven_sources_once() {
         let pool = crate::state::connect_db(&format!(
