@@ -2,8 +2,10 @@ name: GHCR
 
 on:
   push:
+    # gitflow releases tag bare X.Y.Z; keep v* so older v-prefixed tags still build
     tags:
       - "v*"
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 env:
   REGISTRY: ghcr.io
