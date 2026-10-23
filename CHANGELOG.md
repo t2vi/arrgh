@@ -4,6 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [v1.5.4](docs/releases/v1.5.4.md) | 2026-10-23 | Hotfix: GHCR images build from bare `X.Y.Z` release tags (v1.5.3 shipped without an image); app unchanged from v1.5.3 |
 | [v1.5.3](docs/releases/v1.5.3.md) | 2026-10-22 | Opening a downloaded chapter no longer flips it back to not-downloaded (reader stuck on "Downloading chapter…"); `JwtSecret` required at startup; release-time plugin-pin check (#262) |
 | [v1.5.2](docs/releases/v1.5.2.md) | 2026-09-29 | Discover source-fallback (#254) fixed on the streaming endpoint the web app actually uses; Discover no longer shows a partial result mid-search; Royal Road relevance filter (#255) |
 | [v1.5.1](docs/releases/v1.5.1.md) | 2026-09-29 | Discover source-fallback search — a title only a configured source has (no authority catalogs it) is now findable and addable (#254) |
