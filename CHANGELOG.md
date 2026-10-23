@@ -4,6 +4,7 @@ Full release notes live in [`docs/releases/`](docs/releases/).
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [v1.5.3](docs/releases/v1.5.3.md) | 2026-10-22 | Opening a downloaded chapter no longer flips it back to not-downloaded (reader stuck on "Downloading chapter…"); `JwtSecret` required at startup; release-time plugin-pin check (#262) |
 | [v1.5.2](docs/releases/v1.5.2.md) | 2026-09-29 | Discover source-fallback (#254) fixed on the streaming endpoint the web app actually uses; Discover no longer shows a partial result mid-search; Royal Road relevance filter (#255) |
 | [v1.5.1](docs/releases/v1.5.1.md) | 2026-09-29 | Discover source-fallback search — a title only a configured source has (no authority catalogs it) is now findable and addable (#254) |
 | [v1.5.0](docs/releases/v1.5.0.md) | 2026-09-28 | DB backup + in-app restore (manual & scheduled, destination-aware, reject-too-new guard), Home page empty-library greeting fix |
