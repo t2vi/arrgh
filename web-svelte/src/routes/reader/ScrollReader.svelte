@@ -25,6 +25,11 @@
   let rendered = $state(Math.min(knownMax, (total ?? 0) > 0 ? (total as number) : 20))
   let failed = $state<Set<number>>(new Set())
   let loaded = $state<Set<number>>(new Set())
+  // Failures inside a known page count are transient (source proxy hiccup), not the end of
+  // the chapter — retry them instead of dropping the page until a remount (GH #274).
+  const MAX_AUTO_RETRIES = 3
+  let retries = $state<Record<number, number>>({})
+  let gaveUp = $state<Set<number>>(new Set())
   let containerEl: HTMLDivElement | undefined = $state()
   let seen = -1
 
@@ -63,6 +68,25 @@
     }
   }
 
+  function onPageError(p: number) {
+    if (total == null || p >= total) {
+      loaded = new Set(loaded).add(p)
+      if (p > 0) onLastPageFailed(p)
+      failed = new Set(failed).add(p)
+      return
+    }
+    const n = retries[p] ?? 0
+    if (n >= MAX_AUTO_RETRIES) gaveUp = new Set(gaveUp).add(p)
+    else setTimeout(() => retry(p), 1000 * (n + 1))
+  }
+
+  function retry(p: number) {
+    const next = new Set(gaveUp)
+    next.delete(p)
+    gaveUp = next
+    retries = { ...retries, [p]: (retries[p] ?? 0) + 1 }
+  }
+
   const pages = $derived(Array.from({ length: rendered }, (_, i) => i))
 </script>
 
@@ -71,22 +95,23 @@
     {#each pages as p (p)}
       {#if !failed.has(p)}
         <div class="relative w-full">
-          {#if !loaded.has(p)}
+          {#if gaveUp.has(p)}
+            <div class="w-full flex flex-col items-center justify-center gap-2 bg-white/5 text-sm text-muted-foreground" style="min-height: 480px">
+              <p>Page {p + 1} failed to load.</p>
+              <button class="text-primary hover:underline" aria-label={`Retry page ${p + 1}`} onclick={() => retry(p)}>Retry</button>
+            </div>
+          {:else if !loaded.has(p)}
             <div class="w-full flex items-center justify-center bg-white/5" style="min-height: 480px">
               <LoaderCircle class="w-7 h-7 animate-spin text-muted-foreground/50" />
             </div>
           {/if}
           <img
             data-page={p}
-            src={api.pageUrl(chapterId, p)}
+            src={retries[p] ? `${api.pageUrl(chapterId, p)}?retry=${retries[p]}` : api.pageUrl(chapterId, p)}
             alt={`Page ${p + 1}`}
             class={cn('w-full block select-none', !loaded.has(p) && 'h-0 overflow-hidden')}
             onload={() => (loaded = new Set(loaded).add(p))}
-            onerror={() => {
-              loaded = new Set(loaded).add(p)
-              if (p > 0) onLastPageFailed(p)
-              failed = new Set(failed).add(p)
-            }}
+            onerror={() => onPageError(p)}
           />
         </div>
       {/if}
