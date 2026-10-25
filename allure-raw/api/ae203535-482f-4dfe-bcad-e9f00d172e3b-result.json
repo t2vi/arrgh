@@ -1,0 +1,31 @@
+{
+  "uuid": "ae203535-482f-4dfe-bcad-e9f00d172e3b",
+  "historyId": "API#tests/media.hurl",
+  "name": "tests/media.hurl",
+  "status": "passed",
+  "stage": "finished",
+  "start": 1792924316838,
+  "stop": 1792924316846,
+  "labels": [
+    {
+      "name": "layer",
+      "value": "api"
+    },
+    {
+      "name": "tag",
+      "value": "API"
+    },
+    {
+      "name": "suite",
+      "value": "API"
+    },
+    {
+      "name": "feature",
+      "value": "API"
+    },
+    {
+      "name": "story",
+      "value": "tests/media.hurl"
+    }
+  ]
+}
