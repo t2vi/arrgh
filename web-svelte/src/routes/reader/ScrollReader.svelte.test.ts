@@ -64,3 +64,51 @@ describe('ScrollReader — page tracking does not fight the user scroll', () => 
     expect(scrollDiv.scrollTop).toBe(6789)
   })
 })
+
+// spec: 012/FR-005
+describe('ScrollReader — a page that fails inside the known page count', () => {
+  it('auto-retries, then shows a retry control instead of silently dropping the page', async () => {
+    vi.useFakeTimers()
+    const onLastPageFailed = vi.fn()
+    const { container, getByRole } = render(ScrollReader, {
+      chapterId: 'ch1',
+      total: 3,
+      initialPage: 0,
+      onPageSeen: vi.fn(),
+      onLastPageFailed,
+    })
+    const img = () => container.querySelector('img[data-page="1"]') as HTMLImageElement
+
+    for (let i = 0; i < 3; i++) {
+      img().dispatchEvent(new Event('error'))
+      await vi.advanceTimersByTimeAsync(5000)
+    }
+    // Still in the DOM (not hidden as "past the end") with a cache-busted src each retry.
+    expect(img().src).toMatch(/\/api\/media\/page\/ch1\/1\?retry=3$/)
+    img().dispatchEvent(new Event('error'))
+    await vi.advanceTimersByTimeAsync(5000)
+
+    const retry = getByRole('button', { name: /retry page 2/i })
+    expect(onLastPageFailed).not.toHaveBeenCalled()
+    retry.click()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(img().src).toMatch(/\?retry=4$/)
+    vi.useRealTimers()
+  })
+
+  // spec: 012/FR-006
+  it('still treats a failure as end-of-chapter when the page count is unknown', async () => {
+    const onLastPageFailed = vi.fn()
+    const { container } = render(ScrollReader, {
+      chapterId: 'ch1',
+      total: null,
+      initialPage: 0,
+      onPageSeen: vi.fn(),
+      onLastPageFailed,
+    })
+    ;(container.querySelector('img[data-page="4"]') as HTMLImageElement).dispatchEvent(new Event('error'))
+    await Promise.resolve()
+    expect(onLastPageFailed).toHaveBeenCalledWith(4)
+    expect(container.querySelector('img[data-page="4"]')).toBeNull()
+  })
+})
